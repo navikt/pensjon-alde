@@ -4,7 +4,7 @@ export default [
   index("routes/home.tsx"),
   route("/behandling/:behandlingsId", "routes/behandling/$behandlingsId.tsx", [
     route(
-      "aktivitet/:aktivitetId",
+      "aktivitet/:aktivitetId/*",
       "routes/behandling/$behandlingsId/aktivitet/$aktivitetId.tsx",
     ),
   ]),
