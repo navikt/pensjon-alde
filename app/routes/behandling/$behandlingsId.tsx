@@ -1,5 +1,6 @@
 import type { Route } from "./+types/$behandlingsId";
 import type { BehandlingDTO } from "../../types/behandling";
+import { useFetch } from "../../utils/use-fetch";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -12,16 +13,9 @@ export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId } = params;
 
   const backendUrl = process.env.BACKEND_URL!;
-  const accessToken = process.env.ACCESS_TOKEN!;
 
-  const response = await fetch(
+  const response = await useFetch(
     `${backendUrl}/api/behandling/${behandlingsId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    },
   );
 
   if (!response.ok) {

@@ -9,11 +9,14 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-
-// Initialize mocking in mock environment
+// Initialize mocking and auth in mock environment
 if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
   import("./mocks").then(({ initializeMocking }) => {
     initializeMocking().catch(console.error);
+  });
+
+  import("./utils/use-fetch").then(({ initializeFetch }) => {
+    initializeFetch();
   });
 }
 
