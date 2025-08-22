@@ -42,64 +42,60 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
   return (
     <div>
-      <h1>Behandling {behandlingsId}</h1>
-
-      {behandling && (
-        <Box padding="4" background="surface-alt-1">
-          <HStack gap="6" align="center">
-            <div>
-              <Label size="small">Type</Label>
-              <BodyShort>{behandling.type}</BodyShort>
-            </div>
-            <div>
-              <Label size="small">Status</Label>
-              <Tag
-                variant={
-                  behandling.status === "FERDIG"
-                    ? "success"
-                    : behandling.status === "FEILET"
-                      ? "error"
-                      : "info"
-                }
-                size="small"
-              >
-                {behandling.status}
-              </Tag>
-            </div>
-            <div>
-              <Label size="small">Prioritet</Label>
-              <Tag
-                variant={
-                  behandling.prioritet === "KRITISK"
+      <Box padding="4" background="surface-alt-1">
+        <HStack gap="6" align="center">
+          <div>
+            <Label size="small">Type</Label>
+            <BodyShort>{behandling.type}</BodyShort>
+          </div>
+          <div>
+            <Label size="small">Status</Label>
+            <Tag
+              variant={
+                behandling.status === "FERDIG"
+                  ? "success"
+                  : behandling.status === "FEILET"
                     ? "error"
-                    : behandling.prioritet === "HOY"
-                      ? "warning"
-                      : "neutral"
-                }
-                size="small"
-              >
-                {behandling.prioritet}
-              </Tag>
-            </div>
+                    : "info"
+              }
+              size="small"
+            >
+              {behandling.status}
+            </Tag>
+          </div>
+          <div>
+            <Label size="small">Prioritet</Label>
+            <Tag
+              variant={
+                behandling.prioritet === "KRITISK"
+                  ? "error"
+                  : behandling.prioritet === "HOY"
+                    ? "warning"
+                    : "neutral"
+              }
+              size="small"
+            >
+              {behandling.prioritet}
+            </Tag>
+          </div>
+          <div>
+            <Label size="small">Opprettet</Label>
+            <BodyShort size="small">
+              {new Date(behandling.opprettet).toLocaleDateString()}
+            </BodyShort>
+          </div>
+          {behandling.ansvarligTeam && (
             <div>
-              <Label size="small">Opprettet</Label>
+              <Label size="small">Ansvarlig team</Label>
               <BodyShort size="small">
-                {new Date(behandling.opprettet).toLocaleDateString()}
+                {behandling.ansvarligTeam.navn}
               </BodyShort>
             </div>
-            {behandling.ansvarligTeam && (
-              <div>
-                <Label size="small">Ansvarlig team</Label>
-                <BodyShort size="small">
-                  {behandling.ansvarligTeam.navn}
-                </BodyShort>
-              </div>
-            )}
-          </HStack>
-        </Box>
-      )}
+          )}
+        </HStack>
+      </Box>
 
-      {behandling && behandling.aktiviteter.length > 0 && (
+      {behandling.aktiviteter.length > 0 && (
         <Stepper
           orientation="horizontal"
           activeStep={
@@ -113,6 +109,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           {behandling.aktiviteter.map((aktivitet, index) => (
             <Stepper.Step
               key={aktivitet.uuid}
+              completed={aktivitet.status === "FERDIG"}
               onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
               style={{ cursor: "pointer" }}
             >
