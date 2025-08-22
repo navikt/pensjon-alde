@@ -1,7 +1,8 @@
 import type { Route } from "./+types/$aktivitetId";
 import type { AktivitetDTO } from "../../../../types/behandling";
 import { useFetch } from "../../../../utils/use-fetch";
-import { Heading, BodyShort, Detail, Alert } from "@navikt/ds-react";
+import { BodyShort, Detail, Alert } from "@navikt/ds-react";
+import { Outlet } from "react-router";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -43,7 +44,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, aktivitet } = loaderData;
+  const { aktivitet } = loaderData;
 
   return (
     <div
@@ -95,7 +96,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
           </Alert>
         )}
       </div>
-      <div className="decision">Some decistion here</div>
+      <Outlet />
     </div>
   );
 }

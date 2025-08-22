@@ -6,6 +6,7 @@ export default [
     route(
       "aktivitet/:aktivitetId",
       "routes/behandling/$behandlingsId/aktivitet/$aktivitetId.tsx",
+      [route("*", "aktiviteter/index.tsx")],
     ),
   ]),
 ] satisfies RouteConfig;
