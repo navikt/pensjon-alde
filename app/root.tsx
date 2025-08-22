@@ -8,7 +8,8 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import "./app.css";
+import "@navikt/ds-css";
+import { InternalHeader, Spacer } from "@navikt/ds-react";
 // Initialize mocking and auth in mock environment
 if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
   import("./mocks").then(({ initializeMocking }) => {
@@ -20,18 +21,7 @@ if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
   });
 }
 
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-];
+export const links: Route.LinksFunction = () => [];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -43,6 +33,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <InternalHeader>
+          <InternalHeader.Title as="h1">Sykepenger</InternalHeader.Title>
+          <Spacer />
+          <InternalHeader.User name="Ola Normann" />
+        </InternalHeader>
         {children}
         <ScrollRestoration />
         <Scripts />
