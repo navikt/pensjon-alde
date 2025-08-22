@@ -34,7 +34,7 @@
       "funksjonellIdentifikator": "REV-2024-123-01",
       "antallGangerKjort": 1,
       "sisteAktiveringsdato": "2024-01-20T09:30:00",
-      "status": "FERDIG",
+      "status": "FULLFORT",
       "utsattTil": null,
       "ventPaForegaendeAktiviteter": false
     },
@@ -46,7 +46,7 @@
       "funksjonellIdentifikator": "REV-2024-123-02",
       "antallGangerKjort": 3,
       "sisteAktiveringsdato": "2024-01-20T14:00:00",
-      "status": "FERDIG",
+      "status": "FULLFORT",
       "utsattTil": null,
       "ventPaForegaendeAktiviteter": true
     },
@@ -58,7 +58,7 @@
       "funksjonellIdentifikator": "REV-2024-123-03",
       "antallGangerKjort": 1,
       "sisteAktiveringsdato": "2024-01-20T16:30:00",
-      "status": "FERDIG",
+      "status": "FULLFORT",
       "utsattTil": null,
       "ventPaForegaendeAktiviteter": true
     },
@@ -70,7 +70,7 @@
       "funksjonellIdentifikator": "REV-2024-123-04",
       "antallGangerKjort": 1,
       "sisteAktiveringsdato": "2024-01-20T16:45:00",
-      "status": "FERDIG",
+      "status": "FULLFORT",
       "utsattTil": null,
       "ventPaForegaendeAktiviteter": true
     }

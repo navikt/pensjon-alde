@@ -28,7 +28,7 @@
       "funksjonellIdentifikator": "AKT-2024-001-01",
       "antallGangerKjort": 1,
       "sisteAktiveringsdato": "2024-01-15T10:15:00",
-      "status": "FERDIG",
+      "status": "FULLFORT",
       "utsattTil": null,
       "ventPaForegaendeAktiviteter": false
     },
@@ -40,7 +40,7 @@
       "funksjonellIdentifikator": "AKT-2024-001-02",
       "antallGangerKjort": 2,
       "sisteAktiveringsdato": "2024-01-15T12:00:00",
-      "status": "STARTET",
+      "status": "UNDER_BEHANDLING",
       "utsattTil": null,
       "ventPaForegaendeAktiviteter": true
     },
@@ -52,7 +52,7 @@
       "funksjonellIdentifikator": "AKT-2024-001-03",
       "antallGangerKjort": 0,
       "sisteAktiveringsdato": "2024-01-15T10:00:00",
-      "status": "KLAR",
+      "status": "OPPRETTET",
       "utsattTil": "2024-01-16T09:00:00",
       "ventPaForegaendeAktiviteter": true
     }

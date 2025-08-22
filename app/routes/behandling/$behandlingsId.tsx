@@ -1,7 +1,8 @@
 import type { Route } from "./+types/$behandlingsId";
 import type { BehandlingDTO } from "../../types/behandling";
+import { AktivitetStatus, BehandlingStatus } from "../../types/behandling";
 import { useFetch } from "../../utils/use-fetch";
-import { Outlet, Link, useParams, useNavigate } from "react-router";
+import { Outlet, Link, useParams, useNavigate, redirect } from "react-router";
 import { Stepper, Box, HStack, BodyShort, Label, Tag } from "@navikt/ds-react";
 
 export function meta({ params }: Route.MetaArgs) {
@@ -11,8 +12,9 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingsId } = params;
+  const url = new URL(request.url);
 
   const backendUrl = process.env.BACKEND_URL!;
 
@@ -27,6 +29,22 @@ export async function loader({ params }: Route.LoaderArgs) {
   }
 
   const behandling: BehandlingDTO = await response.json();
+
+  // If no aktivitet is selected and there are aktiviteter, redirect to first UNDER_BEHANDLING
+  if (
+    !url.pathname.includes("/aktivitet/") &&
+    behandling.aktiviteter.length > 0
+  ) {
+    const underBehandlingAktivitet = behandling.aktiviteter.find(
+      (aktivitet) => aktivitet.status === AktivitetStatus.UNDER_BEHANDLING,
+    );
+
+    if (underBehandlingAktivitet) {
+      throw redirect(
+        `/behandling/${behandlingsId}/aktivitet/${underBehandlingAktivitet.aktivitetId}`,
+      );
+    }
+  }
 
   return {
     behandlingsId,
@@ -52,9 +70,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             <Label size="small">Status</Label>
             <Tag
               variant={
-                behandling.status === "FERDIG"
+                behandling.status === BehandlingStatus.FERDIG
                   ? "success"
-                  : behandling.status === "FEILET"
+                  : behandling.status === BehandlingStatus.FEILET
                     ? "error"
                     : "info"
               }
@@ -109,7 +127,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           {behandling.aktiviteter.map((aktivitet, index) => (
             <Stepper.Step
               key={aktivitet.uuid}
-              completed={aktivitet.status === "FERDIG"}
+              completed={aktivitet.status === AktivitetStatus.FULLFORT}
               onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
               style={{ cursor: "pointer" }}
             >

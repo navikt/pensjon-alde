@@ -43,63 +43,59 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandlingsId, aktivitetId, aktivitet } = loaderData;
+  const { aktivitetId, aktivitet } = loaderData;
 
   return (
     <div
+      className="aktivitet"
       style={{ marginTop: "2rem", padding: "1rem", border: "1px solid #ccc" }}
     >
-      <Heading size="medium" spacing>
-        Aktivitet {aktivitetId}
-      </Heading>
+      <div className="data">
+        <BodyShort spacing>
+          <strong>Type:</strong> {aktivitet.type}
+        </BodyShort>
 
-      {aktivitet && (
-        <div>
-          <BodyShort spacing>
-            <strong>Type:</strong> {aktivitet.type}
-          </BodyShort>
+        <BodyShort spacing>
+          <strong>Status:</strong> {aktivitet.status}
+        </BodyShort>
 
-          <BodyShort spacing>
-            <strong>Status:</strong> {aktivitet.status}
-          </BodyShort>
+        <BodyShort spacing>
+          <strong>UUID:</strong> {aktivitet.uuid}
+        </BodyShort>
 
-          <BodyShort spacing>
-            <strong>UUID:</strong> {aktivitet.uuid}
-          </BodyShort>
+        <BodyShort spacing>
+          <strong>Funksjonell identifikator:</strong>{" "}
+          {aktivitet.funksjonellIdentifikator}
+        </BodyShort>
 
-          <BodyShort spacing>
-            <strong>Funksjonell identifikator:</strong>{" "}
-            {aktivitet.funksjonellIdentifikator}
-          </BodyShort>
+        <BodyShort spacing>
+          <strong>Antall ganger kjørt:</strong> {aktivitet.antallGangerKjort}
+        </BodyShort>
 
-          <BodyShort spacing>
-            <strong>Antall ganger kjørt:</strong> {aktivitet.antallGangerKjort}
-          </BodyShort>
+        <Detail spacing>
+          <strong>Opprettet:</strong>{" "}
+          {new Date(aktivitet.opprettet).toLocaleString()}
+        </Detail>
 
-          <Detail spacing>
-            <strong>Opprettet:</strong>{" "}
-            {new Date(aktivitet.opprettet).toLocaleString()}
-          </Detail>
+        <Detail spacing>
+          <strong>Siste aktivering:</strong>{" "}
+          {new Date(aktivitet.sisteAktiveringsdato).toLocaleString()}
+        </Detail>
 
-          <Detail spacing>
-            <strong>Siste aktivering:</strong>{" "}
-            {new Date(aktivitet.sisteAktiveringsdato).toLocaleString()}
-          </Detail>
+        {aktivitet.utsattTil && (
+          <Alert variant="info" size="small">
+            Aktivitet er utsatt til:{" "}
+            {new Date(aktivitet.utsattTil).toLocaleString()}
+          </Alert>
+        )}
 
-          {aktivitet.utsattTil && (
-            <Alert variant="info" size="small">
-              Aktivitet er utsatt til:{" "}
-              {new Date(aktivitet.utsattTil).toLocaleString()}
-            </Alert>
-          )}
-
-          {aktivitet.ventPaForegaendeAktiviteter && (
-            <Alert variant="warning" size="small">
-              Venter på foregående aktiviteter
-            </Alert>
-          )}
-        </div>
-      )}
+        {aktivitet.ventPaForegaendeAktiviteter && (
+          <Alert variant="warning" size="small">
+            Venter på foregående aktiviteter
+          </Alert>
+        )}
+      </div>
+      <div className="decision">Some decistion here</div>
     </div>
   );
 }

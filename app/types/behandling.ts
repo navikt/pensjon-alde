@@ -16,12 +16,9 @@ export enum Prioritet {
 
 export enum AktivitetStatus {
   OPPRETTET = "OPPRETTET",
-  KLAR = "KLAR",
-  STARTET = "STARTET",
-  FERDIG = "FERDIG",
   FEILET = "FEILET",
-  HOPPET_OVER = "HOPPET_OVER",
-  UTSATT = "UTSATT",
+  FULLFORT = "FULLFORT",
+  UNDER_BEHANDLING = "UNDER_BEHANDLING",
 }
 
 export interface Team {
