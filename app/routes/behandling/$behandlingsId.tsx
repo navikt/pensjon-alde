@@ -4,6 +4,7 @@ import { AktivitetStatus, BehandlingStatus } from "../../types/behandling";
 import { useFetch } from "../../utils/use-fetch";
 import { Outlet, Link, useParams, useNavigate, redirect } from "react-router";
 import { Stepper, Box, HStack, BodyShort, Label, Tag } from "@navikt/ds-react";
+import React, { useEffect, useRef } from "react";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -57,6 +58,44 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const params = useParams();
   const currentAktivitetId = params.aktivitetId;
   const navigate = useNavigate();
+  const stepperContainerRef = useRef<HTMLDivElement>(null);
+
+  const activeStepIndex = currentAktivitetId
+    ? behandling.aktiviteter.findIndex(
+        (a) => a.aktivitetId?.toString() === currentAktivitetId,
+      )
+    : 0;
+
+  useEffect(() => {
+    if (stepperContainerRef.current && activeStepIndex >= 0) {
+      const container = stepperContainerRef.current;
+      const activeStep = container.querySelector(
+        `[data-step-index="${activeStepIndex}"]`,
+      ) as HTMLElement;
+
+      if (activeStep) {
+        const containerRect = container.getBoundingClientRect();
+        const stepRect = activeStep.getBoundingClientRect();
+        const scrollLeft = container.scrollLeft;
+
+        // Calculate if step is out of view
+        const stepLeft = stepRect.left - containerRect.left + scrollLeft;
+        const stepRight = stepLeft + stepRect.width;
+        const containerWidth = containerRect.width;
+
+        if (stepLeft < scrollLeft) {
+          // Step is to the left of visible area
+          container.scrollTo({ left: stepLeft - 20, behavior: "smooth" });
+        } else if (stepRight > scrollLeft + containerWidth) {
+          // Step is to the right of visible area
+          container.scrollTo({
+            left: stepRight - containerWidth + 20,
+            behavior: "smooth",
+          });
+        }
+      }
+    }
+  }, [activeStepIndex, currentAktivitetId]);
 
   return (
     <div>
@@ -115,27 +154,33 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
       {behandling.aktiviteter.length > 0 && (
         <Box padding="space-12">
-          <Stepper
-            orientation="horizontal"
-            activeStep={
-              currentAktivitetId
-                ? behandling.aktiviteter.findIndex(
-                    (a) => a.aktivitetId?.toString() === currentAktivitetId,
-                  ) + 1
-                : 1
-            }
+          <div
+            ref={stepperContainerRef}
+            style={{
+              overflowX: "auto",
+              overflowY: "hidden",
+              scrollbarWidth: "thin",
+              WebkitOverflowScrolling: "touch",
+            }}
           >
-            {behandling.aktiviteter.map((aktivitet, index) => (
-              <Stepper.Step
-                key={aktivitet.uuid}
-                completed={aktivitet.status === AktivitetStatus.FULLFORT}
-                onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
-                style={{ cursor: "pointer" }}
-              >
-                {aktivitet.type}
-              </Stepper.Step>
-            ))}
-          </Stepper>
+            <Stepper
+              orientation="horizontal"
+              activeStep={activeStepIndex + 1}
+              style={{ minWidth: "max-content" }}
+            >
+              {behandling.aktiviteter.map((aktivitet, index) => (
+                <Stepper.Step
+                  key={aktivitet.uuid}
+                  completed={aktivitet.status === AktivitetStatus.FULLFORT}
+                  onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
+                  style={{ cursor: "pointer" }}
+                  data-step-index={index}
+                >
+                  {aktivitet.type}
+                </Stepper.Step>
+              ))}
+            </Stepper>
+          </div>
         </Box>
       )}
       <Outlet />

@@ -1,7 +1,7 @@
 import type { Route } from "./+types/$aktivitetId";
 import type { AktivitetDTO } from "../../../../types/behandling";
 import { useFetch } from "../../../../utils/use-fetch";
-import { BodyShort, Detail, Alert } from "@navikt/ds-react";
+import { BodyShort, Detail, Alert, Heading, Box } from "@navikt/ds-react";
 import { Outlet, redirect } from "react-router";
 
 export function meta({ params }: Route.MetaArgs) {
@@ -64,15 +64,22 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   return (
     <div className="aktivitet">
       {/* This route only shows when no aktivitet type matches (fallback) */}
-      <div style={{ marginTop: "2rem" }}>
-        <div className="aktivitet-not-supported">
-          <h3>Aktivitet ikke implementert enda</h3>
-          <p>Denne aktiviteten er ikke implementert enda.</p>
-          <p>
+      <Box
+        paddingBlock="8 0"
+        style={{ display: "flex", justifyContent: "center" }}
+      >
+        <Alert variant="info" style={{ maxWidth: "500px", width: "100%" }}>
+          <Heading spacing size="small" level="3">
+            Aktivitet ikke implementert enda
+          </Heading>
+          <BodyShort spacing>
+            Denne aktiviteten er ikke implementert enda.
+          </BodyShort>
+          <Detail>
             <strong>Type:</strong> {aktivitet.type}
-          </p>
-        </div>
-      </div>
+          </Detail>
+        </Alert>
+      </Box>
 
       <Outlet />
     </div>
