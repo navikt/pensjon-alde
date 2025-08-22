@@ -40,7 +40,7 @@
     },
     {
       "aktivitetId": 8002,
-      "type": "VALIDER_KLAGERETT",
+      "type": "VURDER_SAMBOER",
       "opprettet": "2024-01-22T08:00:00",
       "uuid": "802e4567-e89b-12d3-a456-426614174802",
       "funksjonellIdentifikator": "KLAGE-2024-999-02",
@@ -52,7 +52,7 @@
     },
     {
       "aktivitetId": 8003,
-      "type": "BEHANDLE_KLAGE",
+      "type": "VURDER_INNTEKT",
       "opprettet": "2024-01-22T08:00:00",
       "uuid": "803e4567-e89b-12d3-a456-426614174803",
       "funksjonellIdentifikator": "KLAGE-2024-999-03",

@@ -1,13 +1,12 @@
 import React from "react";
-import { useParams, useLocation, useNavigate, Outlet } from "react-router";
+import { useParams, useLocation, useNavigate } from "react-router";
 import type { AktivitetDTO } from "../../types/behandling";
-import "./vurdere-samboer.css";
 
-interface VurdereSamboerProps {
+interface VurdereInntektProps {
   aktivitet?: AktivitetDTO;
 }
 
-export const VurdereSamboer: React.FC<VurdereSamboerProps> = ({
+export const VurdereInntekt: React.FC<VurdereInntektProps> = ({
   aktivitet,
 }) => {
   const params = useParams();
@@ -16,7 +15,7 @@ export const VurdereSamboer: React.FC<VurdereSamboerProps> = ({
 
   return (
     <div className="sub-sub-component">
-      <h3>Vurdere samboer</h3>
+      <h3>Vurdere inntekt</h3>
       <div className="content">
         {aktivitet && (
           <div className="aktivitet-info">
@@ -37,13 +36,33 @@ export const VurdereSamboer: React.FC<VurdereSamboerProps> = ({
             </p>
           </div>
         )}
-        <p>Her kan du vurdere samboerforhold for søkeren.</p>
+        <p>Her kan du vurdere inntekt for søkeren.</p>
+        <div className="inntekt-form">
+          <label>
+            Månedlig inntekt:
+            <input type="number" placeholder="Skriv inn beløp" />
+          </label>
+          <label>
+            Inntektstype:
+            <select>
+              <option value="">Velg type</option>
+              <option value="lønn">Lønn</option>
+              <option value="pensjon">Pensjon</option>
+              <option value="trygd">Trygd</option>
+              <option value="annet">Annet</option>
+            </select>
+          </label>
+        </div>
       </div>
       <div className="utfall">
         {aktivitet?.status === "FULLFORT" ? (
-          <div className="success-message">✅ Samboervurdering er fullført</div>
+          <div className="success-message">
+            ✅ Inntektsvurdering er fullført
+          </div>
         ) : (
-          <div className="info-message">📝 Vurdering pågår eller venter</div>
+          <div className="info-message">
+            📝 Inntektsvurdering pågår eller venter
+          </div>
         )}
       </div>
     </div>

@@ -1,2 +1,2 @@
 export { VurdereSamboer as view } from "./VurdereSamboer";
-export const handles = ["VURDERE-SAMBOER"];
+export const handles = ["VURDER_SAMBOER"];
