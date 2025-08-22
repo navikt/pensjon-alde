@@ -2,7 +2,7 @@ import type { Route } from "./+types/$behandlingsId";
 import type { BehandlingDTO } from "../../types/behandling";
 import { useFetch } from "../../utils/use-fetch";
 import { Outlet, Link, useParams, useNavigate } from "react-router";
-import { Stepper } from "@navikt/ds-react";
+import { Stepper, Box, HStack, BodyShort, Label, Tag } from "@navikt/ds-react";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -44,6 +44,61 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     <div>
       <h1>Behandling {behandlingsId}</h1>
 
+      {behandling && (
+        <Box padding="4" background="surface-alt-1">
+          <HStack gap="6" align="center">
+            <div>
+              <Label size="small">Type</Label>
+              <BodyShort>{behandling.type}</BodyShort>
+            </div>
+            <div>
+              <Label size="small">Status</Label>
+              <Tag
+                variant={
+                  behandling.status === "FERDIG"
+                    ? "success"
+                    : behandling.status === "FEILET"
+                      ? "error"
+                      : "info"
+                }
+                size="small"
+              >
+                {behandling.status}
+              </Tag>
+            </div>
+            <div>
+              <Label size="small">Prioritet</Label>
+              <Tag
+                variant={
+                  behandling.prioritet === "KRITISK"
+                    ? "error"
+                    : behandling.prioritet === "HOY"
+                      ? "warning"
+                      : "neutral"
+                }
+                size="small"
+              >
+                {behandling.prioritet}
+              </Tag>
+            </div>
+            <div>
+              <Label size="small">Opprettet</Label>
+              <BodyShort size="small">
+                {new Date(behandling.opprettet).toLocaleDateString()}
+              </BodyShort>
+            </div>
+            {behandling.ansvarligTeam && (
+              <div>
+                <Label size="small">Ansvarlig team</Label>
+                <BodyShort size="small">
+                  {behandling.ansvarligTeam.navn}
+                </BodyShort>
+              </div>
+            )}
+          </HStack>
+        </Box>
+      )}
+
       {behandling && behandling.aktiviteter.length > 0 && (
         <Stepper
           orientation="horizontal"
@@ -54,7 +109,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 ) + 1
               : 1
           }
-          style={{ marginBottom: "2rem" }}
         >
           {behandling.aktiviteter.map((aktivitet, index) => (
             <Stepper.Step
@@ -67,65 +121,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           ))}
         </Stepper>
       )}
-
-      {behandling && (
-        <div>
-          <h2>Detaljer</h2>
-          <p>
-            <strong>Type:</strong> {behandling.type}
-          </p>
-          <p>
-            <strong>Status:</strong> {behandling.status}
-          </p>
-          <p>
-            <strong>Prioritet:</strong> {behandling.prioritet}
-          </p>
-          <p>
-            <strong>UUID:</strong> {behandling.uuid}
-          </p>
-          <p>
-            <strong>Funksjonell identifikator:</strong>{" "}
-            {behandling.funksjonellIdentifikator}
-          </p>
-          <p>
-            <strong>Opprettet:</strong>{" "}
-            {new Date(behandling.opprettet).toLocaleString()}
-          </p>
-          <p>
-            <strong>Siste kjøring:</strong>{" "}
-            {new Date(behandling.sisteKjoring).toLocaleString()}
-          </p>
-
-          {behandling.ansvarligTeam && (
-            <p>
-              <strong>Ansvarlig team:</strong> {behandling.ansvarligTeam.navn}
-            </p>
-          )}
-
-          {behandling.aktiviteter.length > 0 && (
-            <div>
-              <h3>Aktiviteter ({behandling.aktiviteter.length})</h3>
-              <ul>
-                {behandling.aktiviteter.map((aktivitet) => (
-                  <li key={aktivitet.uuid}>
-                    <Link to={`aktivitet/${aktivitet.aktivitetId}`}>
-                      <strong>{aktivitet.type}</strong> - {aktivitet.status}
-                    </Link>
-                    {aktivitet.utsattTil && (
-                      <span>
-                        {" "}
-                        (utsatt til:{" "}
-                        {new Date(aktivitet.utsattTil).toLocaleString()})
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-
       <Outlet />
     </div>
   );
