@@ -10,6 +10,13 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 
+// Initialize mocking in mock environment
+if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
+  import("./mocks").then(({ initializeMocking }) => {
+    initializeMocking().catch(console.error);
+  });
+}
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {

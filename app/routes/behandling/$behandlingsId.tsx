@@ -11,40 +11,31 @@ export function meta({ params }: Route.MetaArgs) {
 export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId } = params;
 
-  try {
-    const backendUrl = process.env.BACKEND_URL;
-    const accessToken = process.env.ACCESS_TOKEN;
+  const backendUrl = process.env.BACKEND_URL!;
+  const accessToken = process.env.ACCESS_TOKEN!;
 
-    if (!backendUrl) {
-      throw new Error("BACKEND_URL environment variable is not set");
-    }
-
-    const response = await fetch(
-      `${backendUrl}/api/behandling/${behandlingsId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
+  const response = await fetch(
+    `${backendUrl}/api/behandling/${behandlingsId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch behandling: ${response.status} ${response.statusText}`,
     );
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch behandling: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    const behandling: BehandlingDTO = await response.json();
-
-    return {
-      behandlingsId,
-      behandling,
-    };
-  } catch (error) {
-    console.error("Error fetching behandling:", error);
-    throw new Response("Behandling not found", { status: 404 });
   }
+
+  const behandling: BehandlingDTO = await response.json();
+
+  return {
+    behandlingsId,
+    behandling,
+  };
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
