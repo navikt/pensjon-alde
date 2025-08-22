@@ -34,7 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <InternalHeader>
-          <InternalHeader.Title as="h1">Sykepenger</InternalHeader.Title>
+          <InternalHeader.Title as="h1">Pesys</InternalHeader.Title>
           <Spacer />
           <InternalHeader.User name="Ola Normann" />
         </InternalHeader>

@@ -60,7 +60,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
   return (
     <div>
-      <Box padding="4" background="surface-alt-1">
+      <Box padding="4" background="surface-subtle" borderWidth="1 0">
         <HStack gap="6" align="center">
           <div>
             <Label size="small">Type</Label>
@@ -114,27 +114,29 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       </Box>
 
       {behandling.aktiviteter.length > 0 && (
-        <Stepper
-          orientation="horizontal"
-          activeStep={
-            currentAktivitetId
-              ? behandling.aktiviteter.findIndex(
-                  (a) => a.aktivitetId?.toString() === currentAktivitetId,
-                ) + 1
-              : 1
-          }
-        >
-          {behandling.aktiviteter.map((aktivitet, index) => (
-            <Stepper.Step
-              key={aktivitet.uuid}
-              completed={aktivitet.status === AktivitetStatus.FULLFORT}
-              onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
-              style={{ cursor: "pointer" }}
-            >
-              {aktivitet.type}
-            </Stepper.Step>
-          ))}
-        </Stepper>
+        <Box padding="space-12">
+          <Stepper
+            orientation="horizontal"
+            activeStep={
+              currentAktivitetId
+                ? behandling.aktiviteter.findIndex(
+                    (a) => a.aktivitetId?.toString() === currentAktivitetId,
+                  ) + 1
+                : 1
+            }
+          >
+            {behandling.aktiviteter.map((aktivitet, index) => (
+              <Stepper.Step
+                key={aktivitet.uuid}
+                completed={aktivitet.status === AktivitetStatus.FULLFORT}
+                onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
+                style={{ cursor: "pointer" }}
+              >
+                {aktivitet.type}
+              </Stepper.Step>
+            ))}
+          </Stepper>
+        </Box>
       )}
       <Outlet />
     </div>

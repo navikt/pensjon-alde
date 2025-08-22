@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router";
+import { TextField, Select } from "@navikt/ds-react";
 import type { AktivitetDTO } from "../../types/behandling";
+import AktivitetVurderingLayout from "../../components/shared/AktivitetVurderingLayout";
+import DecisionForm from "../../components/shared/DecisionForm";
 
 interface VurdereInntektProps {
   aktivitet?: AktivitetDTO;
@@ -11,59 +14,67 @@ const VurdereInntekt: React.FC<VurdereInntektProps> = ({ aktivitet }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [månedligInntekt, setMånedligInntekt] = useState("");
+  const [inntektstype, setInntektstype] = useState("");
+
+  const handleSubmit = () => {
+    // Handle decision submission
+    console.log({
+      månedligInntekt,
+      inntektstype,
+    });
+  };
+
+  const handleContinue = () => {
+    // Handle continue action
+    navigate("../");
+  };
+
+  const detailsContent = (
+    <>
+      <p>Her kan du vurdere inntekt for søkeren.</p>
+      <p>Inntektsinformasjon og dokumentasjon vil bli lagt til her...</p>
+    </>
+  );
+
+  const sidebar = (
+    <DecisionForm
+      title="Vurdering av inntekt"
+      onSubmit={handleSubmit}
+      onContinue={handleContinue}
+    >
+      <div className="input-group">
+        <TextField
+          label="Månedlig inntekt (NOK)"
+          type="number"
+          value={månedligInntekt}
+          onChange={(e) => setMånedligInntekt(e.target.value)}
+          placeholder="Skriv inn beløp"
+        />
+
+        <Select
+          label="Inntektstype"
+          value={inntektstype}
+          onChange={(e) => setInntektstype(e.target.value)}
+        >
+          <option value="">Velg type</option>
+          <option value="lønn">Lønn</option>
+          <option value="pensjon">Pensjon</option>
+          <option value="trygd">Trygd</option>
+          <option value="annet">Annet</option>
+        </Select>
+      </div>
+    </DecisionForm>
+  );
+
   return (
-    <div className="sub-sub-component">
-      <h3>Vurdere inntekt</h3>
-      <div className="content">
-        {aktivitet && (
-          <div className="aktivitet-info">
-            <h4>Aktivitet informasjon:</h4>
-            <p>
-              <strong>Status:</strong> {aktivitet.status}
-            </p>
-            <p>
-              <strong>Type:</strong> {aktivitet.type}
-            </p>
-            <p>
-              <strong>Funksjonell ID:</strong>{" "}
-              {aktivitet.funksjonellIdentifikator}
-            </p>
-            <p>
-              <strong>Siste aktivering:</strong>{" "}
-              {new Date(aktivitet.sisteAktiveringsdato).toLocaleString("no-NO")}
-            </p>
-          </div>
-        )}
-        <p>Her kan du vurdere inntekt for søkeren.</p>
-        <div className="inntekt-form">
-          <label>
-            Månedlig inntekt:
-            <input type="number" placeholder="Skriv inn beløp" />
-          </label>
-          <label>
-            Inntektstype:
-            <select>
-              <option value="">Velg type</option>
-              <option value="lønn">Lønn</option>
-              <option value="pensjon">Pensjon</option>
-              <option value="trygd">Trygd</option>
-              <option value="annet">Annet</option>
-            </select>
-          </label>
-        </div>
-      </div>
-      <div className="utfall">
-        {aktivitet?.status === "FULLFORT" ? (
-          <div className="success-message">
-            ✅ Inntektsvurdering er fullført
-          </div>
-        ) : (
-          <div className="info-message">
-            📝 Inntektsvurdering pågår eller venter
-          </div>
-        )}
-      </div>
-    </div>
+    <AktivitetVurderingLayout
+      title="Vurdere inntekt"
+      aktivitet={aktivitet}
+      detailsTitle="Inntektsvurdering detaljer:"
+      detailsContent={detailsContent}
+      sidebar={sidebar}
+    />
   );
 };
 

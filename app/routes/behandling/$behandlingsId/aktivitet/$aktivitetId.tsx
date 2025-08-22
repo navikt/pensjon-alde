@@ -62,10 +62,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   const { aktivitet } = loaderData;
 
   return (
-    <div
-      className="aktivitet"
-      style={{ marginTop: "2rem", padding: "1rem", border: "1px solid #ccc" }}
-    >
+    <div className="aktivitet">
       {/* This route only shows when no aktivitet type matches (fallback) */}
       <div style={{ marginTop: "2rem" }}>
         <div className="aktivitet-not-supported">
