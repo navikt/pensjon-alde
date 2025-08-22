@@ -6,9 +6,7 @@ interface VurdereInntektProps {
   aktivitet?: AktivitetDTO;
 }
 
-export const VurdereInntekt: React.FC<VurdereInntektProps> = ({
-  aktivitet,
-}) => {
+const VurdereInntekt: React.FC<VurdereInntektProps> = ({ aktivitet }) => {
   const params = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -68,3 +66,5 @@ export const VurdereInntekt: React.FC<VurdereInntektProps> = ({
     </div>
   );
 };
+
+export default VurdereInntekt;

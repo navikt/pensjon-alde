@@ -3,7 +3,6 @@ import type { AktivitetDTO } from "../../../../types/behandling";
 import { useFetch } from "../../../../utils/use-fetch";
 import { BodyShort, Detail, Alert } from "@navikt/ds-react";
 import { Outlet, redirect } from "react-router";
-import React, { useMemo } from "react";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -12,28 +11,23 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-// Dynamic imports for all aktiviteter modules
-const aktiviteterModules = import.meta.glob(
-  "../../../../aktiviteter/*/index.tsx",
-  { eager: true },
-);
+// Server-side helper function to get folder name for aktivitet type
+async function getFolderForType(aktivitetType: string): Promise<string | null> {
+  const aktiviteterModules = import.meta.glob(
+    "../../../../aktiviteter/*/index.tsx",
+    { eager: true },
+  );
 
-// Type definitions for the module structure
-interface AktivitetModule {
-  view: React.ComponentType<{ aktivitet?: AktivitetDTO }>;
-  handles: string[];
-}
-
-// Helper function to get folder name for aktivitet type
-function getFolderForType(aktivitetType: string): string | null {
-  const modules: Record<string, AktivitetModule> = {};
+  const modules: Record<string, { handles: string[] }> = {};
 
   Object.entries(aktiviteterModules).forEach(([path, module]) => {
     const folderName = path.split("/")[5]; // Extract folder name from path
-    const typedModule = module as AktivitetModule;
+    const typedModule = module as any;
 
-    if (typedModule.view && typedModule.handles) {
-      modules[folderName] = typedModule;
+    if (typedModule.handles) {
+      modules[folderName] = {
+        handles: typedModule.handles,
+      };
     }
   });
 
@@ -48,7 +42,6 @@ function getFolderForType(aktivitetType: string): string | null {
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
-  const splat = (params as any)["*"];
 
   const backendUrl = process.env.BACKEND_URL!;
 
@@ -73,17 +66,12 @@ export async function loader({ params }: Route.LoaderArgs) {
   }
 
   // Check if we need to redirect to specific aktivitet path
-  const expectedPath = getFolderForType(aktivitet.type);
-  if (expectedPath && !splat) {
+  const expectedPath = await getFolderForType(aktivitet.type);
+  if (expectedPath) {
     // Redirect to the specific aktivitet path
     throw redirect(
       `/behandling/${behandlingsId}/aktivitet/${aktivitetId}/${expectedPath}`,
     );
-  }
-
-  // If no matching folder found and we're on a specific path, redirect back to base
-  if (!expectedPath && splat) {
-    throw redirect(`/behandling/${behandlingsId}/aktivitet/${aktivitetId}`);
   }
 
   return {
@@ -94,79 +82,23 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { aktivitet } = loaderData;
-
-  // Parse all aktivitet modules
-  const aktiviteter = useMemo(() => {
-    const modules: Record<string, AktivitetModule> = {};
-
-    Object.entries(aktiviteterModules).forEach(([path, module]) => {
-      const folderName = path.split("/")[5]; // Extract folder name from path
-      const typedModule = module as AktivitetModule;
-
-      if (typedModule.view && typedModule.handles) {
-        modules[folderName] = typedModule;
-      }
-    });
-
-    return modules;
-  }, []);
-
-  // Find matching view for aktivitet.type
-  const matchingView = useMemo(() => {
-    if (!aktivitet?.type) return null;
-
-    for (const { view, handles } of Object.values(aktiviteter)) {
-      if (handles.includes(aktivitet.type)) {
-        return view;
-      }
-    }
-
-    return null;
-  }, [aktivitet?.type, aktiviteter]);
-
-  // Check if we're on a specific aktivitet path
-  const currentPath =
-    typeof window !== "undefined"
-      ? window.location.pathname.split("/").pop()
-      : null;
-  const expectedPath = getFolderForType(aktivitet.type);
-  const isOnSpecificPath = currentPath === expectedPath;
+  const { aktivitet } = loaderData as { aktivitet: AktivitetDTO };
 
   return (
     <div
       className="aktivitet"
       style={{ marginTop: "2rem", padding: "1rem", border: "1px solid #ccc" }}
     >
-      {/* Dynamic view based on aktivitet.type - only show if on specific path */}
-      {isOnSpecificPath && (
-        <div style={{ marginTop: "2rem" }}>
-          {matchingView ? (
-            React.createElement(matchingView, { aktivitet })
-          ) : (
-            <div className="aktivitet-not-supported">
-              <h3>Aktivitet ikke implementert enda</h3>
-              <p>Denne aktiviteten er ikke implementert enda.</p>
-              <p>
-                <strong>Type:</strong> {aktivitet.type}
-              </p>
-            </div>
-          )}
+      {/* This route only shows when no aktivitet type matches (fallback) */}
+      <div style={{ marginTop: "2rem" }}>
+        <div className="aktivitet-not-supported">
+          <h3>Aktivitet ikke implementert enda</h3>
+          <p>Denne aktiviteten er ikke implementert enda.</p>
+          <p>
+            <strong>Type:</strong> {aktivitet.type}
+          </p>
         </div>
-      )}
-
-      {/* Show fallback if no folders match and we're on base path */}
-      {!isOnSpecificPath && !matchingView && (
-        <div style={{ marginTop: "2rem" }}>
-          <div className="aktivitet-not-supported">
-            <h3>Aktivitet ikke implementert enda</h3>
-            <p>Denne aktiviteten er ikke implementert enda.</p>
-            <p>
-              <strong>Type:</strong> {aktivitet.type}
-            </p>
-          </div>
-        </div>
-      )}
+      </div>
 
       <Outlet />
     </div>

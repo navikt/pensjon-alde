@@ -7,9 +7,7 @@ interface VurdereSamboerProps {
   aktivitet?: AktivitetDTO;
 }
 
-export const VurdereSamboer: React.FC<VurdereSamboerProps> = ({
-  aktivitet,
-}) => {
+const VurdereSamboer: React.FC<VurdereSamboerProps> = ({ aktivitet }) => {
   const params = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -49,3 +47,5 @@ export const VurdereSamboer: React.FC<VurdereSamboerProps> = ({
     </div>
   );
 };
+
+export default VurdereSamboer;
