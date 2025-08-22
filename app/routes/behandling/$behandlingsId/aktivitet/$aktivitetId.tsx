@@ -11,52 +11,34 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-// Server-side helper function to get folder name for aktivitet type
+// Simple helper to find matching aktivitet folder
 async function getFolderForType(aktivitetType: string): Promise<string | null> {
   const aktiviteterModules = import.meta.glob(
     "../../../../aktiviteter/*/index.tsx",
     { eager: true },
   );
 
-  const modules: Record<string, { handles: string[] }> = {};
-
-  Object.entries(aktiviteterModules).forEach(([path, module]) => {
-    const folderName = path.split("/")[5]; // Extract folder name from path
-    const typedModule = module as any;
-
-    if (typedModule.handles) {
-      modules[folderName] = {
-        handles: typedModule.handles,
-      };
-    }
-  });
-
-  for (const [folderName, { handles }] of Object.entries(modules)) {
-    if (handles.includes(aktivitetType)) {
+  for (const [path, module] of Object.entries(aktiviteterModules)) {
+    const folderName = path.split("/")[5];
+    if ((module as any).handles?.includes(aktivitetType)) {
       return folderName;
     }
   }
-
   return null;
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
 
-  const backendUrl = process.env.BACKEND_URL!;
-
-  // Fetch the behandling first to get aktivitet from it
+  // Fetch aktivitet data
   const response = await useFetch(
-    `${backendUrl}/api/behandling/${behandlingsId}`,
+    `${process.env.BACKEND_URL!}/api/behandling/${behandlingsId}`,
   );
-
   if (!response.ok) {
-    throw new Error(
-      `Failed to fetch behandling: ${response.status} ${response.statusText}`,
-    );
+    throw new Error(`Failed to fetch behandling: ${response.status}`);
   }
 
-  const behandling: any = await response.json();
+  const behandling = await response.json();
   const aktivitet = behandling.aktiviteter.find(
     (a: AktivitetDTO) => a.aktivitetId?.toString() === aktivitetId,
   );
@@ -65,24 +47,19 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Error(`Aktivitet ${aktivitetId} not found`);
   }
 
-  // Check if we need to redirect to specific aktivitet path
-  const expectedPath = await getFolderForType(aktivitet.type);
-  if (expectedPath) {
-    // Redirect to the specific aktivitet path
+  // Redirect to specific aktivitet path if supported
+  const folderName = await getFolderForType(aktivitet.type);
+  if (folderName) {
     throw redirect(
-      `/behandling/${behandlingsId}/aktivitet/${aktivitetId}/${expectedPath}`,
+      `/behandling/${behandlingsId}/aktivitet/${aktivitetId}/${folderName}`,
     );
   }
 
-  return {
-    behandlingsId,
-    aktivitetId,
-    aktivitet,
-  };
+  return { aktivitet };
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { aktivitet } = loaderData as { aktivitet: AktivitetDTO };
+  const { aktivitet } = loaderData;
 
   return (
     <div
