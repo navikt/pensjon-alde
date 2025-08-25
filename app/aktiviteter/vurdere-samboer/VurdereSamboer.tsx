@@ -1,36 +1,94 @@
 import React, { useState } from "react";
-import { useParams, useLocation, useNavigate, Outlet } from "react-router";
-import { Checkbox } from "@navikt/ds-react";
+import {
+  useParams,
+  useLocation,
+  useNavigate,
+  Outlet,
+  useLoaderData,
+  Form,
+} from "react-router";
+import { Checkbox, Button, DatePicker, useDatepicker } from "@navikt/ds-react";
 import type { AktivitetDTO } from "../../types/behandling";
 import AktivitetVurderingLayout from "../../components/shared/AktivitetVurderingLayout";
 import DecisionForm from "../../components/shared/DecisionForm";
+import { useFetch } from "~/utils/use-fetch";
+import type { SamboerInformasjonHolder } from "./samboer-types";
+import type { Route } from "./+types";
 
 interface VurdereSamboerProps {
   aktivitet?: AktivitetDTO;
+  samboerdata?: SamboerInformasjonHolder;
 }
 
-const VurdereSamboer: React.FC<VurdereSamboerProps> = ({ aktivitet }) => {
-  const params = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
+export async function loader({ params }: Route.LoaderArgs) {
+  const { behandlingsId } = params;
 
-  const [harSamboer, setHarSamboer] = useState(false);
-  const [samboerForholdGodkjent, setSamboerForholdGodkjent] = useState(false);
-  const [dokumentasjonMottatt, setDokumentasjonMottatt] = useState(false);
+  const samboerResponse = await useFetch(
+    `${process.env.BACKEND_URL!}/api/saksbehandling/alder/forstegangsbehandling/${behandlingsId}/sakinfo`,
+  );
 
-  const handleSubmit = () => {
-    // Handle decision submission
-    console.log({
-      harSamboer,
-      samboerForholdGodkjent,
-      dokumentasjonMottatt,
-    });
+  let samboerdata: SamboerInformasjonHolder | null = null;
+  if (samboerResponse.ok) {
+    console.log(samboerResponse);
+    samboerdata = await samboerResponse.json();
+  }
+
+  return {
+    samboerdata,
+  };
+}
+
+export async function action({
+  params,
+  request,
+}: {
+  params: { behandlingsId: string };
+  request: Request;
+}) {
+  const { behandlingsId } = params;
+  const formData = await request.formData();
+
+  const virkFomDate = formData.get("virkFom");
+
+  const vurdering = {
+    samboerVurdering: {
+      virkFom: virkFomDate ? virkFomDate.toString() : null,
+      tidligereEktefeller: formData.get("tidligereEktefeller") === "on",
+      harFellesBarn: formData.get("harFellesBarn") === "on",
+      vurdert: formData.get("vurdert") || "VENTER",
+    },
   };
 
-  const handleContinue = () => {
-    // Handle continue action
-    navigate("../");
+  console.log("data to post", vurdering);
+  // Post to the API
+  const response = await useFetch(
+    `${process.env.BACKEND_URL!}/api/saksbehandling/alder/forstegangsbehandling/${behandlingsId}/samboervurdering`,
+    {
+      method: "POST",
+      body: JSON.stringify(vurdering),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to save samboer vurdering: ${response.status}`);
+  }
+
+  const vurdertValue = formData.get("vurdert");
+
+  return {
+    success: true,
+    vurdert: vurdertValue,
+    message:
+      vurdertValue === "AVBRUTT"
+        ? "Samboerforhold avvist"
+        : "Samboervurdering lagret",
   };
+}
+
+export default function VurdereSamboer({ loaderData }: Route.ComponentProps) {
+  const { datepickerProps, inputProps } = useDatepicker({
+    defaultSelected: undefined,
+  });
 
   const detailsContent = (
     <>
@@ -40,34 +98,32 @@ const VurdereSamboer: React.FC<VurdereSamboerProps> = ({ aktivitet }) => {
   );
 
   const sidebar = (
-    <DecisionForm
-      title="Vurdering av samboer"
-      onSubmit={handleSubmit}
-      onContinue={handleContinue}
-    >
+    <Form method="post" className="decision-form">
       <div className="checkbox-group">
-        <Checkbox
-          checked={harSamboer}
-          onChange={(e) => setHarSamboer(e.target.checked)}
-        >
-          Har samboer
+        <DatePicker {...datepickerProps}>
+          <DatePicker.Input
+            {...inputProps}
+            label="Virkningstidspunkt fra"
+            name="virkFom"
+          />
+        </DatePicker>
+
+        <Checkbox name="tidligereEktefeller">
+          Tidligere ektefelle/r med søker
         </Checkbox>
 
-        <Checkbox
-          checked={samboerForholdGodkjent}
-          onChange={(e) => setSamboerForholdGodkjent(e.target.checked)}
-        >
-          Samboerforhold godkjent
-        </Checkbox>
-
-        <Checkbox
-          checked={dokumentasjonMottatt}
-          onChange={(e) => setDokumentasjonMottatt(e.target.checked)}
-        >
-          Dokumentasjon mottatt
-        </Checkbox>
+        <Checkbox name="harFellesBarn">Har felles barn med søker</Checkbox>
       </div>
-    </DecisionForm>
+
+      <div className="button-group">
+        <Button type="submit" name="vurdert" value="VURDERT" variant="primary">
+          Vurder
+        </Button>
+        <Button type="submit" name="vurdert" value="AVBRUTT" variant="danger">
+          Avvis
+        </Button>
+      </div>
+    </Form>
   );
 
   return (
@@ -79,6 +135,4 @@ const VurdereSamboer: React.FC<VurdereSamboerProps> = ({ aktivitet }) => {
       sidebar={sidebar}
     />
   );
-};
-
-export default VurdereSamboer;
+}

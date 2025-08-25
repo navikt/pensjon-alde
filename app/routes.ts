@@ -1,5 +1,4 @@
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
-import type { RouteConfigEntry } from "@react-router/dev/routes";
 import { glob } from "glob";
 import { join } from "path";
 

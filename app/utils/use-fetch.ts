@@ -1,6 +1,16 @@
 // Standard Fetch Utility for React Router
 // Provides enhanced HTTP requests with authentication and other capabilities
 
+// Prevent client-side usage
+function checkServerSideOnly(functionName: string): void {
+  if (typeof window !== "undefined") {
+    throw new Error(
+      `${functionName} is server-side only and cannot be used in the browser. ` +
+        "This utility is designed for loaders and actions only.",
+    );
+  }
+}
+
 // Store for the current access token
 let currentAccessToken: string | null = null;
 
@@ -8,6 +18,7 @@ let currentAccessToken: string | null = null;
  * Set the access token (from OAuth proxy or environment)
  */
 export function setAccessToken(token: string): void {
+  checkServerSideOnly("setAccessToken");
   currentAccessToken = token;
 }
 
@@ -22,6 +33,7 @@ export function getAccessToken(): string | null {
  * Initialize token from environment variable (development)
  */
 export function initializeTokenFromEnv(): void {
+  checkServerSideOnly("initializeTokenFromEnv");
   const envToken = process.env.ACCESS_TOKEN;
   if (envToken) {
     setAccessToken(envToken);
@@ -37,6 +49,16 @@ export async function useFetch(
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> {
+  checkServerSideOnly("useFetch");
+  const startTime = Date.now();
+  const url =
+    typeof input === "string"
+      ? input
+      : input instanceof URL
+        ? input.toString()
+        : input.url;
+  const method = init?.method || "GET";
+
   const token = getAccessToken();
 
   // Ensure init object exists
@@ -58,14 +80,55 @@ export async function useFetch(
   // Update the init object with modified headers
   modifiedInit.headers = headers;
 
-  return fetch(input, modifiedInit);
+  // Log request details
+  console.log(`🌐 [${method}] ${url}`);
+
+  if (modifiedInit.body) {
+    try {
+      const bodyContent =
+        typeof modifiedInit.body === "string"
+          ? modifiedInit.body
+          : modifiedInit.body instanceof FormData
+            ? "[FormData]"
+            : "[Binary Data]";
+      console.log(`📦 Request body:`, bodyContent);
+    } catch (error) {
+      console.log(`📦 Request body: [Unable to log body]`);
+    }
+  }
+
+  try {
+    const response = await fetch(input, modifiedInit);
+    const duration = Date.now() - startTime;
+
+    // Log response details
+    console.log(`📥 [${response.status}] ${url} (${duration}ms)`);
+    console.log(
+      `📋 Response headers:`,
+      Object.fromEntries(response.headers.entries()),
+    );
+
+    if (!response.ok) {
+      console.warn(
+        `⚠️ Request failed: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return response;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error(`❌ [${method}] ${url} failed (${duration}ms):`, error);
+    throw error;
+  }
 }
 
 /**
  * Initialize the fetch system
  */
 export function initializeFetch(): void {
+  checkServerSideOnly("initializeFetch");
   // Initialize from environment in development
+  console.log("NODE_ENV", process.env.NODE_ENV);
   if (
     process.env.NODE_ENV === "development" ||
     process.env.NODE_ENV === "mock"
@@ -80,6 +143,7 @@ export function initializeFetch(): void {
  * Extract token from incoming request (for OAuth proxy integration)
  */
 export function extractTokenFromRequest(request: Request): string | null {
+  checkServerSideOnly("extractTokenFromRequest");
   const authHeader = request.headers.get("Authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
     return authHeader.substring(7);

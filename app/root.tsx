@@ -10,18 +10,21 @@ import {
 import type { Route } from "./+types/root";
 import "@navikt/ds-css";
 import { InternalHeader, Spacer } from "@navikt/ds-react";
+import { initializeFetch } from "./utils/use-fetch";
 // Initialize mocking and auth in mock environment
 if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
   import("./mocks").then(({ initializeMocking }) => {
     initializeMocking().catch(console.error);
   });
-
-  import("./utils/use-fetch").then(({ initializeFetch }) => {
-    initializeFetch();
-  });
 }
 
 export const links: Route.LinksFunction = () => [];
+
+export async function loader() {
+  // Initialize fetch system on server-side
+  initializeFetch();
+  return {};
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
