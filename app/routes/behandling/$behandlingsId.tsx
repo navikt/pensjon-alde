@@ -168,22 +168,26 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               activeStep={activeStepIndex + 1}
               style={{ minWidth: "max-content" }}
             >
-              {behandling.aktiviteter.map((aktivitet, index) => (
-                <Stepper.Step
-                  key={aktivitet.uuid}
-                  completed={aktivitet.status === AktivitetStatus.FULLFORT}
-                  onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
-                  style={{ cursor: "pointer" }}
-                  data-step-index={index}
-                >
-                  {aktivitet.type}
-                </Stepper.Step>
-              ))}
+              {behandling.aktiviteter
+                .sort((a, b) => a.type.localeCompare(b.type))
+                .map((aktivitet, index) => (
+                  <Stepper.Step
+                    key={aktivitet.uuid}
+                    completed={aktivitet.status === AktivitetStatus.FULLFORT}
+                    onClick={() =>
+                      navigate(`aktivitet/${aktivitet.aktivitetId}`)
+                    }
+                    style={{ cursor: "pointer" }}
+                    data-step-index={index}
+                  >
+                    {aktivitet.type}
+                  </Stepper.Step>
+                ))}
             </Stepper>
           </div>
         </Box>
       )}
-      <Outlet />
+      <Outlet context={{ behandling }} />
     </div>
   );
 }

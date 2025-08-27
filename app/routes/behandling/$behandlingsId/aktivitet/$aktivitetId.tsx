@@ -1,8 +1,10 @@
 import type { Route } from "./+types/$aktivitetId";
-import type { AktivitetDTO } from "../../../../types/behandling";
+import type { AktivitetDTO, BehandlingDTO } from "../../../../types/behandling";
+import type { AktivitetOutletContext } from "../../../../types/aktivitetOutletContext";
 import { useFetch } from "../../../../utils/use-fetch";
 import { BodyShort, Detail, Alert, Heading, Box } from "@navikt/ds-react";
 import { Outlet, redirect } from "react-router";
+import { useOutletContext } from "react-router";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -30,7 +32,6 @@ async function getFolderForType(aktivitetType: string): Promise<string | null> {
 export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
 
-  // Fetch aktivitet data
   const response = await useFetch(
     `${process.env.BACKEND_URL!}/api/behandling/${behandlingsId}`,
   );
@@ -38,7 +39,8 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Error(`Failed to fetch behandling: ${response.status}`);
   }
 
-  const behandling = await response.json();
+  const behandling: BehandlingDTO = await response.json();
+
   const aktivitet = behandling.aktiviteter.find(
     (a: AktivitetDTO) => a.aktivitetId?.toString() === aktivitetId,
   );
@@ -47,7 +49,6 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Error(`Aktivitet ${aktivitetId} not found`);
   }
 
-  // Redirect to specific aktivitet path if supported
   const folderName = await getFolderForType(aktivitet.type);
   if (folderName) {
     throw redirect(
@@ -55,15 +56,14 @@ export async function loader({ params }: Route.LoaderArgs) {
     );
   }
 
-  return { aktivitet };
+  return { behandling, aktivitet };
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { aktivitet } = loaderData;
+  const { behandling, aktivitet } = loaderData;
 
   return (
     <div className="aktivitet">
-      {/* This route only shows when no aktivitet type matches (fallback) */}
       <Box
         paddingBlock="8 0"
         style={{ display: "flex", justifyContent: "center" }}
@@ -81,7 +81,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
         </Alert>
       </Box>
 
-      <Outlet />
+      <Outlet context={{ behandling, aktivitet }} />
     </div>
   );
 }
