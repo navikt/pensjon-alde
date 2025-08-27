@@ -3,6 +3,7 @@ import type { BehandlingDTO } from "../../types/behandling";
 import { AktivitetStatus, BehandlingStatus } from "../../types/behandling";
 import { useFetch } from "../../utils/use-fetch";
 import { Outlet, Link, useParams, useNavigate, redirect } from "react-router";
+import { buildAktivitetRedirectUrl } from "../../utils/handler-discovery";
 import {
   Stepper,
   Box,
@@ -12,9 +13,11 @@ import {
   Tag,
   VStack,
   CopyButton,
+  Loader,
 } from "@navikt/ds-react";
 import React, { useEffect, useRef } from "react";
 import { formatDateToNorwegian } from "../../utils/date";
+import { useRevalidator } from "react-router";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -62,11 +65,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { behandlingsId, behandling } = loaderData;
+  const { behandling } = loaderData;
   const params = useParams();
   const currentAktivitetId = params.aktivitetId;
   const navigate = useNavigate();
   const stepperContainerRef = useRef<HTMLDivElement>(null);
+  const revalidator = useRevalidator();
 
   // Prepare the visible aktiviteter (sorted and filtered)
   const visibleAktiviteter = React.useMemo(
@@ -83,6 +87,26 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         (a) => a.aktivitetId?.toString() === currentAktivitetId,
       )
     : 0;
+
+  const behandlingJobber =
+    behandling.status === BehandlingStatus.UNDER_BEHANDLING &&
+    !behandling.utsattTil;
+
+  useEffect(() => {
+    if (behandlingJobber) {
+      let pollCount = 0;
+      const intervalId = setInterval(() => {
+        pollCount++;
+        revalidator.revalidate();
+
+        if (pollCount >= 10) {
+          clearInterval(intervalId);
+        }
+      }, 1000); // Refetch every second
+
+      return () => clearInterval(intervalId);
+    }
+  }, [behandlingJobber, revalidator]);
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {
@@ -125,18 +149,22 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           </VStack>
           <VStack>
             <Label size="small">Status</Label>
-            <Tag
-              variant={
-                behandling.status === BehandlingStatus.FERDIG
-                  ? "success"
-                  : behandling.status === BehandlingStatus.FEILET
-                    ? "error"
-                    : "info"
-              }
-              size="small"
-            >
-              {behandling.status}
-            </Tag>
+            {behandlingJobber ? (
+              <Loader size="small" title="Jobber" variant="interaction" />
+            ) : (
+              <Tag
+                variant={
+                  behandling.status === BehandlingStatus.FERDIG
+                    ? "success"
+                    : behandling.status === BehandlingStatus.FEILET
+                      ? "error"
+                      : "info"
+                }
+                size="small"
+              >
+                {behandling.status}
+              </Tag>
+            )}
           </VStack>
           <VStack>
             <Label size="small">Opprettet</Label>
@@ -187,7 +215,18 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 <Stepper.Step
                   key={aktivitet.uuid}
                   completed={aktivitet.status === AktivitetStatus.FULLFORT}
-                  onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
+                  onClick={() => {
+                    const implementationUrl = buildAktivitetRedirectUrl(
+                      params.behandlingsId!,
+                      aktivitet.aktivitetId!.toString(),
+                      loaderData.behandling,
+                      aktivitet,
+                    );
+                    // Navigate to the implementation URL if it exists, otherwise to the base aktivitet URL
+                    navigate(
+                      implementationUrl || `aktivitet/${aktivitet.aktivitetId}`,
+                    );
+                  }}
                   style={{ cursor: "pointer" }}
                   data-step-index={index}
                 >
@@ -198,7 +237,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           </div>
         </Box>
       )}
-      <Outlet context={{ behandling }} />
+      {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
     </div>
   );
 }

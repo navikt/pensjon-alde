@@ -34,7 +34,7 @@ function discoverBehandlingRoutes(): RouteConfigEntry[] {
         // The URL pattern: /behandling/:behandlingsId/aktivitet/:aktivitetId/{behandlingName}/{aktivitetName}
         routes.push(
           route(
-            `aktivitet/:aktivitetId/${behandlingName}/${aktivitetName}`,
+            `${behandlingName}/${aktivitetName}`,
             `behandlinger/${behandlingName}/${aktivitetName}/index.tsx`,
           ),
         );
@@ -55,8 +55,7 @@ export default [
     route(
       "aktivitet/:aktivitetId",
       "routes/behandling/$behandlingsId/aktivitet/$aktivitetId.tsx",
+      dynamicAktivitetRoutes,
     ),
-    // All dynamically discovered aktivitet implementation routes
-    ...dynamicAktivitetRoutes,
   ]),
 ] satisfies RouteConfig;

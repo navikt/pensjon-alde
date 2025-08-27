@@ -1,4 +1,4 @@
-import { useLoaderData, Form } from "react-router";
+import { useLoaderData, Form, redirect } from "react-router";
 import { Checkbox, Button, DatePicker, useDatepicker } from "@navikt/ds-react";
 import { useFetch } from "~/utils/use-fetch";
 import { parse, formatISO } from "date-fns";
@@ -9,6 +9,8 @@ import type {
 } from "./samboer-types";
 import type { Route } from "./+types";
 import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
+import { useOutletContext } from "react-router";
+import type { AktivitetOutletContext } from "~/types/aktivitetOutletContext";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
@@ -86,16 +88,8 @@ export async function action({
     throw new Error(`Failed to save samboer vurdering: ${response.status}`);
   }
 
-  const vurdertValue = formData.get("vurdert");
-
-  return {
-    success: true,
-    vurdert: vurdertValue,
-    message:
-      vurdertValue === "AVBRUTT"
-        ? "Samboerforhold avvist"
-        : "Samboervurdering lagret",
-  };
+  // Redirect back to the aktivitet to trigger loader revalidation
+  return redirect(`/behandling/${behandlingsId}`);
 }
 
 export default function VurdereSamboer({ loaderData }: Route.ComponentProps) {
@@ -103,21 +97,12 @@ export default function VurdereSamboer({ loaderData }: Route.ComponentProps) {
     defaultSelected: undefined,
   });
 
-  const { aktivitet, samboerInformasjon, vurdering } =
-    useLoaderData<typeof loader>();
-
+  const { samboerInformasjon, vurdering } = useLoaderData<typeof loader>();
+  const { aktivitet } = useOutletContext<AktivitetOutletContext>();
   const detailsContent = (
     <>
       <pre>{JSON.stringify(vurdering, null, 2)}</pre>
       <pre>{JSON.stringify(samboerInformasjon, null, 2)}</pre>
-      {samboerInformasjon?.epsPersongrunnlagListeDto.map((samboer) => (
-        <div key={samboer.fnr}>
-          <h3>{samboer.navnTilPerson.etternavn}</h3>
-          <p>{samboer.navnTilPerson.fornavn}</p>
-        </div>
-      ))}
-      <p>Her kan du vurdere samboerforhold for søkeren.</p>
-      <p>Informasjon om samboer vil bli lagt til her...</p>
     </>
   );
 

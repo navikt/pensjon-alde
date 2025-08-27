@@ -19,10 +19,21 @@ export interface RouteMapping {
 }
 
 /**
+ * Cache for available handlers to avoid re-computing on every call
+ */
+let cachedHandlers: RouteMapping[] | null = null;
+
+/**
  * Get all available handler implementations by scanning the folder structure
  * The folder names ARE the handler names - no configuration needed
+ * Results are cached after first call for performance
  */
 export function getAvailableHandlers(): RouteMapping[] {
+  // Return cached result if available
+  if (cachedHandlers !== null) {
+    return cachedHandlers;
+  }
+
   const mappings: RouteMapping[] = [];
 
   // Use import.meta.glob to discover all aktivitet implementations
@@ -46,6 +57,8 @@ export function getAvailableHandlers(): RouteMapping[] {
     });
   }
 
+  // Cache the result for future calls
+  cachedHandlers = mappings;
   return mappings;
 }
 
