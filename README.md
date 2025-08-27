@@ -45,17 +45,26 @@ npm run test:watch # Kjør tester i watch-modus
 npm run typecheck  # TypeScript typesjekking
 ```
 
-## Prosjektstruktur
+## Testdata
 
-```
-app/
-├── behandlinger/           # HER JOBBER MAN SOM OFTES! Alle aktivitet-implementasjoner
-│   └── alderspensjon-soknad/
-│       └── vurder-samboer/
-├── routes/                 # React Router routes
-├── types/                  # TypeScript types
-└── mocks/                  # Mock-data for utvikling
-```
+### Lag behandling for Førstegangssøknad og VurdereSamboer aktivitet
+
+1. Opprett en person i [Dolly](https://dolly.ekstern.dev.nav.no/)
+   - Alder 62+
+2. Norsk bank
+   - Tilfeldig kontonr
+3. Bostedsadresse
+   - Tilfeldig adresse, eventuelt flere adresser for mer visning i Alde
+4. Familierelasjoner - Sivilstand (har partner)
+   - Samboer fra gitt dato. Eventuelt flere relasjoner
+5. Pensjon
+   - Har inntekt (POPP) - Gi nok inntekt (1980-2023, 700 000)
+   - Har alderspensjon (Alderspensjon)
+   - SØKNAD , (EPS inntekt 700 000)
+
+
+
+
 
 ## For utviklere
 
