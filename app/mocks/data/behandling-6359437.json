@@ -1,0 +1,71 @@
+{
+  "behandlingId": 6359437,
+  "type": "FleksibelApSakBehandling",
+  "handlerName": "alderspensjon-soknad",
+  "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
+  "sisteKjoring": "2025-08-26T16:49:34.37642",
+  "utsattTil": "2025-08-27T16:49:34.383125",
+  "opprettet": "2025-08-26T16:49:29.7398",
+  "stoppet": null,
+  "status": "UNDER_BEHANDLING",
+  "aktiviteter": [
+    {
+      "aktivitetId": 6020941,
+      "type": "FleksibelApSakA202FinnSamboerInformasjonAktivitet",
+      "opprettet": "2025-08-26T16:49:34.297346",
+      "handlerName": null,
+      "friendlyName": null,
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-08-26T16:49:34.312694",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 6020942,
+      "type": "FleksibelApSakA203VurderSamboerAktivitet",
+      "opprettet": "2025-08-26T16:49:34.364857",
+      "handlerName": "vurder-samboer",
+      "friendlyName": "Vurder samboer",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-08-26T16:49:34.380546",
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": "2025-08-27T16:49:34.383125"
+    },
+    {
+      "aktivitetId": 6020940,
+      "type": "FleksibelApSakA201SettBrukPaRettPersongrunnlagAktivitet",
+      "opprettet": "2025-08-26T16:49:34.071661",
+      "handlerName": null,
+      "friendlyName": null,
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-08-26T16:49:34.271477",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 6020938,
+      "type": "FleksibelApSakA101SettBehandlingstypeAutoAktivitet",
+      "opprettet": "2025-08-26T16:49:33.325307",
+      "handlerName": null,
+      "friendlyName": null,
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-08-26T16:49:33.361631",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 6020939,
+      "type": "FleksibelApSakA102KontrollerInformasjonsgrunnlagAktivitet",
+      "opprettet": "2025-08-26T16:49:33.363559",
+      "handlerName": null,
+      "friendlyName": "Kontroller informasjonsgrunnlag",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-08-26T16:49:33.378657",
+      "status": "FULLFORT",
+      "utsattTil": null
+    }
+  ],
+  "fnr": null,
+  "sakId": 23077283,
+  "kravId": 46365419
+}

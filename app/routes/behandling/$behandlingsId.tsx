@@ -17,11 +17,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingsId } = params;
   const url = new URL(request.url);
 
-  const backendUrl = process.env.BACKEND_URL!;
+  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
 
-  const response = await useFetch(
-    `${backendUrl}/api/behandling/${behandlingsId}`,
-  );
+  const response = await useFetch(`${backendUrl}/behandling/${behandlingsId}`);
 
   if (!response.ok) {
     throw new Error(

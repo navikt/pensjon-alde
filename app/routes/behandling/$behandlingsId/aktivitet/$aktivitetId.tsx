@@ -31,10 +31,8 @@ async function getFolderForType(aktivitetType: string): Promise<string | null> {
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
-
-  const response = await useFetch(
-    `${process.env.BACKEND_URL!}/api/behandling/${behandlingsId}`,
-  );
+  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+  const response = await useFetch(`${backendUrl}/behandling/${behandlingsId}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch behandling: ${response.status}`);
   }

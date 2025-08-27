@@ -18,7 +18,7 @@ function loadMockData(filename: string) {
 // Define handlers for API endpoints
 const handlers = [
   // GET /api/behandling/:id - match any host
-  http.get("*/api/behandling/:id", ({ params, request }) => {
+  http.get("*/api/saksbehandling/alde/:id", ({ params, request }) => {
     const { id } = params;
     console.log(`🎯 MSW intercepted request to: ${request.url}`);
 
