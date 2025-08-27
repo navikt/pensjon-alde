@@ -7,6 +7,9 @@
     "dev": "react-router dev",
     "dev:mock": "NODE_ENV=mock react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {

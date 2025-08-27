@@ -5,6 +5,7 @@ import { useFetch } from "../../../../utils/use-fetch";
 import { BodyShort, Detail, Alert, Heading, Box } from "@navikt/ds-react";
 import { Outlet, redirect } from "react-router";
 import { useOutletContext } from "react-router";
+import { buildAktivitetRedirectUrl } from "~/utils/handler-discovery";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -13,25 +14,11 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-// Simple helper to find matching aktivitet folder
-async function getFolderForType(aktivitetType: string): Promise<string | null> {
-  const aktiviteterModules = import.meta.glob(
-    "../../../../aktiviteter/*/index.tsx",
-    { eager: true },
-  );
-
-  for (const [path, module] of Object.entries(aktiviteterModules)) {
-    const folderName = path.split("/")[5];
-    if ((module as any).handles?.includes(aktivitetType)) {
-      return folderName;
-    }
-  }
-  return null;
-}
-
 export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
   const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+
+  // Fetch behandling from API using behandlingId
   const response = await useFetch(`${backendUrl}/behandling/${behandlingsId}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch behandling: ${response.status}`);
@@ -39,6 +26,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
   const behandling: BehandlingDTO = await response.json();
 
+  // Find the specific aktivitet using aktivitetId
   const aktivitet = behandling.aktiviteter.find(
     (a: AktivitetDTO) => a.aktivitetId?.toString() === aktivitetId,
   );
@@ -47,13 +35,21 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Error(`Aktivitet ${aktivitetId} not found`);
   }
 
-  const folderName = await getFolderForType(aktivitet.type);
-  if (folderName) {
-    throw redirect(
-      `/behandling/${behandlingsId}/aktivitet/${aktivitetId}/${folderName}`,
-    );
+  // Use the dynamic handler discovery to determine if there's a UI implementation
+  // This uses the composite key of behandling.handlerName + aktivitet.handlerName
+  const redirectUrl = buildAktivitetRedirectUrl(
+    behandlingsId,
+    aktivitetId,
+    behandling,
+    aktivitet,
+  );
+
+  if (redirectUrl) {
+    // Redirect to the specific implementation
+    throw redirect(redirectUrl);
   }
 
+  // If no handler implementation exists, show the default "not implemented" view
   return { behandling, aktivitet };
 }
 
@@ -66,7 +62,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
         paddingBlock="8 0"
         style={{ display: "flex", justifyContent: "center" }}
       >
-        <Alert variant="info" style={{ maxWidth: "500px", width: "100%" }}>
+        <Alert variant="info" style={{ maxWidth: "600px", width: "100%" }}>
           <Heading spacing size="small" level="3">
             Aktivitet ikke implementert enda
           </Heading>
@@ -76,6 +72,21 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
           <Detail>
             <strong>Type:</strong> {aktivitet.type}
           </Detail>
+          {aktivitet.handlerName && (
+            <Detail>
+              <strong>Aktivitet Handler:</strong> {aktivitet.handlerName}
+            </Detail>
+          )}
+          {behandling.handlerName && (
+            <Detail>
+              <strong>Behandling Handler:</strong> {behandling.handlerName}
+            </Detail>
+          )}
+          {!aktivitet.handlerName && (
+            <Detail>
+              <strong>Info:</strong> Denne aktiviteten kjører kun i backend
+            </Detail>
+          )}
         </Alert>
       </Box>
 

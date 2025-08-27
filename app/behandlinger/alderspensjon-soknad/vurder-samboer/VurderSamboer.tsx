@@ -1,19 +1,10 @@
-import React, { useState } from "react";
-import {
-  useParams,
-  useLocation,
-  useNavigate,
-  Outlet,
-  useLoaderData,
-  Form,
-} from "react-router";
+import { useLoaderData, Form } from "react-router";
 import { Checkbox, Button, DatePicker, useDatepicker } from "@navikt/ds-react";
-import type { AktivitetDTO } from "../../types/behandling";
-import AktivitetVurderingLayout from "../../components/shared/AktivitetVurderingLayout";
-import DecisionForm from "../../components/shared/DecisionForm";
 import { useFetch } from "~/utils/use-fetch";
 import type { SamboerInformasjonHolder } from "./samboer-types";
 import type { Route } from "./+types";
+import type { AktivitetDTO } from "~/types/behandling";
+import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
 
 interface VurdereSamboerProps {
   aktivitet?: AktivitetDTO;
@@ -89,6 +80,8 @@ export default function VurdereSamboer({ loaderData }: Route.ComponentProps) {
   const { datepickerProps, inputProps } = useDatepicker({
     defaultSelected: undefined,
   });
+
+  const { aktivitet } = useLoaderData();
 
   const detailsContent = (
     <>

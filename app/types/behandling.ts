@@ -5,6 +5,7 @@ export enum BehandlingStatus {
   FEILET = "FEILET",
   STOPPET = "STOPPET",
   UTSATT = "UTSATT",
+  UNDER_BEHANDLING = "UNDER_BEHANDLING",
 }
 
 export enum Prioritet {
@@ -43,39 +44,43 @@ export interface AktivitetDTO {
   aktivitetId: number | null;
   type: string;
   opprettet: string; // LocalDateTime as ISO string
-  uuid: string;
-  funksjonellIdentifikator: string;
+  handlerName: string | null;
+  friendlyName: string | null;
   antallGangerKjort: number;
   sisteAktiveringsdato: string; // LocalDateTime as ISO string
   status: AktivitetStatus;
   utsattTil: string | null; // LocalDateTime as ISO string
-  ventPaForegaendeAktiviteter: boolean;
+  uuid?: string;
+  funksjonellIdentifikator?: string;
+  ventPaForegaendeAktiviteter?: boolean;
 }
 
 export interface BehandlingDTO {
   behandlingId: number | null;
   type: string;
-  uuid: string;
-  funksjonellIdentifikator: string;
-  forrigeBehandlingId: number | null;
+  handlerName: string | null;
+  friendlyName: string | null;
   sisteKjoring: string; // LocalDateTime as ISO string
   utsattTil: string | null; // LocalDateTime as ISO string
   opprettet: string; // LocalDateTime as ISO string
-  planlagtStartet: string | null; // LocalDateTime as ISO string
   stoppet: string | null; // LocalDateTime as ISO string
   status: BehandlingStatus;
-  prioritet: Prioritet;
-  behandlingKjoringer: BehandlingKjoringDTO[];
   aktiviteter: AktivitetDTO[];
-  ansvarligTeam: Team | null;
   fnr: string | null;
   sakId: number | null;
   kravId: number | null;
-  vedtakId: number | null;
-  journalpostId: string | null;
-  parametere: Record<string, string | null>;
-  debugJson: string | null;
-  muligeKontrollpunkt: KontrollpunktDecode[];
+  uuid?: string;
+  funksjonellIdentifikator?: string;
+  forrigeBehandlingId?: number | null;
+  planlagtStartet?: string | null; // LocalDateTime as ISO string
+  prioritet?: Prioritet;
+  behandlingKjoringer?: BehandlingKjoringDTO[];
+  ansvarligTeam?: Team | null;
+  vedtakId?: number | null;
+  journalpostId?: string | null;
+  parametere?: Record<string, string | null>;
+  debugJson?: string | null;
+  muligeKontrollpunkt?: KontrollpunktDecode[];
 }
 
 export interface BehandlingApiResponse {

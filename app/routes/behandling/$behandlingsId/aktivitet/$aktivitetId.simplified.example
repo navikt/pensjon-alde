@@ -1,0 +1,147 @@
+import type { Route } from "./+types/$aktivitetId";
+import type { AktivitetDTO, BehandlingDTO } from "../../../../types/behandling";
+import { useFetch } from "../../../../utils/use-fetch";
+import { BodyShort, Alert, Heading, Box, Loader } from "@navikt/ds-react";
+import { lazy, Suspense } from "react";
+import { Outlet } from "react-router";
+
+export function meta({ params }: Route.MetaArgs) {
+  return [
+    { title: `Aktivitet ${params.aktivitetId}` },
+    { name: "description", content: "Aktivitet detaljer" },
+  ];
+}
+
+export async function loader({ params }: Route.LoaderArgs) {
+  const { behandlingsId, aktivitetId } = params;
+  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+
+  // Fetch behandling from API using behandlingId
+  const response = await useFetch(`${backendUrl}/behandling/${behandlingsId}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch behandling: ${response.status}`);
+  }
+
+  const behandling: BehandlingDTO = await response.json();
+
+  // Find the specific aktivitet using aktivitetId
+  const aktivitet = behandling.aktiviteter.find(
+    (a: AktivitetDTO) => a.aktivitetId?.toString() === aktivitetId,
+  );
+
+  if (!aktivitet) {
+    throw new Error(`Aktivitet ${aktivitetId} not found`);
+  }
+
+  // Return data - no redirect needed!
+  return { behandling, aktivitet };
+}
+
+// Component to handle dynamic loading of aktivitet implementations
+function DynamicAktivitet({
+  behandling,
+  aktivitet,
+}: {
+  behandling: BehandlingDTO;
+  aktivitet: AktivitetDTO;
+}) {
+  // Check if this aktivitet has a UI implementation
+  if (!aktivitet.handlerName || !behandling.handlerName) {
+    return <NotImplementedMessage aktivitet={aktivitet} behandling={behandling} />;
+  }
+
+  // Dynamically import the correct component based on handler names
+  const AktivitetComponent = lazy(async () => {
+    try {
+      // Try to import the specific implementation
+      const module = await import(
+        `../../../../behandlinger/${behandling.handlerName}/${aktivitet.handlerName}/index.tsx`
+      );
+      return { default: module.default };
+    } catch (error) {
+      // If import fails, show not implemented message
+      console.log(`No implementation found for ${behandling.handlerName}/${aktivitet.handlerName}`);
+      return {
+        default: () => <NotImplementedMessage aktivitet={aktivitet} behandling={behandling} />,
+      };
+    }
+  });
+
+  return (
+    <Suspense
+      fallback={
+        <Box padding="8" style={{ display: "flex", justifyContent: "center" }}>
+          <Loader size="xlarge" title="Laster aktivitet..." />
+        </Box>
+      }
+    >
+      <AktivitetComponent />
+    </Suspense>
+  );
+}
+
+// Reusable component for "not implemented" state
+function NotImplementedMessage({
+  aktivitet,
+  behandling,
+}: {
+  aktivitet: AktivitetDTO;
+  behandling: BehandlingDTO;
+}) {
+  return (
+    <Box paddingBlock="8 0" style={{ display: "flex", justifyContent: "center" }}>
+      <Alert variant="info" style={{ maxWidth: "600px", width: "100%" }}>
+        <Heading spacing size="small" level="3">
+          Aktivitet ikke implementert enda
+        </Heading>
+        <BodyShort spacing>
+          {aktivitet.handlerName
+            ? "Implementasjon for denne aktiviteten er ikke ferdig enda."
+            : "Denne aktiviteten kjører kun i backend."}
+        </BodyShort>
+        {aktivitet.type && (
+          <BodyShort size="small">
+            <strong>Type:</strong> {aktivitet.type}
+          </BodyShort>
+        )}
+        {aktivitet.friendlyName && (
+          <BodyShort size="small">
+            <strong>Navn:</strong> {aktivitet.friendlyName}
+          </BodyShort>
+        )}
+        {process.env.NODE_ENV === "development" && (
+          <>
+            {behandling.handlerName && (
+              <BodyShort size="small">
+                <strong>Behandling handler:</strong> {behandling.handlerName}
+              </BodyShort>
+            )}
+            {aktivitet.handlerName && (
+              <BodyShort size="small">
+                <strong>Aktivitet handler:</strong> {aktivitet.handlerName}
+              </BodyShort>
+            )}
+            <BodyShort size="small" style={{ marginTop: "1rem", fontStyle: "italic" }}>
+              For å implementere denne aktiviteten, opprett:
+              <br />
+              <code>
+                app/behandlinger/{behandling.handlerName}/{aktivitet.handlerName}/index.tsx
+              </code>
+            </BodyShort>
+          </>
+        )}
+      </Alert>
+    </Box>
+  );
+}
+
+export default function Aktivitet({ loaderData }: Route.ComponentProps) {
+  const { behandling, aktivitet } = loaderData;
+
+  return (
+    <div className="aktivitet">
+      <DynamicAktivitet behandling={behandling} aktivitet={aktivitet} />
+      <Outlet context={{ behandling, aktivitet }} />
+    </div>
+  );
+}

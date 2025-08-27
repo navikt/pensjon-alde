@@ -168,6 +168,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             >
               {behandling.aktiviteter
                 .sort((a, b) => a.type.localeCompare(b.type))
+                .filter((aktivitet) => aktivitet.friendlyName)
                 .map((aktivitet, index) => (
                   <Stepper.Step
                     key={aktivitet.uuid}
@@ -178,7 +179,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     style={{ cursor: "pointer" }}
                     data-step-index={index}
                   >
-                    {aktivitet.type}
+                    {aktivitet.friendlyName!}
                   </Stepper.Step>
                 ))}
             </Stepper>
