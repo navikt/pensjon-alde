@@ -1,11 +1,9 @@
 import type { Route } from "./+types/$aktivitetId";
-import type { AktivitetDTO, BehandlingDTO } from "../../../../types/behandling";
-import type { AktivitetOutletContext } from "../../../../types/aktivitetOutletContext";
-import { useFetch } from "../../../../utils/use-fetch";
 import { BodyShort, Detail, Alert, Heading, Box } from "@navikt/ds-react";
 import { Outlet, redirect } from "react-router";
-import { useOutletContext } from "react-router";
+import type { AktivitetDTO, BehandlingDTO } from "~/types/behandling";
 import { buildAktivitetRedirectUrl } from "~/utils/handler-discovery";
+import { useFetch } from "~/utils/use-fetch";
 
 export function meta({ params }: Route.MetaArgs) {
   return [

@@ -3,13 +3,7 @@ import { Checkbox, Button, DatePicker, useDatepicker } from "@navikt/ds-react";
 import { useFetch } from "~/utils/use-fetch";
 import type { SamboerInformasjonHolder } from "./samboer-types";
 import type { Route } from "./+types";
-import type { AktivitetDTO } from "~/types/behandling";
 import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
-
-interface VurdereSamboerProps {
-  aktivitet?: AktivitetDTO;
-  samboerdata?: SamboerInformasjonHolder;
-}
 
 export async function loader({ params }: Route.LoaderArgs) {
   const { behandlingsId } = params;

@@ -1,6 +1,6 @@
 # AI Agent Instructions - ALDE Test Project
 
-Welcome, AI colleague! This document contains essential information about the ALDE Test project architecture and conventions. Please read this before making any changes.
+Welcome, AI colleague! This document contains essential information about the ALDE project architecture and conventions. Please read this before making any changes.
 
 ## Project Overview
 
@@ -67,10 +67,21 @@ Check existing implementations in `app/behandlinger/alderspensjon-soknad/vurder-
 
 ### NEVER DO:
 - ❌ **Add code comments** unless explicitly requested
+- ❌ **Install dependencies** - instruct the user to do it if needed
 - ❌ Create routes manually (they're auto-discovered)
 - ❌ Change folder names without checking API handler names
 - ❌ Use underscores in folder names (use hyphens)
 - ❌ Use plain HTML elements when Aksel components exist
+
+## Styling
+
+Place CSS files in the aktivitet folder for component-specific styling:
+```
+app/behandlinger/alderspensjon-soknad/vurder-samboer/
+├── index.tsx
+├── VurderSamboer.tsx
+└── vurder-samboer.css  # Local styles for this aktivitet
+```
 
 ## Common Patterns
 
