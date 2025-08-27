@@ -47,10 +47,13 @@ Create folders matching EXACTLY the handler names:
 app/behandlinger/alderspensjon-soknad/vurder-samboer/
 ```
 
-### Step 3: Create index.tsx
-Export your component, loader, and action from index.tsx
+### Step 3: Create NameOfActivity.tsx
+Create capitalized name of activity and containing loader, action and component (as react-router 7). Just empty boilerplate action and loader if nothing else is specified.
 
-### Step 4: Implement Component
+### Step 4: Create index.tsx
+Export your component, loader, and action from index.tsx, this will be the import path.
+
+### Step 5: Implement Component
 Check existing implementations in `app/behandlinger/alderspensjon-soknad/vurder-samboer/` for reference on:
 - How to structure a component with loader and action
 - How to use React Router 7 patterns
@@ -86,7 +89,7 @@ app/behandlinger/alderspensjon-soknad/vurder-samboer/
 ## Common Patterns
 
 See `app/behandlinger/alderspensjon-soknad/vurder-samboer/VurderSamboer.tsx` for examples of:
-- API calls using `useFetch` 
+- API calls using `useFetch`
 - Form handling with React Router's `Form` component
 - Import patterns for Aksel components, types, and utilities
 - How to structure loader and action functions
