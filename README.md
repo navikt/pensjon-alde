@@ -17,9 +17,7 @@ cp .env.example .env
 ```
 
 Hent access token fra:
-```
-https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-fss:pensjon-q2:pensjon-pen-q2
-```
+[https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-fss:pensjon-q2:pensjon-pen-q2](https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-fss:pensjon-q2:pensjon-pen-q2)
 
 Oppdater `ACCESS_TOKEN` i `.env` med token fra lenken over.
 
