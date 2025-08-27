@@ -3,8 +3,17 @@ import type { BehandlingDTO } from "../../types/behandling";
 import { AktivitetStatus, BehandlingStatus } from "../../types/behandling";
 import { useFetch } from "../../utils/use-fetch";
 import { Outlet, Link, useParams, useNavigate, redirect } from "react-router";
-import { Stepper, Box, HStack, BodyShort, Label, Tag } from "@navikt/ds-react";
+import {
+  Stepper,
+  Box,
+  HStack,
+  BodyShort,
+  Label,
+  Tag,
+  VStack,
+} from "@navikt/ds-react";
 import React, { useEffect, useRef } from "react";
+import { formatDateToNorwegian } from "../../utils/date";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -58,8 +67,18 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
   const stepperContainerRef = useRef<HTMLDivElement>(null);
 
+  // Prepare the visible aktiviteter (sorted and filtered)
+  const visibleAktiviteter = React.useMemo(
+    () =>
+      behandling.aktiviteter
+        .slice()
+        .sort((a, b) => a.type.localeCompare(b.type))
+        .filter((aktivitet) => aktivitet.friendlyName),
+    [behandling.aktiviteter],
+  );
+
   const activeStepIndex = currentAktivitetId
-    ? behandling.aktiviteter.findIndex(
+    ? visibleAktiviteter.findIndex(
         (a) => a.aktivitetId?.toString() === currentAktivitetId,
       )
     : 0;
@@ -99,11 +118,11 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     <div>
       <Box padding="4" background="surface-subtle" borderWidth="1 0">
         <HStack gap="6" align="center">
-          <div>
-            <Label size="small">Type</Label>
-            <BodyShort>{behandling.type}</BodyShort>
-          </div>
-          <div>
+          <VStack>
+            <Label size="small">Behandling</Label>
+            <BodyShort>{behandling.friendlyName}</BodyShort>
+          </VStack>
+          <VStack>
             <Label size="small">Status</Label>
             <Tag
               variant={
@@ -117,40 +136,17 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             >
               {behandling.status}
             </Tag>
-          </div>
-          <div>
-            <Label size="small">Prioritet</Label>
-            <Tag
-              variant={
-                behandling.prioritet === "KRITISK"
-                  ? "error"
-                  : behandling.prioritet === "HOY"
-                    ? "warning"
-                    : "neutral"
-              }
-              size="small"
-            >
-              {behandling.prioritet}
-            </Tag>
-          </div>
-          <div>
+          </VStack>
+          <VStack>
             <Label size="small">Opprettet</Label>
             <BodyShort size="small">
-              {new Date(behandling.opprettet).toLocaleDateString()}
+              {formatDateToNorwegian(behandling.opprettet)}
             </BodyShort>
-          </div>
-          {behandling.ansvarligTeam && (
-            <div>
-              <Label size="small">Ansvarlig team</Label>
-              <BodyShort size="small">
-                {behandling.ansvarligTeam.navn}
-              </BodyShort>
-            </div>
-          )}
+          </VStack>
         </HStack>
       </Box>
 
-      {behandling.aktiviteter.length > 0 && (
+      {visibleAktiviteter.length > 0 && (
         <Box padding="space-12">
           <div
             ref={stepperContainerRef}
@@ -166,22 +162,17 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               activeStep={activeStepIndex + 1}
               style={{ minWidth: "max-content" }}
             >
-              {behandling.aktiviteter
-                .sort((a, b) => a.type.localeCompare(b.type))
-                .filter((aktivitet) => aktivitet.friendlyName)
-                .map((aktivitet, index) => (
-                  <Stepper.Step
-                    key={aktivitet.uuid}
-                    completed={aktivitet.status === AktivitetStatus.FULLFORT}
-                    onClick={() =>
-                      navigate(`aktivitet/${aktivitet.aktivitetId}`)
-                    }
-                    style={{ cursor: "pointer" }}
-                    data-step-index={index}
-                  >
-                    {aktivitet.friendlyName!}
-                  </Stepper.Step>
-                ))}
+              {visibleAktiviteter.map((aktivitet, index) => (
+                <Stepper.Step
+                  key={aktivitet.uuid}
+                  completed={aktivitet.status === AktivitetStatus.FULLFORT}
+                  onClick={() => navigate(`aktivitet/${aktivitet.aktivitetId}`)}
+                  style={{ cursor: "pointer" }}
+                  data-step-index={index}
+                >
+                  {aktivitet.friendlyName!}
+                </Stepper.Step>
+              ))}
             </Stepper>
           </div>
         </Box>

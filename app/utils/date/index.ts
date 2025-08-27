@@ -1,0 +1,1 @@
+export { formatDateToNorwegian } from "./formatDateToNorwegian";
