@@ -1,87 +1,99 @@
-# Welcome to React Router!
+# ALDE
 
-A modern, production-ready template for building full-stack React applications using React Router.
+## Kom i gang
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
-
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
-## Getting Started
-
-### Installation
-
-Install the dependencies:
+### Installasjon
 
 ```bash
 npm install
 ```
 
-### Development
+### Miljøvariabler
 
-Start the development server with HMR:
+Kopier `.env.example` til `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Hent access token fra:
+```
+https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-fss:pensjon-q2:pensjon-pen-q2
+```
+
+Oppdater `ACCESS_TOKEN` i `.env` med token fra lenken over.
+
+### Utvikling
+
+Start utviklingsserver:
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Med mock-data:
 
-## Building for Production
+```bash
+npm run dev:mock
+```
 
-Create a production build:
+Applikasjonen kjører på `http://localhost:5173`
+
+### Testing
+
+```bash
+npm test           # Kjør tester
+npm run test:watch # Kjør tester i watch-modus
+npm run typecheck  # TypeScript typesjekking
+```
+
+## Prosjektstruktur
+
+```
+app/
+├── behandlinger/           # HER JOBBER MAN SOM OFTES! Alle aktivitet-implementasjoner
+│   └── alderspensjon-soknad/
+│       └── vurder-samboer/
+├── routes/                 # React Router routes
+├── types/                  # TypeScript types
+└── mocks/                  # Mock-data for utvikling
+```
+
+## For utviklere
+
+### Legge til ny aktivitet
+
+1. **Sjekk API-responsen** for handler-navn
+2. **Opprett mappestruktur** som matcher handler-navn eksakt:
+   ```
+   app/behandlinger/{behandling-handlerName}/{aktivitet-handlerName}/
+   ```
+3. **Implementer komponenten** - se eksisterende implementasjoner for eksempler
+
+### Viktige regler
+
+- Mappenavn MÅ matche handler-navn fra API eksakt (case-sensitive)
+- Bruk NAV's Aksel-komponenter (`@navikt/ds-react`)
+- Eksporter fra `index.tsx`: `export { default, loader, action } from "./DinKomponent"`
+
+## Bygg for produksjon
 
 ```bash
 npm run build
+npm start
 ```
 
-## Deployment
+## Arkitektur
 
-### Docker Deployment
+Systemet bruker en "strangler pattern" for å gradvis erstatte noen aktiviteter i PSAK. Nye behandlinger og aktiviteter legges til etter hvert som de migreres.
 
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+URL-struktur:
+```
+/behandling/{behandlingId}/aktivitet/{aktivitetId}/{behandling-mappe}/{aktivitet-mappe}
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+Routing skjer automatisk basert på mappestruktur - ingen konfigurasjon nødvendig!
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+## Se også
 
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+- [AGENTS.md](./AGENTS.md) - Detaljerte instruksjoner for AI-assistenter
