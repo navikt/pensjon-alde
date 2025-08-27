@@ -46,6 +46,7 @@ export function initializeTokenFromEnv(): void {
  * Use this instead of regular fetch in loaders and actions
  */
 export async function useFetch(
+  token: string,
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> {
@@ -58,8 +59,6 @@ export async function useFetch(
         ? input.toString()
         : input.url;
   const method = init?.method || "GET";
-
-  const token = getAccessToken();
 
   // Ensure init object exists
   const modifiedInit: RequestInit = init || {};

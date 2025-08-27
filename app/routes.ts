@@ -48,8 +48,22 @@ function discoverBehandlingRoutes(): RouteConfigEntry[] {
 // Generate routes dynamically at build time
 const dynamicAktivitetRoutes = discoverBehandlingRoutes();
 
+let authRoutes: RouteConfigEntry[];
+
+if (process.env.ENABLE_LOCAL_DEVELOPMENT) {
+  authRoutes = [
+    route('/auth/callback', './auth/callback.tsx'),
+    route('/auth/microsoft', './auth/microsoft.tsx'),
+  ];
+} else {
+  authRoutes = []
+}
+
 export default [
   index("routes/home.tsx"),
+
+  ...authRoutes,
+
   route("/behandling/:behandlingsId", "routes/behandling/$behandlingsId.tsx", [
     // The main aktivitet route that handles redirection to the correct implementation
     route(

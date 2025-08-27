@@ -10,16 +10,15 @@ npm install
 
 ### Miljøvariabler
 
-Kopier `.env.example` til `.env`:
+Kjør `fetch-secrets.sh` for å generere en `.env`-fil med miljøoppsett og hemmeligheter:
 
 ```bash
-cp .env.example .env
+./fetch-secrets.sh
 ```
 
-Hent access token fra:
-[https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-fss:pensjon-q2:pensjon-pen-q2](https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-fss:pensjon-q2:pensjon-pen-q2)
-
-Oppdater `ACCESS_TOKEN` i `.env` med token fra lenken over.
+[!NOTE]
+> .env-filen inneholder hemmeligheter og skal ikke deles. Hemmelighetene har
+> begrenset levetid, så du må kjøre skriptet jevnlig (typisk 1–2 ganger per uke).
 
 ### Utvikling
 

@@ -4,5 +4,8 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { reactRouterDevTools } from "react-router-devtools";
 
 export default defineConfig({
-  plugins: [reactRouterDevTools(), reactRouter(), tsconfigPaths()],
+    server: {
+        port: 3000,
+    },
+    plugins: [reactRouterDevTools(), reactRouter(), tsconfigPaths()],
 });

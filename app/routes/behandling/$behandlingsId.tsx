@@ -18,6 +18,7 @@ import {
 import React, { useEffect, useRef } from "react";
 import { formatDateToNorwegian } from "../../utils/date";
 import { useRevalidator } from "react-router";
+import {requireAccessToken} from "~/auth/auth.server";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -30,9 +31,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingsId } = params;
   const url = new URL(request.url);
 
+  const accessToken = await requireAccessToken(request)
   const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
 
-  const response = await useFetch(`${backendUrl}/behandling/${behandlingsId}`);
+  const response = await useFetch(accessToken, `${backendUrl}/behandling/${behandlingsId}`);
 
   if (!response.ok) {
     throw new Error(
