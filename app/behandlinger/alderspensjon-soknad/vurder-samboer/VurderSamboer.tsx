@@ -1,25 +1,47 @@
 import { useLoaderData, Form } from "react-router";
 import { Checkbox, Button, DatePicker, useDatepicker } from "@navikt/ds-react";
 import { useFetch } from "~/utils/use-fetch";
-import type { SamboerInformasjonHolder } from "./samboer-types";
+import { parse, formatISO } from "date-fns";
+import type {
+  SamboerInformasjonHolder,
+  SamboerVurdering,
+  Vurdering,
+} from "./samboer-types";
 import type { Route } from "./+types";
 import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const { behandlingsId } = params;
+  const { behandlingsId, aktivitetId } = params;
 
-  const samboerResponse = await useFetch(
-    `${process.env.BACKEND_URL!}/api/saksbehandling/alder/forstegangsbehandling/${behandlingsId}/sakinfo`,
+  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+
+  const grunnlag = await useFetch(
+    `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/grunnlagsdata`,
   );
 
-  let samboerdata: SamboerInformasjonHolder | null = null;
-  if (samboerResponse.ok) {
-    console.log(samboerResponse);
-    samboerdata = await samboerResponse.json();
+  const vurdering = await useFetch(
+    `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
+  );
+  let parsedGrunnlag;
+  if (grunnlag.ok) {
+    console.log(grunnlag);
+    parsedGrunnlag = (await grunnlag.json()) as {
+      samboerInformasjon: SamboerInformasjonHolder;
+    };
   }
 
+  let parsedVurdering = null;
+  if (vurdering.ok) {
+    parsedVurdering = (await vurdering.json()) as SamboerVurdering;
+  } else if (vurdering.status === 404) {
+    parsedVurdering = null;
+  }
+
+  console.log("response", parsedGrunnlag);
+
   return {
-    samboerdata,
+    samboerInformasjon: parsedGrunnlag?.samboerInformasjon,
+    vurdering: parsedVurdering,
   };
 }
 
@@ -27,30 +49,36 @@ export async function action({
   params,
   request,
 }: {
-  params: { behandlingsId: string };
+  params: { behandlingsId: string; aktivitetId: string };
   request: Request;
 }) {
-  const { behandlingsId } = params;
+  const { behandlingsId, aktivitetId } = params;
   const formData = await request.formData();
 
-  const virkFomDate = formData.get("virkFom");
+  const virkFomString = formData.get("virkFom") as string;
+  const virkFomDate = virkFomString
+    ? parse(virkFomString, "dd.MM.yyyy", new Date())
+    : new Date();
 
-  const vurdering = {
-    samboerVurdering: {
-      virkFom: virkFomDate ? virkFomDate.toString() : null,
-      tidligereEktefeller: formData.get("tidligereEktefeller") === "on",
-      harFellesBarn: formData.get("harFellesBarn") === "on",
-      vurdert: formData.get("vurdert") || "VENTER",
-    },
+  console.log("virkFomDate", virkFomDate);
+
+  const vurdering: SamboerVurdering = {
+    virkFom: formatISO(virkFomDate, { representation: "date" }),
+    tidligereEktefeller: formData.get("tidligereEktefeller") === "on",
+    harFellesBarn: formData.get("harFellesBarn") === "on",
+    vurdert: (formData.get("vurdert") as Vurdering) || "VURDERT",
   };
 
   console.log("data to post", vurdering);
   // Post to the API
+  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+
   const response = await useFetch(
-    `${process.env.BACKEND_URL!}/api/saksbehandling/alder/forstegangsbehandling/${behandlingsId}/samboervurdering`,
+    `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
+
     {
       method: "POST",
-      body: JSON.stringify(vurdering),
+      body: JSON.stringify({ data: vurdering }),
     },
   );
 
@@ -75,10 +103,19 @@ export default function VurdereSamboer({ loaderData }: Route.ComponentProps) {
     defaultSelected: undefined,
   });
 
-  const { aktivitet } = useLoaderData();
+  const { aktivitet, samboerInformasjon, vurdering } =
+    useLoaderData<typeof loader>();
 
   const detailsContent = (
     <>
+      <pre>{JSON.stringify(vurdering, null, 2)}</pre>
+      <pre>{JSON.stringify(samboerInformasjon, null, 2)}</pre>
+      {samboerInformasjon?.epsPersongrunnlagListeDto.map((samboer) => (
+        <div key={samboer.fnr}>
+          <h3>{samboer.navnTilPerson.etternavn}</h3>
+          <p>{samboer.navnTilPerson.fornavn}</p>
+        </div>
+      ))}
       <p>Her kan du vurdere samboerforhold for søkeren.</p>
       <p>Informasjon om samboer vil bli lagt til her...</p>
     </>

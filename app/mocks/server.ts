@@ -18,32 +18,35 @@ function loadMockData(filename: string) {
 // Define handlers for API endpoints
 const handlers = [
   // GET /api/behandling/:id - match any host
-  http.get("*/api/saksbehandling/alde/:id", ({ params, request }) => {
-    const { id } = params;
-    console.log(`🎯 MSW intercepted request to: ${request.url}`);
+  http.get(
+    "*/api/saksbehandling/alde/behandling/:id",
+    ({ params, request }) => {
+      const { id } = params;
+      console.log(`🎯 MSW intercepted request to: ${request.url}`);
 
-    const mockData = loadMockData(`behandling-${id}.json`);
+      const mockData = loadMockData(`behandling-${id}.json`);
 
-    if (mockData) {
-      console.log(`📄 Returning specific mock data for ID: ${id}`);
-      return HttpResponse.json(mockData);
-    }
+      if (mockData) {
+        console.log(`📄 Returning specific mock data for ID: ${id}`);
+        return HttpResponse.json(mockData);
+      }
 
-    // Fallback to default mock data if specific file doesn't exist
-    const defaultData = loadMockData("behandling-default.json");
-    if (defaultData) {
-      console.log(`📄 Returning default mock data for ID: ${id}`);
-      // Replace the ID in the default data
-      return HttpResponse.json({
-        ...defaultData,
-        behandlingId: parseInt(id as string, 10),
-      });
-    }
+      // Fallback to default mock data if specific file doesn't exist
+      const defaultData = loadMockData("behandling-default.json");
+      if (defaultData) {
+        console.log(`📄 Returning default mock data for ID: ${id}`);
+        // Replace the ID in the default data
+        return HttpResponse.json({
+          ...defaultData,
+          behandlingId: parseInt(id as string, 10),
+        });
+      }
 
-    // Return 404 if no mock data found
-    console.log(`❌ No mock data found for ID: ${id}`);
-    return HttpResponse.text("Behandling not found", { status: 404 });
-  }),
+      // Return 404 if no mock data found
+      console.log(`❌ No mock data found for ID: ${id}`);
+      return HttpResponse.text("Behandling not found", { status: 404 });
+    },
+  ),
 
   // You can add more API endpoints here
   // Example: http.get("*/api/other-endpoint", ...),

@@ -21,8 +21,19 @@
       "utsattTil": null
     },
     {
+      "aktivitetId": 6020948,
+      "type": "FleksibelApSakA200VurderSamboerAktivitet",
+      "opprettet": "2025-08-26T16:49:34.364857",
+      "handlerName": "hent-grunnlag",
+      "friendlyName": "Hent grunnlag",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-08-26T16:49:34.380546",
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": "2025-08-27T16:49:34.383125"
+    },
+    {
       "aktivitetId": 6020942,
-      "type": "FleksibelApSakA203VurderSamboerAktivitet",
+      "type": "FleksibelApSakA203VurderSativitet",
       "opprettet": "2025-08-26T16:49:34.364857",
       "handlerName": "vurder-samboer",
       "friendlyName": "Vurder samboer",

@@ -11,6 +11,7 @@ import {
   Label,
   Tag,
   VStack,
+  CopyButton,
 } from "@navikt/ds-react";
 import React, { useEffect, useRef } from "react";
 import { formatDateToNorwegian } from "../../utils/date";
@@ -143,6 +144,26 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               {formatDateToNorwegian(behandling.opprettet)}
             </BodyShort>
           </VStack>
+          {behandling.kravId && (
+            <VStack>
+              <Label size="small">Krav</Label>
+              <CopyButton
+                text={behandling.kravId.toString()}
+                copyText={behandling.kravId.toString()}
+                size="small"
+              />
+            </VStack>
+          )}
+          {behandling.sakId && (
+            <VStack>
+              <Label size="small">Sak</Label>
+              <CopyButton
+                text={behandling.sakId.toString()}
+                copyText={behandling.sakId.toString()}
+                size="small"
+              />
+            </VStack>
+          )}
         </HStack>
       </Box>
 

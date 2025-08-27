@@ -72,3 +72,12 @@ export interface SamboerInformasjonHolder {
   epsPersongrunnlagListeDto: PersongrunnlagDto[];
   _links: Links;
 }
+
+export type Vurdering = "VURDERT" | "VENTER" | "AVBRUTT";
+
+export interface SamboerVurdering {
+  virkFom: string | null; // ISO-dato (LocalDate)
+  tidligereEktefeller: boolean;
+  harFellesBarn: boolean;
+  vurdert: Vurdering;
+}
