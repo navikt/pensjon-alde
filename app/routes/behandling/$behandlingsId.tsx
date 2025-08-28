@@ -30,9 +30,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingsId } = params;
   const url = new URL(request.url);
 
-  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`;
 
-  const response = await useFetch(request, `${backendUrl}/behandling/${behandlingsId}`);
+  const response = await useFetch(request, `${penUrl}/behandling/${behandlingsId}`);
 
   if (!response.ok) {
     throw new Error(

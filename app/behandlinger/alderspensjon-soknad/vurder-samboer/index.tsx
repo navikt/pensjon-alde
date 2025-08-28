@@ -15,16 +15,16 @@ import type { AktivitetOutletContext } from "~/types/aktivitetOutletContext";
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
 
-  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`;
 
   const grunnlag = await useFetch(
     request,
-    `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/grunnlagsdata`,
+    `${penUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/grunnlagsdata`,
   );
 
   const vurdering = await useFetch(
     request,
-    `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
+    `${penUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
   );
   let parsedGrunnlag;
   if (grunnlag.ok) {
@@ -75,11 +75,11 @@ export async function action({
 
   console.log("data to post", vurdering);
   // Post to the API
-  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`;
 
   const response = await useFetch(
     request,
-    `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
+    `${penUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
 
     {
       method: "POST",

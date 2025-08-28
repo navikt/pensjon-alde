@@ -100,7 +100,7 @@ export async function requireAccessToken(request: Request) {
   if (authorization && authorization.toLowerCase().startsWith('bearer')) {
     let tokenResponse = await exchange(
       authorization.substring('bearer '.length),
-      env.backendScope,
+      env.penScope,
     )
     return tokenResponse.access_token
   } else if (isLocalEnv) {
@@ -121,7 +121,7 @@ export async function requireAccessToken(request: Request) {
 
       let tokenResponse = await exchange(
         user.accessToken,
-        env.backendScope,
+        env.penScope,
       )
       return tokenResponse.access_token
     }

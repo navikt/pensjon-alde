@@ -5,7 +5,7 @@ import { reactRouterDevTools } from "react-router-devtools";
 
 export default defineConfig({
     server: {
-        port: 3000,
+        port: 3001,
     },
     plugins: [reactRouterDevTools(), reactRouter(), tsconfigPaths()],
 });
