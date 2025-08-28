@@ -1,20 +1,33 @@
 {
-  "name": "alde",
-  "private": true,
+  "name": "pensjon-alder-forstegangsbehandling",
+  "version": "0.1.0",
   "type": "module",
+  "private": true,
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
     "dev:mock": "NODE_ENV=mock react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "ci": "biome ci .",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "typecheck": "react-router typegen && tsc"
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "typecheck": "react-router typegen && tsc",
+    "prepare": "husky"
   },
   "dependencies": {
+    "@navikt/aksel-icons": "^7.29.0",
     "@navikt/ds-css": "^7.28.1",
     "@navikt/ds-react": "^7.28.1",
+    "@navikt/ds-tailwind": "^7.29.0",
     "@react-router/node": "^7.7.1",
     "@react-router/serve": "^7.7.1",
     "date-fns": "^4.1.0",
@@ -24,19 +37,29 @@
     "react-auth": "^1.0.0",
     "react-dom": "^19.1.0",
     "react-router": "^7.7.1",
-    "remix-auth-oauth2": "^3.4.1"
+    "remix-auth-oauth2": "^3.4.1",
+    "tailwindcss": "^4.1.12"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.2.2",
+    "@playwright/test": "^1.55.0",
     "@react-router/dev": "^7.7.1",
-    "@tailwindcss/vite": "^4.1.4",
+    "@tailwindcss/vite": "^4.1.12",
     "@types/node": "^20",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
     "msw": "^2.10.5",
     "react-router-devtools": "^5.0.7",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx,json,css,scss}": [
+      "biome check --write --files-ignore-unknown=true"
+    ]
   }
 }

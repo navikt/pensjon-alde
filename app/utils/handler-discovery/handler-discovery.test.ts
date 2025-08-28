@@ -15,6 +15,7 @@ import {
 vi.mock("import.meta", () => ({
   glob: vi.fn(() => ({
     "/app/behandlinger/alderspensjon-soknad/vurder-samboer/index.tsx": {},
+    "/app/behandlinger/alderspensjon-soknad/attestering/index.tsx": {},
   })),
 }));
 
@@ -27,11 +28,16 @@ describe("handler-discovery", () => {
     it("should return available handler mappings based on folder structure", () => {
       const handlers = getAvailableHandlers();
 
-      expect(handlers).toHaveLength(1);
-      expect(handlers[0]).toEqual({
+      expect(handlers).toHaveLength(2);
+      expect(handlers).toContainEqual({
         behandlingHandler: "alderspensjon-soknad",
         aktivitetHandler: "vurder-samboer",
         routePath: "alderspensjon-soknad/vurder-samboer",
+      });
+      expect(handlers).toContainEqual({
+        behandlingHandler: "alderspensjon-soknad",
+        aktivitetHandler: "attestering",
+        routePath: "alderspensjon-soknad/attestering",
       });
     });
   });
@@ -221,11 +227,16 @@ describe("handler-discovery", () => {
     it("should return handlers for existing behandling", () => {
       const handlers = getHandlersForBehandling("alderspensjon-soknad");
 
-      expect(handlers).toHaveLength(1);
-      expect(handlers[0]).toEqual({
+      expect(handlers).toHaveLength(2);
+      expect(handlers).toContainEqual({
         behandlingHandler: "alderspensjon-soknad",
         aktivitetHandler: "vurder-samboer",
         routePath: "alderspensjon-soknad/vurder-samboer",
+      });
+      expect(handlers).toContainEqual({
+        behandlingHandler: "alderspensjon-soknad",
+        aktivitetHandler: "attestering",
+        routePath: "alderspensjon-soknad/attestering",
       });
     });
 

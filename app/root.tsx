@@ -18,7 +18,9 @@ if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
   });
 }
 
-export const links: Route.LinksFunction = () => [];
+export const links: Route.LinksFunction = () => [
+  { rel: "stylesheet", href: "/styles/global.css" },
+];
 
 export async function loader() {
   // Initialize fetch system on server-side
