@@ -1,76 +1,84 @@
-import type { Route } from "./+types/$behandlingsId";
-import type { BehandlingDTO } from "../../types/behandling";
-import { AktivitetStatus, BehandlingStatus } from "../../types/behandling";
-import { useFetch } from "../../utils/use-fetch";
-import { Outlet, useParams, useNavigate, redirect } from "react-router";
-import { buildAktivitetRedirectUrl } from "../../utils/handler-discovery";
 import {
-  Stepper,
-  Box,
-  HStack,
   BodyShort,
-  Label,
-  Tag,
-  VStack,
+  Box,
   CopyButton,
+  HStack,
+  Label,
   Loader,
-} from "@navikt/ds-react";
-import React, { useEffect, useRef } from "react";
-import { formatDateToNorwegian } from "../../utils/date";
-import { useRevalidator } from "react-router";
+  Stepper,
+  Tag,
+  VStack
+} from '@navikt/ds-react'
+import React, { useEffect, useRef } from 'react'
+import {
+  Outlet,
+  redirect,
+  useNavigate,
+  useParams,
+  useRevalidator
+} from 'react-router'
+import type { BehandlingDTO } from '../../types/behandling'
+import { AktivitetStatus, BehandlingStatus } from '../../types/behandling'
+import { formatDateToNorwegian } from '../../utils/date'
+import { buildAktivitetRedirectUrl } from '../../utils/handler-discovery'
+import { useFetch } from '../../utils/use-fetch'
+import type { Route } from './+types/$behandlingsId'
 
 export function meta({ params }: Route.MetaArgs) {
   return [
     { title: `Behandling ${params.behandlingsId}` },
-    { name: "description", content: "Behandling detaljer" },
-  ];
+    { name: 'description', content: 'Behandling detaljer' }
+  ]
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const { behandlingsId } = params;
-  const url = new URL(request.url);
+  const { behandlingsId } = params
+  const url = new URL(request.url)
 
-  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`
 
-  const response = await useFetch(request, `${backendUrl}/behandling/${behandlingsId}`);
+  const response = await useFetch(
+    request,
+    `${backendUrl}/behandling/${behandlingsId}`
+  )
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch behandling: ${response.status} ${response.statusText}`,
-    );
+      `Failed to fetch behandling: ${response.status} ${response.statusText}`
+    )
   }
 
-  const behandling: BehandlingDTO = await response.json();
+  const behandling: BehandlingDTO = await response.json()
 
   // If no aktivitet is selected and there are aktiviteter, redirect to first UNDER_BEHANDLING
   if (
-    !url.pathname.includes("/aktivitet/") &&
+    !url.pathname.includes('/aktivitet/') &&
     behandling.aktiviteter.length > 0
   ) {
     const underBehandlingAktivitet = behandling.aktiviteter.find(
-      (aktivitet) => aktivitet.status === AktivitetStatus.UNDER_BEHANDLING,
-    );
+      aktivitet => aktivitet.status === AktivitetStatus.UNDER_BEHANDLING
+    )
 
     if (underBehandlingAktivitet) {
       throw redirect(
-        `/behandling/${behandlingsId}/aktivitet/${underBehandlingAktivitet.aktivitetId}`,
-      );
+        `/behandling/${behandlingsId}/aktivitet/${underBehandlingAktivitet.aktivitetId}`
+      )
     }
   }
 
   return {
     behandlingsId,
-    behandling,
-  };
+    behandling
+  }
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { behandling } = loaderData;
-  const params = useParams();
-  const currentAktivitetId = params.aktivitetId;
-  const navigate = useNavigate();
-  const stepperContainerRef = useRef<HTMLDivElement>(null);
-  const revalidator = useRevalidator();
+  const { behandling } = loaderData
+  const params = useParams()
+  const currentAktivitetId = params.aktivitetId
+  const navigate = useNavigate()
+  const stepperContainerRef = useRef<HTMLDivElement>(null)
+  const revalidator = useRevalidator()
 
   // Prepare the visible aktiviteter (sorted and filtered)
   const visibleAktiviteter = React.useMemo(
@@ -78,66 +86,66 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       behandling.aktiviteter
         .slice()
         .sort((a, b) => a.type.localeCompare(b.type))
-        .filter((aktivitet) => aktivitet.friendlyName),
-    [behandling.aktiviteter],
-  );
+        .filter(aktivitet => aktivitet.friendlyName),
+    [behandling.aktiviteter]
+  )
 
   const activeStepIndex = currentAktivitetId
     ? visibleAktiviteter.findIndex(
-        (a) => a.aktivitetId?.toString() === currentAktivitetId,
+        a => a.aktivitetId?.toString() === currentAktivitetId
       )
-    : 0;
+    : 0
 
   const behandlingJobber =
     behandling.status === BehandlingStatus.UNDER_BEHANDLING &&
-    !behandling.utsattTil;
+    !behandling.utsattTil
 
   useEffect(() => {
     if (behandlingJobber) {
-      let pollCount = 0;
+      let pollCount = 0
       const intervalId = setInterval(() => {
-        pollCount++;
-        revalidator.revalidate();
+        pollCount++
+        revalidator.revalidate()
 
         if (pollCount >= 10) {
-          clearInterval(intervalId);
+          clearInterval(intervalId)
         }
-      }, 1000); // Refetch every second
+      }, 1000) // Refetch every second
 
-      return () => clearInterval(intervalId);
+      return () => clearInterval(intervalId)
     }
-  }, [behandlingJobber, revalidator]);
+  }, [behandlingJobber, revalidator])
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {
-      const container = stepperContainerRef.current;
+      const container = stepperContainerRef.current
       const activeStep = container.querySelector(
-        `[data-step-index="${activeStepIndex}"]`,
-      ) as HTMLElement;
+        `[data-step-index="${activeStepIndex}"]`
+      ) as HTMLElement
 
       if (activeStep) {
-        const containerRect = container.getBoundingClientRect();
-        const stepRect = activeStep.getBoundingClientRect();
-        const scrollLeft = container.scrollLeft;
+        const containerRect = container.getBoundingClientRect()
+        const stepRect = activeStep.getBoundingClientRect()
+        const scrollLeft = container.scrollLeft
 
         // Calculate if step is out of view
-        const stepLeft = stepRect.left - containerRect.left + scrollLeft;
-        const stepRight = stepLeft + stepRect.width;
-        const containerWidth = containerRect.width;
+        const stepLeft = stepRect.left - containerRect.left + scrollLeft
+        const stepRight = stepLeft + stepRect.width
+        const containerWidth = containerRect.width
 
         if (stepLeft < scrollLeft) {
           // Step is to the left of visible area
-          container.scrollTo({ left: stepLeft - 20, behavior: "smooth" });
+          container.scrollTo({ left: stepLeft - 20, behavior: 'smooth' })
         } else if (stepRight > scrollLeft + containerWidth) {
           // Step is to the right of visible area
           container.scrollTo({
             left: stepRight - containerWidth + 20,
-            behavior: "smooth",
-          });
+            behavior: 'smooth'
+          })
         }
       }
     }
-  }, [activeStepIndex, currentAktivitetId]);
+  }, [activeStepIndex])
 
   return (
     <div>
@@ -155,10 +163,10 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               <Tag
                 variant={
                   behandling.status === BehandlingStatus.FERDIG
-                    ? "success"
+                    ? 'success'
                     : behandling.status === BehandlingStatus.FEILET
-                      ? "error"
-                      : "info"
+                      ? 'error'
+                      : 'info'
                 }
                 size="small"
               >
@@ -200,16 +208,16 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           <div
             ref={stepperContainerRef}
             style={{
-              overflowX: "auto",
-              overflowY: "hidden",
-              scrollbarWidth: "thin",
-              WebkitOverflowScrolling: "touch",
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              scrollbarWidth: 'thin',
+              WebkitOverflowScrolling: 'touch'
             }}
           >
             <Stepper
               orientation="horizontal"
               activeStep={activeStepIndex + 1}
-              style={{ minWidth: "max-content" }}
+              style={{ minWidth: 'max-content' }}
             >
               {visibleAktiviteter.map((aktivitet, index) => (
                 <Stepper.Step
@@ -220,14 +228,14 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                       params.behandlingsId!,
                       aktivitet.aktivitetId!.toString(),
                       loaderData.behandling,
-                      aktivitet,
-                    );
+                      aktivitet
+                    )
                     // Navigate to the implementation URL if it exists, otherwise to the base aktivitet URL
                     navigate(
-                      implementationUrl || `aktivitet/${aktivitet.aktivitetId}`,
-                    );
+                      implementationUrl || `aktivitet/${aktivitet.aktivitetId}`
+                    )
                   }}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: 'pointer' }}
                   data-step-index={index}
                 >
                   {aktivitet.friendlyName!}
@@ -239,5 +247,5 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       )}
       {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
     </div>
-  );
+  )
 }

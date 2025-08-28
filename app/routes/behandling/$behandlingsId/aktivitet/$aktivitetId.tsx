@@ -1,36 +1,39 @@
-import type { Route } from "./+types/$aktivitetId";
-import { BodyShort, Detail, Alert, Heading, Box } from "@navikt/ds-react";
-import { Outlet, useOutlet, redirect } from "react-router";
-import type { AktivitetDTO, BehandlingDTO } from "~/types/behandling";
-import { buildAktivitetRedirectUrl } from "~/utils/handler-discovery";
-import { useFetch } from "~/utils/use-fetch";
+import { Alert, BodyShort, Box, Detail, Heading } from '@navikt/ds-react'
+import { Outlet, redirect, useOutlet } from 'react-router'
+import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
+import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
+import { useFetch } from '~/utils/use-fetch'
+import type { Route } from './+types/$aktivitetId'
 
 export function meta({ params }: Route.MetaArgs) {
   return [
     { title: `Aktivitet ${params.aktivitetId}` },
-    { name: "description", content: "Aktivitet detaljer" },
-  ];
+    { name: 'description', content: 'Aktivitet detaljer' }
+  ]
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const { behandlingsId, aktivitetId } = params;
-  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
+  const { behandlingsId, aktivitetId } = params
+  const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`
 
   // Fetch behandling from API using behandlingId
-  const response = await useFetch(request, `${backendUrl}/behandling/${behandlingsId}`);
+  const response = await useFetch(
+    request,
+    `${backendUrl}/behandling/${behandlingsId}`
+  )
   if (!response.ok) {
-    throw new Error(`Failed to fetch behandling: ${response.status}`);
+    throw new Error(`Failed to fetch behandling: ${response.status}`)
   }
 
-  const behandling: BehandlingDTO = await response.json();
+  const behandling: BehandlingDTO = await response.json()
 
   // Find the specific aktivitet using aktivitetId
   const aktivitet = behandling.aktiviteter.find(
-    (a: AktivitetDTO) => a.aktivitetId?.toString() === aktivitetId,
-  );
+    (a: AktivitetDTO) => a.aktivitetId?.toString() === aktivitetId
+  )
 
   if (!aktivitet) {
-    throw new Error(`Aktivitet ${aktivitetId} not found`);
+    throw new Error(`Aktivitet ${aktivitetId} not found`)
   }
 
   // Check if we should redirect to an implementation
@@ -38,26 +41,26 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     behandlingsId,
     aktivitetId,
     behandling,
-    aktivitet,
-  );
+    aktivitet
+  )
 
-  const url = new URL(request.url);
-  const currentPath = url.pathname;
+  const url = new URL(request.url)
+  const currentPath = url.pathname
 
   if (
     implementationUrl &&
     !currentPath.includes(behandling.handlerName!) &&
     !currentPath.includes(aktivitet.handlerName!)
   ) {
-    throw redirect(implementationUrl);
+    throw redirect(implementationUrl)
   }
 
-  return { behandling, aktivitet };
+  return { behandling, aktivitet }
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandling, aktivitet } = loaderData;
-  const outlet = useOutlet();
+  const { behandling, aktivitet } = loaderData
+  const outlet = useOutlet()
 
   return (
     <div className="aktivitet">
@@ -66,9 +69,9 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
       {!outlet && (
         <Box
           paddingBlock="8 0"
-          style={{ display: "flex", justifyContent: "center" }}
+          style={{ display: 'flex', justifyContent: 'center' }}
         >
-          <Alert variant="info" style={{ maxWidth: "600px", width: "100%" }}>
+          <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
             <Heading spacing size="small" level="3">
               Aktivitet ikke implementert enda
             </Heading>
@@ -97,5 +100,5 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
         </Box>
       )}
     </div>
-  );
+  )
 }

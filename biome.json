@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["src/**/*", "**/*.config.*", "**/*.stories.*"]
+    "includes": ["app/**/*", "**/*.config.*"]
   },
   "formatter": {
     "enabled": true,
@@ -90,8 +90,7 @@
         "**/*.test.ts",
         "**/*.test.tsx",
         "**/*.spec.ts",
-        "**/*.spec.tsx",
-        "jest.setup.js"
+        "**/*.spec.tsx"
       ],
       "linter": {
         "rules": {

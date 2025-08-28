@@ -1,316 +1,316 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { BehandlingDTO, AktivitetDTO } from "../../types/behandling";
-import { BehandlingStatus, AktivitetStatus } from "../../types/behandling";
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { AktivitetDTO, BehandlingDTO } from '../../types/behandling'
+import { AktivitetStatus, BehandlingStatus } from '../../types/behandling'
 import {
-  getAvailableHandlers,
-  findRouteForHandlers,
   buildAktivitetRedirectUrl,
-  hasUIImplementation,
-  getHandlersForBehandling,
-  validateRoutePath,
+  findRouteForHandlers,
+  getAvailableHandlers,
   getHandlerNamesFromPath,
-} from "./handler-discovery";
+  getHandlersForBehandling,
+  hasUIImplementation,
+  validateRoutePath
+} from './handler-discovery'
 
 // Mock import.meta.glob to simulate the file structure
-vi.mock("import.meta", () => ({
+vi.mock('import.meta', () => ({
   glob: vi.fn(() => ({
-    "/app/behandlinger/alderspensjon-soknad/vurder-samboer/index.tsx": {},
-    "/app/behandlinger/alderspensjon-soknad/attestering/index.tsx": {},
-  })),
-}));
+    '/app/behandlinger/alderspensjon-soknad/vurder-samboer/index.tsx': {},
+    '/app/behandlinger/alderspensjon-soknad/attestering/index.tsx': {}
+  }))
+}))
 
-describe("handler-discovery", () => {
+describe('handler-discovery', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
-  describe("getAvailableHandlers", () => {
-    it("should return available handler mappings based on folder structure", () => {
-      const handlers = getAvailableHandlers();
+  describe('getAvailableHandlers', () => {
+    it('should return available handler mappings based on folder structure', () => {
+      const handlers = getAvailableHandlers()
 
-      expect(handlers).toHaveLength(2);
+      expect(handlers).toHaveLength(2)
       expect(handlers).toContainEqual({
-        behandlingHandler: "alderspensjon-soknad",
-        aktivitetHandler: "vurder-samboer",
-        routePath: "alderspensjon-soknad/vurder-samboer",
-      });
+        behandlingHandler: 'alderspensjon-soknad',
+        aktivitetHandler: 'vurder-samboer',
+        routePath: 'alderspensjon-soknad/vurder-samboer'
+      })
       expect(handlers).toContainEqual({
-        behandlingHandler: "alderspensjon-soknad",
-        aktivitetHandler: "attestering",
-        routePath: "alderspensjon-soknad/attestering",
-      });
-    });
-  });
+        behandlingHandler: 'alderspensjon-soknad',
+        aktivitetHandler: 'attestering',
+        routePath: 'alderspensjon-soknad/attestering'
+      })
+    })
+  })
 
-  describe("findRouteForHandlers", () => {
-    it("should find route for valid handler combination", () => {
+  describe('findRouteForHandlers', () => {
+    it('should find route for valid handler combination', () => {
       const route = findRouteForHandlers(
-        "alderspensjon-soknad",
-        "vurder-samboer",
-      );
-      expect(route).toBe("alderspensjon-soknad/vurder-samboer");
-    });
+        'alderspensjon-soknad',
+        'vurder-samboer'
+      )
+      expect(route).toBe('alderspensjon-soknad/vurder-samboer')
+    })
 
-    it("should return null for non-existent handler combination", () => {
+    it('should return null for non-existent handler combination', () => {
       const route = findRouteForHandlers(
-        "unknown-behandling",
-        "unknown-aktivitet",
-      );
-      expect(route).toBeNull();
-    });
+        'unknown-behandling',
+        'unknown-aktivitet'
+      )
+      expect(route).toBeNull()
+    })
 
-    it("should return null when behandlingHandler is null", () => {
-      const route = findRouteForHandlers(null, "vurder-samboer");
-      expect(route).toBeNull();
-    });
+    it('should return null when behandlingHandler is null', () => {
+      const route = findRouteForHandlers(null, 'vurder-samboer')
+      expect(route).toBeNull()
+    })
 
-    it("should return null when aktivitetHandler is null", () => {
-      const route = findRouteForHandlers("alderspensjon-soknad", null);
-      expect(route).toBeNull();
-    });
+    it('should return null when aktivitetHandler is null', () => {
+      const route = findRouteForHandlers('alderspensjon-soknad', null)
+      expect(route).toBeNull()
+    })
 
-    it("should return null when both handlers are undefined", () => {
-      const route = findRouteForHandlers(undefined, undefined);
-      expect(route).toBeNull();
-    });
-  });
+    it('should return null when both handlers are undefined', () => {
+      const route = findRouteForHandlers(undefined, undefined)
+      expect(route).toBeNull()
+    })
+  })
 
-  describe("buildAktivitetRedirectUrl", () => {
+  describe('buildAktivitetRedirectUrl', () => {
     const mockBehandling: BehandlingDTO = {
       behandlingId: 6359437,
-      type: "FleksibelApSakBehandling",
-      handlerName: "alderspensjon-soknad",
-      friendlyName: "Førstegangsbehandling av alderspensjonssøknad",
-      sisteKjoring: "2025-08-26T16:49:34.37642",
-      utsattTil: "2025-08-27T16:49:34.383125",
-      opprettet: "2025-08-26T16:49:29.7398",
+      type: 'FleksibelApSakBehandling',
+      handlerName: 'alderspensjon-soknad',
+      friendlyName: 'Førstegangsbehandling av alderspensjonssøknad',
+      sisteKjoring: '2025-08-26T16:49:34.37642',
+      utsattTil: '2025-08-27T16:49:34.383125',
+      opprettet: '2025-08-26T16:49:29.7398',
       stoppet: null,
       status: BehandlingStatus.UNDER_BEHANDLING,
       aktiviteter: [],
       fnr: null,
       sakId: 23077283,
-      kravId: 46365419,
-    };
+      kravId: 46365419
+    }
 
     const mockAktivitet: AktivitetDTO = {
       aktivitetId: 6020942,
-      type: "FleksibelApSakA203VurderSamboerAktivitet",
-      opprettet: "2025-08-26T16:49:34.364857",
-      handlerName: "vurder-samboer",
-      friendlyName: "Vurder samboer",
+      type: 'FleksibelApSakA203VurderSamboerAktivitet',
+      opprettet: '2025-08-26T16:49:34.364857',
+      handlerName: 'vurder-samboer',
+      friendlyName: 'Vurder samboer',
       antallGangerKjort: 1,
-      sisteAktiveringsdato: "2025-08-26T16:49:34.380546",
+      sisteAktiveringsdato: '2025-08-26T16:49:34.380546',
       status: AktivitetStatus.UNDER_BEHANDLING,
-      utsattTil: "2025-08-27T16:49:34.383125",
-    };
+      utsattTil: '2025-08-27T16:49:34.383125'
+    }
 
-    it("should build correct redirect URL for valid handlers", () => {
+    it('should build correct redirect URL for valid handlers', () => {
       const url = buildAktivitetRedirectUrl(
-        "6359437",
-        "6020942",
+        '6359437',
+        '6020942',
         mockBehandling,
-        mockAktivitet,
-      );
+        mockAktivitet
+      )
 
       expect(url).toBe(
-        "/behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer",
-      );
-    });
+        '/behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer'
+      )
+    })
 
-    it("should return null when aktivitet has no handlerName", () => {
-      const aktivitetWithoutHandler = { ...mockAktivitet, handlerName: null };
+    it('should return null when aktivitet has no handlerName', () => {
+      const aktivitetWithoutHandler = { ...mockAktivitet, handlerName: null }
       const url = buildAktivitetRedirectUrl(
-        "6359437",
-        "6020942",
+        '6359437',
+        '6020942',
         mockBehandling,
-        aktivitetWithoutHandler,
-      );
+        aktivitetWithoutHandler
+      )
 
-      expect(url).toBeNull();
-    });
+      expect(url).toBeNull()
+    })
 
-    it("should return null when behandling has no handlerName", () => {
-      const behandlingWithoutHandler = { ...mockBehandling, handlerName: null };
+    it('should return null when behandling has no handlerName', () => {
+      const behandlingWithoutHandler = { ...mockBehandling, handlerName: null }
       const url = buildAktivitetRedirectUrl(
-        "6359437",
-        "6020942",
+        '6359437',
+        '6020942',
         behandlingWithoutHandler,
-        mockAktivitet,
-      );
+        mockAktivitet
+      )
 
-      expect(url).toBeNull();
-    });
+      expect(url).toBeNull()
+    })
 
-    it("should return null when no route mapping exists", () => {
+    it('should return null when no route mapping exists', () => {
       const unknownAktivitet = {
         ...mockAktivitet,
-        handlerName: "unknown-handler",
-      };
+        handlerName: 'unknown-handler'
+      }
       const url = buildAktivitetRedirectUrl(
-        "6359437",
-        "6020942",
+        '6359437',
+        '6020942',
         mockBehandling,
-        unknownAktivitet,
-      );
+        unknownAktivitet
+      )
 
-      expect(url).toBeNull();
-    });
-  });
+      expect(url).toBeNull()
+    })
+  })
 
-  describe("hasUIImplementation", () => {
+  describe('hasUIImplementation', () => {
     const mockBehandling: BehandlingDTO = {
       behandlingId: 6359437,
-      type: "FleksibelApSakBehandling",
-      handlerName: "alderspensjon-soknad",
-      friendlyName: "Førstegangsbehandling av alderspensjonssøknad",
-      sisteKjoring: "2025-08-26T16:49:34.37642",
+      type: 'FleksibelApSakBehandling',
+      handlerName: 'alderspensjon-soknad',
+      friendlyName: 'Førstegangsbehandling av alderspensjonssøknad',
+      sisteKjoring: '2025-08-26T16:49:34.37642',
       utsattTil: null,
-      opprettet: "2025-08-26T16:49:29.7398",
+      opprettet: '2025-08-26T16:49:29.7398',
       stoppet: null,
       status: BehandlingStatus.UNDER_BEHANDLING,
       aktiviteter: [],
       fnr: null,
       sakId: 23077283,
-      kravId: 46365419,
-    };
+      kravId: 46365419
+    }
 
-    it("should return true for aktivitet with UI implementation", () => {
+    it('should return true for aktivitet with UI implementation', () => {
       const aktivitet: AktivitetDTO = {
         aktivitetId: 6020942,
-        type: "FleksibelApSakA203VurderSamboerAktivitet",
-        handlerName: "vurder-samboer",
-        friendlyName: "Vurder samboer",
-        opprettet: "2025-08-26T16:49:34.364857",
+        type: 'FleksibelApSakA203VurderSamboerAktivitet',
+        handlerName: 'vurder-samboer',
+        friendlyName: 'Vurder samboer',
+        opprettet: '2025-08-26T16:49:34.364857',
         antallGangerKjort: 1,
-        sisteAktiveringsdato: "2025-08-26T16:49:34.380546",
+        sisteAktiveringsdato: '2025-08-26T16:49:34.380546',
         status: AktivitetStatus.UNDER_BEHANDLING,
-        utsattTil: null,
-      };
+        utsattTil: null
+      }
 
-      expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(true);
-    });
+      expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(true)
+    })
 
-    it("should return false for aktivitet without handlerName", () => {
+    it('should return false for aktivitet without handlerName', () => {
       const aktivitet: AktivitetDTO = {
         aktivitetId: 6020941,
-        type: "FleksibelApSakA202FinnSamboerInformasjonAktivitet",
+        type: 'FleksibelApSakA202FinnSamboerInformasjonAktivitet',
         handlerName: null,
         friendlyName: null,
-        opprettet: "2025-08-26T16:49:34.297346",
+        opprettet: '2025-08-26T16:49:34.297346',
         antallGangerKjort: 1,
-        sisteAktiveringsdato: "2025-08-26T16:49:34.312694",
+        sisteAktiveringsdato: '2025-08-26T16:49:34.312694',
         status: AktivitetStatus.FULLFORT,
-        utsattTil: null,
-      };
+        utsattTil: null
+      }
 
-      expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(false);
-    });
+      expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(false)
+    })
 
-    it("should return false when no route mapping exists", () => {
+    it('should return false when no route mapping exists', () => {
       const aktivitet: AktivitetDTO = {
         aktivitetId: 6020943,
-        type: "UnknownAktivitet",
-        handlerName: "unknown-handler",
-        friendlyName: "Unknown",
-        opprettet: "2025-08-26T16:49:34.297346",
+        type: 'UnknownAktivitet',
+        handlerName: 'unknown-handler',
+        friendlyName: 'Unknown',
+        opprettet: '2025-08-26T16:49:34.297346',
         antallGangerKjort: 1,
-        sisteAktiveringsdato: "2025-08-26T16:49:34.312694",
+        sisteAktiveringsdato: '2025-08-26T16:49:34.312694',
         status: AktivitetStatus.FULLFORT,
-        utsattTil: null,
-      };
+        utsattTil: null
+      }
 
-      expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(false);
-    });
-  });
+      expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(false)
+    })
+  })
 
-  describe("getHandlersForBehandling", () => {
-    it("should return handlers for existing behandling", () => {
-      const handlers = getHandlersForBehandling("alderspensjon-soknad");
+  describe('getHandlersForBehandling', () => {
+    it('should return handlers for existing behandling', () => {
+      const handlers = getHandlersForBehandling('alderspensjon-soknad')
 
-      expect(handlers).toHaveLength(2);
+      expect(handlers).toHaveLength(2)
       expect(handlers).toContainEqual({
-        behandlingHandler: "alderspensjon-soknad",
-        aktivitetHandler: "vurder-samboer",
-        routePath: "alderspensjon-soknad/vurder-samboer",
-      });
+        behandlingHandler: 'alderspensjon-soknad',
+        aktivitetHandler: 'vurder-samboer',
+        routePath: 'alderspensjon-soknad/vurder-samboer'
+      })
       expect(handlers).toContainEqual({
-        behandlingHandler: "alderspensjon-soknad",
-        aktivitetHandler: "attestering",
-        routePath: "alderspensjon-soknad/attestering",
-      });
-    });
+        behandlingHandler: 'alderspensjon-soknad',
+        aktivitetHandler: 'attestering',
+        routePath: 'alderspensjon-soknad/attestering'
+      })
+    })
 
-    it("should return empty array for non-existent behandling", () => {
-      const handlers = getHandlersForBehandling("unknown-behandling");
-      expect(handlers).toEqual([]);
-    });
-  });
+    it('should return empty array for non-existent behandling', () => {
+      const handlers = getHandlersForBehandling('unknown-behandling')
+      expect(handlers).toEqual([])
+    })
+  })
 
-  describe("validateRoutePath", () => {
-    it("should return true for valid URL path matching handlers", () => {
+  describe('validateRoutePath', () => {
+    it('should return true for valid URL path matching handlers', () => {
       const isValid = validateRoutePath(
-        "/behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer",
-        "alderspensjon-soknad",
-        "vurder-samboer",
-      );
+        '/behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer',
+        'alderspensjon-soknad',
+        'vurder-samboer'
+      )
 
-      expect(isValid).toBe(true);
-    });
+      expect(isValid).toBe(true)
+    })
 
-    it("should return false for URL path not matching handlers", () => {
+    it('should return false for URL path not matching handlers', () => {
       const isValid = validateRoutePath(
-        "/behandling/6359437/aktivitet/6020942/wrong-path/wrong-aktivitet",
-        "alderspensjon-soknad",
-        "vurder-samboer",
-      );
+        '/behandling/6359437/aktivitet/6020942/wrong-path/wrong-aktivitet',
+        'alderspensjon-soknad',
+        'vurder-samboer'
+      )
 
-      expect(isValid).toBe(false);
-    });
+      expect(isValid).toBe(false)
+    })
 
-    it("should return false for non-existent handler combination", () => {
+    it('should return false for non-existent handler combination', () => {
       const isValid = validateRoutePath(
-        "/behandling/123/aktivitet/456/unknown/unknown",
-        "unknown-behandling",
-        "unknown-aktivitet",
-      );
+        '/behandling/123/aktivitet/456/unknown/unknown',
+        'unknown-behandling',
+        'unknown-aktivitet'
+      )
 
-      expect(isValid).toBe(false);
-    });
-  });
+      expect(isValid).toBe(false)
+    })
+  })
 
-  describe("getHandlerNamesFromPath", () => {
-    it("should extract handler names from valid URL path", () => {
+  describe('getHandlerNamesFromPath', () => {
+    it('should extract handler names from valid URL path', () => {
       const names = getHandlerNamesFromPath(
-        "/behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer",
-      );
+        '/behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer'
+      )
 
       expect(names).toEqual({
-        behandlingHandler: "alderspensjon-soknad",
-        aktivitetHandler: "vurder-samboer",
-      });
-    });
+        behandlingHandler: 'alderspensjon-soknad',
+        aktivitetHandler: 'vurder-samboer'
+      })
+    })
 
-    it("should return null for URL with too few path segments", () => {
-      const names = getHandlerNamesFromPath("/behandling/123");
-      expect(names).toBeNull();
-    });
+    it('should return null for URL with too few path segments', () => {
+      const names = getHandlerNamesFromPath('/behandling/123')
+      expect(names).toBeNull()
+    })
 
-    it("should return null for URL with unknown handler combination", () => {
+    it('should return null for URL with unknown handler combination', () => {
       const names = getHandlerNamesFromPath(
-        "/behandling/123/aktivitet/456/unknown-behandling/unknown-aktivitet",
-      );
-      expect(names).toBeNull();
-    });
+        '/behandling/123/aktivitet/456/unknown-behandling/unknown-aktivitet'
+      )
+      expect(names).toBeNull()
+    })
 
-    it("should handle URL with query parameters", () => {
+    it('should handle URL with query parameters', () => {
       const names = getHandlerNamesFromPath(
-        "/behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer?param=value",
-      );
+        '/behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer?param=value'
+      )
 
       expect(names).toEqual({
-        behandlingHandler: "alderspensjon-soknad",
-        aktivitetHandler: "vurder-samboer",
-      });
-    });
-  });
-});
+        behandlingHandler: 'alderspensjon-soknad',
+        aktivitetHandler: 'vurder-samboer'
+      })
+    })
+  })
+})
