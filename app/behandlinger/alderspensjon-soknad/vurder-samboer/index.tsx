@@ -1,6 +1,5 @@
 import { useLoaderData, Form, redirect } from "react-router";
 import { Checkbox, Button, DatePicker, useDatepicker } from "@navikt/ds-react";
-import { useFetch } from "~/utils/use-fetch";
 import { parse, formatISO } from "date-fns";
 import type {
   SamboerInformasjonHolder,
@@ -11,6 +10,7 @@ import type { Route } from "./+types";
 import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
 import { useOutletContext } from "react-router";
 import type { AktivitetOutletContext } from "~/types/aktivitetOutletContext";
+import {useFetch} from "~/utils/use-fetch/use-fetch";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;

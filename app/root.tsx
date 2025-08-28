@@ -1,17 +1,22 @@
 import {
+  createCookie,
   isRouteErrorResponse,
-  Links,
+  Links, type LoaderFunctionArgs,
   Meta,
   Outlet,
   Scripts,
-  ScrollRestoration,
+  ScrollRestoration, useLoaderData,
 } from "react-router";
 import '@navikt/ds-css/darkside'
 
 import type { Route } from "./+types/root";
 import "@navikt/ds-css";
-import {InternalHeader, Page, Spacer, Theme} from "@navikt/ds-react";
-import { initializeFetch } from "./utils/use-fetch";
+import {ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Spacer, Theme} from "@navikt/ds-react";
+import {useState} from "react";
+import {MoonIcon, SunIcon} from "@navikt/aksel-icons";
+import {env} from "~/utils/env.server";
+import type {Me} from "~/types/me";
+import {initializeFetch, useFetch2} from "~/utils/use-fetch/use-fetch";
 // Initialize mocking and auth in mock environment
 if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
   import("./mocks").then(({ initializeMocking }) => {
@@ -21,13 +26,36 @@ if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
 
 export const links: Route.LinksFunction = () => [];
 
-export async function loader() {
+export const loader = async ({
+                               request,
+                             }: LoaderFunctionArgs) => {
   // Initialize fetch system on server-side
   initializeFetch();
-  return {};
+
+  const penUrl = `${env.penUrl}/api/saksbehandling/alde`;
+
+  const me: Me = await useFetch2(request, `${penUrl}/me`);
+
+
+  let darkmode = await createCookie('darkmode').parse(
+    request.headers.get('cookie'),
+  )
+
+  return {
+    darkmode: darkmode === 'true' || darkmode === true,
+    me: me,
+  };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { darkmode, me } = useLoaderData<typeof loader>()
+  const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
+
+  function setDarkmode(darkmode: boolean) {
+    setIsDarkmode(darkmode)
+    document.cookie = `darkmode=${encodeURIComponent(btoa(darkmode.toString()))}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
+  }
+
   return (
     <html lang="en">
       <head>
@@ -37,11 +65,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <Theme theme={'light'}>
+        <Theme theme={isDarkmode ? 'dark' : 'light'}>
           <InternalHeader>
-            <InternalHeader.Title as="h1">Pesys</InternalHeader.Title>
+            <InternalHeader.Title as="h2">Pesys</InternalHeader.Title>
             <Spacer />
-            <InternalHeader.User name="Ola Normann" />
+            <ActionMenu>
+              <ActionMenu.Trigger>
+                <InternalHeader.UserButton
+                  name={`${me.fornavn} ${me.etternavn}`}
+                />
+              </ActionMenu.Trigger>
+              <ActionMenu.Content>
+                <dl>
+                  <BodyShort as="dt" size="small">
+                    {`${me.fornavn} ${me.etternavn}`}
+                  </BodyShort>
+                  <Detail as="dd">{me.navident}</Detail>
+                </dl>
+                <Dropdown.Menu.Divider />
+                <ActionMenu.Item
+                  disabled={!isDarkmode}
+                  icon={<SunIcon />}
+                  onClick={() => setDarkmode(false)}
+                >
+                  Bytt til lys modus
+                </ActionMenu.Item>
+                <ActionMenu.Item
+                  disabled={isDarkmode}
+                  icon={<MoonIcon />}
+                  onClick={() => setDarkmode(true)}
+                >
+                  Bytt til mørk modus
+                </ActionMenu.Item>
+              </ActionMenu.Content>
+            </ActionMenu>
           </InternalHeader>
           {children}
           <ScrollRestoration />

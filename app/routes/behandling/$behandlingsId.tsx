@@ -1,7 +1,6 @@
 import type { Route } from "./+types/$behandlingsId";
 import type { BehandlingDTO } from "../../types/behandling";
 import { AktivitetStatus, BehandlingStatus } from "../../types/behandling";
-import { useFetch } from "../../utils/use-fetch";
 import { Outlet, useParams, useNavigate, redirect } from "react-router";
 import { buildAktivitetRedirectUrl } from "../../utils/handler-discovery";
 import {
@@ -18,6 +17,7 @@ import {
 import React, { useEffect, useRef } from "react";
 import { formatDateToNorwegian } from "../../utils/date";
 import { useRevalidator } from "react-router";
+import {useFetch} from "~/utils/use-fetch/use-fetch";
 
 export function meta({ params }: Route.MetaArgs) {
   return [

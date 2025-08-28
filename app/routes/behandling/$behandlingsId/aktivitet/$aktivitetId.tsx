@@ -3,7 +3,7 @@ import { BodyShort, Detail, Alert, Heading, Box } from "@navikt/ds-react";
 import { Outlet, useOutlet, redirect } from "react-router";
 import type { AktivitetDTO, BehandlingDTO } from "~/types/behandling";
 import { buildAktivitetRedirectUrl } from "~/utils/handler-discovery";
-import { useFetch } from "~/utils/use-fetch";
+import {useFetch} from "~/utils/use-fetch/use-fetch";
 
 export function meta({ params }: Route.MetaArgs) {
   return [

@@ -3,6 +3,7 @@
 
 // Prevent client-side usage
 import {requireAccessToken} from "~/auth/auth.server";
+import {data} from "react-router";
 
 function checkServerSideOnly(functionName: string): void {
   if (typeof window !== "undefined") {
@@ -22,13 +23,6 @@ let currentAccessToken: string | null = null;
 export function setAccessToken(token: string): void {
   checkServerSideOnly("setAccessToken");
   currentAccessToken = token;
-}
-
-/**
- * Get the current access token
- */
-export function getAccessToken(): string | null {
-  return currentAccessToken;
 }
 
 /**
@@ -125,6 +119,18 @@ export async function useFetch(
   }
 }
 
+export async function useFetch2<T>(
+  request: Request,
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<T> {
+  const res = await useFetch(request, input, init);
+  if (!res.ok) {
+    await normalizeAndThrow(res, `Feil ved GET ${input}`)
+  }
+  return (await res.json()) as T
+}
+
 /**
  * Initialize the fetch system
  */
@@ -142,14 +148,87 @@ export function initializeFetch(): void {
   console.log("🔐 Fetch system initialized");
 }
 
-/**
- * Extract token from incoming request (for OAuth proxy integration)
- */
-export function extractTokenFromRequest(request: Request): string | null {
-  checkServerSideOnly("extractTokenFromRequest");
-  const authHeader = request.headers.get("Authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.substring(7);
+export type NormalizedError = {
+  status: number
+  title?: string
+  message?: string
+  detail?: string
+  path?: string
+  timestamp?: string
+  trace?: string
+  raw?: unknown // original body (for logging)
+}
+
+export async function normalizeAndThrow(
+  response: Response,
+  fallbackTitle = 'En uventet feil oppstod',
+): Promise<never> {
+  const ct = response.headers.get('content-type') || ''
+
+  let body: unknown = undefined
+  try {
+    if (ct.includes('application/json')) {
+      body = await response.json()
+    } else {
+      const text = await response.text()
+      body = text?.length ? text : undefined
+    }
+  } catch {
+    /* ignorer parse-feil */
   }
-  return null;
+
+  const normalized = normalizeErrorBody(response, body, fallbackTitle)
+
+  // I RR7 framework mode kan vi trygt kaste data(...)
+  throw data(normalized, {
+    status: normalized.status,
+    statusText: normalized.title,
+  })
+}
+
+function normalizeErrorBody(
+  response: Response,
+  body: unknown,
+  fallbackTitle: string,
+): NormalizedError {
+  // Ren tekst → putt som detail
+  if (typeof body === 'string') {
+    return {
+      status: response.status,
+      title: response.statusText || fallbackTitle,
+      detail: body,
+      raw: body,
+    }
+  }
+
+  // Spring Boot standard error-body
+  if (body && typeof body === 'object') {
+    const b = body as Record<string, unknown>
+    const status =
+      (typeof b.status === 'number' ? b.status : undefined) ??
+      response.status
+    const title =
+      (typeof b.error === 'string' ? b.error : undefined) ||
+      response.statusText ||
+      fallbackTitle
+
+    return {
+      status,
+      title,
+      message: typeof b.message === 'string' ? b.message : undefined,
+      detail: typeof b.detail === 'string' ? b.detail : undefined,
+      path: typeof b.path === 'string' ? b.path : undefined,
+      timestamp:
+        typeof b.timestamp === 'string' ? b.timestamp : undefined,
+      trace: typeof b.trace === 'string' ? b.trace : undefined,
+      raw: body,
+    }
+  }
+
+  // Fallback
+  return {
+    status: response.status,
+    title: response.statusText || fallbackTitle,
+    raw: body,
+  }
 }
