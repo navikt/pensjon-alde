@@ -8,7 +8,7 @@ import {
   type SessionData,
   type SessionStorage
 } from 'react-router'
-import {env} from "~/utils/env.server";
+import {env, isLocalEnv} from "~/utils/env.server";
 import {exchange} from "~/auth/obo.server";
 
 type User = {
@@ -20,7 +20,7 @@ export let sessionStorage: SessionStorage<SessionData, SessionData> | undefined;
 export let returnToCookie: Cookie | undefined;
 export let authenticator: Authenticator<User> | undefined
 
-if (env.localDevelopment) {
+if (isLocalEnv) {
   const azureCallbackUrl = process.env.AZURE_CALLBACK_URL
 
   if (azureCallbackUrl === undefined) {
@@ -103,7 +103,7 @@ export async function requireAccessToken(request: Request) {
       env.backendScope,
     )
     return tokenResponse.access_token
-  } else if (env.localDevelopment) {
+  } else if (isLocalEnv) {
     const session = await sessionStorage!.getSession(request.headers.get('cookie'))
 
     if (!session.has('user')) {

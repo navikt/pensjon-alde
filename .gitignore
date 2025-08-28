@@ -11,3 +11,4 @@
 # IntelliJ
 .idea
 *.iml
+.zed

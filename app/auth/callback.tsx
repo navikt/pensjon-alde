@@ -1,10 +1,10 @@
 import type {LoaderFunctionArgs} from 'react-router'
 import {redirect} from 'react-router'
 import {authenticator, returnToCookie, sessionStorage} from '~/auth/auth.server'
-import {env} from "~/utils/env.server";
+import {isLocalEnv} from "~/utils/env.server";
 
 export const loader = async ({request}: LoaderFunctionArgs) => {
-  if (!env.localDevelopment) {
+  if (!isLocalEnv) {
     throw new Error("OAuth 2.0 code flyt er kun tilgjengelig ved lokal utvikling")
   }
 

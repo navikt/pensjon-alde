@@ -35,7 +35,6 @@ export const env = loadEnv(
     backendScope: 'BACKEND_SCOPE',
     backendUrl: 'BACKEND_URL',
   },
-  {
-    localDevelopment: 'ENABLE_LOCAL_DEVELOPMENT',
-  },
 )
+
+export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'
