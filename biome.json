@@ -31,20 +31,6 @@
       "trailingCommas": "none"
     }
   },
-  "css": {
-    "formatter": {
-      "enabled": true,
-      "indentWidth": 4
-    },
-    "linter": {
-      "enabled": true
-    }
-  },
-  "json": {
-    "formatter": {
-      "indentWidth": 2
-    }
-  },
   "assist": {
     "actions": {
       "source": {

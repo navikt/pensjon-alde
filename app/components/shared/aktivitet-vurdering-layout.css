@@ -1,136 +1,136 @@
 .aktivitet-vurdering-grid {
-    display: grid;
-    grid-template-columns: 3fr 1fr;
-    gap: 2rem;
-    margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
 }
 
 .information-section {
-    padding: 1rem;
-    background-color: var(--a-surface-subtle);
-    border-radius: var(--a-border-radius-medium);
+  padding: 1rem;
+  background-color: var(--a-surface-subtle);
+  border-radius: var(--a-border-radius-medium);
 }
 
 .aktivitet-info {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background-color: var(--a-surface-default);
-    border-radius: var(--a-border-radius-medium);
-    border: 1px solid var(--a-border-subtle);
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--a-surface-default);
+  border-radius: var(--a-border-radius-medium);
+  border: 1px solid var(--a-border-subtle);
 }
 
 .aktivitet-info h4 {
-    margin-bottom: 0.75rem;
-    color: var(--a-text-default);
+  margin-bottom: 0.75rem;
+  color: var(--a-text-default);
 }
 
 .aktivitet-info p {
-    margin-bottom: 0.5rem;
-    color: var(--a-text-default);
+  margin-bottom: 0.5rem;
+  color: var(--a-text-default);
 }
 
 .details-section {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background-color: var(--a-surface-default);
-    border-radius: var(--a-border-radius-medium);
-    border: 1px solid var(--a-border-subtle);
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--a-surface-default);
+  border-radius: var(--a-border-radius-medium);
+  border: 1px solid var(--a-border-subtle);
 }
 
 .details-section h4 {
-    margin-bottom: 0.75rem;
-    color: var(--a-text-default);
+  margin-bottom: 0.75rem;
+  color: var(--a-text-default);
 }
 
 .utfall {
-    padding: 1rem;
-    border-radius: var(--a-border-radius-medium);
+  padding: 1rem;
+  border-radius: var(--a-border-radius-medium);
 }
 
 .success-message {
-    padding: 1rem;
-    background-color: var(--a-surface-success-subtle);
-    color: var(--a-text-success);
-    border-radius: var(--a-border-radius-medium);
-    border: 1px solid var(--a-border-success);
+  padding: 1rem;
+  background-color: var(--a-surface-success-subtle);
+  color: var(--a-text-success);
+  border-radius: var(--a-border-radius-medium);
+  border: 1px solid var(--a-border-success);
 }
 
 .info-message {
-    padding: 1rem;
-    background-color: var(--a-surface-info-subtle);
-    color: var(--a-text-info);
-    border-radius: var(--a-border-radius-medium);
-    border: 1px solid var(--a-border-info);
+  padding: 1rem;
+  background-color: var(--a-surface-info-subtle);
+  color: var(--a-text-info);
+  border-radius: var(--a-border-radius-medium);
+  border: 1px solid var(--a-border-info);
 }
 
 .decision-sidebar {
-    padding: 1.5rem;
-    background-color: var(--a-surface-default);
-    border-radius: var(--a-border-radius-medium);
-    border: 1px solid var(--a-border-subtle);
-    height: fit-content;
-    position: sticky;
-    top: 1rem;
+  padding: 1.5rem;
+  background-color: var(--a-surface-default);
+  border-radius: var(--a-border-radius-medium);
+  border: 1px solid var(--a-border-subtle);
+  height: fit-content;
+  position: sticky;
+  top: 1rem;
 }
 
 .decision-sidebar h4 {
-    margin-bottom: 1.5rem;
-    color: var(--a-text-default);
-    border-bottom: 1px solid var(--a-border-subtle);
-    padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--a-text-default);
+  border-bottom: 1px solid var(--a-border-subtle);
+  padding-bottom: 0.5rem;
 }
 
 .decision-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .checkbox-group {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .date-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .button-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--a-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--a-border-subtle);
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .aktivitet-vurdering-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
+  .aktivitet-vurdering-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 
-    .decision-sidebar {
-        position: static;
-    }
+  .decision-sidebar {
+    position: static;
+  }
 }
 
 /* Container spacing */
 .aktivitet-vurdering-container {
-    padding: 1rem;
+  padding: 1rem;
 }
 
 .aktivitet-vurdering-container h3 {
-    margin-bottom: 1rem;
-    color: var(--a-text-default);
+  margin-bottom: 1rem;
+  color: var(--a-text-default);
 }

@@ -18,7 +18,6 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/playwright/**',
-      '**/tests-examples/**',
       '**/build/**',
       '**/dist/**'
     ]
