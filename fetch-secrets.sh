@@ -95,10 +95,10 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-$env" "azure-pensjon-verda
   "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
 
 {
-  echo AZURE_CALLBACK_URL=http://localhost:3000/auth/callback
-  echo BACKEND_URL=http://localhost:8089
-  echo BACKEND_SCOPE=api://dev-fss.pensjon-q2.pensjon-pen-q2/.default
-  echo IS_LOCAL_ENV=true
+  echo AZURE_CALLBACK_URL='http://localhost:3001/auth/callback'
+  echo PEN_URL='http://localhost:8089'
+  echo PEN_SCOPE='api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'
+  echo IS_LOCAL_ENV='true'
 } >> ${envfile}
 
 echo

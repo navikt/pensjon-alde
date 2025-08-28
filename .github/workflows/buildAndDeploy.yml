@@ -1,0 +1,55 @@
+name: Build and deploy
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+    name: "build"
+    permissions:
+      contents: "read"
+      id-token: "write"
+      packages: "write"
+    runs-on: "ubuntu-latest"
+    outputs:
+      image: "${{ steps.docker-push.outputs.image }}"
+      telemetry: "${{ steps.docker-push.outputs.telemetry }}"
+    steps:
+      - uses: "actions/checkout@v5"
+      - uses: "actions/setup-node@v4"
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: |
+          npm ci && npm run build && npm prune --omit=dev
+      - uses: nais/docker-build-push@v0
+        id: docker-push
+        with:
+          team: pensjon-saksbehandling
+
+  deployDev:
+    permissions:
+      contents: "read"
+      id-token: "write"
+    if: github.ref == 'refs/heads/main'
+    needs: [build]
+    runs-on: 'ubuntu-latest'
+
+    strategy:
+      matrix:
+        include:
+          -  vars_file: vars-q2.yaml
+             cluster: dev-gcp
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: nais/deploy/actions/deploy@v2
+        name: "deploy"
+        env:
+          CLUSTER: '${{ matrix.cluster }}'
+          IMAGE: "${{ needs.build.outputs.image }}"
+          RESOURCE: .nais/nais.yaml
+          TELEMETRY: ${{ needs.build.outputs.telemetry }}
+          VARS: '.nais/${{ matrix.vars_file }}'

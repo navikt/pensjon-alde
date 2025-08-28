@@ -1,0 +1,68 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    "team": "{{{ app.namespace }}}"
+  name: "{{{ app.name }}}"
+  namespace: "{{{ app.namespace }}}"
+spec:
+  accessPolicy:
+    outbound:
+      external:
+        - host: "graph.microsoft.com"
+        - host: "login.microsoftonline.com"
+        - host: "{{{ pen.host }}}"
+
+  azure:
+    application:
+      enabled: true
+      claims:
+        groups:
+        {{#each azure.groups as |group|}}
+          - id: "{{group}}"
+        {{/each}}
+        extra:
+          - "NAVident"
+      replyURLs:
+        - "http://localhost:3001/auth/callback"
+      tenant: "{{{ azure.tenant }}}"
+    sidecar:
+      enabled: true
+      autoLogin: true
+
+  env:
+    - name: "PEN_SCOPE"
+      value: "{{{ pen.scope }}}"
+    - name: "PEN_URL"
+      value: "{{{ pen.url }}}"
+
+  image: "{{{ image }}}"
+  ingresses:
+  {{#each ingresses as |ingress|}}
+  - "{{ingress}}"
+  {{/each}}
+
+  liveness:
+    path: '/internal/live'
+    initialDelay: 3
+    timeout: 1
+    periodSeconds: 5
+    failureThreshold: 10
+
+  port: 8080
+
+  readiness:
+    path: '/internal/live'
+    initialDelay: 3
+    timeout: 1
+
+  replicas:
+    min: 2
+    max: 2
+
+  resources:
+    limits:
+      memory: "512Mi"
+    requests:
+      cpu: "10m"
+      memory: "32Mi"

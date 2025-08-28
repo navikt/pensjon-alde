@@ -1,0 +1,17 @@
+app:
+  name: 'pensjon-alde-q2'
+  namespace: 'pensjon-saksbehandling'
+
+ingresses:
+  - "https://pensjon-alde-q2.ansatt.dev.nav.no"
+  - "https://pensjon-alde-q2.intern.dev.nav.no"
+
+pen:
+  host: 'pensjon-pen-q2.dev-fss-pub.nais.io'
+  scope: 'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'
+  url: 'https://pensjon-pen-q2.dev-fss-pub.nais.io'
+
+azure:
+  tenant: trygdeetaten.no
+  groups:
+    - "8bb9b8d1-f46a-4ade-8ee8-5895eccdf8cf" # 0000-GA-PENSJON_SAKSBEHANDLER

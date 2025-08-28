@@ -31,8 +31,8 @@ export const env = loadEnv({
   issuer: 'AZURE_OPENID_CONFIG_ISSUER',
   tokenEndpoint: 'AZURE_OPENID_CONFIG_TOKEN_ENDPOINT',
 
-  backendScope: 'BACKEND_SCOPE',
-  backendUrl: 'BACKEND_URL'
+  penScope: 'PEN_SCOPE',
+  penUrl: 'PEN_URL'
 })
 
 export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'
