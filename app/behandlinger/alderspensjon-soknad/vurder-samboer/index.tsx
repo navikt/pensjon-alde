@@ -11,21 +11,19 @@ import type { Route } from "./+types";
 import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
 import { useOutletContext } from "react-router";
 import type { AktivitetOutletContext } from "~/types/aktivitetOutletContext";
-import {requireAccessToken} from "~/auth/auth.server";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
-  const accessToken = await requireAccessToken(request)
 
   const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
 
   const grunnlag = await useFetch(
-    accessToken,
+    request,
     `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/grunnlagsdata`,
   );
 
   const vurdering = await useFetch(
-    accessToken,
+    request,
     `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
   );
   let parsedGrunnlag;
@@ -60,7 +58,6 @@ export async function action({
 }) {
   const { behandlingsId, aktivitetId } = params;
   const formData = await request.formData();
-  const accessToken = await requireAccessToken(request)
 
   const virkFomString = formData.get("virkFom") as string;
   const virkFomDate = virkFomString
@@ -81,7 +78,7 @@ export async function action({
   const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
 
   const response = await useFetch(
-    accessToken,
+    request,
     `${backendUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
 
     {

@@ -2,6 +2,8 @@
 // Provides enhanced HTTP requests with authentication and other capabilities
 
 // Prevent client-side usage
+import {requireAccessToken} from "~/auth/auth.server";
+
 function checkServerSideOnly(functionName: string): void {
   if (typeof window !== "undefined") {
     throw new Error(
@@ -46,7 +48,7 @@ export function initializeTokenFromEnv(): void {
  * Use this instead of regular fetch in loaders and actions
  */
 export async function useFetch(
-  token: string,
+  request: Request,
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> {
@@ -65,6 +67,8 @@ export async function useFetch(
 
   // Ensure headers object exists
   const headers = new Headers(modifiedInit.headers);
+
+  const token = await requireAccessToken(request)
 
   // Add Authorization header if token is available and not already present
   if (token && !headers.has("Authorization")) {

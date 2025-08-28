@@ -4,7 +4,6 @@ import { Outlet, useOutlet, redirect } from "react-router";
 import type { AktivitetDTO, BehandlingDTO } from "~/types/behandling";
 import { buildAktivitetRedirectUrl } from "~/utils/handler-discovery";
 import { useFetch } from "~/utils/use-fetch";
-import {requireAccessToken} from "~/auth/auth.server";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -16,10 +15,9 @@ export function meta({ params }: Route.MetaArgs) {
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingsId, aktivitetId } = params;
   const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
-  const accessToken = await requireAccessToken(request)
 
   // Fetch behandling from API using behandlingId
-  const response = await useFetch(accessToken, `${backendUrl}/behandling/${behandlingsId}`);
+  const response = await useFetch(request, `${backendUrl}/behandling/${behandlingsId}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch behandling: ${response.status}`);
   }
