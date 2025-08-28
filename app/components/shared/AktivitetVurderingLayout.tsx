@@ -1,15 +1,15 @@
-import React from "react";
-import type { AktivitetDTO } from "../../types/behandling";
-import "./aktivitet-vurdering-layout.css";
+import type React from 'react'
+import type { AktivitetDTO } from '../../types/behandling'
+import './aktivitet-vurdering-layout.css'
 
 interface AktivitetVurderingLayoutProps {
-  title: string;
-  aktivitet?: AktivitetDTO;
-  children?: React.ReactNode;
-  sidebar: React.ReactNode;
-  detailsTitle: string;
-  detailsContent: React.ReactNode;
-  className?: string;
+  title: string
+  aktivitet?: AktivitetDTO
+  children?: React.ReactNode
+  sidebar: React.ReactNode
+  detailsTitle: string
+  detailsContent: React.ReactNode
+  className?: string
 }
 
 const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
@@ -19,7 +19,7 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
   sidebar,
   detailsTitle,
   detailsContent,
-  className = "",
+  className = ''
 }) => {
   return (
     <div className={`aktivitet-vurdering-container ${className}`}>
@@ -36,13 +36,13 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
                 <strong>Type:</strong> {aktivitet.type}
               </p>
               <p>
-                <strong>Funksjonell ID:</strong>{" "}
+                <strong>Funksjonell ID:</strong>{' '}
                 {aktivitet.funksjonellIdentifikator}
               </p>
               <p>
-                <strong>Siste aktivering:</strong>{" "}
+                <strong>Siste aktivering:</strong>{' '}
                 {new Date(aktivitet.sisteAktiveringsdato).toLocaleString(
-                  "no-NO",
+                  'no-NO'
                 )}
               </p>
             </div>
@@ -52,7 +52,7 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
             {detailsContent}
           </div>
           <div className="utfall">
-            {aktivitet?.status === "FULLFORT" ? (
+            {aktivitet?.status === 'FULLFORT' ? (
               <div className="success-message">✅ {title} er fullført</div>
             ) : (
               <div className="info-message">📝 {title} pågår eller venter</div>
@@ -64,7 +64,7 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
         <div className="decision-sidebar">{sidebar}</div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AktivitetVurderingLayout;
+export default AktivitetVurderingLayout

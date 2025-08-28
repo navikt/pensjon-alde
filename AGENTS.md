@@ -9,14 +9,18 @@ This is a React Router 7 application implementing a "strangler pattern" to gradu
 ## Core Concepts
 
 ### Behandling (Treatment/Case)
+
 A `behandling` is a case or application being processed, e.g., an application for old-age pension (alderspensjon). Each behandling has:
+
 - `behandlingId`: Unique identifier
 - `handlerName`: Maps to folder name (e.g., "alderspensjon-soknad")
 - `aktiviteter`: List of activities/tasks to complete
 - Status, dates, and other metadata
 
 ### Aktivitet (Activity/Task)
+
 An `aktivitet` is a specific task within a behandling. Each aktivitet has:
+
 - `aktivitetId`: Unique identifier
 - `handlerName`: Maps to folder name (e.g., "vurder-samboer")
 - Some aktiviteter are backend-only (no `handlerName`)
@@ -29,7 +33,9 @@ An `aktivitet` is a specific task within a behandling. Each aktivitet has:
 ## Adding New Implementations
 
 ### Step 1: Check API Response
+
 Look for handler names in the API response:
+
 ```json
 {
   "behandlingId": 6359437,
@@ -42,33 +48,41 @@ Look for handler names in the API response:
 ```
 
 ### Step 2: Create Folder Structure
+
 Create folders matching EXACTLY the handler names:
-```
+
+```sh
 app/behandlinger/alderspensjon-soknad/vurder-samboer/
 ```
 
 ### Step 3: Create NameOfActivity.tsx
+
 Create capitalized name of activity and containing loader, action and component (as react-router 7). Just empty boilerplate action and loader if nothing else is specified.
 
 ### Step 4: Create index.tsx
+
 Export your component, loader, and action from index.tsx, this will be the import path.
 
 ### Step 5: Implement Component
+
 Check existing implementations in `app/behandlinger/alderspensjon-soknad/vurder-samboer/` for reference on:
+
 - How to structure a component with loader and action
 - How to use React Router 7 patterns
 - How to fetch data with the behandlingsId parameter
 
 ## Critical Rules
 
-### ALWAYS DO:
+### ALWAYS DO
+
 - ✅ **Use Aksel components** (`@navikt/ds-react`) - This is IMPORTANT
 - ✅ Use exact handler names from API as folder names
 - ✅ Export from index.tsx
 - ✅ Use React Router 7 patterns (loader, action, default export)
 - ✅ Keep behandling context when fetching data
 
-### NEVER DO:
+### NEVER DO
+
 - ❌ **Add code comments** unless explicitly requested
 - ❌ **Install dependencies** - instruct the user to do it if needed
 - ❌ Create routes manually (they're auto-discovered)
@@ -79,9 +93,9 @@ Check existing implementations in `app/behandlinger/alderspensjon-soknad/vurder-
 ## Styling
 
 Place CSS files in the aktivitet folder for component-specific styling:
-```
+
+```sh
 app/behandlinger/alderspensjon-soknad/vurder-samboer/
-├── index.tsx
 ├── index.tsx
 └── vurder-samboer.css  # Local styles for this aktivitet
 ```
@@ -89,6 +103,7 @@ app/behandlinger/alderspensjon-soknad/vurder-samboer/
 ## Common Patterns
 
 See `app/behandlinger/alderspensjon-soknad/vurder-samboer/index.tsx` for examples of:
+
 - API calls using `useFetch`
 - Form handling with React Router's `Form` component
 - Import patterns for Aksel components, types, and utilities
@@ -98,6 +113,7 @@ See `app/behandlinger/alderspensjon-soknad/vurder-samboer/index.tsx` for example
 ## Aksel Components (IMPORTANT!)
 
 You MUST use NAV's design system components from `@navikt/ds-react`:
+
 - `Button`, `LinkButton` - for actions
 - `TextField`, `Textarea`, `Select`, `Checkbox`, `Radio` - for inputs
 - `Alert`, `ErrorMessage`, `ErrorSummary` - for feedback
@@ -107,28 +123,31 @@ You MUST use NAV's design system components from `@navikt/ds-react`:
 - `Loader` - for loading states
 - `Modal`, `Drawer` - for overlays
 
-See full documentation at: https://aksel.nav.no/komponenter
+See full documentation at: <https://aksel.nav.no/komponenter>
 
 ## How Routing Works
 
 URLs look like this:
-```
+
+```sh
 /behandling/{behandlingId}/aktivitet/{aktivitetId}/{behandling-folder}/{aktivitet-folder}
 ```
 
 Example:
-```
+
+```sh
 /behandling/6359437/aktivitet/6020942/alderspensjon-soknad/vurder-samboer
 ```
 
 The system automatically:
+
 1. Fetches behandling data using the ID
 2. Finds the matching aktivitet
 3. Routes to the correct implementation based on folder names
 
 ## Testing Your Implementation
 
-```bash
+```sh
 npm test          # Run tests
 npm run typecheck # Type checking
 npm run dev:mock  # Development with mock API
@@ -141,10 +160,12 @@ Mock API responses are located in `app/mocks/data/`. Check existing files like `
 ## Common Issues
 
 ### "Implementation not found"
+
 - Folder names must match handler names EXACTLY (case-sensitive)
 - Use hyphens, not underscores
 
 ### TypeScript errors
+
 - Run `npm run typecheck` to generate React Router types
 - Import types from `./+types`
 

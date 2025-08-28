@@ -1,4 +1,4 @@
-import { format, parseISO, isValid } from "date-fns";
+import { format, isValid, parseISO } from 'date-fns'
 
 /**
  * Formats a date string or Date object to Norwegian date format "dd.MM.yyyy".
@@ -7,28 +7,30 @@ import { format, parseISO, isValid } from "date-fns";
  * @param date - The date to format (ISO string, Date, or number)
  * @returns Formatted date string in "dd.MM.yyyy" or empty string if invalid
  */
-export function formatDateToNorwegian(date: string | Date | number | null | undefined): string {
-  if (!date) return "";
+export function formatDateToNorwegian(
+  date: string | Date | number | null | undefined
+): string {
+  if (!date) return ''
 
-  let dateObj: Date;
+  let dateObj: Date
 
-  if (typeof date === "string") {
+  if (typeof date === 'string') {
     // Try to parse as ISO string
-    dateObj = parseISO(date);
+    dateObj = parseISO(date)
     if (!isValid(dateObj)) {
       // Fallback: try to parse as timestamp string
-      const timestamp = Number(date);
-      if (!isNaN(timestamp)) {
-        dateObj = new Date(timestamp);
+      const timestamp = Number(date)
+      if (!Number.isNaN(timestamp)) {
+        dateObj = new Date(timestamp)
       }
     }
-  } else if (typeof date === "number") {
-    dateObj = new Date(date);
+  } else if (typeof date === 'number') {
+    dateObj = new Date(date)
   } else {
-    dateObj = date;
+    dateObj = date
   }
 
-  if (!isValid(dateObj)) return "";
+  if (!isValid(dateObj)) return ''
 
-  return format(dateObj, "dd.MM.yyyy");
+  return format(dateObj, 'dd.MM.yyyy')
 }

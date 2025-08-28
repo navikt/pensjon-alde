@@ -7,21 +7,21 @@
  * 3. Folder names ARE the handler names - no configuration needed
  */
 
-import type { BehandlingDTO, AktivitetDTO } from "../../types/behandling";
+import type { AktivitetDTO, BehandlingDTO } from '../../types/behandling'
 
 /**
  * Discovered route mapping
  */
 export interface RouteMapping {
-  behandlingHandler: string;
-  aktivitetHandler: string;
-  routePath: string; // Full path like "alderspensjon-soknad/vurdere-samboer"
+  behandlingHandler: string
+  aktivitetHandler: string
+  routePath: string // Full path like "alderspensjon-soknad/vurdere-samboer"
 }
 
 /**
  * Cache for available handlers to avoid re-computing on every call
  */
-let cachedHandlers: RouteMapping[] | null = null;
+let cachedHandlers: RouteMapping[] | null = null
 
 /**
  * Get all available handler implementations by scanning the folder structure
@@ -31,35 +31,35 @@ let cachedHandlers: RouteMapping[] | null = null;
 export function getAvailableHandlers(): RouteMapping[] {
   // Return cached result if available
   if (cachedHandlers !== null) {
-    return cachedHandlers;
+    return cachedHandlers
   }
 
-  const mappings: RouteMapping[] = [];
+  const mappings: RouteMapping[] = []
 
   // Use import.meta.glob to discover all aktivitet implementations
   // This pattern finds all index.tsx files in the behandlinger structure
-  const modules = import.meta.glob("/app/behandlinger/*/*/index.tsx", {
-    eager: true,
-  });
+  const modules = import.meta.glob('/app/behandlinger/*/*/index.tsx', {
+    eager: true
+  })
 
   for (const [path] of Object.entries(modules)) {
     // Extract the folder names from the path
     // Path format: /app/behandlinger/{behandling-folder}/{aktivitet-folder}/index.tsx
-    const pathParts = path.split("/");
-    const behandlingFolder = pathParts[3];
-    const aktivitetFolder = pathParts[4];
+    const pathParts = path.split('/')
+    const behandlingFolder = pathParts[3]
+    const aktivitetFolder = pathParts[4]
 
     // The folder names ARE the handler names
     mappings.push({
       behandlingHandler: behandlingFolder,
       aktivitetHandler: aktivitetFolder,
-      routePath: `${behandlingFolder}/${aktivitetFolder}`,
-    });
+      routePath: `${behandlingFolder}/${aktivitetFolder}`
+    })
   }
 
   // Cache the result for future calls
-  cachedHandlers = mappings;
-  return mappings;
+  cachedHandlers = mappings
+  return mappings
 }
 
 /**
@@ -68,20 +68,20 @@ export function getAvailableHandlers(): RouteMapping[] {
  */
 export function findRouteForHandlers(
   behandlingHandler: string | null | undefined,
-  aktivitetHandler: string | null | undefined,
+  aktivitetHandler: string | null | undefined
 ): string | null {
   if (!behandlingHandler || !aktivitetHandler) {
-    return null;
+    return null
   }
 
-  const handlers = getAvailableHandlers();
+  const handlers = getAvailableHandlers()
   const mapping = handlers.find(
-    (h) =>
+    h =>
       h.behandlingHandler === behandlingHandler &&
-      h.aktivitetHandler === aktivitetHandler,
-  );
+      h.aktivitetHandler === aktivitetHandler
+  )
 
-  return mapping?.routePath || null;
+  return mapping?.routePath || null
 }
 
 /**
@@ -92,24 +92,24 @@ export function buildAktivitetRedirectUrl(
   behandlingsId: string,
   aktivitetId: string,
   behandling: BehandlingDTO,
-  aktivitet: AktivitetDTO,
+  aktivitet: AktivitetDTO
 ): string | null {
   // Check if aktivitet has a handler (some aktiviteter are backend-only)
   if (!aktivitet.handlerName || !behandling.handlerName) {
-    return null;
+    return null
   }
 
   const routePath = findRouteForHandlers(
     behandling.handlerName,
-    aktivitet.handlerName,
-  );
+    aktivitet.handlerName
+  )
 
   if (!routePath) {
-    return null;
+    return null
   }
 
   // Build the full URL with IDs and the discovered path
-  return `/behandling/${behandlingsId}/aktivitet/${aktivitetId}/${routePath}`;
+  return `/behandling/${behandlingsId}/aktivitet/${aktivitetId}/${routePath}`
 }
 
 /**
@@ -118,18 +118,18 @@ export function buildAktivitetRedirectUrl(
  */
 export function hasUIImplementation(
   behandling: BehandlingDTO,
-  aktivitet: AktivitetDTO,
+  aktivitet: AktivitetDTO
 ): boolean {
   if (!aktivitet.handlerName || !behandling.handlerName) {
-    return false;
+    return false
   }
 
   const routePath = findRouteForHandlers(
     behandling.handlerName,
-    aktivitet.handlerName,
-  );
+    aktivitet.handlerName
+  )
 
-  return routePath !== null;
+  return routePath !== null
 }
 
 /**
@@ -137,10 +137,10 @@ export function hasUIImplementation(
  * Useful for showing what aktiviteter are available
  */
 export function getHandlersForBehandling(
-  behandlingHandler: string,
+  behandlingHandler: string
 ): RouteMapping[] {
-  const allHandlers = getAvailableHandlers();
-  return allHandlers.filter((h) => h.behandlingHandler === behandlingHandler);
+  const allHandlers = getAvailableHandlers()
+  return allHandlers.filter(h => h.behandlingHandler === behandlingHandler)
 }
 
 /**
@@ -150,21 +150,21 @@ export function getHandlersForBehandling(
 export function validateRoutePath(
   urlPath: string,
   behandlingHandler: string,
-  aktivitetHandler: string,
+  aktivitetHandler: string
 ): boolean {
-  const handlers = getAvailableHandlers();
+  const handlers = getAvailableHandlers()
   const mapping = handlers.find(
-    (h) =>
+    h =>
       h.behandlingHandler === behandlingHandler &&
-      h.aktivitetHandler === aktivitetHandler,
-  );
+      h.aktivitetHandler === aktivitetHandler
+  )
 
   if (!mapping) {
-    return false;
+    return false
   }
 
   // Check if the URL ends with the expected route path
-  return urlPath.endsWith(mapping.routePath);
+  return urlPath.endsWith(mapping.routePath)
 }
 
 /**
@@ -172,37 +172,37 @@ export function validateRoutePath(
  * Extracts the behandling and aktivitet folder names which ARE the handler names
  */
 export function getHandlerNamesFromPath(
-  urlPath: string,
+  urlPath: string
 ): { behandlingHandler: string; aktivitetHandler: string } | null {
   // Remove query parameters if present
-  const pathWithoutQuery = urlPath.split("?")[0];
+  const pathWithoutQuery = urlPath.split('?')[0]
 
   // Extract folder names from URL
   // Expected format: /behandling/{id}/aktivitet/{id}/{behandling-folder}/{aktivitet-folder}
-  const pathParts = pathWithoutQuery.split("/").filter((p) => p); // Remove empty strings
+  const pathParts = pathWithoutQuery.split('/').filter(p => p) // Remove empty strings
 
   if (pathParts.length < 6) {
-    return null;
+    return null
   }
 
   // The last two parts are the handler names (which are the folder names)
-  const behandlingHandler = pathParts[pathParts.length - 2];
-  const aktivitetHandler = pathParts[pathParts.length - 1];
+  const behandlingHandler = pathParts[pathParts.length - 2]
+  const aktivitetHandler = pathParts[pathParts.length - 1]
 
   // Verify this combination actually exists
-  const handlers = getAvailableHandlers();
+  const handlers = getAvailableHandlers()
   const exists = handlers.some(
-    (h) =>
+    h =>
       h.behandlingHandler === behandlingHandler &&
-      h.aktivitetHandler === aktivitetHandler,
-  );
+      h.aktivitetHandler === aktivitetHandler
+  )
 
   if (!exists) {
-    return null;
+    return null
   }
 
   return {
     behandlingHandler,
-    aktivitetHandler,
-  };
+    aktivitetHandler
+  }
 }

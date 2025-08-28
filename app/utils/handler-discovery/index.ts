@@ -5,14 +5,13 @@
  * in the behandlinger folder structure using folder names as handler names.
  */
 
+export type { RouteMapping } from './handler-discovery'
 export {
-  getAvailableHandlers,
-  findRouteForHandlers,
   buildAktivitetRedirectUrl,
-  hasUIImplementation,
-  getHandlersForBehandling,
-  validateRoutePath,
+  findRouteForHandlers,
+  getAvailableHandlers,
   getHandlerNamesFromPath,
-} from "./handler-discovery";
-
-export type { RouteMapping } from "./handler-discovery";
+  getHandlersForBehandling,
+  hasUIImplementation,
+  validateRoutePath
+} from './handler-discovery'

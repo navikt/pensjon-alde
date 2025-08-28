@@ -2,44 +2,44 @@
 // Provides enhanced HTTP requests with authentication and other capabilities
 
 // Prevent client-side usage
-import {requireAccessToken} from "~/auth/auth.server";
+import { requireAccessToken } from '~/auth/auth.server'
 
 function checkServerSideOnly(functionName: string): void {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     throw new Error(
       `${functionName} is server-side only and cannot be used in the browser. ` +
-        "This utility is designed for loaders and actions only.",
-    );
+        'This utility is designed for loaders and actions only.'
+    )
   }
 }
 
 // Store for the current access token
-let currentAccessToken: string | null = null;
+let currentAccessToken: string | null = null
 
 /**
  * Set the access token (from OAuth proxy or environment)
  */
 export function setAccessToken(token: string): void {
-  checkServerSideOnly("setAccessToken");
-  currentAccessToken = token;
+  checkServerSideOnly('setAccessToken')
+  currentAccessToken = token
 }
 
 /**
  * Get the current access token
  */
 export function getAccessToken(): string | null {
-  return currentAccessToken;
+  return currentAccessToken
 }
 
 /**
  * Initialize token from environment variable (development)
  */
 export function initializeTokenFromEnv(): void {
-  checkServerSideOnly("initializeTokenFromEnv");
-  const envToken = process.env.ACCESS_TOKEN;
+  checkServerSideOnly('initializeTokenFromEnv')
+  const envToken = process.env.ACCESS_TOKEN
   if (envToken) {
-    setAccessToken(envToken);
-    console.log("🔐 Access token initialized from environment");
+    setAccessToken(envToken)
+    console.log('🔐 Access token initialized from environment')
   }
 }
 
@@ -50,78 +50,78 @@ export function initializeTokenFromEnv(): void {
 export async function useFetch(
   request: Request,
   input: RequestInfo | URL,
-  init?: RequestInit,
+  init?: RequestInit
 ): Promise<Response> {
-  checkServerSideOnly("useFetch");
-  const startTime = Date.now();
+  checkServerSideOnly('useFetch')
+  const startTime = Date.now()
   const url =
-    typeof input === "string"
+    typeof input === 'string'
       ? input
       : input instanceof URL
         ? input.toString()
-        : input.url;
-  const method = init?.method || "GET";
+        : input.url
+  const method = init?.method || 'GET'
 
   // Ensure init object exists
-  const modifiedInit: RequestInit = init || {};
+  const modifiedInit: RequestInit = init || {}
 
   // Ensure headers object exists
-  const headers = new Headers(modifiedInit.headers);
+  const headers = new Headers(modifiedInit.headers)
 
   const token = await requireAccessToken(request)
 
   // Add Authorization header if token is available and not already present
-  if (token && !headers.has("Authorization")) {
-    headers.set("Authorization", `Bearer ${token}`);
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
   }
 
   // Add default Content-Type if not present
-  if (!headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
+  if (!headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
   }
 
   // Update the init object with modified headers
-  modifiedInit.headers = headers;
+  modifiedInit.headers = headers
 
   // Log request details
-  console.log(`🌐 [${method}] ${url}`);
+  console.log(`🌐 [${method}] ${url}`)
 
   if (modifiedInit.body) {
     try {
       const bodyContent =
-        typeof modifiedInit.body === "string"
+        typeof modifiedInit.body === 'string'
           ? modifiedInit.body
           : modifiedInit.body instanceof FormData
-            ? "[FormData]"
-            : "[Binary Data]";
-      console.log(`📦 Request body:`, bodyContent);
-    } catch (error) {
-      console.log(`📦 Request body: [Unable to log body]`);
+            ? '[FormData]'
+            : '[Binary Data]'
+      console.log(`📦 Request body:`, bodyContent)
+    } catch (_error) {
+      console.log(`📦 Request body: [Unable to log body]`)
     }
   }
 
   try {
-    const response = await fetch(input, modifiedInit);
-    const duration = Date.now() - startTime;
+    const response = await fetch(input, modifiedInit)
+    const duration = Date.now() - startTime
 
     // Log response details
-    console.log(`📥 [${response.status}] ${url} (${duration}ms)`);
+    console.log(`📥 [${response.status}] ${url} (${duration}ms)`)
     console.log(
       `📋 Response headers:`,
-      Object.fromEntries(response.headers.entries()),
-    );
+      Object.fromEntries(response.headers.entries())
+    )
 
     if (!response.ok) {
       console.warn(
-        `⚠️ Request failed: ${response.status} ${response.statusText}`,
-      );
+        `⚠️ Request failed: ${response.status} ${response.statusText}`
+      )
     }
 
-    return response;
+    return response
   } catch (error) {
-    const duration = Date.now() - startTime;
-    console.error(`❌ [${method}] ${url} failed (${duration}ms):`, error);
-    throw error;
+    const duration = Date.now() - startTime
+    console.error(`❌ [${method}] ${url} failed (${duration}ms):`, error)
+    throw error
   }
 }
 
@@ -129,27 +129,27 @@ export async function useFetch(
  * Initialize the fetch system
  */
 export function initializeFetch(): void {
-  checkServerSideOnly("initializeFetch");
+  checkServerSideOnly('initializeFetch')
   // Initialize from environment in development
-  console.log("NODE_ENV", process.env.NODE_ENV);
+  console.log('NODE_ENV', process.env.NODE_ENV)
   if (
-    process.env.NODE_ENV === "development" ||
-    process.env.NODE_ENV === "mock"
+    process.env.NODE_ENV === 'development' ||
+    process.env.NODE_ENV === 'mock'
   ) {
-    initializeTokenFromEnv();
+    initializeTokenFromEnv()
   }
 
-  console.log("🔐 Fetch system initialized");
+  console.log('🔐 Fetch system initialized')
 }
 
 /**
  * Extract token from incoming request (for OAuth proxy integration)
  */
 export function extractTokenFromRequest(request: Request): string | null {
-  checkServerSideOnly("extractTokenFromRequest");
-  const authHeader = request.headers.get("Authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.substring(7);
+  checkServerSideOnly('extractTokenFromRequest')
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.substring(7)
   }
-  return null;
+  return null
 }
