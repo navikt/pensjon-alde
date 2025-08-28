@@ -82,13 +82,13 @@ Place CSS files in the aktivitet folder for component-specific styling:
 ```
 app/behandlinger/alderspensjon-soknad/vurder-samboer/
 ├── index.tsx
-├── VurderSamboer.tsx
+├── index.tsx
 └── vurder-samboer.css  # Local styles for this aktivitet
 ```
 
 ## Common Patterns
 
-See `app/behandlinger/alderspensjon-soknad/vurder-samboer/VurderSamboer.tsx` for examples of:
+See `app/behandlinger/alderspensjon-soknad/vurder-samboer/index.tsx` for examples of:
 - API calls using `useFetch`
 - Form handling with React Router's `Form` component
 - Import patterns for Aksel components, types, and utilities

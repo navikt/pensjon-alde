@@ -50,6 +50,10 @@ const dynamicAktivitetRoutes = discoverBehandlingRoutes();
 
 export default [
   index("routes/home.tsx"),
+
+  route("/auth/callback", "./auth/callback.tsx"),
+  route("/auth/microsoft", "./auth/microsoft.tsx"),
+
   route("/behandling/:behandlingsId", "routes/behandling/$behandlingsId.tsx", [
     // The main aktivitet route that handles redirection to the correct implementation
     route(

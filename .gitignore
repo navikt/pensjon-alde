@@ -7,3 +7,8 @@
 # React Router
 /.react-router/
 /build/
+
+# IntelliJ
+.idea
+*.iml
+.zed

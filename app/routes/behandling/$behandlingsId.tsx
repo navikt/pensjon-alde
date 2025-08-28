@@ -2,7 +2,7 @@ import type { Route } from "./+types/$behandlingsId";
 import type { BehandlingDTO } from "../../types/behandling";
 import { AktivitetStatus, BehandlingStatus } from "../../types/behandling";
 import { useFetch } from "../../utils/use-fetch";
-import { Outlet, Link, useParams, useNavigate, redirect } from "react-router";
+import { Outlet, useParams, useNavigate, redirect } from "react-router";
 import { buildAktivitetRedirectUrl } from "../../utils/handler-discovery";
 import {
   Stepper,
@@ -32,7 +32,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
 
-  const response = await useFetch(`${backendUrl}/behandling/${behandlingsId}`);
+  const response = await useFetch(request, `${backendUrl}/behandling/${behandlingsId}`);
 
   if (!response.ok) {
     throw new Error(

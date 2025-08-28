@@ -17,7 +17,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const backendUrl = `${process.env.BACKEND_URL!}/api/saksbehandling/alde`;
 
   // Fetch behandling from API using behandlingId
-  const response = await useFetch(`${backendUrl}/behandling/${behandlingsId}`);
+  const response = await useFetch(request, `${backendUrl}/behandling/${behandlingsId}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch behandling: ${response.status}`);
   }
