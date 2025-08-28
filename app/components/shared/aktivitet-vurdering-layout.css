@@ -7,67 +7,67 @@
 
 .information-section {
   padding: 1rem;
-  background-color: var(--a-surface-subtle);
-  border-radius: var(--a-border-radius-medium);
+  background-color: var(--ax-bg-sunken);
+  border-radius: var(--ax-border-radius-medium);
 }
 
 .aktivitet-info {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: var(--a-surface-default);
-  border-radius: var(--a-border-radius-medium);
-  border: 1px solid var(--a-border-subtle);
+  background-color: var(--ax-bg-raised);
+  border-radius: var(--ax-border-radius-medium);
+  border: 1px solid var(--ax-border-neutral-subtleA);
 }
 
 .aktivitet-info h4 {
   margin-bottom: 0.75rem;
-  color: var(--a-text-default);
+  color: var(--ax-text-neutral);
 }
 
 .aktivitet-info p {
   margin-bottom: 0.5rem;
-  color: var(--a-text-default);
+  color: var(--ax-text-neutral);
 }
 
 .details-section {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: var(--a-surface-default);
-  border-radius: var(--a-border-radius-medium);
-  border: 1px solid var(--a-border-subtle);
+  background-color: var(--ax-bg-raised);
+  border-radius: var(--ax-border-radius-medium);
+  border: 1px solid var(--ax-border-neutral-subtleA);
 }
 
 .details-section h4 {
   margin-bottom: 0.75rem;
-  color: var(--a-text-default);
+  color: var(--ax-text-neutral);
 }
 
 .utfall {
   padding: 1rem;
-  border-radius: var(--a-border-radius-medium);
+  border-radius: var(--ax-border-radius-medium);
 }
 
 .success-message {
   padding: 1rem;
-  background-color: var(--a-surface-success-subtle);
-  color: var(--a-text-success);
-  border-radius: var(--a-border-radius-medium);
-  border: 1px solid var(--a-border-success);
+  background-color: var(--ax-bg-success-soft);
+  color: var(--ax-text-success);
+  border-radius: var(--ax-border-radius-medium);
+  border: 1px solid var(--ax-border-success);
 }
 
 .info-message {
   padding: 1rem;
-  background-color: var(--a-surface-info-subtle);
-  color: var(--a-text-info);
-  border-radius: var(--a-border-radius-medium);
-  border: 1px solid var(--a-border-info);
+  background-color: var(--ax-bg-info-soft);
+  color: var(--ax-text-info);
+  border-radius: var(--ax-border-radius-medium);
+  border: 1px solid var(--ax-border-info);
 }
 
 .decision-sidebar {
   padding: 1.5rem;
-  background-color: var(--a-surface-default);
-  border-radius: var(--a-border-radius-medium);
-  border: 1px solid var(--a-border-subtle);
+  background-color: var(--ax-bg-raised);
+  border-radius: var(--ax-border-radius-medium);
+  border: 1px solid var(--ax-border-neutral-subtleA);
   height: fit-content;
   position: sticky;
   top: 1rem;
@@ -75,8 +75,8 @@
 
 .decision-sidebar h4 {
   margin-bottom: 1.5rem;
-  color: var(--a-text-default);
-  border-bottom: 1px solid var(--a-border-subtle);
+  color: var(--ax-text-neutral);
+  border-bottom: 1px solid var(--ax-border-neutral-subtleA);
   padding-bottom: 0.5rem;
 }
 
@@ -110,7 +110,7 @@
   gap: 0.75rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--a-border-subtle);
+  border-top: 1px solid var(--ax-border-neutral-subtleA);
 }
 
 /* Responsive design */
@@ -128,9 +128,10 @@
 /* Container spacing */
 .aktivitet-vurdering-container {
   padding: 1rem;
+  background-color: var(--ax-bg-default);
 }
 
 .aktivitet-vurdering-container h3 {
   margin-bottom: 1rem;
-  color: var(--a-text-default);
+  color: var(--ax-text-neutral);
 }

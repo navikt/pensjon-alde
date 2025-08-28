@@ -1,6 +1,7 @@
 import React from "react";
 import type { AktivitetDTO } from "../../types/behandling";
 import "./aktivitet-vurdering-layout.css";
+import {Heading} from "@navikt/ds-react";
 
 interface AktivitetVurderingLayoutProps {
   title: string;
@@ -23,7 +24,7 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
 }) => {
   return (
     <div className={`aktivitet-vurdering-container ${className}`}>
-      <h3>{title}</h3>
+      <Heading size="small" level={"3"}>{title}</Heading>
       <div className="aktivitet-vurdering-grid">
         <div className="information-section">
           {aktivitet && (

@@ -14,7 +14,7 @@ export default function Attestering() {
       <DogHarnessIcon
         title="Attestering fullført"
         fontSize="2rem"
-        color="var(--a-icon-success)"
+        color="var(--ax-text-success)"
         aria-label="Oppgaven er til attestering"
       />
       <BodyLong>Oppgaven er til attestering</BodyLong>

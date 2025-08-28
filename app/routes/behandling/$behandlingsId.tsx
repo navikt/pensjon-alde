@@ -12,7 +12,7 @@ import {
   Tag,
   VStack,
   CopyButton,
-  Loader,
+  Loader, Page,
 } from "@navikt/ds-react";
 import React, { useEffect, useRef } from "react";
 import { formatDateToNorwegian } from "../../utils/date";
@@ -140,104 +140,106 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   }, [activeStepIndex, currentAktivitetId]);
 
   return (
-    <div>
-      <Box.New padding="4" background="sunken" borderWidth="1 0">
-        <HStack gap="6" align="center">
-          <VStack>
-            <Label size="small">Behandling</Label>
-            <BodyShort>{behandling.friendlyName}</BodyShort>
-          </VStack>
-          <VStack>
-            <Label size="small">Status</Label>
-            {behandlingJobber ? (
-              <Loader size="small" title="Jobber" variant="interaction" />
-            ) : (
-              <Tag
-                variant={
-                  behandling.status === BehandlingStatus.FERDIG
-                    ? "success"
-                    : behandling.status === BehandlingStatus.FEILET
-                      ? "error"
-                      : "info"
-                }
-                size="small"
-              >
-                {behandling.status}
-              </Tag>
-            )}
-          </VStack>
-          <VStack>
-            <Label size="small">Opprettet</Label>
-            <BodyShort size="small">
-              {formatDateToNorwegian(behandling.opprettet)}
-            </BodyShort>
-          </VStack>
-          {behandling.kravId && (
+    <Box.New asChild background={"default"}>
+      <Page>
+        <Box.New padding="4" borderWidth="1 0">
+          <HStack gap="6" align="center">
             <VStack>
-              <Label size="small">Krav</Label>
-              <CopyButton
-                text={behandling.kravId.toString()}
-                copyText={behandling.kravId.toString()}
-                size="small"
-              />
+              <Label size="small">Behandling</Label>
+              <BodyShort>{behandling.friendlyName}</BodyShort>
             </VStack>
-          )}
-          {behandling.sakId && (
             <VStack>
-              <Label size="small">Sak</Label>
-              <CopyButton
-                text={behandling.sakId.toString()}
-                copyText={behandling.sakId.toString()}
-                size="small"
-              />
-            </VStack>
-          )}
-        </HStack>
-      </Box.New>
-
-      {visibleAktiviteter.length > 0 && (
-        <Box.New padding="space-12">
-          <div
-            ref={stepperContainerRef}
-            style={{
-              overflowX: "auto",
-              overflowY: "hidden",
-              scrollbarWidth: "thin",
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
-            <Stepper
-              orientation="horizontal"
-              activeStep={activeStepIndex + 1}
-              style={{ minWidth: "max-content" }}
-            >
-              {visibleAktiviteter.map((aktivitet, index) => (
-                <Stepper.Step
-                  key={aktivitet.uuid}
-                  completed={aktivitet.status === AktivitetStatus.FULLFORT}
-                  onClick={() => {
-                    const implementationUrl = buildAktivitetRedirectUrl(
-                      params.behandlingsId!,
-                      aktivitet.aktivitetId!.toString(),
-                      loaderData.behandling,
-                      aktivitet,
-                    );
-                    // Navigate to the implementation URL if it exists, otherwise to the base aktivitet URL
-                    navigate(
-                      implementationUrl || `aktivitet/${aktivitet.aktivitetId}`,
-                    );
-                  }}
-                  style={{ cursor: "pointer" }}
-                  data-step-index={index}
+              <Label size="small">Status</Label>
+              {behandlingJobber ? (
+                <Loader size="small" title="Jobber" variant="interaction"/>
+              ) : (
+                <Tag
+                  variant={
+                    behandling.status === BehandlingStatus.FERDIG
+                      ? "success"
+                      : behandling.status === BehandlingStatus.FEILET
+                        ? "error"
+                        : "info"
+                  }
+                  size="small"
                 >
-                  {aktivitet.friendlyName!}
-                </Stepper.Step>
-              ))}
-            </Stepper>
-          </div>
+                  {behandling.status}
+                </Tag>
+              )}
+            </VStack>
+            <VStack>
+              <Label size="small">Opprettet</Label>
+              <BodyShort size="small">
+                {formatDateToNorwegian(behandling.opprettet)}
+              </BodyShort>
+            </VStack>
+            {behandling.kravId && (
+              <VStack>
+                <Label size="small">Krav</Label>
+                <CopyButton
+                  text={behandling.kravId.toString()}
+                  copyText={behandling.kravId.toString()}
+                  size="small"
+                />
+              </VStack>
+            )}
+            {behandling.sakId && (
+              <VStack>
+                <Label size="small">Sak</Label>
+                <CopyButton
+                  text={behandling.sakId.toString()}
+                  copyText={behandling.sakId.toString()}
+                  size="small"
+                />
+              </VStack>
+            )}
+          </HStack>
         </Box.New>
-      )}
-      {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
-    </div>
+
+        {visibleAktiviteter.length > 0 && (
+          <Box.New padding="space-12">
+            <div
+              ref={stepperContainerRef}
+              style={{
+                overflowX: "auto",
+                overflowY: "hidden",
+                scrollbarWidth: "thin",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              <Stepper
+                orientation="horizontal"
+                activeStep={activeStepIndex + 1}
+                style={{minWidth: "max-content"}}
+              >
+                {visibleAktiviteter.map((aktivitet, index) => (
+                  <Stepper.Step
+                    key={aktivitet.uuid}
+                    completed={aktivitet.status === AktivitetStatus.FULLFORT}
+                    onClick={() => {
+                      const implementationUrl = buildAktivitetRedirectUrl(
+                        params.behandlingsId!,
+                        aktivitet.aktivitetId!.toString(),
+                        loaderData.behandling,
+                        aktivitet,
+                      );
+                      // Navigate to the implementation URL if it exists, otherwise to the base aktivitet URL
+                      navigate(
+                        implementationUrl || `aktivitet/${aktivitet.aktivitetId}`,
+                      );
+                    }}
+                    style={{cursor: "pointer"}}
+                    data-step-index={index}
+                  >
+                    {aktivitet.friendlyName!}
+                  </Stepper.Step>
+                ))}
+              </Stepper>
+            </div>
+          </Box.New>
+        )}
+        {behandlingJobber ? <Loader/> : <Outlet context={{behandling}}/>}
+      </Page>
+    </Box.New>
   );
 }
