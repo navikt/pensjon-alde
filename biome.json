@@ -109,20 +109,7 @@
       }
     },
     {
-      "includes": ["**/*.stories.ts", "**/*.stories.tsx"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "noExplicitAny": "off"
-          },
-          "style": {
-            "useImportType": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": ["**/*.config.*", "next.config.*", "tailwind.config.*"],
+      "includes": ["**/*.config.*", "tailwind.config.*"],
       "linter": {
         "rules": {
           "suspicious": {
