@@ -64,7 +64,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
       <Outlet context={{ behandling, aktivitet }} />
 
       {!outlet && (
-        <Box
+        <Box.New
           paddingBlock="8 0"
           style={{ display: "flex", justifyContent: "center" }}
         >
@@ -94,7 +94,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
               </Detail>
             )}
           </Alert>
-        </Box>
+        </Box.New>
       )}
     </div>
   );

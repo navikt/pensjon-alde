@@ -6,10 +6,11 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import '@navikt/ds-css/darkside'
 
 import type { Route } from "./+types/root";
 import "@navikt/ds-css";
-import { InternalHeader, Spacer } from "@navikt/ds-react";
+import {InternalHeader, Page, Spacer, Theme} from "@navikt/ds-react";
 import { initializeFetch } from "./utils/use-fetch";
 // Initialize mocking and auth in mock environment
 if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
@@ -36,14 +37,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <InternalHeader>
-          <InternalHeader.Title as="h1">Pesys</InternalHeader.Title>
-          <Spacer />
-          <InternalHeader.User name="Ola Normann" />
-        </InternalHeader>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <Theme theme={'light'}>
+          <InternalHeader>
+            <InternalHeader.Title as="h1">Pesys</InternalHeader.Title>
+            <Spacer />
+            <InternalHeader.User name="Ola Normann" />
+          </InternalHeader>
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+        </Theme>
       </body>
     </html>
   );

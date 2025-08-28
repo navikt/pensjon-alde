@@ -141,7 +141,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
   return (
     <div>
-      <Box padding="4" background="surface-subtle" borderWidth="1 0">
+      <Box.New padding="4" background="sunken" borderWidth="1 0">
         <HStack gap="6" align="center">
           <VStack>
             <Label size="small">Behandling</Label>
@@ -193,10 +193,10 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             </VStack>
           )}
         </HStack>
-      </Box>
+      </Box.New>
 
       {visibleAktiviteter.length > 0 && (
-        <Box padding="space-12">
+        <Box.New padding="space-12">
           <div
             ref={stepperContainerRef}
             style={{
@@ -235,7 +235,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               ))}
             </Stepper>
           </div>
-        </Box>
+        </Box.New>
       )}
       {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
     </div>
