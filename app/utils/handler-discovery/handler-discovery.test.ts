@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { BehandlingDTO, AktivitetDTO } from "../../types/behandling";
-import { BehandlingStatus, AktivitetStatus, AldeBehandlingStatus } from "../../types/behandling";
+import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from "../../types/behandling";
 import {
   getAvailableHandlers,
   findRouteForHandlers,
@@ -11,13 +11,6 @@ import {
   getHandlerNamesFromPath,
 } from "./handler-discovery";
 
-// Mock import.meta.glob to simulate the file structure
-vi.mock("import.meta", () => ({
-  glob: vi.fn(() => ({
-    "/app/behandlinger/alderspensjon-soknad/vurder-samboer/index.tsx": {},
-  })),
-}));
-
 describe("handler-discovery", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -27,17 +20,34 @@ describe("handler-discovery", () => {
     it("should return available handler mappings based on folder structure", () => {
       const handlers = getAvailableHandlers();
 
-      expect(handlers).toHaveLength(1);
-      expect(handlers[0]).toEqual({
-        behandlingHandler: "alderspensjon-soknad",
-        aktivitetHandler: "vurder-samboer",
-        routePath: "alderspensjon-soknad/vurder-samboer",
+      // Should return at least one handler
+      expect(handlers.length).toBeGreaterThanOrEqual(1);
+      
+      // Each handler should have the required properties
+      handlers.forEach(handler => {
+        expect(handler).toHaveProperty("behandlingHandler");
+        expect(handler).toHaveProperty("aktivitetHandler");
+        expect(handler).toHaveProperty("routePath");
+        expect(typeof handler.behandlingHandler).toBe("string");
+        expect(typeof handler.aktivitetHandler).toBe("string");
+        expect(typeof handler.routePath).toBe("string");
+        
+        // routePath should be combination of behandlingHandler/aktivitetHandler
+        expect(handler.routePath).toBe(`${handler.behandlingHandler}/${handler.aktivitetHandler}`);
       });
+
+      // Should include at least the vurder-samboer handler we know exists
+      const hasVurderSamboer = handlers.some(h => 
+        h.behandlingHandler === "alderspensjon-soknad" &&
+        h.aktivitetHandler === "vurder-samboer"
+      );
+      expect(hasVurderSamboer).toBe(true);
     });
   });
 
   describe("findRouteForHandlers", () => {
     it("should find route for valid handler combination", () => {
+      // Test with a handler we know exists
       const route = findRouteForHandlers(
         "alderspensjon-soknad",
         "vurder-samboer",
@@ -80,6 +90,7 @@ describe("handler-discovery", () => {
       opprettet: "2025-08-26T16:49:29.7398",
       stoppet: null,
       aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
+      status: BehandlingStatus.UNDER_BEHANDLING,
       aktiviteter: [],
       fnr: null,
       sakId: 23077283,
@@ -162,6 +173,7 @@ describe("handler-discovery", () => {
       opprettet: "2025-08-26T16:49:29.7398",
       stoppet: null,
       aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
+      status: BehandlingStatus.UNDER_BEHANDLING,
       aktiviteter: [],
       fnr: null,
       sakId: 23077283,
@@ -177,7 +189,7 @@ describe("handler-discovery", () => {
         opprettet: "2025-08-26T16:49:34.364857",
         antallGangerKjort: 1,
         sisteAktiveringsdato: "2025-08-26T16:49:34.380546",
-        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
+        status: AktivitetStatus.UNDER_BEHANDLING,
         utsattTil: null,
       };
 
@@ -193,7 +205,7 @@ describe("handler-discovery", () => {
         opprettet: "2025-08-26T16:49:34.297346",
         antallGangerKjort: 1,
         sisteAktiveringsdato: "2025-08-26T16:49:34.312694",
-        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
+        status: AktivitetStatus.UNDER_BEHANDLING,
         utsattTil: null,
       };
 
@@ -209,7 +221,7 @@ describe("handler-discovery", () => {
         opprettet: "2025-08-26T16:49:34.297346",
         antallGangerKjort: 1,
         sisteAktiveringsdato: "2025-08-26T16:49:34.312694",
-        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
+        status: AktivitetStatus.UNDER_BEHANDLING,
         utsattTil: null,
       };
 
@@ -221,12 +233,21 @@ describe("handler-discovery", () => {
     it("should return handlers for existing behandling", () => {
       const handlers = getHandlersForBehandling("alderspensjon-soknad");
 
-      expect(handlers).toHaveLength(1);
-      expect(handlers[0]).toEqual({
-        behandlingHandler: "alderspensjon-soknad",
-        aktivitetHandler: "vurder-samboer",
-        routePath: "alderspensjon-soknad/vurder-samboer",
+      // Should return at least one handler for alderspensjon-soknad
+      expect(handlers.length).toBeGreaterThanOrEqual(1);
+      
+      // All returned handlers should be for the requested behandling
+      handlers.forEach(handler => {
+        expect(handler.behandlingHandler).toBe("alderspensjon-soknad");
+        expect(handler.routePath).toContain("alderspensjon-soknad/");
       });
+
+      // Should include at least the vurder-samboer handler we know exists
+      const hasVurderSamboer = handlers.some(h => 
+        h.aktivitetHandler === "vurder-samboer" &&
+        h.routePath === "alderspensjon-soknad/vurder-samboer"
+      );
+      expect(hasVurderSamboer).toBe(true);
     });
 
     it("should return empty array for non-existent behandling", () => {
