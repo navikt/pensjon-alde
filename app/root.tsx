@@ -72,7 +72,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <InternalHeader>
             <InternalHeader.Title as="h2">Pesys</InternalHeader.Title>
             <Spacer />
-            <Dropdown defaultOpen>
+            <Dropdown>
               <InternalHeader.Button as={Dropdown.Toggle}>
                 <MenuGridIcon
                   style={{ fontSize: "1.5rem" }}
