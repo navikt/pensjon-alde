@@ -30,7 +30,7 @@ if (isLocalEnv) {
 
   sessionStorage = createCookieSessionStorage({
     cookie: {
-      name: '__session',
+      name: '__alde_session',
       httpOnly: true,
       path: '/',
       sameSite: 'lax',
