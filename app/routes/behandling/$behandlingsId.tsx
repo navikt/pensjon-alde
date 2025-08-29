@@ -18,9 +18,6 @@ import React, { useEffect, useRef } from "react";
 import { formatDateToNorwegian } from "../../utils/date";
 import { useRevalidator } from "react-router";
 import {useFetch} from "~/utils/use-fetch/use-fetch";
-import {ExternalLinkIcon} from "@navikt/aksel-icons";
-import {env, isVerdandeLinksEnabled} from "~/utils/env.server";
-import {buildUrl} from "~/utils/build-url";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -64,12 +61,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return {
     behandlingsId,
     behandling,
-    verdandeBehandlingUrl: isVerdandeLinksEnabled ? env.verdandeBehandlingUrl : undefined,
   };
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { behandling, verdandeBehandlingUrl } = loaderData;
+  const { behandling } = loaderData;
   const params = useParams();
   const currentAktivitetId = params.aktivitetId;
   const navigate = useNavigate();
@@ -197,18 +193,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 />
               </VStack>
             )}
-            {verdandeBehandlingUrl &&
-            <VStack>
-              <Label size="small">Verdande</Label>
-              <a
-                href={buildUrl(verdandeBehandlingUrl, { 'behandlingId': behandling.behandlingId } )}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Åpne i Verdande<ExternalLinkIcon/>
-              </a>
-            </VStack>
-            }
           </HStack>
         </Box.New>
 

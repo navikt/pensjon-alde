@@ -11,12 +11,13 @@ import '@navikt/ds-css/darkside'
 
 import type { Route } from "./+types/root";
 import "@navikt/ds-css";
-import {ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Spacer, Theme} from "@navikt/ds-react";
-import {useState} from "react";
-import {MoonIcon, SunIcon} from "@navikt/aksel-icons";
-import {env} from "~/utils/env.server";
+import {ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Label, Spacer, Theme, VStack} from "@navikt/ds-react";
+import React, {useState} from "react";
+import {ExternalLinkIcon, MenuGridIcon, MoonIcon, SunIcon} from "@navikt/aksel-icons";
+import {env, isVerdandeLinksEnabled} from "~/utils/env.server";
 import type {Me} from "~/types/me";
 import {initializeFetch, useFetch2} from "~/utils/use-fetch/use-fetch";
+import {buildUrl} from "~/utils/build-url";
 // Initialize mocking and auth in mock environment
 if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
   import("./mocks").then(({ initializeMocking }) => {
@@ -27,7 +28,7 @@ if (typeof window === "undefined" && process.env.NODE_ENV === "mock") {
 export const links: Route.LinksFunction = () => [];
 
 export const loader = async ({
-                               request,
+                               params, request,
                              }: LoaderFunctionArgs) => {
   // Initialize fetch system on server-side
   initializeFetch();
@@ -42,13 +43,15 @@ export const loader = async ({
   )
 
   return {
+    behandlingId: params.behandlingsId ? +params.behandlingsId : undefined,
     darkmode: darkmode === 'true' || darkmode === true,
     me: me,
+    verdandeBehandlingUrl: isVerdandeLinksEnabled ? env.verdandeBehandlingUrl : undefined,
   };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { darkmode, me } = useLoaderData<typeof loader>()
+  const { behandlingId, darkmode, me, verdandeBehandlingUrl } = useLoaderData<typeof loader>()
   const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
 
   function setDarkmode(darkmode: boolean) {
@@ -69,6 +72,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <InternalHeader>
             <InternalHeader.Title as="h2">Pesys</InternalHeader.Title>
             <Spacer />
+            <Dropdown defaultOpen>
+              <InternalHeader.Button as={Dropdown.Toggle}>
+                <MenuGridIcon
+                  style={{ fontSize: "1.5rem" }}
+                  title="Systemer og oppslagsverk"
+                />
+              </InternalHeader.Button>
+            <Dropdown.Menu>
+              {behandlingId && verdandeBehandlingUrl &&
+                <Dropdown.Menu.GroupedList>
+                  <Dropdown.Menu.GroupedList.Heading>
+                    Verdande
+                  </Dropdown.Menu.GroupedList.Heading>
+                  <Dropdown.Menu.GroupedList.Item
+                      as="a"
+                      target="_blank"
+                      href={buildUrl(verdandeBehandlingUrl, { 'behandlingId': behandlingId } )}
+                  >
+                    Åpne i Verdande<ExternalLinkIcon aria-hidden/>
+                  </Dropdown.Menu.GroupedList.Item>
+                </Dropdown.Menu.GroupedList>
+              }
+            </Dropdown.Menu>
+            </Dropdown>
             <ActionMenu>
               <ActionMenu.Trigger>
                 <InternalHeader.UserButton
