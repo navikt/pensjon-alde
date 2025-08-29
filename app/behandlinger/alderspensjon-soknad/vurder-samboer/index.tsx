@@ -1,51 +1,33 @@
-import { useLoaderData, Form, redirect } from "react-router";
-import { Checkbox, Button, DatePicker, useDatepicker } from "@navikt/ds-react";
-import { parse, formatISO } from "date-fns";
+import { Button, Checkbox, DatePicker, useDatepicker } from "@navikt/ds-react";
+import { Form, redirect, useLoaderData, useOutletContext } from "react-router";
+import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
+import type { AktivitetOutletContext } from "~/types/aktivitetOutletContext";
+import { createAktivitetApi } from "~/utils/aktivitet-api";
+import type { Route } from "./+types";
 import type {
   SamboerInformasjonHolder,
   SamboerVurdering,
-  Vurdering,
 } from "./samboer-types";
-import type { Route } from "./+types";
-import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
-import { useOutletContext } from "react-router";
-import type { AktivitetOutletContext } from "~/types/aktivitetOutletContext";
-import {useFetch} from "~/utils/use-fetch/use-fetch";
+import { SamboerVurderingFormSchema } from "./samboer-types";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const { behandlingsId, aktivitetId } = params;
+  const { behandlingId, aktivitetId } = params;
 
-  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`;
-
-  const grunnlag = await useFetch(
+  const api = createAktivitetApi({
     request,
-    `${penUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/grunnlagsdata`,
-  );
+    behandlingId,
+    aktivitetId,
+  });
 
-  const vurdering = await useFetch(
-    request,
-    `${penUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
-  );
-  let parsedGrunnlag;
-  if (grunnlag.ok) {
-    console.log(grunnlag);
-    parsedGrunnlag = (await grunnlag.json()) as {
-      samboerInformasjon: SamboerInformasjonHolder;
-    };
-  }
+  const grunnlag = await api.hentGrunnlagsdata<{
+    samboerInformasjon: SamboerInformasjonHolder;
+  }>();
 
-  let parsedVurdering = null;
-  if (vurdering.ok) {
-    parsedVurdering = (await vurdering.json()) as SamboerVurdering;
-  } else if (vurdering.status === 404) {
-    parsedVurdering = null;
-  }
-
-  console.log("response", parsedGrunnlag);
+  const vurdering = await api.hentVurdering<SamboerVurdering>();
 
   return {
-    samboerInformasjon: parsedGrunnlag?.samboerInformasjon,
-    vurdering: parsedVurdering,
+    samboerInformasjon: grunnlag?.samboerInformasjon,
+    vurdering,
   };
 }
 
@@ -53,51 +35,25 @@ export async function action({
   params,
   request,
 }: {
-  params: { behandlingsId: string; aktivitetId: string };
+  params: { behandlingId: string; aktivitetId: string };
   request: Request;
 }) {
-  const { behandlingsId, aktivitetId } = params;
+  const { behandlingId, aktivitetId } = params;
   const formData = await request.formData();
-
-  const virkFomString = formData.get("virkFom") as string;
-  const virkFomDate = virkFomString
-    ? parse(virkFomString, "dd.MM.yyyy", new Date())
-    : new Date();
-
-  console.log("virkFomDate", virkFomDate);
-
-  const vurdering: SamboerVurdering = {
-    virkFom: formatISO(virkFomDate, { representation: "date" }),
-    tidligereEktefeller: formData.get("tidligereEktefeller") === "on",
-    harFellesBarn: formData.get("harFellesBarn") === "on",
-    vurdert: (formData.get("vurdert") as Vurdering) || "VURDERT",
-  };
-
-  console.log("data to post", vurdering);
-  // Post to the API
-  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`;
-
-  const response = await useFetch(
+  const api = createAktivitetApi({
     request,
-    `${penUrl}/behandling/${behandlingsId}/aktivitet/${aktivitetId}/vurdering`,
-
-    {
-      method: "POST",
-      body: JSON.stringify({ data: vurdering }),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to save samboer vurdering: ${response.status}`);
-  }
-
-  // Redirect back to the aktivitet to trigger loader revalidation
-  return redirect(`/behandling/${behandlingsId}`);
+    behandlingId,
+    aktivitetId,
+  });
+  const vurdering = SamboerVurderingFormSchema.parse(formData);
+  await api.lagreVurdering<SamboerVurdering>(vurdering)
+  return redirect(`/behandling/${behandlingId}`);
 }
 
 export default function VurdereSamboer() {
   const { datepickerProps, inputProps } = useDatepicker({
     defaultSelected: undefined,
+    required: true
   });
 
   const { samboerInformasjon, vurdering } = useLoaderData<typeof loader>();

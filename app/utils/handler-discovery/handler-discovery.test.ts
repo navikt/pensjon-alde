@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { BehandlingDTO, AktivitetDTO } from "../../types/behandling";
-import { BehandlingStatus, AktivitetStatus } from "../../types/behandling";
+import { BehandlingStatus, AktivitetStatus, AldeBehandlingStatus } from "../../types/behandling";
 import {
   getAvailableHandlers,
   findRouteForHandlers,
@@ -79,7 +79,7 @@ describe("handler-discovery", () => {
       utsattTil: "2025-08-27T16:49:34.383125",
       opprettet: "2025-08-26T16:49:29.7398",
       stoppet: null,
-      status: BehandlingStatus.UNDER_BEHANDLING,
+      aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
       aktiviteter: [],
       fnr: null,
       sakId: 23077283,
@@ -161,7 +161,7 @@ describe("handler-discovery", () => {
       utsattTil: null,
       opprettet: "2025-08-26T16:49:29.7398",
       stoppet: null,
-      status: BehandlingStatus.UNDER_BEHANDLING,
+      aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
       aktiviteter: [],
       fnr: null,
       sakId: 23077283,
@@ -177,7 +177,7 @@ describe("handler-discovery", () => {
         opprettet: "2025-08-26T16:49:34.364857",
         antallGangerKjort: 1,
         sisteAktiveringsdato: "2025-08-26T16:49:34.380546",
-        status: AktivitetStatus.UNDER_BEHANDLING,
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
         utsattTil: null,
       };
 
@@ -193,7 +193,7 @@ describe("handler-discovery", () => {
         opprettet: "2025-08-26T16:49:34.297346",
         antallGangerKjort: 1,
         sisteAktiveringsdato: "2025-08-26T16:49:34.312694",
-        status: AktivitetStatus.FULLFORT,
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
         utsattTil: null,
       };
 
@@ -209,7 +209,7 @@ describe("handler-discovery", () => {
         opprettet: "2025-08-26T16:49:34.297346",
         antallGangerKjort: 1,
         sisteAktiveringsdato: "2025-08-26T16:49:34.312694",
-        status: AktivitetStatus.FULLFORT,
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
         utsattTil: null,
       };
 

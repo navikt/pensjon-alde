@@ -37,7 +37,6 @@ export const loader = async ({
 
   const me: Me = await useFetch2(request, `${penUrl}/me`);
 
-
   let darkmode = await createCookie('darkmode').parse(
     request.headers.get('cookie'),
   )

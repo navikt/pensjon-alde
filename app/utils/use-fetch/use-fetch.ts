@@ -128,8 +128,15 @@ export async function useFetch2<T>(
   if (!res.ok) {
     await normalizeAndThrow(res, `Feil ved GET ${input}`)
   }
-  return (await res.json()) as T
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return (await res.json()) as T;
+  } else {
+    return res as unknown as T;
+  }
 }
+
+export const serverFetch = useFetch2;
 
 /**
  * Initialize the fetch system

@@ -13,11 +13,11 @@ export function meta({ params }: Route.MetaArgs) {
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const { behandlingsId, aktivitetId } = params;
+  const { behandlingId, aktivitetId } = params;
   const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`;
 
   // Fetch behandling from API using behandlingId
-  const response = await useFetch(request, `${penUrl}/behandling/${behandlingsId}`);
+  const response = await useFetch(request, `${penUrl}/behandling/${behandlingId}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch behandling: ${response.status}`);
   }
@@ -35,7 +35,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   // Check if we should redirect to an implementation
   const implementationUrl = buildAktivitetRedirectUrl(
-    behandlingsId,
+    behandlingId,
     aktivitetId,
     behandling,
     aktivitet,
