@@ -1,6 +1,3 @@
-import { z } from "zod";
-import { parse, formatISO, isValid } from "date-fns";
-
 export interface NavnTilPerson {
   fornavn: string;
   mellomnavn: string | null;
@@ -76,29 +73,9 @@ export interface SamboerInformasjonHolder {
   _links: Links;
 }
 
-export const SamboerVurderingFormSchema = z.object({
-  virkFom: z.preprocess(
-    (val) => {
-      console.log('PREPROCESSOR FOR VIRKFROM', val)
-      if (!val || val === "") return null;
-      if (typeof val !== "string") return null;
-
-      const date = parse(val, "dd.MM.yyyy", new Date());
-      if (!isValid(date)) return null;
-
-      return formatISO(date, { representation: "date" });
-    },
-    z.string()
-  ),
-  tidligereEktefeller: z.preprocess(
-    (val) => val === "on",
-    z.boolean()
-  ),
-  harFellesBarn: z.preprocess(
-    (val) => val === "on",
-    z.boolean()
-  ),
-  vurdert: z.enum(["VURDERT", "VENTER", "AVBRUTT"]).default('VURDERT'),
-});
-
-export type SamboerVurdering = z.infer<typeof SamboerVurderingFormSchema>;
+export interface SamboerVurdering {
+  virkFom: string | null;
+  tidligereEktefeller: boolean | null;
+  harFellesBarn: boolean | null;
+  vurdert: string | null;
+}

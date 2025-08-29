@@ -94,6 +94,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     : 0;
 
   const behandlingJobber = behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL
+    && (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
   useEffect(() => {
     if (behandlingJobber) {
@@ -129,10 +130,8 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         const containerWidth = containerRect.width;
 
         if (stepLeft < scrollLeft) {
-          // Step is to the left of visible area
           container.scrollTo({ left: stepLeft - 20, behavior: "smooth" });
         } else if (stepRight > scrollLeft + containerWidth) {
-          // Step is to the right of visible area
           container.scrollTo({
             left: stepRight - containerWidth + 20,
             behavior: "smooth",

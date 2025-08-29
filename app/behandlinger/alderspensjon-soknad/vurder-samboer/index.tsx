@@ -3,12 +3,14 @@ import { Form, redirect, useLoaderData, useOutletContext } from "react-router";
 import AktivitetVurderingLayout from "~/components/shared/AktivitetVurderingLayout";
 import type { AktivitetOutletContext } from "~/types/aktivitetOutletContext";
 import { createAktivitetApi } from "~/utils/aktivitet-api";
+import { checkbox, dateInput, parseForm } from "~/utils/parse-form";
 import type { Route } from "./+types";
 import type {
   SamboerInformasjonHolder,
   SamboerVurdering,
 } from "./samboer-types";
-import { SamboerVurderingFormSchema } from "./samboer-types";
+
+
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params;
@@ -31,23 +33,27 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   };
 }
 
-export async function action({
-  params,
-  request,
-}: {
-  params: { behandlingId: string; aktivitetId: string };
-  request: Request;
-}) {
+export async function action({ params, request }: Route.ActionArgs) {
   const { behandlingId, aktivitetId } = params;
-  const formData = await request.formData();
   const api = createAktivitetApi({
     request,
     behandlingId,
     aktivitetId,
   });
-  const vurdering = SamboerVurderingFormSchema.parse(formData);
-  await api.lagreVurdering<SamboerVurdering>(vurdering)
-  return redirect(`/behandling/${behandlingId}`);
+  const formData = await request.formData();
+
+  const vurdering = parseForm<SamboerVurdering>(formData, {
+    virkFom: dateInput,
+    tidligereEktefeller: checkbox,
+    harFellesBarn: checkbox,
+  })
+
+  try {
+    await api.lagreVurdering<SamboerVurdering>(vurdering)
+    return redirect(`/behandling/${behandlingId}`);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export default function VurdereSamboer() {

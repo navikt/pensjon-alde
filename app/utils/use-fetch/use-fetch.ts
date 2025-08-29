@@ -100,10 +100,6 @@ export async function useFetch(
 
     // Log response details
     console.log(`📥 [${response.status}] ${url} (${duration}ms)`);
-    console.log(
-      `📋 Response headers:`,
-      Object.fromEntries(response.headers.entries()),
-    );
 
     if (!response.ok) {
       console.warn(
