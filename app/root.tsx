@@ -11,7 +11,7 @@ import '@navikt/ds-css/darkside'
 
 import type { Route } from "./+types/root";
 import "@navikt/ds-css";
-import {ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Label, Spacer, Theme, VStack} from "@navikt/ds-react";
+import {ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Spacer, Theme} from "@navikt/ds-react";
 import React, {useState} from "react";
 import {ExternalLinkIcon, MenuGridIcon, MoonIcon, SunIcon} from "@navikt/aksel-icons";
 import {env, isVerdandeLinksEnabled} from "~/utils/env.server";

@@ -163,7 +163,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                   }
                   size="small"
                 >
-                  {behandling.status}
+                  {behandling.aldeBehandlingStatus}
                 </Tag>
               )}
             </VStack>
