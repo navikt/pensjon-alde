@@ -35,6 +35,10 @@ spec:
       value: "{{{ pen.scope }}}"
     - name: "PEN_URL"
       value: "{{{ pen.url }}}"
+    - name: "VERDANDE_BEHANDLING_URL"
+      value: "{{{ verdande.behandling_url }}}"
+    - name: "VERDANDE_LINKS_ENABLED"
+      value: "{{{ verdande.links_enabled }}}"
 
   image: "{{{ image }}}"
   ingresses:

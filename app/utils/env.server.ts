@@ -34,7 +34,10 @@ export const env = loadEnv(
 
     penScope: 'PEN_SCOPE',
     penUrl: 'PEN_URL',
+
+    verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL'
   },
 )
 
 export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'
+export const isVerdandeLinksEnabled = process.env.VERDANDE_LINKS_ENABLED === 'true'
