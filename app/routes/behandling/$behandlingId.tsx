@@ -17,7 +17,8 @@ import {
 import React, { useEffect, useRef } from "react";
 import { formatDateToNorwegian } from "../../utils/date";
 import { useRevalidator } from "react-router";
-import {useFetch} from "~/utils/use-fetch/use-fetch";
+import {useFetch2} from "~/utils/use-fetch/use-fetch";
+import {ExternalLinkIcon} from "@navikt/aksel-icons";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -29,33 +30,42 @@ export function meta({ params }: Route.MetaArgs) {
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId } = params;
   const url = new URL(request.url);
+  const justCompletedId = url.searchParams.get('justCompleted');
 
   const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`;
-  const response = await useFetch(request, `${penUrl}/behandling/${behandlingId}`);
+  let behandling = await useFetch2<BehandlingDTO>(request, `${penUrl}/behandling/${behandlingId}`);
 
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch behandling: ${response.status} ${response.statusText}`,
+  if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
+    let aktivitetSomSkalVises = behandling.aktiviteter.find(
+      (aktivitet) =>
+        (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
+        aktivitet.handlerName &&
+        aktivitet.friendlyName
     );
-  }
 
-  const behandling: BehandlingDTO = await response.json();
+    if (!aktivitetSomSkalVises) {
+      aktivitetSomSkalVises = behandling.aktiviteter.find(
+        (aktivitet) => aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
+      );
+    }
 
-  if (
-    !url.pathname.includes("/aktivitet/") &&
-    behandling.aktiviteter.length > 0
-  ) {
+    if (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId) {
+      for (let i = 0; i < 3; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        behandling = await useFetch2<BehandlingDTO>(request, `${penUrl}/behandling/${behandlingId}`);
 
-    console.log('aktiviteter', behandling.aktiviteter)
+        aktivitetSomSkalVises = behandling.aktiviteter.find(
+          (aktivitet) =>
+            (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
+            aktivitet.aktivitetId?.toString() !== justCompletedId
+        );
 
-    const aktivitetSomSkalVises = behandling.aktiviteter.find(
-      (aktivitet) => aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
-    );
+        if (aktivitetSomSkalVises) break;
+      }
+    }
 
     if (aktivitetSomSkalVises) {
-      return redirect(
-        `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`,
-      );
+      return redirect(`/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`);
     }
   }
 
@@ -102,7 +112,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         if (pollCount >= 10) {
           clearInterval(intervalId);
         }
-      }, 1000); // Refetch every second
+      }, 1000);
 
       return () => clearInterval(intervalId);
     }

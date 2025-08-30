@@ -50,7 +50,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   try {
     await api.lagreVurdering<SamboerVurdering>(vurdering)
-    return redirect(`/behandling/${behandlingId}`);
+    return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`);
   } catch (error) {
     console.error(error);
   }

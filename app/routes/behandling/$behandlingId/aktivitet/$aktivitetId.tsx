@@ -49,7 +49,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     !currentPath.includes(behandling.handlerName!) &&
     !currentPath.includes(aktivitet.handlerName!)
   ) {
-    throw redirect(implementationUrl);
+    return redirect(implementationUrl);
   }
 
   return { behandling, aktivitet };

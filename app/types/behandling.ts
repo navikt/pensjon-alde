@@ -23,7 +23,7 @@ export enum AktivitetStatus {
 }
 
 export interface AktivitetDTO {
-  aktivitetId: number | null;
+  aktivitetId: number;
   type: string;
   opprettet: string; // LocalDateTime as ISO string
 
