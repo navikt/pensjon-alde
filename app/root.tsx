@@ -41,16 +41,36 @@ export const loader = async ({
     request.headers.get('cookie'),
   )
 
+  const behandlingId = params.behandlingId ? +params.behandlingId : undefined
+  const aktivitetId = params.aktivitetId ? +params.aktivitetId : undefined
+
+  const verdandeAktivitetUrl = (isVerdandeLinksEnabled && behandlingId && aktivitetId)
+    ? buildUrl(
+      env.verdandeAktivitetUrl, {
+        behandlingId: behandlingId,
+        aktivitetId: aktivitetId
+      }
+    )
+    : undefined;
+
+  const verdandeBehandlingUrl = (isVerdandeLinksEnabled && behandlingId)
+    ? buildUrl(
+      env.verdandeBehandlingUrl, {
+        behandlingId: behandlingId
+      }
+    )
+    : undefined;
+
   return {
-    behandlingId: params.behandlingsId ? +params.behandlingsId : undefined,
     darkmode: darkmode === 'true' || darkmode === true,
     me: me,
-    verdandeBehandlingUrl: isVerdandeLinksEnabled ? env.verdandeBehandlingUrl : undefined,
+    verdandeAktivitetUrl: verdandeAktivitetUrl,
+    verdandeBehandlingUrl: verdandeBehandlingUrl,
   };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { behandlingId, darkmode, me, verdandeBehandlingUrl } = useLoaderData<typeof loader>()
+  const { darkmode, me, verdandeAktivitetUrl, verdandeBehandlingUrl } = useLoaderData<typeof loader>()
   const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
 
   function setDarkmode(darkmode: boolean) {
@@ -78,22 +98,54 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   title="Systemer og oppslagsverk"
                 />
               </InternalHeader.Button>
-            <Dropdown.Menu>
-              {behandlingId && verdandeBehandlingUrl &&
+              <Dropdown.Menu>
                 <Dropdown.Menu.GroupedList>
                   <Dropdown.Menu.GroupedList.Heading>
-                    Verdande
+                    Dokumentasjon
                   </Dropdown.Menu.GroupedList.Heading>
                   <Dropdown.Menu.GroupedList.Item
                       as="a"
                       target="_blank"
-                      href={buildUrl(verdandeBehandlingUrl, { 'behandlingId': behandlingId } )}
+                      href={'https://navno.sharepoint.com/sites/fag-og-ytelser-pesys/'}
                   >
-                    Åpne i Verdande<ExternalLinkIcon aria-hidden/>
+                    Rutiner for Pesys<ExternalLinkIcon aria-hidden/>
+                  </Dropdown.Menu.GroupedList.Item>
+                  <Dropdown.Menu.GroupedList.Item
+                      as="a"
+                      target="_blank"
+                      href={'https://lovdata.no/pro/#document/HJELP/nav-rettskilder'}
+                  >
+                    Rettskilder<ExternalLinkIcon aria-hidden/>
                   </Dropdown.Menu.GroupedList.Item>
                 </Dropdown.Menu.GroupedList>
-              }
-            </Dropdown.Menu>
+                {verdandeBehandlingUrl &&
+                  <>
+                    <Dropdown.Menu.Divider />
+                    <Dropdown.Menu.GroupedList>
+                      <Dropdown.Menu.GroupedList.Heading>
+                        Verdande
+                      </Dropdown.Menu.GroupedList.Heading>
+                      <Dropdown.Menu.GroupedList.Item
+                          as="a"
+                          target="_blank"
+                          href={verdandeBehandlingUrl}
+                      >
+                        Gå til behandling<ExternalLinkIcon aria-hidden/>
+                      </Dropdown.Menu.GroupedList.Item>
+
+                      {verdandeAktivitetUrl &&
+                        <Dropdown.Menu.GroupedList.Item
+                            as="a"
+                            target="_blank"
+                            href={verdandeAktivitetUrl}
+                        >
+                            Gå til aktivitet<ExternalLinkIcon aria-hidden/>
+                        </Dropdown.Menu.GroupedList.Item>
+                      }
+                    </Dropdown.Menu.GroupedList>
+                  </>
+                }
+              </Dropdown.Menu>
             </Dropdown>
             <ActionMenu>
               <ActionMenu.Trigger>

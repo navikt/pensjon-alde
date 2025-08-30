@@ -100,6 +100,7 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pen
   echo PEN_SCOPE='api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'
   echo PEN_URL='http://localhost:8089'
   echo VERDANDE_BEHANDLING_URL='http://localhost:3000/behandling/{behandlingId}'
+  echo VERDANDE_AKTIVITET_URL='http://localhost:3000/aktivitet/{behandlingId}/{aktivitetId}'
   echo VERDANDE_LINKS_ENABLED='true'
 } >> ${envfile}
 

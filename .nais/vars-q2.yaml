@@ -13,6 +13,7 @@ pen:
 
 verdande:
   links_enabled: true
+  aktivitet_url: 'https://pensjon-verdande-q2.intern.dev.nav.no/aktivitet/{behandlingId}/{aktivitetId}'
   behandling_url: 'https://pensjon-verdande-q2.intern.dev.nav.no/behandling/{behandlingId}'
 
 azure:

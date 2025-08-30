@@ -35,7 +35,8 @@ export const env = loadEnv(
     penScope: 'PEN_SCOPE',
     penUrl: 'PEN_URL',
 
-    verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL'
+    verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
+    verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
   },
 )
 
