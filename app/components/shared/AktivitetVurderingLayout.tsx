@@ -37,10 +37,6 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
                 <strong>Type:</strong> {aktivitet.type}
               </p>
               <p>
-                <strong>Funksjonell ID:</strong>{" "}
-                {aktivitet.funksjonellIdentifikator}
-              </p>
-              <p>
                 <strong>Siste aktivering:</strong>{" "}
                 {new Date(aktivitet.sisteAktiveringsdato).toLocaleString(
                   "no-NO",
