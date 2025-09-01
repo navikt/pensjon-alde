@@ -102,7 +102,6 @@ export default function VurdereSamboer() {
 
   return (
     <AktivitetVurderingLayout
-      title="Vurdere samboer"
       aktivitet={aktivitet}
       detailsTitle="Samboerforhold detaljer:"
       detailsContent={detailsContent}

@@ -1,10 +1,9 @@
 import React from "react";
-import type { AktivitetDTO } from "../../types/behandling";
+import type { AktivitetDTO } from "~/types/behandling";
 import "./aktivitet-vurdering-layout.css";
 import {Heading} from "@navikt/ds-react";
 
 interface AktivitetVurderingLayoutProps {
-  title: string;
   aktivitet?: AktivitetDTO;
   children?: React.ReactNode;
   sidebar: React.ReactNode;
@@ -14,7 +13,6 @@ interface AktivitetVurderingLayoutProps {
 }
 
 const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
-  title,
   aktivitet,
   children,
   sidebar,
@@ -24,7 +22,7 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
 }) => {
   return (
     <div className={`aktivitet-vurdering-container ${className}`}>
-      <Heading size="small" level={"3"}>{title}</Heading>
+      <Heading size="small" level={"3"}>{aktivitet?.friendlyName}</Heading>
       <div className="aktivitet-vurdering-grid">
         <div className="information-section">
           {aktivitet && (
@@ -47,13 +45,6 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
           <div className="details-section">
             <h4>{detailsTitle}</h4>
             {detailsContent}
-          </div>
-          <div className="utfall">
-            {aktivitet?.status === "FULLFORT" ? (
-              <div className="success-message">✅ {title} er fullført</div>
-            ) : (
-              <div className="info-message">📝 {title} pågår eller venter</div>
-            )}
           </div>
           {children}
         </div>
