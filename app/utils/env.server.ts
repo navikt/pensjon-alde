@@ -1,7 +1,4 @@
-export function loadEnv<
-  R extends Record<string, string>,
-  O extends Record<string, string>,
->(
+export function loadEnv<R extends Record<string, string>, O extends Record<string, string>>(
   required: R,
   optional?: O,
 ): { [K in keyof R]: string } & { [K in keyof O]: string | undefined } {
@@ -22,23 +19,21 @@ export function loadEnv<
     }),
   ) as { [K in keyof O]: string | undefined }
 
-  return {...req, ...opt}
+  return { ...req, ...opt }
 }
 
-export const env = loadEnv(
-  {
-    clientId: 'AZURE_APP_CLIENT_ID',
-    clientSecret: 'AZURE_APP_CLIENT_SECRET',
-    issuer: 'AZURE_OPENID_CONFIG_ISSUER',
-    tokenEndpoint: 'AZURE_OPENID_CONFIG_TOKEN_ENDPOINT',
+export const env = loadEnv({
+  clientId: 'AZURE_APP_CLIENT_ID',
+  clientSecret: 'AZURE_APP_CLIENT_SECRET',
+  issuer: 'AZURE_OPENID_CONFIG_ISSUER',
+  tokenEndpoint: 'AZURE_OPENID_CONFIG_TOKEN_ENDPOINT',
 
-    penScope: 'PEN_SCOPE',
-    penUrl: 'PEN_URL',
+  penScope: 'PEN_SCOPE',
+  penUrl: 'PEN_URL',
 
-    verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
-    verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
-  },
-)
+  verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
+  verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
+})
 
 export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'
 export const isVerdandeLinksEnabled = process.env.VERDANDE_LINKS_ENABLED === 'true'

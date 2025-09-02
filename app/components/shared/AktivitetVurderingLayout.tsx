@@ -1,15 +1,15 @@
-import React from "react";
-import type { AktivitetDTO } from "~/types/behandling";
-import "./aktivitet-vurdering-layout.css";
-import {Heading} from "@navikt/ds-react";
+import type React from 'react'
+import type { AktivitetDTO } from '~/types/behandling'
+import './aktivitet-vurdering-layout.css'
+import { Heading } from '@navikt/ds-react'
 
 interface AktivitetVurderingLayoutProps {
-  aktivitet?: AktivitetDTO;
-  children?: React.ReactNode;
-  sidebar: React.ReactNode;
-  detailsTitle: string;
-  detailsContent: React.ReactNode;
-  className?: string;
+  aktivitet?: AktivitetDTO
+  children?: React.ReactNode
+  sidebar: React.ReactNode
+  detailsTitle: string
+  detailsContent: React.ReactNode
+  className?: string
 }
 
 const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
@@ -18,11 +18,13 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
   sidebar,
   detailsTitle,
   detailsContent,
-  className = "",
+  className = '',
 }) => {
   return (
     <div className={`aktivitet-vurdering-container ${className}`}>
-      <Heading size="small" level={"3"}>{aktivitet?.friendlyName}</Heading>
+      <Heading size="small" level={'3'}>
+        {aktivitet?.friendlyName}
+      </Heading>
       <div className="aktivitet-vurdering-grid">
         <div className="information-section">
           {aktivitet && (
@@ -35,10 +37,7 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
                 <strong>Type:</strong> {aktivitet.type}
               </p>
               <p>
-                <strong>Siste aktivering:</strong>{" "}
-                {new Date(aktivitet.sisteAktiveringsdato).toLocaleString(
-                  "no-NO",
-                )}
+                <strong>Siste aktivering:</strong> {new Date(aktivitet.sisteAktiveringsdato).toLocaleString('no-NO')}
               </p>
             </div>
           )}
@@ -52,7 +51,7 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
         <div className="decision-sidebar">{sidebar}</div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AktivitetVurderingLayout;
+export default AktivitetVurderingLayout

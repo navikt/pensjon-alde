@@ -1,14 +1,14 @@
-import { BodyLong } from "@navikt/ds-react";
-import { DogHarnessIcon } from "@navikt/aksel-icons";
+import { DogHarnessIcon } from '@navikt/aksel-icons'
+import { BodyLong } from '@navikt/ds-react'
 
 export default function Attestering() {
   return (
     <div
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "1rem",
-        marginTop: "2rem",
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem',
+        marginTop: '2rem',
       }}
     >
       <DogHarnessIcon
@@ -19,13 +19,13 @@ export default function Attestering() {
       />
       <BodyLong>Oppgaven er til attestering</BodyLong>
     </div>
-  );
+  )
 }
 
 export const loader = async () => {
-  return null;
-};
+  return null
+}
 
 export const action = async () => {
-  return null;
-};
+  return null
+}

@@ -1,1 +1,1 @@
-export { formatDateToNorwegian } from "./formatDateToNorwegian";
+export { formatDateToNorwegian } from './formatDateToNorwegian'

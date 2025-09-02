@@ -1,16 +1,16 @@
-import React from "react";
-import { Button, useDatepicker, DatePicker } from "@navikt/ds-react";
+import { Button, DatePicker, type DatePickerProps, useDatepicker } from '@navikt/ds-react'
+import type React from 'react'
 
 interface DecisionFormProps {
-  title: string;
-  children: React.ReactNode;
-  onSubmit: () => void;
-  onContinue?: () => void;
-  submitLabel?: string;
-  continueLabel?: string;
-  showDatePicker?: boolean;
-  datepickerProps?: any;
-  inputProps?: any;
+  title: string
+  children: React.ReactNode
+  onSubmit: () => void
+  onContinue?: () => void
+  submitLabel?: string
+  continueLabel?: string
+  showDatePicker?: boolean
+  datepickerProps?: DatePickerProps
+  inputProps?: React.ComponentProps<typeof DatePicker.Input>
 }
 
 const DecisionForm: React.FC<DecisionFormProps> = ({
@@ -18,36 +18,30 @@ const DecisionForm: React.FC<DecisionFormProps> = ({
   children,
   onSubmit,
   onContinue,
-  submitLabel = "Fullfør vurdering",
-  continueLabel = "Gå videre",
+  submitLabel = 'Fullfør vurdering',
+  continueLabel = 'Gå videre',
   showDatePicker = true,
   datepickerProps,
   inputProps,
 }) => {
   const defaultDatepicker = useDatepicker({
-    fromDate: new Date("1 Jan 2020"),
+    fromDate: new Date('1 Jan 2020'),
     toDate: new Date(),
-  });
+  })
 
-  const finalDatepickerProps = datepickerProps || defaultDatepicker.datepickerProps;
-  const finalInputProps = inputProps || defaultDatepicker.inputProps;
+  const finalDatepickerProps = datepickerProps || defaultDatepicker.datepickerProps
+  const finalInputProps = inputProps || defaultDatepicker.inputProps
 
   return (
     <>
       <h4>{title}</h4>
       <form className="decision-form">
-        <div className="form-fields">
-          {children}
-        </div>
+        <div className="form-fields">{children}</div>
 
         {showDatePicker && (
           <div className="date-group">
             <DatePicker {...finalDatepickerProps}>
-              <DatePicker.Input
-                {...finalInputProps}
-                label="Vurderingsdato"
-                placeholder="dd.mm.åååå"
-              />
+              <DatePicker.Input {...finalInputProps} label="Vurderingsdato" placeholder="dd.mm.åååå" />
             </DatePicker>
           </div>
         )}
@@ -64,7 +58,7 @@ const DecisionForm: React.FC<DecisionFormProps> = ({
         </div>
       </form>
     </>
-  );
-};
+  )
+}
 
-export default DecisionForm;
+export default DecisionForm

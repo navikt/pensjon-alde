@@ -1,23 +1,23 @@
-import {Authenticator} from 'remix-auth'
-import {OAuth2Strategy} from 'remix-auth-oauth2'
 import {
   type Cookie,
   createCookie,
   createCookieSessionStorage,
   redirect,
   type SessionData,
-  type SessionStorage
+  type SessionStorage,
 } from 'react-router'
-import {env, isLocalEnv} from "~/utils/env.server";
-import {exchange} from "~/auth/obo.server";
+import { Authenticator } from 'remix-auth'
+import { OAuth2Strategy } from 'remix-auth-oauth2'
+import { exchange } from '~/auth/obo.server'
+import { env, isLocalEnv } from '~/utils/env.server'
 
 type User = {
   accessToken: string
   accessTokenExpiresAt: string
 }
 
-export let sessionStorage: SessionStorage<SessionData, SessionData> | undefined;
-export let returnToCookie: Cookie | undefined;
+export let sessionStorage: SessionStorage<SessionData, SessionData> | undefined
+export let returnToCookie: Cookie | undefined
 export let authenticator: Authenticator<User> | undefined
 
 if (isLocalEnv) {
@@ -34,17 +34,17 @@ if (isLocalEnv) {
       httpOnly: true,
       path: '/',
       sameSite: 'lax',
-      secure: false
+      secure: false,
     },
-  });
+  })
 
-  returnToCookie = createCookie("return-to", {
-    path: "/",
+  returnToCookie = createCookie('return-to', {
+    path: '/',
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: 'lax',
     maxAge: 300,
     secure: false,
-  });
+  })
 
   authenticator = new Authenticator<User>()
   authenticator.use(
@@ -53,24 +53,17 @@ if (isLocalEnv) {
         clientId: env.clientId,
         clientSecret: env.clientSecret,
 
-        authorizationEndpoint: env.tokenEndpoint.replace(
-          'token',
-          'authorize',
-        ),
+        authorizationEndpoint: env.tokenEndpoint.replace('token', 'authorize'),
         tokenEndpoint: env.tokenEndpoint,
         redirectURI: azureCallbackUrl,
 
-        scopes: [
-          'openid',
-          'offline_access',
-          `api://${env.clientId}/.default`,
-        ],
+        scopes: ['openid', 'offline_access', `api://${env.clientId}/.default`],
       },
-      async ({tokens}) => {
+      async ({ tokens }) => {
         return {
           accessToken: tokens.accessToken(),
           accessTokenExpiresAt: tokens.accessTokenExpiresAt().toISOString(),
-        };
+        }
       },
     ),
     'entra-id',
@@ -89,19 +82,14 @@ if (isLocalEnv) {
  */
 export async function requireAccessToken(request: Request) {
   function redirectUrl(request: Request) {
-    let searchParams = new URLSearchParams([
-      ['returnTo', new URL(request.url).pathname],
-    ])
+    const searchParams = new URLSearchParams([['returnTo', new URL(request.url).pathname]])
     return `/auth/microsoft?${searchParams}`
   }
 
-  let authorization = request.headers.get('authorization')
+  const authorization = request.headers.get('authorization')
 
-  if (authorization && authorization.toLowerCase().startsWith('bearer')) {
-    let tokenResponse = await exchange(
-      authorization.substring('bearer '.length),
-      env.penScope,
-    )
+  if (authorization?.toLowerCase().startsWith('bearer')) {
+    const tokenResponse = await exchange(authorization?.substring('bearer '.length), env.penScope)
     return tokenResponse.access_token
   } else if (isLocalEnv) {
     const session = await sessionStorage!.getSession(request.headers.get('cookie'))
@@ -110,22 +98,15 @@ export async function requireAccessToken(request: Request) {
       // if there is no user session, redirect to login
       throw redirect(redirectUrl(request))
     } else {
-      let user = session.get('user') as User
-      if (
-        !user.accessToken ||
-        !user.accessTokenExpiresAt ||
-        new Date(user.accessTokenExpiresAt) < new Date()
-      ) {
+      const user = session.get('user') as User
+      if (!user.accessToken || !user.accessTokenExpiresAt || new Date(user.accessTokenExpiresAt) < new Date()) {
         throw redirect(redirectUrl(request))
       }
 
-      let tokenResponse = await exchange(
-        user.accessToken,
-        env.penScope,
-      )
+      const tokenResponse = await exchange(user.accessToken, env.penScope)
       return tokenResponse.access_token
     }
   } else {
-    throw Error("Token mangler")
+    throw Error('Token mangler')
   }
 }

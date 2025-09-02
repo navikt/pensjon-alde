@@ -7,6 +7,13 @@
     "dev": "react-router dev",
     "dev:mock": "NODE_ENV=mock react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "ci": "biome ci .",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
@@ -31,6 +38,7 @@
     "remix-auth-oauth2": "^3.4.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.2.2",
     "@react-router/dev": "^7.8.2",
     "@tailwindcss/vite": "^4.1.4",
     "@types/node": "^24.3.0",
