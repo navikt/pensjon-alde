@@ -140,6 +140,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               <Label size="small">Behandling</Label>
               <BodyShort>{behandling.friendlyName}</BodyShort>
             </VStack>
+
             <VStack>
               <Label size="small">Status</Label>
               <Tag
@@ -155,16 +156,19 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 {behandling.aldeBehandlingStatus}
               </Tag>
             </VStack>
+
             <VStack>
               <Label size="small">Opprettet</Label>
               <BodyShort size="small">{formatDateToNorwegian(behandling.opprettet)}</BodyShort>
             </VStack>
+
             {behandling.kravId && (
               <VStack>
                 <Label size="small">Krav</Label>
                 <CopyButton text={behandling.kravId.toString()} copyText={behandling.kravId.toString()} size="small" />
               </VStack>
             )}
+
             {behandling.sakId && (
               <VStack>
                 <Label size="small">Sak</Label>
@@ -210,6 +214,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             </div>
           </Box.New>
         )}
+
         {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
       </Page>
     </Box.New>

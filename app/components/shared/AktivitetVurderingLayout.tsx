@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import type React from 'react'
 import type { AktivitetDTO } from '~/types/behandling'
 import './aktivitet-vurdering-layout.css'
@@ -19,39 +20,40 @@ const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
   detailsTitle,
   detailsContent,
   className = '',
-}) => {
-  return (
-    <div className={`aktivitet-vurdering-container ${className}`}>
-      <Heading size="small" level={'3'}>
-        {aktivitet?.friendlyName}
-      </Heading>
-      <div className="aktivitet-vurdering-grid">
-        <div className="information-section">
-          {aktivitet && (
-            <div className="aktivitet-info">
-              <h4>Aktivitet informasjon:</h4>
-              <p>
-                <strong>Status:</strong> {aktivitet.status}
-              </p>
-              <p>
-                <strong>Type:</strong> {aktivitet.type}
-              </p>
-              <p>
-                <strong>Siste aktivering:</strong> {new Date(aktivitet.sisteAktiveringsdato).toLocaleString('no-NO')}
-              </p>
-            </div>
-          )}
-          <div className="details-section">
-            <h4>{detailsTitle}</h4>
-            {detailsContent}
+}) => (
+  <div className={clsx('aktivitet-vurdering-container', className)}>
+    <Heading size="small" level="3">
+      {aktivitet?.friendlyName}
+    </Heading>
+
+    <div className="aktivitet-vurdering-grid">
+      <div className="information-section">
+        {aktivitet && (
+          <div className="aktivitet-info">
+            <h4>Aktivitet informasjon:</h4>
+            <p>
+              <strong>Status:</strong> {aktivitet.status}
+            </p>
+            <p>
+              <strong>Type:</strong> {aktivitet.type}
+            </p>
+            <p>
+              <strong>Siste aktivering:</strong> {new Date(aktivitet.sisteAktiveringsdato).toLocaleString('no-NO')}
+            </p>
           </div>
-          {children}
+        )}
+
+        <div className="details-section">
+          <h4>{detailsTitle}</h4>
+          {detailsContent}
         </div>
 
-        <div className="decision-sidebar">{sidebar}</div>
+        {children}
       </div>
+
+      <div className="decision-sidebar">{sidebar}</div>
     </div>
-  )
-}
+  </div>
+)
 
 export default AktivitetVurderingLayout

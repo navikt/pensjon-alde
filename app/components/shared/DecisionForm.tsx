@@ -35,6 +35,7 @@ const DecisionForm: React.FC<DecisionFormProps> = ({
   return (
     <>
       <h4>{title}</h4>
+
       <form className="decision-form">
         <div className="form-fields">{children}</div>
 
@@ -50,6 +51,7 @@ const DecisionForm: React.FC<DecisionFormProps> = ({
           <Button variant="primary" onClick={onSubmit} type="button">
             {submitLabel}
           </Button>
+
           {onContinue && (
             <Button variant="secondary" onClick={onContinue} type="button">
               {continueLabel}

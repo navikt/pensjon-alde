@@ -59,20 +59,25 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
             <Heading spacing size="small" level="3">
               Aktivitet ikke implementert enda
             </Heading>
+
             <BodyShort spacing>Denne aktiviteten er ikke implementert enda.</BodyShort>
+
             <Detail>
               <strong>Type:</strong> {aktivitet.type}
             </Detail>
+
             {aktivitet.handlerName && (
               <Detail>
                 <strong>Aktivitet Handler:</strong> {aktivitet.handlerName}
               </Detail>
             )}
+
             {behandling.handlerName && (
               <Detail>
                 <strong>Behandling Handler:</strong> {behandling.handlerName}
               </Detail>
             )}
+
             {!aktivitet.handlerName && (
               <Detail>
                 <strong>Info:</strong> Denne aktiviteten kjører kun i backend

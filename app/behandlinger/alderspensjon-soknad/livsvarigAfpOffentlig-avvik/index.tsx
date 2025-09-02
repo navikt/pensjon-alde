@@ -21,14 +21,19 @@ export default function LivsvarigAfpOffentligAvvik() {
     <Form method="post">
       <VStack gap="4">
         <UNSAFE_Combobox name="tpnr" id="tpnr" label="TP nummer:" options={tpliste} />
+
         <TextField name="belop" id="belop" label="Månedsbeløp:" />
+
         <Select name="status" id="status" label="Status:" defaultValue="INNVILGET">
           <option value="INNVILGET">INNVILGET</option>
         </Select>
+
         <DatePicker {...datepickerProps}>
           <DatePicker.Input name="fom" {...inputProps} label="Dato Fom:" />
         </DatePicker>
+
         <Button type="submit">Lagre</Button>
+
         <Button type="button" variant="secondary">
           Avbryt
         </Button>
