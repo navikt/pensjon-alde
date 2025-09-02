@@ -27,13 +27,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers,
-  reporter: process.env.CI ? [['line']] : [['html', { outputFolder: './playwright/report' }]],
+  reporter: process.env.CI ? [['line']] : [['html', { outputFolder: './playwright/playwright-report' }]],
   timeout: 30000,
   expect: {
     timeout: 5000,
   },
   use: {
-    baseURL: 'http://localhost:4173',
+    baseURL: 'http://localhost:3001',
     trace: 'retry-with-trace',
     screenshot: 'off',
     video: 'retry-with-video',
@@ -80,8 +80,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run preview',
-    port: 4173,
+    command: 'npm run dev:mock',
+    port: 3001,
     timeout: 60000,
+    reuseExistingServer: !process.env.CI,
   },
 })
