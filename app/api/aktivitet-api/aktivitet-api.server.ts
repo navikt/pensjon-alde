@@ -1,4 +1,5 @@
 import type { Fetcher } from '../api-client'
+import { isApiError } from '../api-client'
 
 export function aktivitetApi(BASE_URL: string, fetch: Fetcher) {
   const hentAktivitet = <T>() => fetch<T>(`${BASE_URL}`, { method: 'GET' })
@@ -11,7 +12,17 @@ export function aktivitetApi(BASE_URL: string, fetch: Fetcher) {
 
   const hentInput = <T>() => fetch<T>(`${BASE_URL}/input`, { method: 'GET' })
 
-  const hentVurdering = <T>() => fetch<T>(`${BASE_URL}/vurdering`, { method: 'GET' })
+  const hentVurdering = async <T>() => {
+    try {
+      return await fetch<T>(`${BASE_URL}/vurdering`, { method: 'GET' })
+    } catch (error) {
+      if (isApiError(error) && error.data.status === 404) {
+        // Returner 404 dersom ikke vurdering er gjort
+        return null
+      }
+      throw error
+    }
+  }
 
   const lagreVurdering = <T>(vurdering: T) =>
     fetch<T>(`${BASE_URL}/vurdering`, { method: 'POST', body: JSON.stringify({ data: vurdering }) })
@@ -32,5 +43,3 @@ export function aktivitetApi(BASE_URL: string, fetch: Fetcher) {
     lagreVurdering,
   }
 }
-
-fetch

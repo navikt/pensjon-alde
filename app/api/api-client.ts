@@ -3,6 +3,27 @@ import { requireAccessToken } from '~/auth/auth.server'
 
 export type Fetcher = <T>(url: string, options: RequestInit) => Promise<T>
 
+export interface ApiErrorData {
+  status: number
+  title: string
+  message?: string
+  detail?: string
+  path?: string
+  timestamp?: string
+}
+
+export function isApiError(error: unknown): error is { data: ApiErrorData } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'data' in error &&
+    typeof (error as { data: unknown }).data === 'object' &&
+    (error as { data: unknown }).data !== null &&
+    typeof (error as { data: { status: unknown } }).data.status === 'number' &&
+    typeof (error as { data: { title: unknown } }).data.title === 'string'
+  )
+}
+
 export const fetcher =
   (request: Request): Fetcher =>
   async <T>(url: string, options: RequestInit = {}): Promise<T> => {
@@ -29,7 +50,6 @@ export const fetcher =
         errorBody = await response.json()
       }
 
-      // Throw normalized error using React Router's data utility
       throw data(
         {
           status: response.status,
