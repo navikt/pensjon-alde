@@ -88,8 +88,8 @@ export async function requireAccessToken(request: Request) {
 
   const authorization = request.headers.get('authorization')
 
-  if (authorization && authorization.toLowerCase().startsWith('bearer')) {
-    const tokenResponse = await exchange(authorization.substring('bearer '.length), env.penScope)
+  if (authorization?.toLowerCase().startsWith('bearer')) {
+    const tokenResponse = await exchange(authorization?.substring('bearer '.length), env.penScope)
     return tokenResponse.access_token
   } else if (isLocalEnv) {
     const session = await sessionStorage!.getSession(request.headers.get('cookie'))
