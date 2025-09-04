@@ -1,8 +1,8 @@
 import { Alert, BodyShort, Box, Detail, Heading } from '@navikt/ds-react'
 import { Outlet, redirect, useOutlet } from 'react-router'
+import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
-import { useFetch } from '~/utils/use-fetch/use-fetch'
 import type { Route } from './+types/$aktivitetId'
 
 export function meta({ params }: Route.MetaArgs) {
@@ -11,15 +11,8 @@ export function meta({ params }: Route.MetaArgs) {
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
-  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`
-
-  // Fetch behandling from API using behandlingId
-  const response = await useFetch(request, `${penUrl}/behandling/${behandlingId}`)
-  if (!response.ok) {
-    throw new Error(`Failed to fetch behandling: ${response.status}`)
-  }
-
-  const behandling: BehandlingDTO = await response.json()
+  const api = createBehandlingApi({ request, behandlingId })
+  const behandling = await api.hentBehandling<BehandlingDTO>()
 
   // Find the specific aktivitet using aktivitetId
   const aktivitet = behandling.aktiviteter.find((a: AktivitetDTO) => a.aktivitetId?.toString() === aktivitetId)

@@ -20,7 +20,7 @@ import { useState } from 'react'
 import type { Me } from '~/types/me'
 import { buildUrl } from '~/utils/build-url'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
-import { initializeFetch, useFetch2 } from '~/utils/use-fetch/use-fetch'
+import { requireAccessToken } from './auth/auth.server'
 import { Header } from './layout/Header/Header'
 
 // Initialize mocking and auth in mock environment
@@ -33,12 +33,18 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
 export const links: Route.LinksFunction = () => []
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
-  // Initialize fetch system on server-side
-  initializeFetch()
+  const token = await requireAccessToken(request)
 
   const penUrl = `${env.penUrl}/api/saksbehandling/alde`
 
-  const me: Me = await useFetch2(request, `${penUrl}/me`)
+  // Fetch me data using token from context
+  const meResponse = await fetch(`${penUrl}/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  })
+  const me: Me = await meResponse.json()
 
   const darkmode = await createCookie('darkmode').parse(request.headers.get('cookie'))
 

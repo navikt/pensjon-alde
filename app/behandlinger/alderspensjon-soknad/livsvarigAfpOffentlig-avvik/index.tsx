@@ -2,11 +2,10 @@
 import { Button, DatePicker, Select, TextField, UNSAFE_Combobox, useDatepicker, VStack } from '@navikt/ds-react'
 import { formatISO, parse } from 'date-fns'
 import { Form, redirect, useLoaderData, useOutletContext } from 'react-router'
+import { createAktivitetApi } from '~/api/aktivitet-api'
 import type { LivsvarigAfpOffentligVurdering } from '~/behandlinger/alderspensjon-soknad/livsvarigAfpOffentlig-avvik/livsvarigafp-types'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { createAktivitetApi } from '~/utils/aktivitet-api'
-import { useFetch } from '~/utils/use-fetch/use-fetch'
 import type { Route } from '../../../../.react-router/types/app/behandlinger/alderspensjon-soknad/vurder-samboer/+types'
 
 export default function LivsvarigAfpOffentligAvvik() {
@@ -65,8 +64,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export async function action({ params, request }: Route.ActionArgs) {
+  const { behandlingId, aktivitetId } = params
   const formData = await request.formData()
-  console.log(formData)
 
   const virkFomString = formData.get('dato') as string
   const virkFomDate = virkFomString ? parse(virkFomString, 'dd.MM.yyyy', new Date()) : new Date()
@@ -78,16 +77,13 @@ export async function action({ params, request }: Route.ActionArgs) {
     status: formData.get('status') as string,
   }
 
-  // Post to the API
-  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`
-  const response = await useFetch(
+  const api = createAktivitetApi({
     request,
-    `${penUrl}/behandling/${params.behandlingId}/aktivitet/${params.aktivitetId}/vurdering`,
-    {
-      method: 'POST',
-      body: JSON.stringify({ data: vurdering }),
-    },
-  )
+    behandlingId,
+    aktivitetId,
+  })
+
+  const response = await api.lagreVurdering(vurdering)
 
   console.log('response', response)
   return redirect(`/behandling/${params.behandlingId}`)

@@ -12,9 +12,9 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import { Form, redirect, useLoaderData, useOutletContext } from 'react-router'
+import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { createAktivitetApi } from '~/utils/aktivitet-api'
 import { checkbox, dateInput, parseForm } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressWrapper from './AddressWrapper/AddressWrapper'

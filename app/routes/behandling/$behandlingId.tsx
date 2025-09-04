@@ -1,11 +1,9 @@
 import { BodyShort, Box, CopyButton, HStack, Label, Loader, Page, Stepper, Tag, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
 import { Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
-import { useFetch2 } from '~/utils/use-fetch/use-fetch'
-import type { BehandlingDTO } from '../../types/behandling'
-import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '../../types/behandling'
+import { createBehandlingApi } from '~/api/behandling-api'
+import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '../../types/behandling'
 import { formatDateToNorwegian } from '../../utils/date'
-import { buildAktivitetRedirectUrl } from '../../utils/handler-discovery'
 import type { Route } from './+types/$behandlingId'
 
 export function meta({ params }: Route.MetaArgs) {
@@ -17,11 +15,16 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const url = new URL(request.url)
   const justCompletedId = url.searchParams.get('justCompleted')
 
-  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`
-  let behandling = await useFetch2<BehandlingDTO>(request, `${penUrl}/behandling/${behandlingId}`)
+  const api = createBehandlingApi({ request, behandlingId })
+  const behandling = await api.hentBehandling<BehandlingDTO>()
+
+  let aktivitetSomSkalVises = null
+  const behandlingJobber =
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
+    (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
   if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
-    let aktivitetSomSkalVises = behandling.aktiviteter.find(
+    aktivitetSomSkalVises = behandling.aktiviteter.find(
       aktivitet =>
         (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
         aktivitet.handlerName &&
@@ -35,23 +38,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       )
     }
 
-    if (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId) {
-      for (let i = 0; i < 3; i++) {
-        await new Promise(resolve => setTimeout(resolve, 500))
-        // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook!
-        behandling = await useFetch2<BehandlingDTO>(request, `${penUrl}/behandling/${behandlingId}`)
+    const shouldRefetchAfterCompletion =
+      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
 
-        aktivitetSomSkalVises = behandling.aktiviteter.find(
-          aktivitet =>
-            (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
-            aktivitet.aktivitetId?.toString() !== justCompletedId,
-        )
-
-        if (aktivitetSomSkalVises) break
-      }
-    }
-
-    if (aktivitetSomSkalVises) {
+    if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
       return redirect(`/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`)
     }
   }
@@ -59,11 +49,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return {
     behandlingId,
     behandling,
+    behandlingJobber:
+      behandlingJobber ||
+      (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId),
   }
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { behandling } = loaderData
+  const { behandling, behandlingJobber } = loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -80,13 +73,32 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     [behandling.aktiviteter],
   )
 
-  const activeStepIndex = currentAktivitetId
-    ? visibleAktiviteter.findIndex(a => a.aktivitetId?.toString() === currentAktivitetId)
-    : 0
+  // Create steps with redirect URLs
+  const allSteps = React.useMemo(() => {
+    const aktivitetSteps = visibleAktiviteter.map(aktivitet => ({
+      ...aktivitet,
+      redirectUrl: `aktivitet/${aktivitet.aktivitetId}`,
+    }))
 
-  const behandlingJobber =
-    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
-    (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
+    if (behandlingJobber) {
+      return [
+        ...aktivitetSteps,
+        {
+          aktivitetId: 'jobber',
+          friendlyName: 'Jobber...',
+          status: null,
+          redirectUrl: null,
+        },
+      ]
+    }
+    return aktivitetSteps
+  }, [visibleAktiviteter, behandlingJobber])
+
+  const activeStepIndex = behandlingJobber
+    ? allSteps.length - 1
+    : currentAktivitetId
+      ? allSteps.findIndex(a => a.aktivitetId?.toString() === currentAktivitetId)
+      : allSteps.length - 1
 
   useEffect(() => {
     if (behandlingJobber) {
@@ -178,7 +190,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           </HStack>
         </Box.New>
 
-        {visibleAktiviteter.length > 0 && (
+        {allSteps.length > 0 && (
           <Box.New padding="space-12">
             <div
               ref={stepperContainerRef}
@@ -190,24 +202,19 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               }}
             >
               <Stepper orientation="horizontal" activeStep={activeStepIndex + 1} style={{ minWidth: 'max-content' }}>
-                {visibleAktiviteter.map((aktivitet, index) => (
+                {allSteps.map((step, index) => (
                   <Stepper.Step
-                    key={aktivitet.aktivitetId}
-                    completed={aktivitet.status === AktivitetStatus.FULLFORT}
+                    key={step.aktivitetId}
+                    completed={step.status === AktivitetStatus.FULLFORT}
                     onClick={() => {
-                      const implementationUrl = buildAktivitetRedirectUrl(
-                        params.behandlingId!.toString(),
-                        aktivitet.aktivitetId!.toString(),
-                        loaderData.behandling,
-                        aktivitet,
-                      )
-                      // Navigate to the implementation URL if it exists, otherwise to the base aktivitet URL
-                      navigate(implementationUrl || `aktivitet/${aktivitet.aktivitetId}`)
+                      if (!step.redirectUrl) return
+
+                      navigate(step.redirectUrl)
                     }}
                     style={{ cursor: 'pointer' }}
                     data-step-index={index}
                   >
-                    {aktivitet.friendlyName!}
+                    {step.friendlyName!}
                   </Stepper.Step>
                 ))}
               </Stepper>
