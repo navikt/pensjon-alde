@@ -1,8 +1,16 @@
 import { BodyShort, Box, CopyButton, HStack, Label, Loader, Page, Stepper, Tag, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
-import { Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
-import { useFetch2 } from '~/utils/use-fetch/use-fetch'
-import type { BehandlingDTO } from '../../types/behandling'
+import {
+  Outlet,
+  redirect,
+  type unstable_MiddlewareFunction,
+  useNavigate,
+  useParams,
+  useRevalidator,
+} from 'react-router'
+import { hentBehandling } from '~/api/behandling-api'
+import authMiddleware from '~/auth/auth-middleware'
+import { authCtx } from '~/context'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '../../types/behandling'
 import { formatDateToNorwegian } from '../../utils/date'
 import { buildAktivitetRedirectUrl } from '../../utils/handler-discovery'
@@ -12,13 +20,19 @@ export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Behandling ${params.behandlingId}` }, { name: 'description', content: 'Behandling detaljer' }]
 }
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export const unstable_middleware: unstable_MiddlewareFunction[] = [authMiddleware]
+
+export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { behandlingId } = params
   const url = new URL(request.url)
   const justCompletedId = url.searchParams.get('justCompleted')
 
-  const penUrl = `${process.env.PEN_URL!}/api/saksbehandling/alde`
-  let behandling = await useFetch2<BehandlingDTO>(request, `${penUrl}/behandling/${behandlingId}`)
+  const auth = context.get(authCtx)
+  if (!auth) {
+    throw new Error('Auth context not available')
+  }
+
+  let behandling = await hentBehandling(behandlingId, auth)
 
   if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
     let aktivitetSomSkalVises = behandling.aktiviteter.find(
@@ -38,8 +52,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     if (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId) {
       for (let i = 0; i < 3; i++) {
         await new Promise(resolve => setTimeout(resolve, 500))
-        // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook!
-        behandling = await useFetch2<BehandlingDTO>(request, `${penUrl}/behandling/${behandlingId}`)
+        behandling = await hentBehandling(behandlingId, auth)
 
         aktivitetSomSkalVises = behandling.aktiviteter.find(
           aktivitet =>

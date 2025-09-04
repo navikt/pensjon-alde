@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { PersonIcon } from '@navikt/aksel-icons'
 import {
   Box,
@@ -12,19 +13,24 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import { Form, redirect, useLoaderData, useOutletContext } from 'react-router'
+=======
+import { Button, Checkbox, DatePicker, useDatepicker } from '@navikt/ds-react'
+import { type ActionFunction, Form, type LoaderFunction, redirect, useOutletContext } from 'react-router'
+import { createAktivitetApi } from '~/api/aktivitet-api'
+>>>>>>> 323f341 (Refactor API)
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { createAktivitetApi } from '~/utils/aktivitet-api'
 import { checkbox, dateInput, parseForm } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
 import type { SamboerInformasjonHolder, SamboerVurdering } from './samboer-types'
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export const loader: LoaderFunction = async ({ params, request, context }) => {
   const { behandlingId, aktivitetId } = params
 
   const api = createAktivitetApi({
     request,
+    context,
     behandlingId,
     aktivitetId,
   })
@@ -41,13 +47,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 }
 
-export async function action({ params, request }: Route.ActionArgs) {
+export const action: ActionFunction = async ({ params, request, context }) => {
   const { behandlingId, aktivitetId } = params
-  const api = createAktivitetApi({
-    request,
-    behandlingId,
-    aktivitetId,
-  })
+  const api = createAktivitetApi({ request, context, aktivitetId, behandlingId })
   const formData = await request.formData()
 
   const vurdering = parseForm<SamboerVurdering>(formData, {
@@ -64,16 +66,20 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 }
 
-export default function VurdereSamboer() {
+export default function VurdereSamboer({ loaderData }: Route.ComponentProps) {
   const { datepickerProps, inputProps } = useDatepicker({
     defaultSelected: undefined,
     required: true,
   })
 
+<<<<<<< HEAD
   const { samboerInformasjon, vurdering } = useLoaderData<typeof loader>()
   const { epsPersongrunnlagListeDto, sokerPersongrunnlagListeDto } = samboerInformasjon
   const { fnr, navnTilPerson } = sokerPersongrunnlagListeDto[0]
   const { etternavn, fornavn, mellomnavn } = navnTilPerson
+=======
+  const { samboerInformasjon, vurdering } = loaderData
+>>>>>>> 323f341 (Refactor API)
   const { aktivitet } = useOutletContext<AktivitetOutletContext>()
 
   const detailsContent = (

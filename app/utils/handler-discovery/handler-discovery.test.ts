@@ -24,7 +24,7 @@ describe('handler-discovery', () => {
       expect(handlers.length).toBeGreaterThanOrEqual(1)
 
       // Each handler should have the required properties
-      for (const handler of handlers) {
+      handlers.forEach(handler => {
         expect(handler).toHaveProperty('behandlingHandler')
         expect(handler).toHaveProperty('aktivitetHandler')
         expect(handler).toHaveProperty('routePath')
@@ -34,7 +34,7 @@ describe('handler-discovery', () => {
 
         // routePath should be combination of behandlingHandler/aktivitetHandler
         expect(handler.routePath).toBe(`${handler.behandlingHandler}/${handler.aktivitetHandler}`)
-      }
+      })
 
       // Should include at least the vurder-samboer handler we know exists
       const hasVurderSamboer = handlers.some(
@@ -208,10 +208,10 @@ describe('handler-discovery', () => {
       expect(handlers.length).toBeGreaterThanOrEqual(1)
 
       // All returned handlers should be for the requested behandling
-      for (const handler of handlers) {
+      handlers.forEach(handler => {
         expect(handler.behandlingHandler).toBe('alderspensjon-soknad')
         expect(handler.routePath).toContain('alderspensjon-soknad/')
-      }
+      })
 
       // Should include at least the vurder-samboer handler we know exists
       const hasVurderSamboer = handlers.some(

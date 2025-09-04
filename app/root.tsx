@@ -22,6 +22,7 @@ import { buildUrl } from '~/utils/build-url'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
 import { initializeFetch, useFetch2 } from '~/utils/use-fetch/use-fetch'
 import { Header } from './layout/Header/Header'
+import { authCtx } from './context'
 
 // Initialize mocking and auth in mock environment
 if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
@@ -32,13 +33,23 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
 
 export const links: Route.LinksFunction = () => []
 
-export const loader = async ({ params, request }: LoaderFunctionArgs) => {
-  // Initialize fetch system on server-side
-  initializeFetch()
+export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
+  // Get auth from context (set by middleware)
+  const auth = context.get(authCtx)
+  if (!auth) {
+    throw new Error('Auth context not available')
+  }
 
   const penUrl = `${env.penUrl}/api/saksbehandling/alde`
 
-  const me: Me = await useFetch2(request, `${penUrl}/me`)
+  // Fetch me data using token from context
+  const meResponse = await fetch(`${penUrl}/me`, {
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      'Content-Type': 'application/json',
+    },
+  })
+  const me: Me = await meResponse.json()
 
   const darkmode = await createCookie('darkmode').parse(request.headers.get('cookie'))
 

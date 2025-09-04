@@ -2,10 +2,10 @@
 import { Button, DatePicker, Select, TextField, UNSAFE_Combobox, useDatepicker, VStack } from '@navikt/ds-react'
 import { formatISO, parse } from 'date-fns'
 import { Form, redirect, useLoaderData, useOutletContext } from 'react-router'
+import { createAktivitetApi } from '~/api/aktivitet-api'
 import type { LivsvarigAfpOffentligVurdering } from '~/behandlinger/alderspensjon-soknad/livsvarigAfpOffentlig-avvik/livsvarigafp-types'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { createAktivitetApi } from '~/utils/aktivitet-api'
 import { useFetch } from '~/utils/use-fetch/use-fetch'
 import type { Route } from '../../../../.react-router/types/app/behandlinger/alderspensjon-soknad/vurder-samboer/+types'
 
@@ -50,12 +50,13 @@ export default function LivsvarigAfpOffentligAvvik() {
   )
 }
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 
   // biome-ignore lint/correctness/noUnusedVariables: Will add soon
   const api = createAktivitetApi({
     request,
+    context,
     behandlingId,
     aktivitetId,
   })

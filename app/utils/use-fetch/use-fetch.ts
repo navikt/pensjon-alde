@@ -111,7 +111,7 @@ export async function useFetch2<T>(request: Request, input: RequestInfo | URL, i
     await normalizeAndThrow(res, `Feil ved GET ${input}`)
   }
   const contentType = res.headers.get('content-type')
-  if (contentType?.includes('application/json')) {
+  if (contentType && contentType.includes('application/json')) {
     return (await res.json()) as T
   } else {
     return res as unknown as T
