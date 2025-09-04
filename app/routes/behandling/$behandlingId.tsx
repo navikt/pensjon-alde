@@ -4,7 +4,6 @@ import { Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-
 import { createBehandlingApi } from '~/api/behandling-api'
 import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '../../types/behandling'
 import { formatDateToNorwegian } from '../../utils/date'
-import { buildAktivitetRedirectUrl } from '../../utils/handler-discovery'
 import type { Route } from './+types/$behandlingId'
 
 export function meta({ params }: Route.MetaArgs) {
@@ -74,9 +73,32 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     [behandling.aktiviteter],
   )
 
-  const activeStepIndex = currentAktivitetId
-    ? visibleAktiviteter.findIndex(a => a.aktivitetId?.toString() === currentAktivitetId)
-    : 0
+  // Create steps with redirect URLs
+  const allSteps = React.useMemo(() => {
+    const aktivitetSteps = visibleAktiviteter.map(aktivitet => ({
+      ...aktivitet,
+      redirectUrl: `aktivitet/${aktivitet.aktivitetId}`,
+    }))
+
+    if (behandlingJobber) {
+      return [
+        ...aktivitetSteps,
+        {
+          aktivitetId: 'jobber',
+          friendlyName: 'Jobber...',
+          status: null,
+          redirectUrl: null,
+        },
+      ]
+    }
+    return aktivitetSteps
+  }, [visibleAktiviteter, behandlingJobber])
+
+  const activeStepIndex = behandlingJobber
+    ? allSteps.length - 1
+    : currentAktivitetId
+      ? allSteps.findIndex(a => a.aktivitetId?.toString() === currentAktivitetId)
+      : allSteps.length - 1
 
   useEffect(() => {
     if (behandlingJobber) {
@@ -168,7 +190,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           </HStack>
         </Box.New>
 
-        {visibleAktiviteter.length > 0 && (
+        {allSteps.length > 0 && (
           <Box.New padding="space-12">
             <div
               ref={stepperContainerRef}
@@ -180,24 +202,19 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               }}
             >
               <Stepper orientation="horizontal" activeStep={activeStepIndex + 1} style={{ minWidth: 'max-content' }}>
-                {visibleAktiviteter.map((aktivitet, index) => (
+                {allSteps.map((step, index) => (
                   <Stepper.Step
-                    key={aktivitet.aktivitetId}
-                    completed={aktivitet.status === AktivitetStatus.FULLFORT}
+                    key={step.aktivitetId}
+                    completed={step.status === AktivitetStatus.FULLFORT}
                     onClick={() => {
-                      const implementationUrl = buildAktivitetRedirectUrl(
-                        params.behandlingId!.toString(),
-                        aktivitet.aktivitetId!.toString(),
-                        loaderData.behandling,
-                        aktivitet,
-                      )
-                      // Navigate to the implementation URL if it exists, otherwise to the base aktivitet URL
-                      navigate(implementationUrl || `aktivitet/${aktivitet.aktivitetId}`)
+                      if (!step.redirectUrl) return
+
+                      navigate(step.redirectUrl)
                     }}
                     style={{ cursor: 'pointer' }}
                     data-step-index={index}
                   >
-                    {aktivitet.friendlyName!}
+                    {step.friendlyName!}
                   </Stepper.Step>
                 ))}
               </Stepper>
