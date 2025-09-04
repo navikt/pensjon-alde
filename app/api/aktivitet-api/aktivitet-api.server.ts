@@ -14,7 +14,7 @@ export function aktivitetApi(BASE_URL: string, fetch: Fetcher) {
   const hentVurdering = <T>() => fetch<T>(`${BASE_URL}/vurdering`, { method: 'GET' })
 
   const lagreVurdering = <T>(vurdering: T) =>
-    fetch<T>(`${BASE_URL}/vurdering`, { method: 'POST', body: JSON.stringify(vurdering) })
+    fetch<T>(`${BASE_URL}/vurdering`, { method: 'POST', body: JSON.stringify({ data: vurdering }) })
 
   const hentOutput = <T>() => fetch<T>(`${BASE_URL}/output`, { method: 'GET' })
 
