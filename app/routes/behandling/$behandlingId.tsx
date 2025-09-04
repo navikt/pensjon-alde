@@ -8,10 +8,8 @@ import {
   useParams,
   useRevalidator,
 } from 'react-router'
-import { hentBehandling } from '~/api/behandling-api'
-import authMiddleware from '~/auth/auth-middleware'
-import { authCtx } from '~/context'
-import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '../../types/behandling'
+import { createBehandlingApi } from '~/api/behandling-api'
+import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '../../types/behandling'
 import { formatDateToNorwegian } from '../../utils/date'
 import { buildAktivitetRedirectUrl } from '../../utils/handler-discovery'
 import type { Route } from './+types/$behandlingId'
@@ -20,19 +18,13 @@ export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Behandling ${params.behandlingId}` }, { name: 'description', content: 'Behandling detaljer' }]
 }
 
-export const unstable_middleware: unstable_MiddlewareFunction[] = [authMiddleware]
-
-export async function loader({ params, request, context }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId } = params
   const url = new URL(request.url)
   const justCompletedId = url.searchParams.get('justCompleted')
 
-  const auth = context.get(authCtx)
-  if (!auth) {
-    throw new Error('Auth context not available')
-  }
-
-  let behandling = await hentBehandling(behandlingId, auth)
+  const api = createBehandlingApi({ request, behandlingId })
+  let behandling = await api.hentBehandling<BehandlingDTO>()
 
   if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
     let aktivitetSomSkalVises = behandling.aktiviteter.find(
@@ -52,8 +44,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     if (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId) {
       for (let i = 0; i < 3; i++) {
         await new Promise(resolve => setTimeout(resolve, 500))
-        behandling = await hentBehandling(behandlingId, auth)
-
+        behandling = await api.hentBehandling<BehandlingDTO>()
         aktivitetSomSkalVises = behandling.aktiviteter.find(
           aktivitet =>
             (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&

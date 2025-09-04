@@ -1,28 +1,18 @@
-export type { AktivitetApiParams } from './aktivitet-api.server'
-
-import type {
-  unstable_MiddlewareFunction as MiddlewareFunction,
-  unstable_RouterContext as RouterContext,
-} from 'react-router'
-import { authCtx } from '~/context'
+import { env } from '~/utils/env.server'
+import { fetcher } from '../api-client'
+import { aktivitetApi } from './aktivitet-api.server'
 
 interface AktivitetApiParams {
-  context: RouterContext
   request: Request
-  behandlingId: string
-  aktivitetId: string
+  behandlingId?: string
+  aktivitetId?: string
 }
 
-export function createAktivitetApi({ context, request, behandlingId, aktivitetId }: AktivitetApiParams) {
-  const auth = context.get(authCtx)
-
-  if (!auth) {
-    throw new Error('Auth context not available - ensure auth middleware is configured')
+export function createAktivitetApi({ request, behandlingId, aktivitetId }: AktivitetApiParams) {
+  if (!behandlingId || !aktivitetId) {
+    throw new Error('Missing required parameters')
   }
+  const AKTIVITET_API = `${env.penUrl}/api/saksbehandling/alde/behandling/${behandlingId}/aktivitet/${aktivitetId}`
 
-  return {
-    auth,
-    behandlingId,
-    aktivitetId,
-  }
+  return aktivitetApi(AKTIVITET_API, fetcher(request))
 }

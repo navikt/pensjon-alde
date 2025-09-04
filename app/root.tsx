@@ -20,9 +20,8 @@ import { useState } from 'react'
 import type { Me } from '~/types/me'
 import { buildUrl } from '~/utils/build-url'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
-import { initializeFetch, useFetch2 } from '~/utils/use-fetch/use-fetch'
+import { requireAccessToken } from './auth/auth.server'
 import { Header } from './layout/Header/Header'
-import { authCtx } from './context'
 
 // Initialize mocking and auth in mock environment
 if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
@@ -33,19 +32,15 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
 
 export const links: Route.LinksFunction = () => []
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  // Get auth from context (set by middleware)
-  const auth = context.get(authCtx)
-  if (!auth) {
-    throw new Error('Auth context not available')
-  }
+export const loader = async ({ params, request }: LoaderFunctionArgs) => {
+  const token = await requireAccessToken(request)
 
   const penUrl = `${env.penUrl}/api/saksbehandling/alde`
 
   // Fetch me data using token from context
   const meResponse = await fetch(`${penUrl}/me`, {
     headers: {
-      Authorization: `Bearer ${auth.token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   })
