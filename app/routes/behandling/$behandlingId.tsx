@@ -1,13 +1,6 @@
 import { BodyShort, Box, CopyButton, HStack, Label, Loader, Page, Stepper, Tag, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
-import {
-  Outlet,
-  redirect,
-  type unstable_MiddlewareFunction,
-  useNavigate,
-  useParams,
-  useRevalidator,
-} from 'react-router'
+import { Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '../../types/behandling'
 import { formatDateToNorwegian } from '../../utils/date'
@@ -24,10 +17,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const justCompletedId = url.searchParams.get('justCompleted')
 
   const api = createBehandlingApi({ request, behandlingId })
-  let behandling = await api.hentBehandling<BehandlingDTO>()
+  const behandling = await api.hentBehandling<BehandlingDTO>()
+
+  let aktivitetSomSkalVises = null
+  const behandlingJobber =
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
+    (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
   if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
-    let aktivitetSomSkalVises = behandling.aktiviteter.find(
+    aktivitetSomSkalVises = behandling.aktiviteter.find(
       aktivitet =>
         (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
         aktivitet.handlerName &&
@@ -41,21 +39,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       )
     }
 
-    if (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId) {
-      for (let i = 0; i < 3; i++) {
-        await new Promise(resolve => setTimeout(resolve, 500))
-        behandling = await api.hentBehandling<BehandlingDTO>()
-        aktivitetSomSkalVises = behandling.aktiviteter.find(
-          aktivitet =>
-            (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
-            aktivitet.aktivitetId?.toString() !== justCompletedId,
-        )
+    const shouldRefetchAfterCompletion =
+      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
 
-        if (aktivitetSomSkalVises) break
-      }
-    }
-
-    if (aktivitetSomSkalVises) {
+    if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
       return redirect(`/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`)
     }
   }
@@ -63,11 +50,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return {
     behandlingId,
     behandling,
+    behandlingJobber:
+      behandlingJobber ||
+      (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId),
   }
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { behandling } = loaderData
+  const { behandling, behandlingJobber } = loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -87,10 +77,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const activeStepIndex = currentAktivitetId
     ? visibleAktiviteter.findIndex(a => a.aktivitetId?.toString() === currentAktivitetId)
     : 0
-
-  const behandlingJobber =
-    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
-    (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
   useEffect(() => {
     if (behandlingJobber) {
