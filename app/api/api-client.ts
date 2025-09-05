@@ -25,7 +25,7 @@ export function isApiError(error: unknown): error is { data: ApiErrorData } {
 }
 
 export const fetcher =
-  (request: Request): Fetcher =>
+  (BASE_URL: string, request: Request): Fetcher =>
   async <T>(url: string, options: RequestInit = {}): Promise<T> => {
     const token = await requireAccessToken(request)
     const headers = new Headers(options.headers)
@@ -40,7 +40,7 @@ export const fetcher =
       headers,
     }
 
-    const response = await fetch(url, mergedOptions)
+    const response = await fetch(`${BASE_URL}${url}`, mergedOptions)
 
     if (!response.ok) {
       let errorBody: any = null

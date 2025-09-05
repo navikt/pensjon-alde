@@ -10,5 +10,5 @@ interface BehandlingApiParams {
 export function createBehandlingApi({ request, behandlingId }: BehandlingApiParams) {
   const BEHANDLING_API = `${env.penUrl}/api/saksbehandling/alde/behandling/${behandlingId}`
 
-  return behandlingApi(BEHANDLING_API, fetcher(request))
+  return behandlingApi(fetcher(BEHANDLING_API, request))
 }

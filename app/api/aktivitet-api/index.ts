@@ -14,5 +14,5 @@ export function createAktivitetApi({ request, behandlingId, aktivitetId }: Aktiv
   }
   const AKTIVITET_API = `${env.penUrl}/api/saksbehandling/alde/behandling/${behandlingId}/aktivitet/${aktivitetId}`
 
-  return aktivitetApi(AKTIVITET_API, fetcher(request))
+  return aktivitetApi(fetcher(AKTIVITET_API, request))
 }
