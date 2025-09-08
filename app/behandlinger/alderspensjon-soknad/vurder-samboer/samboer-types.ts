@@ -23,7 +23,7 @@ export interface RegoppslagAdresse {
   landkode: string
   land: string
   adresseKilde: string
-  type: 'RegoppslagAdresse'
+  type: 'RegoppslagAdresseModel'
 }
 
 export interface Vegadresse {
@@ -42,10 +42,22 @@ export interface Vegadresse {
   adresselinjer: string[]
   adresseTilleggsdata: AdresseTilleggsdata
   id: string | null
-  type: 'Vegadresse'
+  type: 'VegadresseModel'
 }
 
-export type Bostedsadresse = RegoppslagAdresse | Vegadresse
+export interface MatrikkelAdresse {
+  matrikkelId: string | null
+  adresseString: string
+  adresselinjer: string[]
+  adresseTilleggsdata: AdresseTilleggsdata
+  postnummer: string
+  poststed: string
+  kommunenummer: string
+  koordinater: unknown | null
+  type: 'MatrikkeladresseModel'
+}
+
+export type Bostedsadresse = RegoppslagAdresse | Vegadresse | MatrikkelAdresse
 
 export interface PersongrunnlagDto {
   personGrunnlagId: number

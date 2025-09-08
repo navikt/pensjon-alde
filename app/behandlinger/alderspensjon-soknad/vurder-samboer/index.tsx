@@ -1,12 +1,12 @@
 import { PersonIcon } from '@navikt/aksel-icons'
 import {
-  Box,
+  Accordion,
   Button,
   Checkbox,
   CopyButton,
   DatePicker,
   Heading,
-  HStack,
+  HGrid,
   Tooltip,
   useDatepicker,
   VStack,
@@ -17,6 +17,7 @@ import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayo
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { checkbox, dateInput, parseForm } from '~/utils/parse-form'
 import type { Route } from './+types'
+import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
 import type { SamboerInformasjonHolder, SamboerVurdering } from './samboer-types'
 
@@ -78,28 +79,31 @@ export default function VurdereSamboer() {
 
   const detailsContent = (
     <>
-      <HStack gap="16">
+      <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
         <AddressWrapper title="Samboers bostedsadresser">
           {epsPersongrunnlagListeDto.map(g => (
-            <Box key={g.personGrunnlagId}>
-              {/* <BostedsadresserSection bostedsadresser={g.bostedsadresser} title="Samboers bostedsadresser" /> */}
-            </Box>
+            <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
           ))}
         </AddressWrapper>
 
         <AddressWrapper title="Søkers bostedsadresser">
           {sokerPersongrunnlagListeDto.map(g => (
-            <Box key={g.personGrunnlagId}>
-              {/* <BostedsadresserSection bostedsadresser={g.bostedsadresser} title="Søkers bostedsadresser" /> */}
-            </Box>
+            <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
           ))}
         </AddressWrapper>
-      </HStack>
+      </HGrid>
 
-      <div>
-        <pre>{JSON.stringify(vurdering, null, 2)}</pre>
-        <pre>{JSON.stringify(samboerInformasjon, null, 2)}</pre>
-      </div>
+      <br />
+
+      <Accordion>
+        <Accordion.Item>
+          <Accordion.Header>Vis datagrunnlaget</Accordion.Header>
+          <Accordion.Content>
+            <pre>{JSON.stringify(vurdering, null, 2)}</pre>
+            <pre>{JSON.stringify(samboerInformasjon, null, 2)}</pre>
+          </Accordion.Content>
+        </Accordion.Item>
+      </Accordion>
     </>
   )
 
