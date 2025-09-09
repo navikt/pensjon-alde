@@ -49,7 +49,7 @@ export const AktivitetDebug: React.FC<IAktivitetDebugProps> = ({ input, vurderin
           Debug
         </button>
         {isOpen && (
-          <Box.New background="default" borderWidth="4 0" borderColor="danger" className={style.tabsContainer}>
+          <Box.New background="danger-soft" borderWidth="4 0" borderColor="danger" className={style.tabsContainer}>
             <Tabs defaultValue="grunnlag">
               <Tabs.List>
                 <Tabs.Tab value="grunnlag" label="Aktivitet grunnlag" icon={<ClockDashedIcon aria-hidden />} />
