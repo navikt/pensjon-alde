@@ -89,5 +89,4 @@ export interface SamboerVurdering {
   virkFom: string | null
   tidligereEktefeller: boolean | null
   harFellesBarn: boolean | null
-  vurdert: string | null
 }

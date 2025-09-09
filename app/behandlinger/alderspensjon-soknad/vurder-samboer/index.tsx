@@ -138,11 +138,11 @@ export default function VurdereSamboer() {
           </div>
 
           <div className="button-group">
-            <Button type="submit" name="vurdert" value="VURDERT" variant="primary" size="small">
+            <Button type="submit" variant="primary" size="small">
               Lagre vurdering
             </Button>
 
-            <Button type="submit" name="vurdert" value="AVBRUTT" variant="secondary" size="small">
+            <Button type="submit" variant="secondary" size="small">
               Avbryt og tilbake
             </Button>
           </div>
