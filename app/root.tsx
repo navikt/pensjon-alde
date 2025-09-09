@@ -2,6 +2,10 @@
 import '@navikt/ds-css/darkside'
 
 import { type Faro, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk'
+import { TracingInstrumentation } from '@grafana/faro-web-tracing'
+import { Theme } from '@navikt/ds-react'
+import type React from 'react'
+import { useState } from 'react'
 import {
   createCookie,
   isRouteErrorResponse,
@@ -13,12 +17,6 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from 'react-router'
-import '@navikt/ds-css'
-
-import { TracingInstrumentation } from '@grafana/faro-web-tracing'
-import { Theme } from '@navikt/ds-react'
-import type React from 'react'
-import { useState } from 'react'
 import type { Me } from '~/types/me'
 import { buildUrl } from '~/utils/build-url'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
