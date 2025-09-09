@@ -1,4 +1,7 @@
 /** biome-ignore-all lint/suspicious/noDocumentCookie: TODO: Refactor this */
+import '@navikt/ds-css/darkside'
+
+import { type Faro, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk'
 import {
   createCookie,
   isRouteErrorResponse,
@@ -10,16 +13,16 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from 'react-router'
-import '@navikt/ds-css/darkside'
-
-import type { Route } from './+types/root'
 import '@navikt/ds-css'
+
+import { TracingInstrumentation } from '@grafana/faro-web-tracing'
 import { Theme } from '@navikt/ds-react'
 import type React from 'react'
 import { useState } from 'react'
 import type { Me } from '~/types/me'
 import { buildUrl } from '~/utils/build-url'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
+import type { Route } from './+types/root'
 import { requireAccessToken } from './auth/auth.server'
 import { Header } from './layout/Header/Header'
 
@@ -73,6 +76,36 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     verdandeBehandlingUrl,
   }
 }
+
+let faro: Faro | null = null
+
+export function initInstrumentation(): void {
+  if (typeof window === 'undefined' || faro !== null) return
+
+  getFaro()
+}
+
+export function getFaro(): Faro {
+  if (faro != null) return faro
+
+  faro = initializeFaro({
+    url: 'https://telemetry.ekstern.dev.nav.no/collect', // TODO: Sett URL til miljøvariabel
+    app: {
+      name: 'pensjon-alde',
+      version: 'dev', // TODO: Oppdater versjon, pakkeversjon eller git commit hash?
+    },
+
+    instrumentations: [
+      ...getWebInstrumentations({
+        captureConsole: true,
+      }),
+      new TracingInstrumentation(),
+    ],
+  })
+  return faro
+}
+
+process.env.NODE_ENV !== 'development' && initInstrumentation()
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { darkmode, me, verdandeAktivitetUrl, verdandeBehandlingUrl } = useLoaderData<typeof loader>()
