@@ -1,0 +1,68 @@
+.debugPanel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  max-height: 60vh;
+  z-index: 1000;
+}
+
+.container {
+  pointer-events: auto;
+  transition: transform 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.open {
+  max-height: 60vh;
+}
+
+.closed {
+  max-height: 40px;
+}
+
+.button {
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  width: 120px;
+  height: 40px;
+  background: var(--a-red-500);
+  color: white;
+  border: 2px solid var(--a-red-600);
+  border-radius: 8px 8px 0 0;
+  pointer-events: auto;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.button:hover {
+  background: var(--a-red-600);
+}
+
+.button:focus {
+  outline: 2px solid var(--a-focus-color);
+  outline-offset: 2px;
+}
+
+.tabsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  width: 100%;
+  align-self: stretch;
+}
+
+.tabPanel {
+  overflow-y: auto;
+  max-height: calc(60vh - 80px);
+}

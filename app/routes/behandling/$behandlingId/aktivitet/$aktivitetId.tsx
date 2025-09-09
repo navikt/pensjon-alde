@@ -1,6 +1,8 @@
 import { Alert, BodyShort, Box, Detail, Heading } from '@navikt/ds-react'
 import { Outlet, redirect, useOutlet } from 'react-router'
+import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
+import AktivitetDebug from '~/components/AktivitetDebug'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
@@ -35,11 +37,42 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     return redirect(implementationUrl)
   }
 
-  return { behandling, aktivitet }
+  const isDebug =
+    (url.searchParams.has('debug') || process.env.NODE_ENV === 'development') &&
+    process.env.NAIS_CLUSTER_NAME !== 'prod-gcp'
+
+  // Fetch debug data if debug parameter is present
+  let debugData = { grunnlag: null, vurdering: null }
+
+  if (isDebug) {
+    try {
+      const aktivitetApi = createAktivitetApi({
+        request,
+        behandlingId,
+        aktivitetId,
+      })
+
+      const [grunnlag, vurdering] = await Promise.all([
+        aktivitetApi.hentGrunnlagsdata<any>().catch(() => null),
+        aktivitetApi.hentVurdering<any>().catch(() => null),
+      ])
+
+      debugData = { grunnlag, vurdering }
+    } catch (error) {
+      console.error('Debug data fetch error:', error)
+    }
+  }
+
+  return {
+    behandling,
+    aktivitet,
+    debug: debugData,
+    isDebug,
+  }
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandling, aktivitet } = loaderData
+  const { behandling, aktivitet, debug, isDebug } = loaderData
   const outlet = useOutlet()
 
   return (
@@ -79,6 +112,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
           </Alert>
         </Box.New>
       )}
+      {isDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
     </div>
   )
 }

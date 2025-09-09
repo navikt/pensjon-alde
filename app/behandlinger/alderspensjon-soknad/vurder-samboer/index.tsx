@@ -92,18 +92,6 @@ export default function VurdereSamboer() {
           ))}
         </AddressWrapper>
       </HGrid>
-
-      <br />
-
-      <Accordion>
-        <Accordion.Item>
-          <Accordion.Header>Vis datagrunnlaget</Accordion.Header>
-          <Accordion.Content>
-            <pre>{JSON.stringify(vurdering, null, 2)}</pre>
-            <pre>{JSON.stringify(samboerInformasjon, null, 2)}</pre>
-          </Accordion.Content>
-        </Accordion.Item>
-      </Accordion>
     </>
   )
 
