@@ -37,14 +37,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     return redirect(implementationUrl)
   }
 
-  const isDebug =
-    (url.searchParams.has('debug') || process.env.NODE_ENV === 'development') &&
-    process.env.NAIS_CLUSTER_NAME !== 'prod-gcp'
+  const showDebug = process.env.NAIS_CLUSTER_NAME !== 'prod-gcp'
 
   // Fetch debug data if debug parameter is present
   let debugData = { grunnlag: null, vurdering: null }
 
-  if (isDebug) {
+  if (showDebug) {
     try {
       const aktivitetApi = createAktivitetApi({
         request,
@@ -67,12 +65,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     behandling,
     aktivitet,
     debug: debugData,
-    isDebug,
+    showDebug,
   }
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandling, aktivitet, debug, isDebug } = loaderData
+  const { behandling, aktivitet, debug, showDebug } = loaderData
   const outlet = useOutlet()
 
   return (
@@ -112,7 +110,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
           </Alert>
         </Box.New>
       )}
-      {isDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
+      {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
     </div>
   )
 }
