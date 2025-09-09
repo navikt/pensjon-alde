@@ -1,4 +1,11 @@
-import { ExternalLinkIcon, MenuGridIcon, MoonIcon, SunIcon } from '@navikt/aksel-icons'
+import {
+  AngleRulerTriangleIcon,
+  ExternalLinkIcon,
+  MenuGridIcon,
+  MoonIcon,
+  PencilLineIcon,
+  SunIcon,
+} from '@navikt/aksel-icons'
 import { ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Spacer } from '@navikt/ds-react'
 import type { Me } from '~/types/me'
 
@@ -6,11 +13,21 @@ interface Props {
   me: Me
   isDarkmode: boolean
   setDarkmode: (darkmode: boolean) => void
+  isSketchmode: boolean
+  setSketchmode: (sketchmode: boolean) => void
   verdandeAktivitetUrl: string | undefined
   verdandeBehandlingUrl: string | undefined
 }
 
-export const Header = ({ me, isDarkmode, setDarkmode, verdandeAktivitetUrl, verdandeBehandlingUrl }: Props) => (
+export const Header = ({
+  me,
+  isDarkmode,
+  setDarkmode,
+  isSketchmode,
+  setSketchmode,
+  verdandeAktivitetUrl,
+  verdandeBehandlingUrl,
+}: Props) => (
   <InternalHeader>
     <InternalHeader.Title as="h2">Pesys</InternalHeader.Title>
 
@@ -89,6 +106,20 @@ export const Header = ({ me, isDarkmode, setDarkmode, verdandeAktivitetUrl, verd
 
         <ActionMenu.Item disabled={isDarkmode} icon={<MoonIcon />} onClick={() => setDarkmode(true)}>
           Bytt til mørk modus
+        </ActionMenu.Item>
+
+        <Dropdown.Menu.Divider />
+
+        <ActionMenu.Item disabled={isSketchmode} icon={<PencilLineIcon />} onClick={() => setSketchmode(true)}>
+          Slå på kladdeutseende
+        </ActionMenu.Item>
+
+        <ActionMenu.Item
+          disabled={!isSketchmode}
+          icon={<AngleRulerTriangleIcon />}
+          onClick={() => setSketchmode(false)}
+        >
+          Slå av kladdeutseende
         </ActionMenu.Item>
       </ActionMenu.Content>
     </ActionMenu>

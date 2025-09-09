@@ -1,4 +1,4 @@
-body {
+.sketchMode {
   font-family: "Comic Neue", "Architects Daughter", "Patrick Hand", "Comic Sans MS", sans-serif;
 
   transform: skew(1deg, 1deg) rotate(-0.1deg);

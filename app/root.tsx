@@ -10,7 +10,6 @@ import {
   createCookie,
   isRouteErrorResponse,
   Links,
-  type LinksFunction,
   type LoaderFunctionArgs,
   Meta,
   Outlet,
@@ -22,19 +21,15 @@ import type { Me } from '~/types/me'
 import { buildUrl } from '~/utils/build-url'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
 import type { Route } from './+types/root'
-import appStylesHref from './app.css?url'
 import { requireAccessToken } from './auth/auth.server'
 import { Header } from './layout/Header/Header'
+import styles from './root.module.css'
 
 // Initialize mocking and auth in mock environment
 if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
   import('./mocks').then(({ initializeMocking }) => {
     initializeMocking().catch(console.error)
   })
-}
-
-export const links: LinksFunction = () => {
-  return [...[{ rel: 'stylesheet', href: appStylesHref }]]
 }
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
@@ -52,6 +47,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const me: Me = await meResponse.json()
 
   const darkmode = await createCookie('darkmode').parse(request.headers.get('cookie'))
+  const sketchmode = await createCookie('sketchmode').parse(request.headers.get('cookie'))
 
   const behandlingId = params.behandlingId ? +params.behandlingId : undefined
   const aktivitetId = params.aktivitetId ? +params.aktivitetId : undefined
@@ -74,6 +70,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   return {
     darkmode: darkmode === 'true' || darkmode === true,
     me,
+    sketchmode: sketchmode === 'true' || sketchmode === true,
     verdandeAktivitetUrl,
     verdandeBehandlingUrl,
   }
@@ -110,12 +107,18 @@ export function getFaro(): Faro {
 process.env.NODE_ENV !== 'development' && initInstrumentation()
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { darkmode, me, verdandeAktivitetUrl, verdandeBehandlingUrl } = useLoaderData<typeof loader>()
+  const { darkmode, me, sketchmode, verdandeAktivitetUrl, verdandeBehandlingUrl } = useLoaderData<typeof loader>()
   const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
+  const [isSketchMode, setIsSketchMode] = useState<boolean>(sketchmode)
 
   function setDarkmode(darkmode: boolean) {
     setIsDarkmode(darkmode)
     document.cookie = `darkmode=${encodeURIComponent(btoa(darkmode.toString()))}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
+  }
+
+  function setSketchMode(sketchmode: boolean) {
+    setIsSketchMode(sketchmode)
+    document.cookie = `sketchmode=${encodeURIComponent(btoa(sketchmode.toString()))}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
   }
 
   return (
@@ -127,11 +130,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <Theme theme={isDarkmode ? 'dark' : 'light'}>
+        <Theme theme={isDarkmode ? 'dark' : 'light'} className={isSketchMode ? styles.sketchMode : ''}>
           <Header
             me={me}
             isDarkmode={isDarkmode}
             setDarkmode={setDarkmode}
+            isSketchmode={isSketchMode}
+            setSketchmode={setSketchMode}
             verdandeAktivitetUrl={verdandeAktivitetUrl}
             verdandeBehandlingUrl={verdandeBehandlingUrl}
           />
