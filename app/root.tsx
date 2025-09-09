@@ -10,6 +10,7 @@ import {
   createCookie,
   isRouteErrorResponse,
   Links,
+  type LinksFunction,
   type LoaderFunctionArgs,
   Meta,
   Outlet,
@@ -21,6 +22,7 @@ import type { Me } from '~/types/me'
 import { buildUrl } from '~/utils/build-url'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
 import type { Route } from './+types/root'
+import appStylesHref from './app.css?url'
 import { requireAccessToken } from './auth/auth.server'
 import { Header } from './layout/Header/Header'
 
@@ -31,7 +33,9 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
   })
 }
 
-export const links: Route.LinksFunction = () => []
+export const links: LinksFunction = () => {
+  return [...[{ rel: 'stylesheet', href: appStylesHref }]]
+}
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const token = await requireAccessToken(request)
