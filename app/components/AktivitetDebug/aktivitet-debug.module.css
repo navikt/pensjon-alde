@@ -33,9 +33,9 @@
   gap: 0.5rem;
   width: 120px;
   height: 40px;
-  background: var(--a-red-500);
+  background: var(--ax-bg-danger-strong);
   color: white;
-  border: 2px solid var(--a-red-600);
+  border: 2px solid var(--ax-bg-danger-strong);
   border-radius: 8px 8px 0 0;
   pointer-events: auto;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
@@ -44,12 +44,7 @@
 }
 
 .button:hover {
-  background: var(--a-red-600);
-}
-
-.button:focus {
-  outline: 2px solid var(--a-focus-color);
-  outline-offset: 2px;
+  background: var(--ax-bg-danger-strong-hover);
 }
 
 .tabsContainer {
