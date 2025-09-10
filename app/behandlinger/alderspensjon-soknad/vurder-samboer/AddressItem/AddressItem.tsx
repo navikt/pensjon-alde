@@ -1,16 +1,13 @@
-import { BodyShort, Box, Heading } from '@navikt/ds-react'
+import { BodyShort } from '@navikt/ds-react'
 import type { ReactNode } from 'react'
 
 interface Props {
-  header: string
+  bold?: boolean
   children: ReactNode
 }
 
-export const AddressItem = ({ header, children }: Props) => (
-  <Box.New>
-    <Heading size="xsmall" level="6">
-      {header}
-    </Heading>
-    <BodyShort>{children}</BodyShort>
-  </Box.New>
-)
+export const AddressItem = ({ bold = false, children }: Props) => {
+  if (!children) return null
+
+  return <BodyShort weight={bold ? 'semibold' : 'regular'}>{children}</BodyShort>
+}

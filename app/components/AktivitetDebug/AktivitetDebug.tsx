@@ -1,5 +1,6 @@
 import { ArrowDownIcon, ArrowUpIcon, ClockDashedIcon, InboxDownIcon } from '@navikt/aksel-icons'
 import { Box, Tabs } from '@navikt/ds-react'
+import clsx from 'clsx'
 import { useEffect, useState } from 'react'
 import style from './aktivitet-debug.module.css'
 
@@ -37,7 +38,7 @@ export const AktivitetDebug: React.FC<IAktivitetDebugProps> = ({ input, vurderin
 
   return (
     <div className={style.debugPanel}>
-      <div className={`${style.container} ${isOpen ? style.open : style.closed}`}>
+      <div className={clsx(style.container, { [style.open]: isOpen, [style.closed]: !isOpen })}>
         <button
           type="button"
           className={style.button}
@@ -48,6 +49,7 @@ export const AktivitetDebug: React.FC<IAktivitetDebugProps> = ({ input, vurderin
           {isOpen ? <ArrowDownIcon aria-hidden /> : <ArrowUpIcon aria-hidden />}
           Debug
         </button>
+
         {isOpen && (
           <Box.New background="danger-soft" borderWidth="4 0" borderColor="danger" className={style.tabsContainer}>
             <Tabs defaultValue="grunnlag">
