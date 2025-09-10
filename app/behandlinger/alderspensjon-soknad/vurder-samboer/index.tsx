@@ -70,28 +70,29 @@ export default function VurdereSamboer() {
     required: true,
   })
 
-  const { samboerInformasjon, vurdering } = useLoaderData<typeof loader>()
+  const {
+    samboerInformasjon,
+    // vurdering
+  } = useLoaderData<typeof loader>()
   const { epsPersongrunnlagListeDto, sokerPersongrunnlagListeDto } = samboerInformasjon
   const { fnr, navnTilPerson } = sokerPersongrunnlagListeDto[0]
   const { etternavn, fornavn, mellomnavn } = navnTilPerson
   const { aktivitet } = useOutletContext<AktivitetOutletContext>()
 
   const detailsContent = (
-    <>
-      <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
-        <AddressWrapper title="Samboers bostedsadresser">
-          {epsPersongrunnlagListeDto.map(g => (
-            <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
-          ))}
-        </AddressWrapper>
+    <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
+      <AddressWrapper title="Samboers bostedsadresser">
+        {epsPersongrunnlagListeDto.map(g => (
+          <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
+        ))}
+      </AddressWrapper>
 
-        <AddressWrapper title="Søkers bostedsadresser">
-          {sokerPersongrunnlagListeDto.map(g => (
-            <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
-          ))}
-        </AddressWrapper>
-      </HGrid>
-    </>
+      <AddressWrapper title="Søkers bostedsadresser">
+        {sokerPersongrunnlagListeDto.map(g => (
+          <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
+        ))}
+      </AddressWrapper>
+    </HGrid>
   )
 
   const sidebar = (
