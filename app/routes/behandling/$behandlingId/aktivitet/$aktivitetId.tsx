@@ -31,8 +31,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   if (
     implementationUrl &&
-    !currentPath.includes(behandling.handlerName!) &&
-    !currentPath.includes(aktivitet.handlerName!)
+    behandling.handlerName &&
+    aktivitet.handlerName &&
+    !currentPath.includes(behandling.handlerName) &&
+    !currentPath.includes(aktivitet.handlerName)
   ) {
     return redirect(implementationUrl)
   }

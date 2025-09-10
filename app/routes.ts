@@ -1,6 +1,6 @@
+import { join } from 'node:path'
 import { index, type RouteConfig, type RouteConfigEntry, route } from '@react-router/dev/routes'
 import { glob } from 'glob'
-import { join } from 'path'
 
 // Dynamically discover all behandlinger and their aktiviteter
 function discoverBehandlingRoutes(): RouteConfigEntry[] {

@@ -6,7 +6,7 @@ export default function Attestering() {
     <div
       style={{
         display: 'flex',
-        alignItems: 'center',
+        justifyContent: 'center',
         gap: '1rem',
         marginTop: '2rem',
       }}

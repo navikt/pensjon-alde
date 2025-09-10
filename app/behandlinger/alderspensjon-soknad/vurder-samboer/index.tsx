@@ -1,6 +1,5 @@
 import { PersonIcon } from '@navikt/aksel-icons'
 import {
-  Accordion,
   Button,
   Checkbox,
   CopyButton,

@@ -214,7 +214,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     style={{ cursor: 'pointer' }}
                     data-step-index={index}
                   >
-                    {step.friendlyName!}
+                    {step.friendlyName ?? ''}
                   </Stepper.Step>
                 ))}
               </Stepper>
