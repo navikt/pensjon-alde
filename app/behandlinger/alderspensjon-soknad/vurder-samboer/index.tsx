@@ -1,5 +1,6 @@
 import { PersonIcon } from '@navikt/aksel-icons'
 import {
+  Alert,
   Button,
   Checkbox,
   CopyButton,
@@ -81,20 +82,30 @@ export default function VurdereSamboer() {
 
   const detailsContent = (
     <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
-      <AddressWrapper title="Samboers bostedsadresser">
-        {epsPersongrunnlagListeDto.length > 0
-          ? epsPersongrunnlagListeDto.map(g => (
-              <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
-            ))
-          : 'Ingen bostedsadresser funnet.'}
+      <AddressWrapper
+        title="Samboers bostedsadresser"
+        description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
+      >
+        {epsPersongrunnlagListeDto.length > 0 ? (
+          epsPersongrunnlagListeDto.map(g => (
+            <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
+          ))
+        ) : (
+          <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+        )}
       </AddressWrapper>
 
-      <AddressWrapper title="Søkers bostedsadresser">
-        {sokerPersongrunnlagListeDto.length > 0
-          ? sokerPersongrunnlagListeDto.map(g => (
-              <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
-            ))
-          : 'Ingen bostedsadresser funnet.'}
+      <AddressWrapper
+        title="Søkers bostedsadresser"
+        description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
+      >
+        {sokerPersongrunnlagListeDto.length > 0 ? (
+          sokerPersongrunnlagListeDto.map(g => (
+            <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
+          ))
+        ) : (
+          <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+        )}
       </AddressWrapper>
     </HGrid>
   )
