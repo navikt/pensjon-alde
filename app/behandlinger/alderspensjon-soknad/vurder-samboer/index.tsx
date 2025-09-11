@@ -82,15 +82,19 @@ export default function VurdereSamboer() {
   const detailsContent = (
     <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
       <AddressWrapper title="Samboers bostedsadresser">
-        {epsPersongrunnlagListeDto.map(g => (
-          <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
-        ))}
+        {epsPersongrunnlagListeDto.length > 0
+          ? epsPersongrunnlagListeDto.map(g => (
+              <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
+            ))
+          : 'Ingen bostedsadresser funnet.'}
       </AddressWrapper>
 
       <AddressWrapper title="Søkers bostedsadresser">
-        {sokerPersongrunnlagListeDto.map(g => (
-          <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
-        ))}
+        {sokerPersongrunnlagListeDto.length > 0
+          ? sokerPersongrunnlagListeDto.map(g => (
+              <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
+            ))
+          : 'Ingen bostedsadresser funnet.'}
       </AddressWrapper>
     </HGrid>
   )
