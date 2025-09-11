@@ -1,3 +1,7 @@
+@import "tailwindcss";
+@import "@navikt/ds-css" layer(components);
+@config '../tailwind.config.ts';
+
 .sketchMode {
   font-family: "Comic Neue", "Architects Daughter", "Patrick Hand", "Comic Sans MS", sans-serif;
 
