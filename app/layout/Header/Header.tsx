@@ -84,18 +84,18 @@ export const Header = ({
 
     <ActionMenu>
       <ActionMenu.Trigger>
-        <InternalHeader.UserButton name={`${me.fornavn} ${me.etternavn}`} />
+        <InternalHeader.UserButton name={me ? `${me.fornavn} ${me.etternavn}` : 'Bruker'} />
       </ActionMenu.Trigger>
 
       <ActionMenu.Content>
         <dl>
-          {me.fornavn && me.etternavn && (
+          {me?.fornavn && me?.etternavn && (
             <BodyShort as="dt" size="small">
               {me.fornavn} {me.etternavn}
             </BodyShort>
           )}
 
-          {me.navident && <Detail as="dd">{me.navident}</Detail>}
+          {me?.navident && <Detail as="dd">{me.navident}</Detail>}
         </dl>
 
         <Dropdown.Menu.Divider />
