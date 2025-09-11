@@ -61,7 +61,7 @@
     "vitest": "^3.2.4"
   },
   "lint-staged": {
-    "**/*.{js,jsx,ts,tsx,json,css,scss}": [
+    "!(public)/**/*.{js,jsx,ts,tsx,json,css,scss}": [
       "biome check --write --files-ignore-unknown=true"
     ]
   }
