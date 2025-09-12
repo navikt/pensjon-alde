@@ -106,6 +106,16 @@ export function getFaro(): Faro {
 
 process.env.NODE_ENV !== 'development' && initInstrumentation()
 
+export function links() {
+  return [
+    {
+      rel: 'icon',
+      href: '/favicon.svg',
+      type: 'image/svg+xml',
+    },
+  ]
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const { darkmode, me, sketchmode, verdandeAktivitetUrl, verdandeBehandlingUrl } = useLoaderData<typeof loader>()
   const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
@@ -126,7 +136,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <Meta />
         <Links />
       </head>
