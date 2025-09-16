@@ -16,6 +16,7 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { checkbox, dateInput, parseForm } from '~/utils/parse-form'
+import { component as Component } from '../kontroller-inntektsopplysninger-for-eps'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
@@ -76,7 +77,7 @@ export default function VurdereSamboer() {
   const { epsPersongrunnlagListeDto, sokerPersongrunnlagListeDto } = samboerInformasjon
   const { fnr, navnTilPerson } = sokerPersongrunnlagListeDto[0]
   const { etternavn, fornavn, mellomnavn } = navnTilPerson
-  const { aktivitet } = useOutletContext<AktivitetOutletContext>()
+  const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
 
   const detailsContent = (
     <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
@@ -165,11 +166,13 @@ export default function VurdereSamboer() {
   )
 
   return (
-    <AktivitetVurderingLayout
-      aktivitet={aktivitet}
-      detailsTitle="Samboervurdering"
-      detailsContent={detailsContent}
-      sidebar={sidebar}
-    />
+    <div>
+      <AktivitetVurderingLayout
+        aktivitet={aktivitet}
+        detailsTitle="Samboervurdering"
+        detailsContent={detailsContent}
+        sidebar={sidebar}
+      />
+    </div>
   )
 }

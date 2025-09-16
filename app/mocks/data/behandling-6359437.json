@@ -34,6 +34,17 @@
     {
       "aktivitetId": 6020942,
       "type": "FleksibelApSakA203VurderSativitet",
+      "handlerName": "kontroller-inntektsopplysninger-for-eps",
+      "friendlyName": "Kontroller inntektsopplysninger for ektefelle, partner og samboer",
+      "opprettet": "2025-08-26T16:49:34.364857",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-08-26T16:49:34.380546",
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": "2025-08-27T16:49:34.383125"
+    },
+    {
+      "aktivitetId": 6020942,
+      "type": "FleksibelApSakA203VurderSativitet",
       "opprettet": "2025-08-26T16:49:34.364857",
       "handlerName": "vurder-samboer",
       "friendlyName": "Vurder samboer",

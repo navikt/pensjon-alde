@@ -40,3 +40,17 @@ export const dateInput = (value: any): string | null => {
 
   return formatISO(date, { representation: 'date' })
 }
+
+export const radiogroup =
+  <T extends string | boolean>(config: Record<string, T>) =>
+  (value: any): T => {
+    if (value === undefined || value === null || value === '') {
+      throw new Error('RadioGroup value is required')
+    }
+
+    if (!(value in config)) {
+      throw new Error(`RadioGroup value "${value}" is not valid. Expected one of: ${Object.keys(config).join(', ')}`)
+    }
+
+    return config[value]
+  }
