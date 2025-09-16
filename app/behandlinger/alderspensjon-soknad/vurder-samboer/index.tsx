@@ -30,14 +30,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     aktivitetId,
   })
 
-  const grunnlag = await api.hentGrunnlagsdata<{
-    samboerInformasjon: SamboerInformasjonHolder
-  }>()
+  const grunnlag = await api.hentGrunnlagsdata<SamboerInformasjonHolder>()
 
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
   return {
-    samboerInformasjon: grunnlag?.samboerInformasjon,
+    samboerInformasjon: grunnlag,
     vurdering,
   }
 }
