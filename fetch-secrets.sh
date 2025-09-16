@@ -56,7 +56,7 @@ function fetch_kubernetes_secrets {
     if [[ "$mode" == "strict" ]]; then
         local secret_name=$(echo "$context_namespace_secrets_value" | grep "$secret" | awk '{print $1}')
     else
-        local secret_name=$(echo "$context_namespace_secrets_value" | grep "$secret" | tail -1 | awk '{print $1}')
+        local secret_name=$(echo "$context_namespace_secrets_value" | grep "$secret" | awk '{print $1}' | sort | tail -1)
     fi
 
     if [[ $secret_name == *$'\n'* ]]; then
@@ -87,7 +87,7 @@ echo
 
 echo -e "${bold}Henter secrets fra Kubernetes${normal}"
 
-fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pensjon-alde-$env" "strict" \
+fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pensjon-alde-$env" "nonstrict" \
   "AZURE_APP_CLIENT_ID" \
   "AZURE_APP_CLIENT_SECRET" \
   "AZURE_APP_TENANT_ID" \
