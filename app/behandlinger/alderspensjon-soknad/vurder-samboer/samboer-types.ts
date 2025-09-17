@@ -59,40 +59,20 @@ export interface MatrikkelAdresse {
 
 export type Bostedsadresse = RegoppslagAdresse | Vegadresse | MatrikkelAdresse
 
-export interface PersongrunnlagDto {
-  personGrunnlagId: number
-  fnr: string
-  navnTilPerson: NavnTilPerson
-  tidligereGiftMedSoker: boolean | null
-  bostedsadresser: Bostedsadresse[]
-  fellesBarnMedSoker: boolean
-  datoEldsteBarnMedSoker: string | null
-}
-
-export interface Link {
-  href: string
-}
-
-export interface Links {
-  self: Link
-  lagreVurdering: Link
-}
-
 export type VurderSamboerGrunnlag = {
   sokersBostedsadresser: Bostedsadresse[]
-  samboer?: SamboerInformasjon | null
+  samboer: SamboerInformasjon
 }
 
 export type SamboerInformasjon = {
   fnr: string
-  navn?: NavnTilPerson | null
-  bostedsadresser?: Bostedsadresse[] | null
+  navn: NavnTilPerson
+  bostedsadresser: Bostedsadresse[]
   harEllerHarHattFellesBarn: boolean
   tidligereEktefelle: boolean
 }
 
 export interface SamboerVurdering {
   virkFom: string | null
-  tidligereEktefeller: boolean | null
-  harFellesBarn: boolean | null
+  samboerVurdering: '1-5' | '3-2' | 'ikke_samboer'
 }

@@ -1,12 +1,18 @@
 import { PersonIcon } from '@navikt/aksel-icons'
 import {
   Alert,
+  BodyLong,
+  BodyShort,
   Button,
   Checkbox,
   CopyButton,
   DatePicker,
   Heading,
   HGrid,
+  HStack,
+  Label,
+  Radio,
+  RadioGroup,
   Tooltip,
   useDatepicker,
   VStack,
@@ -15,7 +21,7 @@ import { Form, redirect, useLoaderData, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { checkbox, dateInput, parseForm } from '~/utils/parse-form'
+import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
@@ -51,8 +57,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   const vurdering = parseForm<SamboerVurdering>(formData, {
     virkFom: dateInput,
-    tidligereEktefeller: checkbox,
-    harFellesBarn: checkbox,
+    samboerVurdering: radiogroup({ '1-5': '1-5', '3-2': '3-2', ikke_samboere: 'ikke_samboere' }),
   })
 
   try {
@@ -73,77 +78,95 @@ export default function VurdereSamboer() {
     samboerInformasjon,
     // vurdering
   } = useLoaderData<typeof loader>()
+  const { samboer, sokersBostedsadresser } = samboerInformasjon
+
   const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
 
   const detailsContent = (
-    <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
-      <AddressWrapper
-        title="Samboers bostedsadresser"
-        description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
-      >
-        {samboerInformasjon.samboer?.bostedsadresser && samboerInformasjon.samboer?.bostedsadresser?.length > 0 ? (
-          <AddressBlock bostedadresser={samboerInformasjon.samboer?.bostedsadresser} />
-        ) : (
-          <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
-        )}
-      </AddressWrapper>
+    <HGrid gap="4">
+      <VStack>
+        <Heading size="xsmall" level="2">
+          <PersonIcon /> Samboer
+        </Heading>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {samboer.fnr}
+          <CopyButton size="small" copyText={samboer.fnr} />
+        </div>
+        {samboer.navn.etternavn.toUpperCase()}, {samboer.navn.fornavn} {samboer.navn.mellomnavn}
+      </VStack>
 
-      <AddressWrapper
-        title="Søkers bostedsadresser"
-        description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
-      >
-        {samboerInformasjon.sokersBostedsadresser.length > 0 ? (
-          <AddressBlock bostedadresser={samboerInformasjon.sokersBostedsadresser} />
-        ) : (
-          <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
-        )}
-      </AddressWrapper>
+      <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
+        <VStack gap="1">
+          <Heading level="2" size="xsmall">
+            Brukeroppgitte opplysninger
+          </Heading>
+          <BodyShort>
+            Tidligere gift: <b>KHJKJSHDF</b>
+          </BodyShort>
+          <BodyShort>
+            Felles barn: <b>HEISD</b>
+          </BodyShort>
+          <BodyShort>
+            Dato for samboerskap: <b>FDSDF</b>
+          </BodyShort>
+        </VStack>
+
+        <VStack gap="1">
+          <Heading size="small">Opplysninger fra vårt register</Heading>
+          <BodyShort>
+            Tidligere gift: <b>{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</b>
+          </BodyShort>
+          <BodyShort>
+            Felles barn: <b>{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</b>
+          </BodyShort>
+        </VStack>
+      </HGrid>
+
+      <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
+        <AddressWrapper
+          title="Samboers bostedsadresser"
+          description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
+        >
+          {samboer.bostedsadresser.length > 0 ? (
+            <AddressBlock bostedadresser={samboer.bostedsadresser} />
+          ) : (
+            <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+          )}
+        </AddressWrapper>
+
+        <AddressWrapper
+          title="Søkers bostedsadresser"
+          description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
+        >
+          {sokersBostedsadresser.length > 0 ? (
+            <AddressBlock bostedadresser={sokersBostedsadresser} />
+          ) : (
+            <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+          )}
+        </AddressWrapper>
+      </HGrid>
     </HGrid>
   )
 
   const sidebar = (
     <Form method="post" className="decision-form">
-      <div className="samboer-details">
-        <VStack gap="1">
-          <Heading level="2" size="medium">
-            <PersonIcon title="Aktuell samboer" fontSize="1.5rem" />
-            Aktuell samboer
-          </Heading>
-
-          {samboerInformasjon.samboer?.fnr && (
-            <div className="samboer-ssn">
-              {samboerInformasjon.samboer?.fnr}
-              <Tooltip content="Kopier fødselsnummer">
-                <CopyButton variant="action" copyText={samboerInformasjon.samboer?.fnr} size="small" />
-              </Tooltip>
-            </div>
-          )}
-
-          {samboerInformasjon.samboer?.navn?.etternavn && samboerInformasjon.samboer?.navn?.fornavn && (
-            <div className="samboer-name">
-              {samboerInformasjon.samboer?.navn?.etternavn}, {samboerInformasjon.samboer?.navn?.fornavn}
-              {samboerInformasjon.samboer?.navn?.mellomnavn && ` ${samboerInformasjon.samboer?.navn?.mellomnavn}`}
-            </div>
-          )}
-        </VStack>
-      </div>
+      <div className="samboer-details"></div>
 
       <div className="samboer-assessment">
-        <VStack gap="1">
-          <Heading level="2" size="medium">
-            Vurder samboerskap
-          </Heading>
-
-          <div className="checkbox-group">
-            <Checkbox name="harFellesBarn">Har felles barn</Checkbox>
-            <Checkbox name="tidligereEktefeller">Tidligere ektefeller</Checkbox>
+        <VStack gap="4">
+          <div className="">
+            <RadioGroup legend="Vurder samboerskap" name="samboervurdering">
+              <Radio value="ikke_samboere">Ikke samboere</Radio>
+              <Radio value="1-5">§ 1-5 samboer</Radio>
+              <Radio value="3-5">§ 3-5 samboer</Radio>
+            </RadioGroup>
 
             <DatePicker {...datepickerProps}>
               <DatePicker.Input {...inputProps} label="Virkningstidspunkt fra" name="virkFom" />
             </DatePicker>
           </div>
 
-          <div className="button-group">
+          <VStack gap="2">
             <Button type="submit" variant="primary" size="small">
               Lagre vurdering
             </Button>
@@ -151,7 +174,7 @@ export default function VurdereSamboer() {
             <Button type="submit" variant="secondary" size="small">
               Avbryt og tilbake
             </Button>
-          </div>
+          </VStack>
         </VStack>
       </div>
     </Form>
@@ -159,12 +182,7 @@ export default function VurdereSamboer() {
 
   return (
     <div>
-      <AktivitetVurderingLayout
-        aktivitet={aktivitet}
-        detailsTitle="Samboervurdering"
-        detailsContent={detailsContent}
-        sidebar={sidebar}
-      />
+      <AktivitetVurderingLayout aktivitet={aktivitet} details={detailsContent} sidebar={sidebar} />
     </div>
   )
 }
