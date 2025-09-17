@@ -38,7 +38,13 @@ const AddressBlock = ({ bostedadresser }: Props) => {
     }
 
     return (
-      <Box.New key={`${adresse.type}-${index}`} borderWidth="1" borderRadius={{ xs: 'large' }} padding="4">
+      <Box.New
+        key={`${adresse.type}-${index}`}
+        borderWidth="1"
+        borderRadius={{ xs: 'large' }}
+        borderColor={'neutral-subtleA'}
+        padding="4"
+      >
         {content}
       </Box.New>
     )
