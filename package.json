@@ -25,9 +25,9 @@
   "dependencies": {
     "@grafana/faro-web-sdk": "^1.19.0",
     "@grafana/faro-web-tracing": "^1.19.0",
-    "@navikt/aksel-icons": "^7.30.0",
-    "@navikt/ds-css": "^7.30.0",
-    "@navikt/ds-react": "^7.30.0",
+    "@navikt/aksel-icons": "^7.30.1",
+    "@navikt/ds-css": "^7.30.1",
+    "@navikt/ds-react": "^7.30.1",
     "@navikt/ds-tokens": "^7.30.0",
     "@react-router/node": "^7.8.2",
     "@react-router/serve": "^7.8.2",
