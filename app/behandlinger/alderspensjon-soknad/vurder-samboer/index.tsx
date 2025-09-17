@@ -1,19 +1,15 @@
-import { PersonIcon } from '@navikt/aksel-icons'
+import { ExclamationmarkTriangleFillIcon, ExclamationmarkTriangleIcon, PersonIcon } from '@navikt/aksel-icons'
 import {
   Alert,
   BodyLong,
   BodyShort,
   Button,
-  Checkbox,
   CopyButton,
   DatePicker,
   Heading,
   HGrid,
-  HStack,
-  Label,
   Radio,
   RadioGroup,
-  Tooltip,
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
@@ -21,6 +17,7 @@ import { Form, redirect, useLoaderData, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
+import { toMonthAndYear } from '~/utils/date'
 import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
@@ -37,6 +34,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   })
 
   const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
+  console.log(grunnlag)
 
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
@@ -78,7 +76,8 @@ export default function VurdereSamboer() {
     samboerInformasjon,
     // vurdering
   } = useLoaderData<typeof loader>()
-  const { samboer, sokersBostedsadresser } = samboerInformasjon
+
+  const { samboer, sokersBostedsadresser, soknad } = samboerInformasjon
 
   const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
 
@@ -100,24 +99,55 @@ export default function VurdereSamboer() {
           <Heading level="2" size="xsmall">
             Brukeroppgitte opplysninger
           </Heading>
-          <BodyShort>
-            Tidligere gift: <b>KHJKJSHDF</b>
-          </BodyShort>
-          <BodyShort>
-            Felles barn: <b>HEISD</b>
-          </BodyShort>
-          <BodyShort>
-            Dato for samboerskap: <b>FDSDF</b>
-          </BodyShort>
+
+          <BodyLong>
+            {samboer.tidligereEktefelle !== soknad.tidligereEktefelle && (
+              <ExclamationmarkTriangleFillIcon
+                title="a11y-title"
+                fontSize="1.5rem"
+                color="var(--ax-bg-warning-strong)"
+              />
+            )}
+            Tidligere gift: <BodyShort weight="semibold">{soknad.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
+          </BodyLong>
+
+          <BodyLong>
+            {samboer.harEllerHarHattFellesBarn !== soknad.harEllerHarHattFellesBarn && (
+              <ExclamationmarkTriangleFillIcon
+                title="a11y-title"
+                fontSize="1.5rem"
+                color="var(--ax-bg-warning-strong)"
+              />
+            )}
+            Felles barn: <BodyShort weight="semibold">{soknad.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
+          </BodyLong>
+
+          <BodyLong>
+            Dato for samboerskap: <BodyShort weight="semibold">{toMonthAndYear(soknad.datoForSamboerskap)}</BodyShort>
+          </BodyLong>
         </VStack>
 
         <VStack gap="1">
           <Heading size="small">Opplysninger fra vårt register</Heading>
           <BodyShort>
-            Tidligere gift: <b>{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</b>
+            {samboer.tidligereEktefelle !== soknad.tidligereEktefelle && (
+              <ExclamationmarkTriangleFillIcon
+                title="a11y-title"
+                fontSize="1.5rem"
+                color="var(--ax-bg-warning-strong)"
+              />
+            )}
+            Tidligere gift: <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
           </BodyShort>
           <BodyShort>
-            Felles barn: <b>{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</b>
+            {samboer.harEllerHarHattFellesBarn !== soknad.harEllerHarHattFellesBarn && (
+              <ExclamationmarkTriangleFillIcon
+                title="a11y-title"
+                fontSize="1.5rem"
+                color="var(--ax-bg-warning-strong)"
+              />
+            )}
+            Felles barn: <BodyShort weight="semibold">{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
           </BodyShort>
         </VStack>
       </HGrid>
