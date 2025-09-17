@@ -63,13 +63,6 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
   return (
     <div>
       <KontrollerInntektsopplysningerForEPS
-        readonly={true}
-        grunnlag={grunnlag}
-        vurdering={vurdering}
-        aktivitet={aktivitet}
-        behandling={behandling}
-      />
-      <KontrollerInntektsopplysningerForEPS
         readonly={false}
         grunnlag={grunnlag}
         vurdering={vurdering}
