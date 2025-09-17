@@ -78,11 +78,17 @@ export interface Links {
   lagreVurdering: Link
 }
 
-export interface SamboerInformasjonHolder {
-  type: 'FleksibelApSakBehandlingSamboerInformasjonHolder'
-  sokerPersongrunnlagListeDto: PersongrunnlagDto[]
-  epsPersongrunnlagListeDto: PersongrunnlagDto[]
-  _links: Links
+export type VurderSamboerGrunnlag = {
+  sokersBostedsadresser: Bostedsadresse[]
+  samboer?: SamboerInformasjon | null
+}
+
+export type SamboerInformasjon = {
+  fnr: string
+  navn?: NavnTilPerson | null
+  bostedsadresser?: Bostedsadresse[] | null
+  harEllerHarHattFellesBarn: boolean
+  tidligereEktefelle: boolean
 }
 
 export interface SamboerVurdering {

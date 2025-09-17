@@ -19,7 +19,7 @@ import { checkbox, dateInput, parseForm } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
-import type { SamboerInformasjonHolder, SamboerVurdering } from './samboer-types'
+import type { SamboerVurdering, VurderSamboerGrunnlag } from './samboer-types'
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
@@ -30,7 +30,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     aktivitetId,
   })
 
-  const grunnlag = await api.hentGrunnlagsdata<SamboerInformasjonHolder>()
+  const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
 
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
@@ -73,9 +73,6 @@ export default function VurdereSamboer() {
     samboerInformasjon,
     // vurdering
   } = useLoaderData<typeof loader>()
-  const { epsPersongrunnlagListeDto, sokerPersongrunnlagListeDto } = samboerInformasjon
-  const { fnr, navnTilPerson } = sokerPersongrunnlagListeDto[0]
-  const { etternavn, fornavn, mellomnavn } = navnTilPerson
   const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
 
   const detailsContent = (
@@ -84,10 +81,8 @@ export default function VurdereSamboer() {
         title="Samboers bostedsadresser"
         description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
       >
-        {epsPersongrunnlagListeDto.length > 0 ? (
-          epsPersongrunnlagListeDto.map(g => (
-            <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
-          ))
+        {samboerInformasjon.samboer?.bostedsadresser && samboerInformasjon.samboer?.bostedsadresser?.length > 0 ? (
+          <AddressBlock bostedadresser={samboerInformasjon.samboer?.bostedsadresser} />
         ) : (
           <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
         )}
@@ -97,10 +92,8 @@ export default function VurdereSamboer() {
         title="Søkers bostedsadresser"
         description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
       >
-        {sokerPersongrunnlagListeDto.length > 0 ? (
-          sokerPersongrunnlagListeDto.map(g => (
-            <AddressBlock key={g.personGrunnlagId} bostedadresser={g.bostedsadresser} />
-          ))
+        {samboerInformasjon.sokersBostedsadresser.length > 0 ? (
+          <AddressBlock bostedadresser={samboerInformasjon.sokersBostedsadresser} />
         ) : (
           <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
         )}
@@ -117,19 +110,19 @@ export default function VurdereSamboer() {
             Aktuell samboer
           </Heading>
 
-          {fnr && (
+          {samboerInformasjon.samboer?.fnr && (
             <div className="samboer-ssn">
-              {fnr}
+              {samboerInformasjon.samboer?.fnr}
               <Tooltip content="Kopier fødselsnummer">
-                <CopyButton variant="action" copyText={fnr} size="small" />
+                <CopyButton variant="action" copyText={samboerInformasjon.samboer?.fnr} size="small" />
               </Tooltip>
             </div>
           )}
 
-          {etternavn && fornavn && (
+          {samboerInformasjon.samboer?.navn?.etternavn && samboerInformasjon.samboer?.navn?.fornavn && (
             <div className="samboer-name">
-              {etternavn}, {fornavn}
-              {mellomnavn && ` ${mellomnavn}`}
+              {samboerInformasjon.samboer?.navn?.etternavn}, {samboerInformasjon.samboer?.navn?.fornavn}
+              {samboerInformasjon.samboer?.navn?.mellomnavn && ` ${samboerInformasjon.samboer?.navn?.mellomnavn}`}
             </div>
           )}
         </VStack>
