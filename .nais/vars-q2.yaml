@@ -11,6 +11,9 @@ pen:
   scope: 'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'
   url: 'https://pensjon-pen-q2.dev-fss-pub.nais.io'
 
+psak:
+  sak_url_template: 'https://pensjon-psak-q2.dev.adeo.no/psak/sak/sakId={sakId}'
+
 verdande:
   links_enabled: true
   aktivitet_url: 'https://pensjon-verdande-q2.intern.dev.nav.no/aktivitet/{behandlingId}/{aktivitetId}'
