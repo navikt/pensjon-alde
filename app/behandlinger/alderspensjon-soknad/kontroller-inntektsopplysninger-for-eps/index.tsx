@@ -61,15 +61,13 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
   const { grunnlag, vurdering } = loaderData
 
   return (
-    <div>
-      <KontrollerInntektsopplysningerForEPS
-        readOnly={false}
-        grunnlag={grunnlag}
-        vurdering={vurdering}
-        aktivitet={aktivitet}
-        behandling={behandling}
-      />
-    </div>
+    <KontrollerInntektsopplysningerForEPS
+      readOnly={false}
+      grunnlag={grunnlag}
+      vurdering={vurdering}
+      aktivitet={aktivitet}
+      behandling={behandling}
+    />
   )
 }
 
@@ -111,7 +109,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
         name="epsInntektOver2G"
         legend="Har samboer inntekt over 2G:"
         required
-        disabled={readOnly}
+        readOnly={readOnly}
       >
         <Radio value="ja">Ja</Radio>
         <Radio value="nei">Nei</Radio>
@@ -138,5 +136,5 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   )
 }
 
-export const Component = KontrollerInntektsopplysningerForEPSRoute
+export const Component = KontrollerInntektsopplysningerForEPS
 export default KontrollerInntektsopplysningerForEPSRoute

@@ -45,8 +45,56 @@ const handlers = [
     return HttpResponse.text('Behandling not found', { status: 404 })
   }),
 
+  // GET /api/saksbehandling/alde/behandling/:id/attesteringsdata
+  http.get('*/api/saksbehandling/alde/behandling/:id/attesteringsdata', ({ params, request }) => {
+    const { id } = params
+    console.log(`🎯 MSW intercepted attestering request to: ${request.url}`)
+
+    // Mock attestering data
+    const attesteringData = {
+      aktiviter: [
+        {
+          aktivitetId: 6020942,
+          grunnlag: JSON.stringify({
+            oppgittInntekt: 450000,
+            innhentetInntekt: 475000,
+            grunnbelop: 118620,
+          }),
+          vurdering: JSON.stringify({
+            epsInntektOver2G: true,
+          }),
+        },
+        {
+          aktivitetId: 6020943,
+          grunnlag: JSON.stringify({
+            sokersBostedsadresser: [],
+            samboer: {
+              fnr: '12345678901',
+              navn: {
+                fornavn: 'Test',
+                mellomnavn: null,
+                etternavn: 'Testesen',
+              },
+              bostedsadresser: [],
+            },
+            soknad: {
+              datoForSamboerskap: '2023-01-01',
+              harEllerHarHattFellesBarn: true,
+              tidligereEktefelle: false,
+            },
+          }),
+          vurdering: JSON.stringify({
+            samboerFra: '2023-01-01',
+            vurdering: 'SAMBOER_1_5',
+          }),
+        },
+      ],
+    }
+
+    return HttpResponse.json(attesteringData)
+  }),
+
   // You can add more API endpoints here
-  // Example: http.get("*/api/other-endpoint", ...),
 ]
 
 // Create and export the server

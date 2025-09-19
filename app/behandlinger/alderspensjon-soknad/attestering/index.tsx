@@ -1,8 +1,10 @@
-import { DogHarnessIcon } from '@navikt/aksel-icons'
-import { BodyLong, VStack } from '@navikt/ds-react'
+import { Heading } from '@navikt/ds-react'
+import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
-import type { BehandlingDTO } from '~/types/behandling'
+import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
+import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
+import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 
 interface AktivitetTilAttestering {
@@ -11,6 +13,7 @@ interface AktivitetTilAttestering {
   friendlyName: string
   grunnlag: string
   vurdering: string
+  aktivitet: AktivitetDTO
 }
 
 const enhanceAttesteringAktivitet =
@@ -28,6 +31,7 @@ const enhanceAttesteringAktivitet =
       friendlyName: behandlingAktivitet.friendlyName,
       grunnlag: aktivitet.grunnlag ? JSON.parse(aktivitet.grunnlag) : null,
       vurdering: aktivitet.vurdering ? JSON.parse(aktivitet.vurdering) : null,
+      aktivitet: behandlingAktivitet,
     }
   }
 
@@ -39,7 +43,16 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
   })
   const behandling = await behandlingApi.hentBehandling()
   const attesteringData = await behandlingApi.hentAttesteringsdata()
-  const parsedData = attesteringData.aktiviter.map(enhanceAttesteringAktivitet(behandling))
+
+  const serverComponents = getAllServerComponents()
+
+  const parsedData = attesteringData.aktiviter
+    .map(enhanceAttesteringAktivitet(behandling))
+    .filter(aktivitet => aktivitet.grunnlag || aktivitet.vurdering)
+    .map(aktivitet => ({
+      ...aktivitet,
+      hasComponent: serverComponents.has(aktivitet.handlerName),
+    }))
 
   return {
     aktiviteter: parsedData,
@@ -52,26 +65,28 @@ export const action = async () => {
 
 export default function Attestering({ loaderData }: Route.ComponentProps) {
   const { aktiviteter } = loaderData
-  return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '1rem',
-        marginTop: '2rem',
-      }}
-    >
-      <VStack>
-        <DogHarnessIcon
-          title="Attestering fullført"
-          fontSize="2rem"
-          color="var(--ax-text-success)"
-          aria-label="Oppgaven er til attestering"
-        />
-        <BodyLong>Oppgaven er til attestering</BodyLong>
+  const { behandling } = useOutletContext<AktivitetOutletContext>()
+  const components = getAllServerComponents()
 
-        <pre> {JSON.stringify(aktiviteter, null, 2)}</pre>
-      </VStack>
+  return (
+    <div>
+      <Heading level="1" size="large">
+        Oppgaven er til attestering
+      </Heading>
+      {aktiviteter.map(aktivitet => {
+        const Component = components.get(aktivitet.handlerName)
+
+        return Component ? (
+          <Component
+            key={aktivitet.aktivitetId}
+            readOnly={true}
+            grunnlag={aktivitet.grunnlag}
+            vurdering={aktivitet.vurdering}
+            aktivitet={aktivitet.aktivitet}
+            behandling={behandling}
+          />
+        ) : null
+      })}
     </div>
   )
 }

@@ -58,9 +58,9 @@ export async function action({ params, request }: Route.ActionArgs) {
   const vurdering = parseForm<SamboerVurdering>(formData, {
     samboerFra: dateInput,
     vurdering: radiogroup({
-      '1-5': 'SAMBOER_1_5',
-      '3-2': 'SAMBOER_3_2',
-      ikke_samboere: 'IKKE_SAMBOER',
+      SAMBOER_1_5: 'SAMBOER_1_5',
+      SAMBOER_3_2: 'SAMBOER_3_2',
+      IKKE_SAMBOER: 'IKKE_SAMBOER',
     }),
   })
 
@@ -110,22 +110,21 @@ export function VurdereSamboerComponent({
           <RadioGroup
             legend="Vurder samboerskap"
             name="vurdering"
-            defaultValue={vurdering?.samboerFra}
+            defaultValue={vurdering?.vurdering}
             readOnly={readOnly}
           >
-            <Radio value="ikke_samboere">Ikke samboere</Radio>
-            <Radio value="1-5">§ 1-5 samboer</Radio>
-            <Radio value="3-2">§ 3-2 samboer</Radio>
+            <Radio value="IKKE_SAMBOER">Ikke samboere</Radio>
+            <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
+            <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
           </RadioGroup>
 
-          <DatePicker {...datepickerProps}>
-            <DatePicker.Input
-              {...inputProps}
-              defaultValue={vurdering?.samboerFra}
-              readOnly={readOnly}
-              label="Virkningstidspunkt fra"
-              name="samboerFra"
-            />
+          {console.log(new Date(vurdering?.samboerFra))}
+
+          <DatePicker
+            defaultSelected={vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined}
+            {...datepickerProps}
+          >
+            <DatePicker.Input {...inputProps} readOnly={readOnly} label="Virkningstidspunkt fra" name="samboerFra" />
           </DatePicker>
 
           <Textarea
