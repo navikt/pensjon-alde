@@ -1,33 +1,64 @@
 import clsx from 'clsx'
-import type React from 'react'
+import React from 'react'
 import type { AktivitetDTO } from '~/types/behandling'
 import './aktivitet-vurdering-layout.css'
-import { Heading, HStack } from '@navikt/ds-react'
+import { Heading } from '@navikt/ds-react'
 
 interface AktivitetVurderingLayoutProps {
   aktivitet?: AktivitetDTO
   sidebar: React.ReactNode
-  details: React.ReactNode
+  children: React.ReactNode
   className?: string
 }
 
-const AktivitetVurderingLayout: React.FC<AktivitetVurderingLayoutProps> = ({
+interface DetailsSectionProps {
+  children: React.ReactNode
+}
+
+const DetailsSection: React.FC<DetailsSectionProps> = ({ children }) => {
+  return <>{children}</>
+}
+
+type AktivitetVurderingLayoutComponent = React.FC<AktivitetVurderingLayoutProps> & {
+  Section: React.FC<DetailsSectionProps>
+}
+
+const AktivitetVurderingLayout: AktivitetVurderingLayoutComponent = ({
   aktivitet,
   sidebar,
-  details,
+  children,
   className = '',
-}) => (
-  <div className={clsx('aktivitet-vurdering-layout', className)}>
-    <Heading size="small" level="3">
-      {aktivitet?.friendlyName}
-    </Heading>
+}) => {
+  const renderDetails = () => {
+    const childrenArray = React.Children.toArray(children)
 
-    <div className="grid">
-      <div className="main">{details}</div>
+    return childrenArray.map((child, index) => {
+      const key = React.isValidElement(child) && child.key ? child.key : `section-${index}`
+      return (
+        <React.Fragment key={key}>
+          <div className="section">{child}</div>
+          {index < childrenArray.length - 1 && <div className="details-divider" />}
+        </React.Fragment>
+      )
+    })
+  }
 
-      <div className="sidebar">{sidebar}</div>
+  return (
+    <div className={clsx('aktivitet-vurdering-layout', className)}>
+      <div className="grid">
+        <div className="main">
+          <Heading size="medium" level="1" className="header">
+            {aktivitet?.friendlyName}
+          </Heading>
+          {renderDetails()}
+        </div>
+
+        <div className="sidebar">{sidebar}</div>
+      </div>
     </div>
-  </div>
-)
+  )
+}
+
+AktivitetVurderingLayout.Section = DetailsSection
 
 export default AktivitetVurderingLayout

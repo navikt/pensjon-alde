@@ -1,4 +1,4 @@
-import { ExclamationmarkTriangleFillIcon, ExclamationmarkTriangleIcon, PersonIcon } from '@navikt/aksel-icons'
+import { ExclamationmarkTriangleFillIcon, PersonIcon } from '@navikt/aksel-icons'
 import {
   Alert,
   BodyLong,
@@ -8,8 +8,10 @@ import {
   DatePicker,
   Heading,
   HGrid,
+  HStack,
   Radio,
   RadioGroup,
+  Textarea,
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
@@ -34,8 +36,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   })
 
   const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
-  console.log(grunnlag)
-
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
   return {
@@ -81,128 +81,36 @@ export default function VurdereSamboer() {
 
   const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
 
-  const detailsContent = (
-    <HGrid gap="4">
-      <VStack>
-        <Heading size="xsmall" level="2">
-          <PersonIcon /> Samboer
-        </Heading>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {samboer.fnr}
-          <CopyButton size="small" copyText={samboer.fnr} />
-        </div>
-        {samboer.navn.etternavn.toUpperCase()}, {samboer.navn.fornavn} {samboer.navn.mellomnavn}
-      </VStack>
-
-      <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
-        <VStack gap="1">
-          <Heading level="2" size="xsmall">
-            Brukeroppgitte opplysninger
-          </Heading>
-
-          <BodyLong>
-            {samboer.tidligereEktefelle !== soknad.tidligereEktefelle && (
-              <ExclamationmarkTriangleFillIcon
-                title="a11y-title"
-                fontSize="1.5rem"
-                color="var(--ax-bg-warning-strong)"
-              />
-            )}
-            Tidligere gift: <BodyShort weight="semibold">{soknad.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
-          </BodyLong>
-
-          <BodyLong>
-            {samboer.harEllerHarHattFellesBarn !== soknad.harEllerHarHattFellesBarn && (
-              <ExclamationmarkTriangleFillIcon
-                title="a11y-title"
-                fontSize="1.5rem"
-                color="var(--ax-bg-warning-strong)"
-              />
-            )}
-            Felles barn: <BodyShort weight="semibold">{soknad.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
-          </BodyLong>
-
-          <BodyLong>
-            Dato for samboerskap: <BodyShort weight="semibold">{toMonthAndYear(soknad.datoForSamboerskap)}</BodyShort>
-          </BodyLong>
-        </VStack>
-
-        <VStack gap="1">
-          <Heading size="small">Opplysninger fra vårt register</Heading>
-          <BodyShort>
-            {samboer.tidligereEktefelle !== soknad.tidligereEktefelle && (
-              <ExclamationmarkTriangleFillIcon
-                title="a11y-title"
-                fontSize="1.5rem"
-                color="var(--ax-bg-warning-strong)"
-              />
-            )}
-            Tidligere gift: <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
-          </BodyShort>
-          <BodyShort>
-            {samboer.harEllerHarHattFellesBarn !== soknad.harEllerHarHattFellesBarn && (
-              <ExclamationmarkTriangleFillIcon
-                title="a11y-title"
-                fontSize="1.5rem"
-                color="var(--ax-bg-warning-strong)"
-              />
-            )}
-            Felles barn: <BodyShort weight="semibold">{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
-          </BodyShort>
-        </VStack>
-      </HGrid>
-
-      <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
-        <AddressWrapper
-          title="Samboers bostedsadresser"
-          description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
-        >
-          {samboer.bostedsadresser.length > 0 ? (
-            <AddressBlock bostedadresser={samboer.bostedsadresser} />
-          ) : (
-            <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
-          )}
-        </AddressWrapper>
-
-        <AddressWrapper
-          title="Søkers bostedsadresser"
-          description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
-        >
-          {sokersBostedsadresser.length > 0 ? (
-            <AddressBlock bostedadresser={sokersBostedsadresser} />
-          ) : (
-            <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
-          )}
-        </AddressWrapper>
-      </HGrid>
-    </HGrid>
-  )
-
   const sidebar = (
     <Form method="post" className="decision-form">
       <div className="samboer-details"></div>
 
       <div className="samboer-assessment">
-        <VStack gap="4">
-          <div className="">
-            <RadioGroup legend="Vurder samboerskap" name="samboervurdering">
-              <Radio value="ikke_samboere">Ikke samboere</Radio>
-              <Radio value="1-5">§ 1-5 samboer</Radio>
-              <Radio value="3-5">§ 3-5 samboer</Radio>
-            </RadioGroup>
+        <VStack gap="6">
+          <RadioGroup legend="Vurder samboerskap" name="samboervurdering">
+            <Radio value="ikke_samboere">Ikke samboere</Radio>
+            <Radio value="1-5">§ 1-5 samboer</Radio>
+            <Radio value="3-2">§ 3-2 samboer</Radio>
+          </RadioGroup>
 
-            <DatePicker {...datepickerProps}>
-              <DatePicker.Input {...inputProps} label="Virkningstidspunkt fra" name="virkFom" />
-            </DatePicker>
-          </div>
+          <DatePicker {...datepickerProps}>
+            <DatePicker.Input {...inputProps} label="Virkningstidspunkt fra" name="virkFom" />
+          </DatePicker>
 
-          <VStack gap="2">
+          <Textarea
+            label="Kommentar samboervurdering"
+            description="Kun ved behov for tilleggsopplysninger"
+            name="kommentar"
+            rows={4}
+          />
+
+          <VStack gap="3">
             <Button type="submit" variant="primary" size="small">
               Lagre vurdering
             </Button>
 
-            <Button type="submit" variant="secondary" size="small">
-              Avbryt og tilbake
+            <Button type="submit" variant="danger" size="small">
+              Ta til manuell
             </Button>
           </VStack>
         </VStack>
@@ -211,8 +119,79 @@ export default function VurdereSamboer() {
   )
 
   return (
-    <div>
-      <AktivitetVurderingLayout aktivitet={aktivitet} details={detailsContent} sidebar={sidebar} />
-    </div>
+    <AktivitetVurderingLayout aktivitet={aktivitet} sidebar={sidebar}>
+      <AktivitetVurderingLayout.Section>
+        <VStack>
+          <Heading size="xsmall" level="2">
+            <PersonIcon /> Samboer
+          </Heading>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {samboer.fnr}
+            <CopyButton size="small" copyText={samboer.fnr} />
+          </div>
+          {samboer.navn.etternavn.toUpperCase()}, {samboer.navn.fornavn} {samboer.navn.mellomnavn}
+        </VStack>
+      </AktivitetVurderingLayout.Section>
+
+      <AktivitetVurderingLayout.Section>
+        <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
+          <VStack gap="1">
+            <Heading level="2" size="xsmall">
+              Brukeroppgitte opplysninger
+            </Heading>
+
+            <HStack gap="1">
+              Tidligere gift: <BodyShort weight="semibold">{soknad.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
+            </HStack>
+
+            <HStack gap="1">
+              Felles barn: <BodyShort weight="semibold">{soknad.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
+            </HStack>
+
+            <HStack gap="1">
+              Dato for samboerskap: <BodyShort weight="semibold">{toMonthAndYear(soknad.datoForSamboerskap)}</BodyShort>
+            </HStack>
+          </VStack>
+
+          <VStack gap="1">
+            <Heading size="xsmall" level="2">
+              Opplysninger fra vårt register
+            </Heading>
+            <HStack gap="1">
+              Tidligere gift: <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
+            </HStack>
+            <HStack gap="1">
+              Felles barn: <BodyShort weight="semibold">{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
+            </HStack>
+          </VStack>
+        </HGrid>
+      </AktivitetVurderingLayout.Section>
+
+      <AktivitetVurderingLayout.Section>
+        <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
+          <AddressWrapper
+            title="Samboers bostedsadresser"
+            description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
+          >
+            {samboer.bostedsadresser.length > 0 ? (
+              <AddressBlock bostedadresser={samboer.bostedsadresser} />
+            ) : (
+              <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+            )}
+          </AddressWrapper>
+
+          <AddressWrapper
+            title="Søkers bostedsadresser"
+            description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
+          >
+            {sokersBostedsadresser.length > 0 ? (
+              <AddressBlock bostedadresser={sokersBostedsadresser} />
+            ) : (
+              <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+            )}
+          </AddressWrapper>
+        </HGrid>
+      </AktivitetVurderingLayout.Section>
+    </AktivitetVurderingLayout>
   )
 }

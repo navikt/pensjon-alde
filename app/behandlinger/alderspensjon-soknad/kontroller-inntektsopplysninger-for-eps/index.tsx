@@ -139,7 +139,11 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
     </Form>
   )
 
-  return <AktivitetVurderingLayout aktivitet={aktivitet} details={detailsContent} sidebar={sidebar} />
+  return (
+    <AktivitetVurderingLayout aktivitet={aktivitet} sidebar={sidebar}>
+      {detailsContent}
+    </AktivitetVurderingLayout>
+  )
 }
 
 export default KontrollerInntektsopplysningerForEPSRoute
