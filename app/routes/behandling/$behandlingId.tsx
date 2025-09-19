@@ -2,7 +2,7 @@ import { BodyShort, Box, CopyButton, HStack, Label, Loader, Page, Stepper, Tag, 
 import React, { useEffect, useRef } from 'react'
 import { Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
-import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '../../types/behandling'
+import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '../../types/behandling'
 import { formatDateToNorwegian } from '../../utils/date'
 import type { Route } from './+types/$behandlingId'
 
@@ -16,7 +16,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const justCompletedId = url.searchParams.get('justCompleted')
 
   const api = createBehandlingApi({ request, behandlingId })
-  const behandling = await api.hentBehandling<BehandlingDTO>()
+  const behandling = await api.hentBehandling()
 
   let aktivitetSomSkalVises = null
   const behandlingJobber =
@@ -47,7 +47,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   return {
-    showStepper: false, // process.env.NODE_ENV === 'development',
+    showStepper: process.env.NODE_ENV === 'development',
     behandlingId,
     behandling,
     behandlingJobber:

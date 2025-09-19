@@ -36,7 +36,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   })
 
   const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
-  console.log('grunnlag', grunnlag)
 
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
