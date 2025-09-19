@@ -11,8 +11,8 @@ interface Props {
 const AddressWrapper = ({ title, children, description }: Props) => (
   <VStack gap="4">
     <div>
-      <Heading level="2" size="small">
-        <HouseIcon title={title} fontSize="1.5rem" />
+      <Heading level="2" size="small" style={{ display: 'flex', alignItems: 'center' }}>
+        <HouseIcon title={title} fontSize="1.3rem" />
         {title}
       </Heading>
 

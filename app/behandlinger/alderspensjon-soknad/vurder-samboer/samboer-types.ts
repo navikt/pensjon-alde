@@ -59,9 +59,15 @@ export interface MatrikkelAdresse {
 
 export type Bostedsadresse = RegoppslagAdresse | Vegadresse | MatrikkelAdresse
 
+export type Soknad = {
+  datoForSamboerskap: string
+  harEllerHarHattFellesBarn: boolean
+  tidligereEktefelle: boolean
+}
 export type VurderSamboerGrunnlag = {
   sokersBostedsadresser: Bostedsadresse[]
   samboer: SamboerInformasjon
+  soknad: Soknad
 }
 
 export type SamboerInformasjon = {
@@ -73,6 +79,6 @@ export type SamboerInformasjon = {
 }
 
 export interface SamboerVurdering {
-  virkFom: string | null
-  samboerVurdering: '1-5' | '3-2' | 'ikke_samboer'
+  samboerFra: string
+  vurdering: 'SAMBOER_1_5' | 'SAMBOER_3_2' | 'IKKE_SAMBOER'
 }

@@ -47,6 +47,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   return {
+    showStepper: false, // process.env.NODE_ENV === 'development',
     behandlingId,
     behandling,
     behandlingJobber:
@@ -56,7 +57,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { behandling, behandlingJobber } = loaderData
+  const { behandling, behandlingJobber, showStepper } = loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -190,7 +191,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           </HStack>
         </Box.New>
 
-        {allSteps.length > 0 && (
+        {allSteps.length > 0 && showStepper && (
           <Box.New padding="space-12">
             <div
               ref={stepperContainerRef}
