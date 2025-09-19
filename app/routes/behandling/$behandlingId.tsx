@@ -47,7 +47,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   return {
-    showStepper: process.env.NODE_ENV === 'development',
+    showStepper: false, // process.env.NODE_ENV === 'development',
     behandlingId,
     behandling,
     behandlingJobber:

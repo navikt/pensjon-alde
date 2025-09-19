@@ -1,7 +1,6 @@
-import { ExclamationmarkTriangleFillIcon, PersonIcon } from '@navikt/aksel-icons'
+import { PersonIcon } from '@navikt/aksel-icons'
 import {
   Alert,
-  BodyLong,
   BodyShort,
   Button,
   CopyButton,
@@ -18,13 +17,14 @@ import {
 import { Form, redirect, useLoaderData, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
+import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { toMonthAndYear } from '~/utils/date'
 import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
-import type { SamboerVurdering, VurderSamboerGrunnlag } from './samboer-types'
+import type { SamboerInformasjon, SamboerVurdering, VurderSamboerGrunnlag } from './samboer-types'
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
@@ -39,6 +39,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
   return {
+    readOnly: false,
     samboerInformasjon: grunnlag,
     vurdering,
   }
@@ -54,9 +55,15 @@ export async function action({ params, request }: Route.ActionArgs) {
   const formData = await request.formData()
 
   const vurdering = parseForm<SamboerVurdering>(formData, {
-    virkFom: dateInput,
-    samboerVurdering: radiogroup({ '1-5': '1-5', '3-2': '3-2', ikke_samboere: 'ikke_samboere' }),
+    samboerFra: dateInput,
+    vurdering: radiogroup({
+      '1-5': 'SAMBOER_1_5',
+      '3-2': 'SAMBOER_3_2',
+      ikke_samboere: 'IKKE_SAMBOER',
+    }),
   })
+
+  console.log(vurdering)
 
   try {
     await api.lagreVurdering<SamboerVurdering>(vurdering)
@@ -66,20 +73,34 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 }
 
-export default function VurdereSamboer() {
+export default function VurderSamboerRoute({ loaderData }: Route.ComponentProps) {
+  const { samboerInformasjon, vurdering, readOnly } = loaderData
+
+  const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
+
+  return (
+    <VurdereSamboerComponent
+      readOnly={readOnly}
+      grunnlag={samboerInformasjon}
+      vurdering={vurdering}
+      aktivitet={aktivitet}
+      behandling={behandling}
+    />
+  )
+}
+
+export function VurdereSamboerComponent({
+  grunnlag,
+  aktivitet,
+  vurdering,
+  readOnly,
+}: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const { datepickerProps, inputProps } = useDatepicker({
     defaultSelected: undefined,
     required: true,
   })
 
-  const {
-    samboerInformasjon,
-    // vurdering
-  } = useLoaderData<typeof loader>()
-
-  const { samboer, sokersBostedsadresser, soknad } = samboerInformasjon
-
-  const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
+  const { samboer, sokersBostedsadresser, soknad } = grunnlag
 
   const sidebar = (
     <Form method="post" className="decision-form">
@@ -87,32 +108,45 @@ export default function VurdereSamboer() {
 
       <div className="samboer-assessment">
         <VStack gap="6">
-          <RadioGroup legend="Vurder samboerskap" name="samboervurdering">
+          <RadioGroup
+            legend="Vurder samboerskap"
+            name="vurdering"
+            defaultValue={vurdering?.samboerFra}
+            readOnly={readOnly}
+          >
             <Radio value="ikke_samboere">Ikke samboere</Radio>
             <Radio value="1-5">§ 1-5 samboer</Radio>
             <Radio value="3-2">§ 3-2 samboer</Radio>
           </RadioGroup>
 
           <DatePicker {...datepickerProps}>
-            <DatePicker.Input {...inputProps} label="Virkningstidspunkt fra" name="virkFom" />
+            <DatePicker.Input
+              {...inputProps}
+              defaultValue={vurdering?.samboerFra}
+              readOnly={readOnly}
+              label="Virkningstidspunkt fra"
+              name="samboerFra"
+            />
           </DatePicker>
 
           <Textarea
+            readOnly={readOnly}
             label="Kommentar samboervurdering"
             description="Kun ved behov for tilleggsopplysninger"
-            name="kommentar"
             rows={4}
           />
 
-          <VStack gap="3">
-            <Button type="submit" variant="primary" size="small">
-              Lagre vurdering
-            </Button>
+          {!readOnly && (
+            <VStack gap="3">
+              <Button type="submit" variant="primary" size="small">
+                Lagre vurdering
+              </Button>
 
-            <Button type="submit" variant="danger" size="small">
-              Ta til manuell
-            </Button>
-          </VStack>
+              <Button type="submit" variant="danger" size="small">
+                Ta til manuell
+              </Button>
+            </VStack>
+          )}
         </VStack>
       </div>
     </Form>
@@ -195,3 +229,5 @@ export default function VurdereSamboer() {
     </AktivitetVurderingLayout>
   )
 }
+
+export const Component = VurdereSamboerComponent

@@ -27,8 +27,8 @@ export interface AktivitetDTO {
   type: string
   opprettet: string // LocalDateTime as ISO string
 
-  handlerName: string | null
-  friendlyName: string | null
+  handlerName: string
+  friendlyName: string
 
   antallGangerKjort: number
   sisteAktiveringsdato: string // LocalDateTime as ISO string

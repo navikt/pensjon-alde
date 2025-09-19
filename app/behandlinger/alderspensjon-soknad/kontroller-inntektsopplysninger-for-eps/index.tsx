@@ -1,9 +1,9 @@
-import { BodyShort, Button, Checkbox, HGrid, Radio, RadioGroup, VStack } from '@navikt/ds-react'
+import { Button, Radio, RadioGroup, VStack } from '@navikt/ds-react'
 import { Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
+import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import type {
@@ -63,7 +63,7 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
   return (
     <div>
       <KontrollerInntektsopplysningerForEPS
-        readonly={false}
+        readOnly={false}
         grunnlag={grunnlag}
         vurdering={vurdering}
         aktivitet={aktivitet}
@@ -73,15 +73,7 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
   )
 }
 
-type AktivitetProps<Grunnlag, Vurdering> = {
-  readonly: boolean
-  grunnlag: Grunnlag
-  vurdering: Vurdering | null
-  aktivitet: AktivitetDTO
-  behandling: BehandlingDTO
-}
-
-type KontrollerInntektsopplysningerForEPSInterface = AktivitetProps<
+type KontrollerInntektsopplysningerForEPSInterface = AktivitetComponentProps<
   KontrollerInntektsopplysningerForEpsGrunnlag,
   KontrollerInntektsopplysningerForEpsVurdering
 >
@@ -91,7 +83,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   grunnlag,
   aktivitet,
   behandling,
-  readonly,
+  readOnly,
 }) => {
   const detailsContent = (
     <VStack gap="8">
@@ -115,17 +107,17 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   const sidebar = (
     <Form method="post" className="decision-form">
       <RadioGroup
-        defaultValue={readonly ? (vurdering?.epsInntektOver2G ? 'ja' : 'nei') : undefined}
+        defaultValue={readOnly ? (vurdering?.epsInntektOver2G ? 'ja' : 'nei') : undefined}
         name="epsInntektOver2G"
         legend="Har samboer inntekt over 2G:"
         required
-        disabled={readonly}
+        disabled={readOnly}
       >
         <Radio value="ja">Ja</Radio>
         <Radio value="nei">Nei</Radio>
       </RadioGroup>
 
-      {!readonly && (
+      {!readOnly && (
         <div className="button-group">
           <Button type="submit" variant="primary" size="small">
             Lagre vurdering
@@ -146,4 +138,5 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   )
 }
 
+export const Component = KontrollerInntektsopplysningerForEPSRoute
 export default KontrollerInntektsopplysningerForEPSRoute
