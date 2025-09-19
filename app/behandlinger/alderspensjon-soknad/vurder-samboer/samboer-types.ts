@@ -67,7 +67,7 @@ export type Soknad = {
 export type VurderSamboerGrunnlag = {
   sokersBostedsadresser: Bostedsadresse[]
   samboer: SamboerInformasjon
-  soknad: Soknad
+  soknad: Soknad | null
 }
 
 export type SamboerInformasjon = {

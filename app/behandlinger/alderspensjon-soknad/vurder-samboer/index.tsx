@@ -14,7 +14,7 @@ import {
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
-import { Form, redirect, useLoaderData, useOutletContext } from 'react-router'
+import { Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
@@ -24,7 +24,7 @@ import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
-import type { SamboerInformasjon, SamboerVurdering, VurderSamboerGrunnlag } from './samboer-types'
+import type { SamboerVurdering, VurderSamboerGrunnlag } from './samboer-types'
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
@@ -36,6 +36,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   })
 
   const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
+  console.log('grunnlag', grunnlag)
+
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
   return {
@@ -62,8 +64,6 @@ export async function action({ params, request }: Route.ActionArgs) {
       ikke_samboere: 'IKKE_SAMBOER',
     }),
   })
-
-  console.log(vurdering)
 
   try {
     await api.lagreVurdering<SamboerVurdering>(vurdering)
@@ -174,17 +174,25 @@ export function VurdereSamboerComponent({
               Brukeroppgitte opplysninger
             </Heading>
 
-            <HStack gap="1">
-              Tidligere gift: <BodyShort weight="semibold">{soknad.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
-            </HStack>
+            {soknad ? (
+              <>
+                <HStack gap="1">
+                  Tidligere gift: <BodyShort weight="semibold">{soknad.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
+                </HStack>
 
-            <HStack gap="1">
-              Felles barn: <BodyShort weight="semibold">{soknad.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
-            </HStack>
+                <HStack gap="1">
+                  Felles barn:{' '}
+                  <BodyShort weight="semibold">{soknad.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
+                </HStack>
 
-            <HStack gap="1">
-              Dato for samboerskap: <BodyShort weight="semibold">{toMonthAndYear(soknad.datoForSamboerskap)}</BodyShort>
-            </HStack>
+                <HStack gap="1">
+                  Dato for samboerskap:{' '}
+                  <BodyShort weight="semibold">{toMonthAndYear(soknad.datoForSamboerskap)}</BodyShort>
+                </HStack>
+              </>
+            ) : (
+              'Ingen søknadsdata'
+            )}
           </VStack>
 
           <VStack gap="1">
