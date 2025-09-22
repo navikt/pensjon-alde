@@ -172,7 +172,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
                       variant="secondary"
                       onClick={() => setAttestering({ type: 'RESET' })}
                     >
-                      Avbryt attestering
+                      Reset attestering
                     </Button>
                   </HStack>
                 )}

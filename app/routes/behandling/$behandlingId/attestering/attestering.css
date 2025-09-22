@@ -5,7 +5,6 @@
 
   .component-area {
     display: flex;
-    interpolate-size: allow-keywords;
 
     .component {
       flex-grow: 1;
@@ -17,7 +16,9 @@
       align-self: stretch;
       transform-origin: bottom;
       transform: scaleY(0);
-      transition: transform cubic-bezier(0, 0.3, 0.15, 1) 400ms;
+      transition:
+        transform cubic-bezier(0, 0.3, 0.15, 1) 400ms,
+        background-color cubic-bezier(0, 0.3, 0.15, 1) 400ms;
 
       &.godkjent {
         background: var(--background-godkjent);
