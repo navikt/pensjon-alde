@@ -1,3 +1,4 @@
+import { ExternalLinkIcon } from '@navikt/aksel-icons'
 import {
   BodyLong,
   BodyShort,
@@ -19,7 +20,9 @@ import React, { useEffect, useRef } from 'react'
 import { Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
+import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
+import { env } from '~/utils/env.server'
 import type { Route } from './+types/$behandlingId'
 
 export function meta({ params }: Route.MetaArgs) {
@@ -29,47 +32,57 @@ export function meta({ params }: Route.MetaArgs) {
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
   const url = new URL(request.url)
+
   const justCompletedId = url.searchParams.get('justCompleted')
 
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
 
-  let aktivitetSomSkalVises = null
+  const isOppsummering = url.pathname.includes('/oppsummering')
+
   const behandlingJobber =
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
     (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
-  if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
-    aktivitetSomSkalVises = behandling.aktiviteter.find(
-      aktivitet =>
-        (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
-        aktivitet.handlerName &&
-        aktivitet.friendlyName,
-    )
-
-    if (!aktivitetSomSkalVises) {
+  // TODO: Rydd opp logikk, flytte oppsummering?
+  let aktivitetSomSkalVises = null
+  if (!aktivitetSomSkalVises && behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isOppsummering) {
+    return redirect(`/behandling/${behandlingId}/oppsummering`)
+  } else if (!isOppsummering) {
+    if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
       aktivitetSomSkalVises = behandling.aktiviteter.find(
         aktivitet =>
-          aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
+          (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
+          aktivitet.handlerName &&
+          aktivitet.friendlyName,
       )
-    }
 
-    const shouldRefetchAfterCompletion =
-      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
+      if (!aktivitetSomSkalVises) {
+        aktivitetSomSkalVises = behandling.aktiviteter.find(
+          aktivitet =>
+            aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
+        )
+      }
 
-    if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
-      return redirect(`/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`)
+      const shouldRefetchAfterCompletion =
+        aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
+
+      if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
+        return redirect(`/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`)
+      }
     }
   }
 
   return {
-    showStepper: process.env.NODE_ENV === 'development',
     aktivitetId: aktivitetId,
-    behandlingId,
     behandling,
+    behandlingId,
     behandlingJobber:
       behandlingJobber ||
       (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId),
+    isOppsummering,
+    showStepper: process.env.NODE_ENV === 'development' && !isOppsummering,
+    psakUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
   }
 }
 
@@ -91,11 +104,11 @@ export async function action({ params, request }: Route.ActionArgs) {
     begrunnelse: formData.get('begrunnelse')?.toString(),
   })
 
-  return redirect('/oppsummering')
+  return redirect(`/behandling/${behandlingId}/oppsummering`)
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, showStepper } = loaderData
+  const { aktivitetId, behandling, behandlingJobber, showStepper, isOppsummering, psakUrl } = loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -230,6 +243,18 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
             <Spacer />
 
+            {isOppsummering && behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
+              <Button
+                type="submit"
+                size="medium"
+                onClick={() => window.open(psakUrl, '_blank')}
+                icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
+                iconPosition="right"
+              >
+                Åpne pensjonsoversikten
+              </Button>
+            )}
+
             {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
               <Button type="submit" variant="danger" size="medium" onClick={() => ref.current?.showModal()}>
                 Ta til manuell
@@ -272,22 +297,22 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
         {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
 
-        <Modal ref={ref} header={{ heading: 'Overskrift' }}>
+        <Modal ref={ref} header={{ heading: 'Ta til manuell' }}>
           <Form method="post">
+            <input hidden name="aktivitetId" value={aktivitetId} />
             <Modal.Body>
               <VStack gap="4">
-                <input hidden name="aktivitetId" value={aktivitetId} />
-
                 <BodyLong>
                   Beklager at du ikke kunne fullføre denne behandlingen her. Vi ønsker å forbedre din brukeropplevelse
                   har du mulighet til å fortelle oss hvorfor du må ta denne til manuell? Viktig ikke skriv inn
                   personopplysninger
                 </BodyLong>
+
                 <Textarea label="Begrunnelse" name="begrunnelse" />
               </VStack>
             </Modal.Body>
             <Modal.Footer>
-              <Button type="submit" variant="danger">
+              <Button type="submit" variant="danger" onClick={() => ref.current?.close()}>
                 Ta til manuell
               </Button>
 
