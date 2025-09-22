@@ -41,6 +41,8 @@ export default [
   route('/auth/microsoft', './auth/microsoft.tsx'),
 
   route('/behandling/:behandlingId', 'routes/behandling/$behandlingId.tsx', [
+    route('oppsummering', 'routes/behandling/$behandlingId/oppsummering/index.tsx'),
+
     // The main aktivitet route that handles redirection to the correct implementation
     route(
       'aktivitet/:aktivitetId',

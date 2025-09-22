@@ -139,10 +139,6 @@ export function VurdereSamboerComponent({
               <Button type="submit" variant="primary" size="small">
                 Lagre vurdering
               </Button>
-
-              <Button type="submit" variant="danger" size="small">
-                Ta til manuell
-              </Button>
             </VStack>
           )}
         </VStack>

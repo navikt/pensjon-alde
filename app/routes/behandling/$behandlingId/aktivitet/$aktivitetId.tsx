@@ -1,4 +1,4 @@
-import { Alert, BodyShort, Box, Detail, Heading } from '@navikt/ds-react'
+import { Alert, Box, Detail, Heading } from '@navikt/ds-react'
 import { Outlet, redirect, useOutlet } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'

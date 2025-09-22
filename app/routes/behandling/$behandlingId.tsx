@@ -1,9 +1,25 @@
-import { BodyShort, Box, CopyButton, HStack, Label, Loader, Page, Stepper, Tag, VStack } from '@navikt/ds-react'
+import {
+  BodyLong,
+  BodyShort,
+  Box,
+  Button,
+  CopyButton,
+  HStack,
+  Label,
+  Loader,
+  Modal,
+  Page,
+  Spacer,
+  Stepper,
+  Tag,
+  Textarea,
+  VStack,
+} from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
-import { Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
+import { Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
-import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '../../types/behandling'
-import { formatDateToNorwegian } from '../../utils/date'
+import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
+import { formatDateToNorwegian } from '~/utils/date'
 import type { Route } from './+types/$behandlingId'
 
 export function meta({ params }: Route.MetaArgs) {
@@ -11,7 +27,7 @@ export function meta({ params }: Route.MetaArgs) {
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const { behandlingId } = params
+  const { aktivitetId, behandlingId } = params
   const url = new URL(request.url)
   const justCompletedId = url.searchParams.get('justCompleted')
 
@@ -48,6 +64,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   return {
     showStepper: process.env.NODE_ENV === 'development',
+    aktivitetId: aktivitetId,
     behandlingId,
     behandling,
     behandlingJobber:
@@ -56,13 +73,35 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 }
 
+export async function action({ params, request }: Route.ActionArgs) {
+  const { behandlingId } = params
+  const formData = await request.formData()
+
+  const api = createBehandlingApi({ request, behandlingId })
+
+  const formAktivitetId = formData.get('aktivitetId')
+
+  let aktivitetId: number | undefined
+  if (typeof formAktivitetId === 'string') {
+    aktivitetId = +formAktivitetId
+  }
+
+  await api.avbrytBehandling({
+    vistAktivitetId: aktivitetId,
+    begrunnelse: formData.get('begrunnelse')?.toString(),
+  })
+
+  return redirect('/oppsummering')
+}
+
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { behandling, behandlingJobber, showStepper } = loaderData
+  const { aktivitetId, behandling, behandlingJobber, showStepper } = loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
   const stepperContainerRef = useRef<HTMLDivElement>(null)
   const revalidator = useRevalidator()
+  const ref = useRef<HTMLDialogElement>(null)
 
   // Prepare the visible aktiviteter (sorted and filtered)
   const visibleAktiviteter = React.useMemo(
@@ -188,6 +227,14 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 <CopyButton text={behandling.sakId.toString()} copyText={behandling.sakId.toString()} size="small" />
               </VStack>
             )}
+
+            <Spacer />
+
+            {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
+              <Button type="submit" variant="danger" size="medium" onClick={() => ref.current?.showModal()}>
+                Ta til manuell
+              </Button>
+            )}
           </HStack>
         </Box.New>
 
@@ -224,6 +271,32 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         )}
 
         {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
+
+        <Modal ref={ref} header={{ heading: 'Overskrift' }}>
+          <Form method="post">
+            <Modal.Body>
+              <VStack gap="4">
+                <input hidden name="aktivitetId" value={aktivitetId} />
+
+                <BodyLong>
+                  Beklager at du ikke kunne fullføre denne behandlingen her. Vi ønsker å forbedre din brukeropplevelse
+                  har du mulighet til å fortelle oss hvorfor du må ta denne til manuell? Viktig ikke skriv inn
+                  personopplysninger
+                </BodyLong>
+                <Textarea label="Begrunnelse" name="begrunnelse" />
+              </VStack>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button type="submit" variant="danger">
+                Ta til manuell
+              </Button>
+
+              <Button type="button" variant="secondary" onClick={() => ref.current?.close()}>
+                Avbryt
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
       </Page>
     </Box.New>
   )
