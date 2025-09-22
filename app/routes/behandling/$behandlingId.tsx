@@ -39,6 +39,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const behandling = await api.hentBehandling()
 
   const isOppsummering = url.pathname.includes('/oppsummering')
+  const isAttestering = url.pathname.includes('/attestering')
 
   const behandlingJobber =
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
@@ -48,7 +49,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   let aktivitetSomSkalVises = null
   if (!aktivitetSomSkalVises && behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isOppsummering) {
     return redirect(`/behandling/${behandlingId}/oppsummering`)
-  } else if (!isOppsummering) {
+  } else if (!isOppsummering && !isAttestering) {
     if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
       aktivitetSomSkalVises = behandling.aktiviteter.find(
         aktivitet =>
@@ -62,6 +63,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
           aktivitet =>
             aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
         )
+      }
+
+      // TODO: Må ha en annen måte å vite hva som er attestering fra AldeAktivitet
+      if (aktivitetSomSkalVises?.handlerName === 'attestering') {
+        return redirect(`/behandling/${behandlingId}/attestering`)
       }
 
       const shouldRefetchAfterCompletion =
@@ -81,7 +87,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       behandlingJobber ||
       (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId),
     isOppsummering,
-    showStepper: process.env.NODE_ENV === 'development' && !isOppsummering,
+    isAttestering,
+    showStepper: process.env.NODE_ENV === 'development' && !isOppsummering && !isAttestering,
     psakUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
   }
 }

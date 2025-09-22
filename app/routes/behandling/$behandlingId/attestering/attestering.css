@@ -1,0 +1,85 @@
+.attestering {
+  --background: var(--ax-bg-accent-moderateA);
+  --background-godkjent: var(--ax-bg-success-strong);
+  --background-underkjent: var(--ax-bg-danger-strong);
+
+  .component-area {
+    display: flex;
+    interpolate-size: allow-keywords;
+
+    .component {
+      flex-grow: 1;
+    }
+
+    .bar {
+      width: 10px;
+      background: var(--background);
+      align-self: stretch;
+      transform-origin: bottom;
+      transform: scaleY(0);
+      transition: transform cubic-bezier(0, 0.3, 0.15, 1) 400ms;
+
+      &.godkjent {
+        background: var(--background-godkjent);
+        transform: scaleY(1);
+      }
+
+      &.underkjent {
+        background: var(--background-underkjent);
+        transform: scaleY(1);
+      }
+    }
+  }
+
+  .attestant {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 4em;
+    /*border-top: 2px solid var(--background);*/
+    /*border-bottom: 2px solid var(--ax-bg-neutral-strong);*/
+
+    /*&.godkjent {
+      border-top: 2px dashed var(--background-godkjent);
+    }
+
+    &.underkjent {
+      border-top: 2px dashed var(--background-underkjent);
+    }*/
+
+    .godkjenn {
+      background: var(--ax-bg-success-strong);
+    }
+
+    .underkjenn {
+      background: var(--ax-bg-danger-strong);
+    }
+  }
+
+  .ferdigstill-attestering {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    background: var(--ax-bg-raised);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--ax-bg-neutral-strong);
+    padding: 1rem;
+    z-index: 100;
+    min-height: 5em;
+
+    & > *:nth-child(1) {
+      justify-self: start;
+    }
+
+    & > *:nth-child(2) {
+      justify-self: center;
+    }
+
+    & > *:nth-child(3) {
+      justify-self: end;
+    }
+  }
+}
