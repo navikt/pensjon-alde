@@ -121,6 +121,7 @@ export function VurdereSamboerComponent({
           {console.log(new Date(vurdering?.samboerFra))}
 
           <DatePicker
+            dropdownCaption
             defaultSelected={vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined}
             {...datepickerProps}
           >
