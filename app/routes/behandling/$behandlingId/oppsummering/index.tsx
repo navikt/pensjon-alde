@@ -1,4 +1,4 @@
-import { Heading } from '@navikt/ds-react'
+import { Alert, Box, Detail, Heading, HStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
@@ -67,6 +67,20 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
   const { aktiviteter } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const components = getAllServerComponents()
+
+  if (aktiviteter.length === 0) {
+    return (
+      <Box.New paddingBlock="8 0" style={{ display: 'flex', justifyContent: 'center' }}>
+        <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
+          <Heading spacing size="small" level="3">
+            Ingen vurdering tatt
+          </Heading>
+
+          <Detail>Viser bare de aktivitetene som har blitt vurdert</Detail>
+        </Alert>
+      </Box.New>
+    )
+  }
 
   return (
     <div>
