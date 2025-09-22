@@ -95,7 +95,7 @@ export function VurdereSamboerComponent({
   readOnly,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const { datepickerProps, inputProps } = useDatepicker({
-    defaultSelected: undefined,
+    defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
     required: true,
   })
 
@@ -118,13 +118,7 @@ export function VurdereSamboerComponent({
             <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
           </RadioGroup>
 
-          {console.log(new Date(vurdering?.samboerFra))}
-
-          <DatePicker
-            dropdownCaption
-            defaultSelected={vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined}
-            {...datepickerProps}
-          >
+          <DatePicker dropdownCaption {...datepickerProps}>
             <DatePicker.Input {...inputProps} readOnly={readOnly} label="Virkningstidspunkt fra" name="samboerFra" />
           </DatePicker>
 
