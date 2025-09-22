@@ -243,6 +243,26 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
             <Spacer />
 
+            {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && !isOppsummering && (
+              <Button
+                type="submit"
+                size="medium"
+                onClick={() => window.open(`/behandling/${behandling.behandlingId}/oppsummering`, '_self')}
+              >
+                Vis oppsummering
+              </Button>
+            )}
+
+            {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && isOppsummering && (
+              <Button
+                type="submit"
+                size="medium"
+                onClick={() => window.open(`/behandling/${behandling.behandlingId}`, '_self')}
+              >
+                Fortsett saksbehandling
+              </Button>
+            )}
+
             {isOppsummering && behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
               <Button
                 type="submit"
