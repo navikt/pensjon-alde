@@ -127,7 +127,11 @@ export const Header = ({
 
         <ActionMenu.Item
           icon={<DogIcon />}
-          onClick={() => window.open(window.location.href + '?showStepper=true', '_self')}
+          onClick={() => {
+            const params = new URLSearchParams(window.location.search)
+            params.set('showStepper', 'true')
+            window.location.search = params.toString()
+          }}
         >
           Vis stegvelger
         </ActionMenu.Item>
