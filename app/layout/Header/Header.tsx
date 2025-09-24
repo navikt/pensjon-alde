@@ -1,5 +1,6 @@
 import {
   AngleRulerTriangleIcon,
+  DogIcon,
   ExternalLinkIcon,
   MenuGridIcon,
   MoonIcon,
@@ -120,6 +121,15 @@ export const Header = ({
           onClick={() => setSketchmode(false)}
         >
           Slå av kladdeutseende
+        </ActionMenu.Item>
+
+        <Dropdown.Menu.Divider />
+
+        <ActionMenu.Item
+          icon={<DogIcon />}
+          onClick={() => window.open(window.location.href + '?showStepper=true', '_self')}
+        >
+          Vis stegvelger
         </ActionMenu.Item>
       </ActionMenu.Content>
     </ActionMenu>
