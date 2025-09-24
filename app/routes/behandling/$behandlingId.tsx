@@ -33,6 +33,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
   const url = new URL(request.url)
 
+  const showStepper = url.searchParams.get('showStepper')
   const justCompletedId = url.searchParams.get('justCompleted')
 
   const api = createBehandlingApi({ request, behandlingId })
@@ -88,7 +89,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId),
     isOppsummering,
     isAttestering,
-    showStepper: process.env.NODE_ENV === 'development' && !isOppsummering && !isAttestering,
+    showStepper: showStepper && !isOppsummering && !isAttestering,
     psakUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
   }
 }
@@ -309,7 +310,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     onClick={() => {
                       if (!step.redirectUrl) return
 
-                      navigate(step.redirectUrl)
+                      navigate(`${step.redirectUrl}?showStepper=${showStepper}`)
                     }}
                     style={{ cursor: 'pointer' }}
                     data-step-index={index}
