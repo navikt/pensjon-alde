@@ -75,7 +75,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
         aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
 
       if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
-        return redirect(`/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`)
+        return redirect(
+          `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}?showStepper=${showStepper}`,
+        )
       }
     }
   }
