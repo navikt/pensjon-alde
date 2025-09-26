@@ -256,7 +256,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && !isOppsummering && (
               <Button
                 type="submit"
-                size="medium"
+                size="small"
                 onClick={() => window.open(`/behandling/${behandling.behandlingId}/oppsummering`, '_self')}
               >
                 Vis oppsummering
@@ -266,7 +266,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && isOppsummering && (
               <Button
                 type="submit"
-                size="medium"
+                size="small"
                 onClick={() => window.open(`/behandling/${behandling.behandlingId}`, '_self')}
               >
                 Fortsett saksbehandling
@@ -276,7 +276,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             {isOppsummering && behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
               <Button
                 type="submit"
-                size="medium"
+                size="small"
                 onClick={() => window.open(psakUrl, '_blank')}
                 icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
                 iconPosition="right"

@@ -8,7 +8,6 @@ import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 import './attestering.css'
-import { AccordionItem } from '@navikt/ds-react/Accordion'
 import clsx from 'clsx'
 
 interface AktivitetTilAttestering {
@@ -130,6 +129,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
 
             <div className={clsx('attestant', attesteringer[aktivitet.handlerName])}>
               <Button
+                size="small"
                 className="godkjenn"
                 onClick={() =>
                   setAttestering({
@@ -142,6 +142,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
                 Godkjenn
               </Button>
               <Button
+                size="small"
                 className="underkjenn"
                 onClick={() =>
                   setAttestering({
