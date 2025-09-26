@@ -286,7 +286,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             )}
 
             {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
-              <Button type="submit" variant="danger" size="medium" onClick={() => ref.current?.showModal()}>
+              <Button type="submit" size="small" variant="danger" onClick={() => ref.current?.showModal()}>
                 Ta til manuell
               </Button>
             )}
@@ -327,25 +327,23 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
         {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
 
-        <Modal ref={ref} header={{ heading: 'Ta til manuell' }}>
+        <Modal ref={ref} header={{ heading: 'Er du sikker på du vil ta til manuell?' }}>
           <Form method="post">
             <input hidden name="aktivitetId" value={aktivitetId} />
             <Modal.Body>
               <VStack gap="4">
                 <BodyLong>
-                  Beklager at du ikke kunne fullføre denne behandlingen her. Vi ønsker å forbedre din brukeropplevelse
-                  har du mulighet til å fortelle oss hvorfor du må ta denne til manuell? Viktig ikke skriv inn
-                  personopplysninger
+                  Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
+                  bedre. Ikke skriv personopplysninger.
                 </BodyLong>
 
-                <Textarea label="Begrunnelse" name="begrunnelse" />
+                <Textarea label="Tilbakemelding (frivillig)" name="begrunnelse" />
               </VStack>
             </Modal.Body>
             <Modal.Footer>
               <Button type="submit" variant="danger" onClick={() => ref.current?.close()}>
                 Ta til manuell
               </Button>
-
               <Button type="button" variant="secondary" onClick={() => ref.current?.close()}>
                 Avbryt
               </Button>
