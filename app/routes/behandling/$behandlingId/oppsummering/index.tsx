@@ -1,4 +1,4 @@
-import { Alert, Box, Detail, Heading, HStack } from '@navikt/ds-react'
+import { Alert, Box, Detail, Heading, VStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
@@ -14,6 +14,9 @@ interface AktivitetTilAttestering {
   grunnlag: string
   vurdering: string
   aktivitet: AktivitetDTO
+  vurdertTidspunkt?: string
+  vurdertAvBrukerId?: string
+  vurdertAvBrukerNavn?: string
 }
 
 const enhanceAttesteringAktivitet =
@@ -32,6 +35,9 @@ const enhanceAttesteringAktivitet =
       grunnlag: aktivitet.grunnlag ? JSON.parse(aktivitet.grunnlag) : null,
       vurdering: aktivitet.vurdering ? JSON.parse(aktivitet.vurdering) : null,
       aktivitet: behandlingAktivitet,
+      vurdertTidspunkt: aktivitet.vurdertTidspunkt,
+      vurdertAvBrukerId: aktivitet.vurdertAvBrukerId,
+      vurdertAvBrukerNavn: aktivitet.vurdertAvBrukerNavn,
     }
   }
 
@@ -91,14 +97,19 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
         const Component = components.get(aktivitet.handlerName)
 
         return Component ? (
-          <Component
-            key={aktivitet.aktivitetId}
-            readOnly={true}
-            grunnlag={aktivitet.grunnlag}
-            vurdering={aktivitet.vurdering}
-            aktivitet={aktivitet.aktivitet}
-            behandling={behandling}
-          />
+          <VStack gap="6" key={aktivitet.aktivitetId}>
+            <Component
+              readOnly={true}
+              grunnlag={aktivitet.grunnlag}
+              vurdering={aktivitet.vurdering}
+              aktivitet={aktivitet.aktivitet}
+              behandling={behandling}
+            />
+            <Box.New>
+              Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />
+              Vudert tidspunkt: {aktivitet.vurdertTidspunkt}
+            </Box.New>
+          </VStack>
         ) : null
       })}
     </div>

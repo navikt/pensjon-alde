@@ -1,4 +1,4 @@
-import { BodyShort, Button, Heading, HStack, Textarea, VStack } from '@navikt/ds-react'
+import { BodyShort, Box, Button, Heading, HStack, Textarea, VStack } from '@navikt/ds-react'
 import React from 'react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
@@ -17,6 +17,9 @@ interface AktivitetTilAttestering {
   grunnlag: string
   vurdering: string
   aktivitet: AktivitetDTO
+  vurdertTidspunkt?: string
+  vurdertAvBrukerId?: string
+  vurdertAvBrukerNavn?: string
 }
 
 const enhanceAttesteringAktivitet =
@@ -35,6 +38,9 @@ const enhanceAttesteringAktivitet =
       grunnlag: aktivitet.grunnlag ? JSON.parse(aktivitet.grunnlag) : null,
       vurdering: aktivitet.vurdering ? JSON.parse(aktivitet.vurdering) : null,
       aktivitet: behandlingAktivitet,
+      vurdertTidspunkt: aktivitet.vurdertTidspunkt,
+      vurdertAvBrukerId: aktivitet.vurdertAvBrukerId,
+      vurdertAvBrukerNavn: aktivitet.vurdertAvBrukerNavn,
     }
   }
 
@@ -126,36 +132,40 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
                 />
               </div>
             </div>
-
-            <div className={clsx('attestant', attesteringer[aktivitet.handlerName])}>
-              <Button
-                size="small"
-                className="godkjenn"
-                onClick={() =>
-                  setAttestering({
-                    type: 'SET',
-                    handlerName: aktivitet.handlerName,
-                    status: AttesteringUtfall.GODKJENT,
-                  })
-                }
-              >
-                Godkjenn
-              </Button>
-              <Button
-                size="small"
-                className="underkjenn"
-                onClick={() =>
-                  setAttestering({
-                    type: 'SET',
-                    handlerName: aktivitet.handlerName,
-                    status: AttesteringUtfall.UNDERKJENT,
-                  })
-                }
-              >
-                Underkjenn
-              </Button>
-            </div>
-
+            <VStack gap="6">
+              <div className={clsx('attestant', attesteringer[aktivitet.handlerName])}>
+                <Button
+                  size="small"
+                  className="godkjenn"
+                  onClick={() =>
+                    setAttestering({
+                      type: 'SET',
+                      handlerName: aktivitet.handlerName,
+                      status: AttesteringUtfall.GODKJENT,
+                    })
+                  }
+                >
+                  Godkjenn
+                </Button>
+                <Button
+                  size="small"
+                  className="underkjenn"
+                  onClick={() =>
+                    setAttestering({
+                      type: 'SET',
+                      handlerName: aktivitet.handlerName,
+                      status: AttesteringUtfall.UNDERKJENT,
+                    })
+                  }
+                >
+                  Underkjenn
+                </Button>
+              </div>
+              <Box.New>
+                Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />
+                Vudert tidspunkt: {aktivitet.vurdertTidspunkt}
+              </Box.New>
+            </VStack>
             <div className="ferdigstill-attestering">
               <div />
               <BodyShort size="large" weight="semibold">
