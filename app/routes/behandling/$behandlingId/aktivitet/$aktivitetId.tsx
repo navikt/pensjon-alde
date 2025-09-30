@@ -28,7 +28,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const url = new URL(request.url)
   const currentPath = url.pathname
-  const showStepper = url.searchParams.get('showStepper')
 
   if (
     implementationUrl &&
@@ -37,7 +36,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     !currentPath.includes(behandling.handlerName) &&
     !currentPath.includes(aktivitet.handlerName)
   ) {
-    return redirect(`${implementationUrl}?showStepper=${showStepper}`)
+    return redirect(implementationUrl)
   }
 
   const showDebug = process.env.NAIS_CLUSTER_NAME !== 'prod-gcp'

@@ -8,6 +8,7 @@ export async function settingsMiddleware({ request, context }: { request: Reques
   let settings: SettingsContext = {
     showStepper: false,
     showMetadata: false,
+    kladdemodus: false,
   }
 
   if (cookieHeader) {

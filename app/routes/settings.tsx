@@ -20,6 +20,7 @@ export async function action({ request }: Route.ActionArgs) {
   const settings = {
     showStepper: formData.has('showStepper'),
     showMetadata: formData.has('showMetadata'),
+    kladdemodus: formData.has('kladdemodus'),
   }
 
   const cookieHeader = serializeSettings(settings)
@@ -53,6 +54,9 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
                 </Checkbox>
                 <Checkbox name="showMetadata" value="showMetadata" defaultChecked={settings.showMetadata}>
                   Vis metadata
+                </Checkbox>
+                <Checkbox name="kladdemodus" value="kladdemodus" defaultChecked={settings.kladdemodus}>
+                  Kladdemodus
                 </Checkbox>
               </CheckboxGroup>
 

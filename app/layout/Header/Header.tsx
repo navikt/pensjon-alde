@@ -1,12 +1,4 @@
-import {
-  AngleRulerTriangleIcon,
-  CogIcon,
-  ExternalLinkIcon,
-  MenuGridIcon,
-  MoonIcon,
-  PencilLineIcon,
-  SunIcon,
-} from '@navikt/aksel-icons'
+import { CogIcon, ExternalLinkIcon, MenuGridIcon, MoonIcon, SunIcon } from '@navikt/aksel-icons'
 import { ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Spacer } from '@navikt/ds-react'
 import { Link, useLocation } from 'react-router'
 import type { Me } from '~/types/me'
@@ -15,21 +7,11 @@ interface Props {
   me: Me
   isDarkmode: boolean
   setDarkmode: (darkmode: boolean) => void
-  isSketchmode: boolean
-  setSketchmode: (sketchmode: boolean) => void
   verdandeAktivitetUrl: string | undefined
   verdandeBehandlingUrl: string | undefined
 }
 
-export const Header = ({
-  me,
-  isDarkmode,
-  setDarkmode,
-  isSketchmode,
-  setSketchmode,
-  verdandeAktivitetUrl,
-  verdandeBehandlingUrl,
-}: Props) => {
+export const Header = ({ me, isDarkmode, setDarkmode, verdandeAktivitetUrl, verdandeBehandlingUrl }: Props) => {
   const location = useLocation()
   const settingsUrl = `/settings?returnTo=${encodeURIComponent(location.pathname)}`
 
@@ -112,20 +94,6 @@ export const Header = ({
 
           <ActionMenu.Item disabled={isDarkmode} icon={<MoonIcon />} onClick={() => setDarkmode(true)}>
             Bytt til mørk modus
-          </ActionMenu.Item>
-
-          <Dropdown.Menu.Divider />
-
-          <ActionMenu.Item disabled={isSketchmode} icon={<PencilLineIcon />} onClick={() => setSketchmode(true)}>
-            Slå på kladdeutseende
-          </ActionMenu.Item>
-
-          <ActionMenu.Item
-            disabled={!isSketchmode}
-            icon={<AngleRulerTriangleIcon />}
-            onClick={() => setSketchmode(false)}
-          >
-            Slå av kladdeutseende
           </ActionMenu.Item>
 
           <Dropdown.Menu.Divider />
