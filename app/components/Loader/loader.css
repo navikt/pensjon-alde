@@ -1,0 +1,25 @@
+.loader {
+  min-height: 30vh;
+
+  .robot-smile {
+    color: var(--ax-bg-info-strong);
+    position: relative;
+    left: 1.6em;
+    top: -0.58em;
+    animation: pulse 5s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  33%,
+  66%,
+  100% {
+    transform: scale(1.15);
+  }
+  16.5%,
+  49.5%,
+  82.5% {
+    transform: scale(1);
+  }
+}

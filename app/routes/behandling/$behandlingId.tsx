@@ -7,7 +7,6 @@ import {
   CopyButton,
   HStack,
   Label,
-  Loader,
   Modal,
   Page,
   Spacer,
@@ -19,6 +18,7 @@ import {
 import React, { useEffect, useRef } from 'react'
 import { Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
+import AldeLoader from '~/components/Loader'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
@@ -325,7 +325,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           </Box.New>
         )}
 
-        {behandlingJobber ? <Loader /> : <Outlet context={{ behandling }} />}
+        {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling }} />}
 
         <Modal ref={ref} header={{ heading: 'Er du sikker på du vil ta til manuell?' }}>
           <Form method="post">
