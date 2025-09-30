@@ -1,6 +1,6 @@
 import {
   AngleRulerTriangleIcon,
-  DogIcon,
+  CogIcon,
   ExternalLinkIcon,
   MenuGridIcon,
   MoonIcon,
@@ -8,6 +8,7 @@ import {
   SunIcon,
 } from '@navikt/aksel-icons'
 import { ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Spacer } from '@navikt/ds-react'
+import { Link, useLocation } from 'react-router'
 import type { Me } from '~/types/me'
 
 interface Props {
@@ -28,114 +29,112 @@ export const Header = ({
   setSketchmode,
   verdandeAktivitetUrl,
   verdandeBehandlingUrl,
-}: Props) => (
-  <InternalHeader>
-    <InternalHeader.Title as="h2">Pesys</InternalHeader.Title>
+}: Props) => {
+  const location = useLocation()
+  const settingsUrl = `/settings?returnTo=${encodeURIComponent(location.pathname)}`
 
-    <Spacer />
+  return (
+    <InternalHeader>
+      <InternalHeader.Title as="h2">Pesys</InternalHeader.Title>
 
-    <Dropdown>
-      <InternalHeader.Button as={Dropdown.Toggle}>
-        <MenuGridIcon style={{ fontSize: '1.5rem' }} title="Systemer og oppslagsverk" />
-      </InternalHeader.Button>
+      <Spacer />
 
-      <Dropdown.Menu>
-        <Dropdown.Menu.GroupedList>
-          <Dropdown.Menu.GroupedList.Heading>Dokumentasjon</Dropdown.Menu.GroupedList.Heading>
-          <Dropdown.Menu.GroupedList.Item
-            as="a"
-            target="_blank"
-            href={'https://navno.sharepoint.com/sites/fag-og-ytelser-pesys/'}
-          >
-            Rutiner for Pesys
-            <ExternalLinkIcon aria-hidden />
-          </Dropdown.Menu.GroupedList.Item>
-          <Dropdown.Menu.GroupedList.Item
-            as="a"
-            target="_blank"
-            href={'https://lovdata.no/pro/#document/HJELP/nav-rettskilder'}
-          >
-            Rettskilder
-            <ExternalLinkIcon aria-hidden />
-          </Dropdown.Menu.GroupedList.Item>
-        </Dropdown.Menu.GroupedList>
+      <Dropdown>
+        <InternalHeader.Button as={Dropdown.Toggle}>
+          <MenuGridIcon style={{ fontSize: '1.5rem' }} title="Systemer og oppslagsverk" />
+        </InternalHeader.Button>
 
-        {verdandeBehandlingUrl && (
-          <>
-            <Dropdown.Menu.Divider />
+        <Dropdown.Menu>
+          <Dropdown.Menu.GroupedList>
+            <Dropdown.Menu.GroupedList.Heading>Dokumentasjon</Dropdown.Menu.GroupedList.Heading>
+            <Dropdown.Menu.GroupedList.Item
+              as="a"
+              target="_blank"
+              href={'https://navno.sharepoint.com/sites/fag-og-ytelser-pesys/'}
+            >
+              Rutiner for Pesys
+              <ExternalLinkIcon aria-hidden />
+            </Dropdown.Menu.GroupedList.Item>
+            <Dropdown.Menu.GroupedList.Item
+              as="a"
+              target="_blank"
+              href={'https://lovdata.no/pro/#document/HJELP/nav-rettskilder'}
+            >
+              Rettskilder
+              <ExternalLinkIcon aria-hidden />
+            </Dropdown.Menu.GroupedList.Item>
+          </Dropdown.Menu.GroupedList>
 
-            <Dropdown.Menu.GroupedList>
-              <Dropdown.Menu.GroupedList.Heading>Verdande</Dropdown.Menu.GroupedList.Heading>
-              <Dropdown.Menu.GroupedList.Item as="a" target="_blank" href={verdandeBehandlingUrl}>
-                Gå til behandling
-                <ExternalLinkIcon aria-hidden />
-              </Dropdown.Menu.GroupedList.Item>
+          {verdandeBehandlingUrl && (
+            <>
+              <Dropdown.Menu.Divider />
 
-              {verdandeAktivitetUrl && (
-                <Dropdown.Menu.GroupedList.Item as="a" target="_blank" href={verdandeAktivitetUrl}>
-                  Gå til aktivitet
+              <Dropdown.Menu.GroupedList>
+                <Dropdown.Menu.GroupedList.Heading>Verdande</Dropdown.Menu.GroupedList.Heading>
+                <Dropdown.Menu.GroupedList.Item as="a" target="_blank" href={verdandeBehandlingUrl}>
+                  Gå til behandling
                   <ExternalLinkIcon aria-hidden />
                 </Dropdown.Menu.GroupedList.Item>
-              )}
-            </Dropdown.Menu.GroupedList>
-          </>
-        )}
-      </Dropdown.Menu>
-    </Dropdown>
 
-    <ActionMenu>
-      <ActionMenu.Trigger>
-        <InternalHeader.UserButton name={me ? `${me.fornavn} ${me.etternavn}` : 'Bruker'} />
-      </ActionMenu.Trigger>
-
-      <ActionMenu.Content>
-        <dl>
-          {me?.fornavn && me?.etternavn && (
-            <BodyShort as="dt" size="small">
-              {me.fornavn} {me.etternavn}
-            </BodyShort>
+                {verdandeAktivitetUrl && (
+                  <Dropdown.Menu.GroupedList.Item as="a" target="_blank" href={verdandeAktivitetUrl}>
+                    Gå til aktivitet
+                    <ExternalLinkIcon aria-hidden />
+                  </Dropdown.Menu.GroupedList.Item>
+                )}
+              </Dropdown.Menu.GroupedList>
+            </>
           )}
+        </Dropdown.Menu>
+      </Dropdown>
 
-          {me?.navident && <Detail as="dd">{me.navident}</Detail>}
-        </dl>
+      <ActionMenu>
+        <ActionMenu.Trigger>
+          <InternalHeader.UserButton name={me ? `${me.fornavn} ${me.etternavn}` : 'Bruker'} />
+        </ActionMenu.Trigger>
 
-        <Dropdown.Menu.Divider />
+        <ActionMenu.Content>
+          <dl>
+            {me?.fornavn && me?.etternavn && (
+              <BodyShort as="dt" size="small">
+                {me.fornavn} {me.etternavn}
+              </BodyShort>
+            )}
 
-        <ActionMenu.Item disabled={!isDarkmode} icon={<SunIcon />} onClick={() => setDarkmode(false)}>
-          Bytt til lys modus
-        </ActionMenu.Item>
+            {me?.navident && <Detail as="dd">{me.navident}</Detail>}
+          </dl>
 
-        <ActionMenu.Item disabled={isDarkmode} icon={<MoonIcon />} onClick={() => setDarkmode(true)}>
-          Bytt til mørk modus
-        </ActionMenu.Item>
+          <Dropdown.Menu.Divider />
 
-        <Dropdown.Menu.Divider />
+          <ActionMenu.Item disabled={!isDarkmode} icon={<SunIcon />} onClick={() => setDarkmode(false)}>
+            Bytt til lys modus
+          </ActionMenu.Item>
 
-        <ActionMenu.Item disabled={isSketchmode} icon={<PencilLineIcon />} onClick={() => setSketchmode(true)}>
-          Slå på kladdeutseende
-        </ActionMenu.Item>
+          <ActionMenu.Item disabled={isDarkmode} icon={<MoonIcon />} onClick={() => setDarkmode(true)}>
+            Bytt til mørk modus
+          </ActionMenu.Item>
 
-        <ActionMenu.Item
-          disabled={!isSketchmode}
-          icon={<AngleRulerTriangleIcon />}
-          onClick={() => setSketchmode(false)}
-        >
-          Slå av kladdeutseende
-        </ActionMenu.Item>
+          <Dropdown.Menu.Divider />
 
-        <Dropdown.Menu.Divider />
+          <ActionMenu.Item disabled={isSketchmode} icon={<PencilLineIcon />} onClick={() => setSketchmode(true)}>
+            Slå på kladdeutseende
+          </ActionMenu.Item>
 
-        <ActionMenu.Item
-          icon={<DogIcon />}
-          onClick={() => {
-            const params = new URLSearchParams(window.location.search)
-            params.set('showStepper', 'true')
-            window.location.search = params.toString()
-          }}
-        >
-          Vis stegvelger
-        </ActionMenu.Item>
-      </ActionMenu.Content>
-    </ActionMenu>
-  </InternalHeader>
-)
+          <ActionMenu.Item
+            disabled={!isSketchmode}
+            icon={<AngleRulerTriangleIcon />}
+            onClick={() => setSketchmode(false)}
+          >
+            Slå av kladdeutseende
+          </ActionMenu.Item>
+
+          <Dropdown.Menu.Divider />
+
+          <ActionMenu.Item as={Link} to={settingsUrl} icon={<CogIcon />}>
+            Innstillinger
+          </ActionMenu.Item>
+        </ActionMenu.Content>
+      </ActionMenu>
+    </InternalHeader>
+  )
+}

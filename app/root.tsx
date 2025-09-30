@@ -23,6 +23,7 @@ import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
 import type { Route } from './+types/root'
 import { requireAccessToken } from './auth/auth.server'
 import { Header } from './layout/Header/Header'
+import { settingsMiddleware } from './middleware/settings'
 import styles from './root.module.css'
 
 // Initialize mocking and auth in mock environment
@@ -31,6 +32,8 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
     initializeMocking().catch(console.error)
   })
 }
+
+export const middleware: Route.MiddlewareFunction[] = [settingsMiddleware]
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const token = await requireAccessToken(request)

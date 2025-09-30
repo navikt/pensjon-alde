@@ -19,6 +19,7 @@ import React, { useEffect, useRef } from 'react'
 import { Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AldeLoader from '~/components/Loader'
+import { settingsContext } from '~/context/settings-context'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
@@ -29,11 +30,11 @@ export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Behandling ${params.behandlingId}` }, { name: 'description', content: 'Behandling detaljer' }]
 }
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
   const url = new URL(request.url)
 
-  const showStepper = url.searchParams.get('showStepper')
+  const { showStepper, showMetadata } = context.get(settingsContext)
   const justCompletedId = url.searchParams.get('justCompleted')
 
   const api = createBehandlingApi({ request, behandlingId })
@@ -75,9 +76,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
         aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
 
       if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
-        return redirect(
-          `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}?showStepper=${showStepper}`,
-        )
+        return redirect(`/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`)
       }
     }
   }
@@ -92,6 +91,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     isOppsummering,
     isAttestering,
     showStepper: showStepper && !isOppsummering && !isAttestering,
+    showMetadata,
     psakUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
   }
 }
@@ -118,7 +118,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, showStepper, isOppsummering, psakUrl } = loaderData
+  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, isOppsummering, psakUrl } = loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -209,89 +209,95 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   return (
     <Box.New asChild background={'default'}>
       <Page>
-        <Box.New padding="4" borderWidth="1 0">
-          <HStack gap="6" align="center">
-            <VStack>
-              <Label size="small">Behandling</Label>
-              <BodyShort>{behandling.friendlyName}</BodyShort>
-            </VStack>
-
-            <VStack>
-              <Label size="small">Status</Label>
-              <Tag
-                variant={
-                  behandling.status === BehandlingStatus.FERDIG
-                    ? 'success'
-                    : behandling.status === BehandlingStatus.FEILET
-                      ? 'error'
-                      : 'info'
-                }
-                size="small"
-              >
-                {behandling.aldeBehandlingStatus}
-              </Tag>
-            </VStack>
-
-            <VStack>
-              <Label size="small">Opprettet</Label>
-              <BodyShort size="small">{formatDateToNorwegian(behandling.opprettet)}</BodyShort>
-            </VStack>
-
-            {behandling.kravId && (
+        {showMetadata && (
+          <Box.New padding="4" borderWidth="1 0">
+            <HStack gap="6" align="center">
               <VStack>
-                <Label size="small">Krav</Label>
-                <CopyButton text={behandling.kravId.toString()} copyText={behandling.kravId.toString()} size="small" />
+                <Label size="small">Behandling</Label>
+                <BodyShort>{behandling.friendlyName}</BodyShort>
               </VStack>
-            )}
 
-            {behandling.sakId && (
               <VStack>
-                <Label size="small">Sak</Label>
-                <CopyButton text={behandling.sakId.toString()} copyText={behandling.sakId.toString()} size="small" />
+                <Label size="small">Status</Label>
+                <Tag
+                  variant={
+                    behandling.status === BehandlingStatus.FERDIG
+                      ? 'success'
+                      : behandling.status === BehandlingStatus.FEILET
+                        ? 'error'
+                        : 'info'
+                  }
+                  size="small"
+                >
+                  {behandling.aldeBehandlingStatus}
+                </Tag>
               </VStack>
-            )}
 
-            <Spacer />
+              <VStack>
+                <Label size="small">Opprettet</Label>
+                <BodyShort size="small">{formatDateToNorwegian(behandling.opprettet)}</BodyShort>
+              </VStack>
 
-            {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && !isOppsummering && (
-              <Button
-                type="submit"
-                size="small"
-                onClick={() => window.open(`/behandling/${behandling.behandlingId}/oppsummering`, '_self')}
-              >
-                Vis oppsummering
-              </Button>
-            )}
+              {behandling.kravId && (
+                <VStack>
+                  <Label size="small">Krav</Label>
+                  <CopyButton
+                    text={behandling.kravId.toString()}
+                    copyText={behandling.kravId.toString()}
+                    size="small"
+                  />
+                </VStack>
+              )}
 
-            {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && isOppsummering && (
-              <Button
-                type="submit"
-                size="small"
-                onClick={() => window.open(`/behandling/${behandling.behandlingId}`, '_self')}
-              >
-                Fortsett saksbehandling
-              </Button>
-            )}
+              {behandling.sakId && (
+                <VStack>
+                  <Label size="small">Sak</Label>
+                  <CopyButton text={behandling.sakId.toString()} copyText={behandling.sakId.toString()} size="small" />
+                </VStack>
+              )}
 
-            {isOppsummering && behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
-              <Button
-                type="submit"
-                size="small"
-                onClick={() => window.open(psakUrl, '_blank')}
-                icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
-                iconPosition="right"
-              >
-                Åpne pensjonsoversikten
-              </Button>
-            )}
+              <Spacer />
 
-            {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
-              <Button type="submit" size="small" variant="danger" onClick={() => ref.current?.showModal()}>
-                Ta til manuell
-              </Button>
-            )}
-          </HStack>
-        </Box.New>
+              {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && !isOppsummering && (
+                <Button
+                  type="submit"
+                  size="small"
+                  onClick={() => window.open(`/behandling/${behandling.behandlingId}/oppsummering`, '_self')}
+                >
+                  Vis oppsummering
+                </Button>
+              )}
+
+              {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && isOppsummering && (
+                <Button
+                  type="submit"
+                  size="small"
+                  onClick={() => window.open(`/behandling/${behandling.behandlingId}`, '_self')}
+                >
+                  Fortsett saksbehandling
+                </Button>
+              )}
+
+              {isOppsummering && behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
+                <Button
+                  type="submit"
+                  size="small"
+                  onClick={() => window.open(psakUrl, '_blank')}
+                  icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
+                  iconPosition="right"
+                >
+                  Åpne pensjonsoversikten
+                </Button>
+              )}
+
+              {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
+                <Button type="submit" size="small" variant="danger" onClick={() => ref.current?.showModal()}>
+                  Ta til manuell
+                </Button>
+              )}
+            </HStack>
+          </Box.New>
+        )}
 
         {allSteps.length > 0 && showStepper && (
           <Box.New padding="space-12">
@@ -312,7 +318,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     onClick={() => {
                       if (!step.redirectUrl) return
 
-                      navigate(`${step.redirectUrl}?showStepper=${showStepper}`)
+                      navigate(step.redirectUrl)
                     }}
                     style={{ cursor: 'pointer' }}
                     data-step-index={index}
