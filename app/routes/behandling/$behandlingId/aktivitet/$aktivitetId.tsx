@@ -3,7 +3,7 @@ import { Outlet, redirect, useOutlet } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
-import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
+import type { AktivitetDTO } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 
@@ -14,7 +14,7 @@ export function meta({ params }: Route.MetaArgs) {
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
   const api = createBehandlingApi({ request, behandlingId })
-  const behandling = await api.hentBehandling<BehandlingDTO>()
+  const behandling = await api.hentBehandling()
 
   // Find the specific aktivitet using aktivitetId
   const aktivitet = behandling.aktiviteter.find((a: AktivitetDTO) => a.aktivitetId?.toString() === aktivitetId)
