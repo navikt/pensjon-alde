@@ -55,3 +55,11 @@ export interface BehandlingDTO {
   sakId: number | null
   kravId: number | null
 }
+
+export interface BehandlingSokerDTO {
+  fnr: string | null
+  fornavn: string | null
+  mellomnavn: string | null
+  etternavn: string | null
+  fodselsdato: string | null // LocalDate as ISO string
+}

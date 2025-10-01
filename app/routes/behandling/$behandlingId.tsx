@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from '@navikt/aksel-icons'
+import { ExternalLinkIcon, PersonIcon } from '@navikt/aksel-icons'
 import {
   BodyLong,
   BodyShort,
@@ -22,7 +22,7 @@ import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
-import { formatDateToNorwegian } from '~/utils/date'
+import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import type { Route } from './+types/$behandlingId'
 
@@ -39,6 +39,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
+  const soker = await api.hentSoker()
 
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')
@@ -92,6 +93,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     isAttestering,
     showStepper: showStepper && !isOppsummering && !isAttestering,
     showMetadata,
+    soker,
     psakUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
   }
 }
@@ -118,7 +120,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, isOppsummering, psakUrl } = loaderData
+  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, soker, isOppsummering, psakUrl } =
+    loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -209,6 +212,31 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   return (
     <Box.New asChild background={'default'}>
       <Page>
+        <Box.New
+          paddingInline="10"
+          paddingBlock="2"
+          borderWidth="1 0"
+          background="neutral-soft"
+          borderColor="neutral-subtle"
+        >
+          <HStack align="center" gap="1">
+            <HStack align="center">
+              <PersonIcon fontSize="1.5em" /> {soker.fnr}
+              <CopyButton size="small" variant="action" copyText={soker.fnr ?? ''} />
+            </HStack>
+            <span>/</span>
+            {soker.etternavn}, {soker.fornavn} {soker.mellomnavn}
+            <span>/</span>
+            Født: {formatDateToNorwegian(soker.fodselsdato)} ({formatDateToAge(soker.fodselsdato)})
+            <Spacer />
+            {behandling.friendlyName}
+            <span>/</span>
+            <HStack align="center">
+              {behandling.sakId}
+              <CopyButton size="small" variant="action" copyText={behandling.sakId?.toString() ?? ''} />
+            </HStack>
+          </HStack>
+        </Box.New>
         {showMetadata && (
           <Box.New padding="4" borderWidth="1 0">
             <HStack gap="6" align="center">
