@@ -122,12 +122,12 @@ export function VurdereSamboerComponent({
             <DatePicker.Input {...inputProps} readOnly={readOnly} label="Virkningstidspunkt fra" name="samboerFra" />
           </DatePicker>
 
-          <Textarea
+          {/*<Textarea
             readOnly={readOnly}
             label="Kommentar samboervurdering"
             description="Kun ved behov for tilleggsopplysninger"
             rows={4}
-          />
+          />*/}
 
           {!readOnly && (
             <VStack gap="3">
