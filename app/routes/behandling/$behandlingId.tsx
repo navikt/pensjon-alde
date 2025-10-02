@@ -39,7 +39,6 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
-  const soker = await api.hentSoker()
 
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')
@@ -93,7 +92,6 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     isAttestering,
     showStepper: showStepper && !isOppsummering && !isAttestering,
     showMetadata,
-    soker,
     psakUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
   }
 }
@@ -120,8 +118,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, soker, isOppsummering, psakUrl } =
-    loaderData
+  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, isOppsummering, psakUrl } = loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -223,13 +220,13 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         >
           <HStack align="center" gap="1">
             <HStack align="center">
-              <PersonIcon fontSize="1.5em" /> {soker.fnr}
-              <CopyButton size="small" variant="action" copyText={soker.fnr ?? ''} />
+              <PersonIcon fontSize="1.5em" /> {behandling.fnr}
+              <CopyButton size="small" variant="action" copyText={behandling.fnr ?? ''} />
             </HStack>
             <span>/</span>
-            {soker.etternavn}, {soker.fornavn} {soker.mellomnavn}
+            {behandling.etternavn}, {behandling.fornavn} {behandling.mellomnavn}
             <span>/</span>
-            Født: {formatDateToNorwegian(soker.fodselsdato)} ({formatDateToAge(soker.fodselsdato)})
+            Født: {formatDateToNorwegian(behandling.fodselsdato)} ({formatDateToAge(behandling.fodselsdato)})
             <Spacer />
             {behandling.friendlyName}
             <span>/</span>
