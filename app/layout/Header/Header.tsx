@@ -1,23 +1,41 @@
 import { CogIcon, ExternalLinkIcon, MenuGridIcon, MoonIcon, SunIcon } from '@navikt/aksel-icons'
-import { ActionMenu, BodyShort, Detail, Dropdown, InternalHeader, Spacer } from '@navikt/ds-react'
+import { ActionMenu, BodyShort, Detail, Dropdown, Heading, InternalHeader, Spacer } from '@navikt/ds-react'
 import { Link, useLocation } from 'react-router'
 import type { Me } from '~/types/me'
+import './headers.css'
 
 interface Props {
-  me: Me
+  environment: string
   isDarkmode: boolean
+  me: Me
   setDarkmode: (darkmode: boolean) => void
   verdandeAktivitetUrl: string | undefined
   verdandeBehandlingUrl: string | undefined
 }
 
-export const Header = ({ me, isDarkmode, setDarkmode, verdandeAktivitetUrl, verdandeBehandlingUrl }: Props) => {
+export const Header = ({
+  environment,
+  isDarkmode,
+  me,
+  setDarkmode,
+  verdandeAktivitetUrl,
+  verdandeBehandlingUrl,
+}: Props) => {
   const location = useLocation()
   const settingsUrl = `/settings?returnTo=${encodeURIComponent(location.pathname)}`
 
   return (
-    <InternalHeader>
-      <InternalHeader.Title as="h2">Pesys</InternalHeader.Title>
+    <InternalHeader className="header">
+      <InternalHeader.Title as="div">
+        {environment && (
+          <div className="header-logo">
+            <Heading level="1" size="large">
+              Pesys
+            </Heading>
+            <div className="heading-env">{environment.toUpperCase()}</div>
+          </div>
+        )}
+      </InternalHeader.Title>
 
       <Spacer />
 

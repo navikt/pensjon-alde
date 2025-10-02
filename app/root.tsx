@@ -41,6 +41,9 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
 
   const penUrl = `${env.penUrl}/api/saksbehandling/alde`
 
+  const environment =
+    process.env.NODE_ENV === 'development' ? 'dev' : process.env.NAIS_CLUSTER_NAME === 'dev-gcp' ? 'q2' : null
+
   // Fetch me data using token from context
   const meResponse = await fetch(`${penUrl}/me`, {
     headers: {
@@ -77,6 +80,7 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
     sketchmode: kladdemodus === true,
     verdandeAktivitetUrl,
     verdandeBehandlingUrl,
+    environment,
   }
 }
 
@@ -121,7 +125,8 @@ export function links() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { darkmode, me, sketchmode, verdandeAktivitetUrl, verdandeBehandlingUrl } = useLoaderData<typeof loader>()
+  const { darkmode, me, environment, sketchmode, verdandeAktivitetUrl, verdandeBehandlingUrl } =
+    useLoaderData<typeof loader>()
   const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
 
   function setDarkmode(darkmode: boolean) {
@@ -143,6 +148,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             me={me}
             isDarkmode={isDarkmode}
             setDarkmode={setDarkmode}
+            environment={environment}
             verdandeAktivitetUrl={verdandeAktivitetUrl}
             verdandeBehandlingUrl={verdandeBehandlingUrl}
           />

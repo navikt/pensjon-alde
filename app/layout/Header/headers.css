@@ -1,0 +1,15 @@
+.header {
+  padding-left: 20px;
+  .header-logo {
+    display: flex;
+    gap: 7px;
+    .heading-env {
+      color: var(--ax-bg-success-strong);
+      font-size: 16px;
+      position: relative;
+      top: 2px;
+      left: -5px;
+      font-weight: lighter;
+    }
+  }
+}
