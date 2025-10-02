@@ -42,6 +42,18 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')
+  const isManueltAvbrutt = url.pathname.includes('/avbrutt-manuelt')
+  const isAutomatiskAvbrutt = url.pathname.includes('/avbrutt-automatisk')
+  const isSendTilAttestering = url.pathname.includes('/send-til-attestering')
+  const isVenterAttestering = url.pathname.includes('/venter-attestering')
+
+  const isException =
+    isOppsummering ||
+    isAttestering ||
+    isManueltAvbrutt ||
+    isAutomatiskAvbrutt ||
+    isSendTilAttestering ||
+    isVenterAttestering
 
   const behandlingJobber =
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
@@ -51,7 +63,11 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   let aktivitetSomSkalVises = null
   if (!aktivitetSomSkalVises && behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isOppsummering) {
     return redirect(`/behandling/${behandlingId}/oppsummering`)
-  } else if (!isOppsummering && !isAttestering) {
+  } else if (!isException) {
+    if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING) {
+      return redirect(`/behandling/${behandlingId}/venter-attestering`)
+    }
+
     if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
       aktivitetSomSkalVises = behandling.aktiviteter.find(
         aktivitet =>
