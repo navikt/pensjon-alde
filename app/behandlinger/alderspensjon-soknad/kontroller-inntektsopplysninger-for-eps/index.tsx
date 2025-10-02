@@ -57,7 +57,7 @@ const formatCurrencyNok = (amount: number) => {
 }
 
 const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.ComponentProps) => {
-  const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
+  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
   const { grunnlag, vurdering } = loaderData
 
   return (
@@ -67,6 +67,7 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
       vurdering={vurdering}
       aktivitet={aktivitet}
       behandling={behandling}
+      avbrytAktivitet={avbrytAktivitet}
     />
   )
 }
@@ -82,6 +83,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   aktivitet,
   behandling,
   readOnly,
+  avbrytAktivitet,
 }) => {
   const detailsContent = (
     <VStack gap="8">
@@ -121,8 +123,8 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             Lagre vurdering
           </Button>
 
-          <Button type="submit" variant="danger" size="small">
-            Avbryt og tilbake
+          <Button type="reset" variant="secondary" size="small" onClick={avbrytAktivitet}>
+            Avbryt
           </Button>
         </div>
       )}
