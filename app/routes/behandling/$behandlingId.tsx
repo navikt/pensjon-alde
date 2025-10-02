@@ -129,6 +129,8 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const revalidator = useRevalidator()
   const ref = useRef<HTMLDialogElement>(null)
 
+  const avbrytAktivitet = () => ref.current?.showModal()
+
   // Prepare the visible aktiviteter (sorted and filtered)
   const visibleAktiviteter = React.useMemo(
     () =>
@@ -359,13 +361,17 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           </Box.New>
         )}
 
-        {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling }} />}
+        {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
 
-        <Modal ref={ref} header={{ heading: 'Er du sikker på du vil ta til manuell?' }}>
+        <Modal ref={ref} header={{ heading: 'Vil du avbryte behandlingen i piloten?' }}>
           <Form method="post">
             <input hidden name="aktivitetId" value={aktivitetId} />
             <Modal.Body>
               <VStack gap="4">
+                <BodyLong>
+                  Når du tar dette kravet tilbake til vanlig behandling, vil du ikke lenger kunne saksbehandle det i
+                  piloten. Saksbehandlig vil fortsettes som normal kravbehandling.
+                </BodyLong>
                 <BodyLong>
                   Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
                   bedre. Ikke skriv personopplysninger.
@@ -375,11 +381,11 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               </VStack>
             </Modal.Body>
             <Modal.Footer>
-              <Button type="submit" variant="danger" onClick={() => ref.current?.close()}>
-                Ta til manuell
+              <Button type="submit" variant="primary" onClick={() => ref.current?.close()}>
+                Avbryt behandling i piloten{' '}
               </Button>
               <Button type="button" variant="secondary" onClick={() => ref.current?.close()}>
-                Avbryt
+                Fortsett i piloten
               </Button>
             </Modal.Footer>
           </Form>

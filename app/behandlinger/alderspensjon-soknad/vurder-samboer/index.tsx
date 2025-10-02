@@ -10,7 +10,6 @@ import {
   HStack,
   Radio,
   RadioGroup,
-  Textarea,
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
@@ -75,7 +74,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 export default function VurderSamboerRoute({ loaderData }: Route.ComponentProps) {
   const { samboerInformasjon, vurdering, readOnly } = loaderData
 
-  const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
+  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
   return (
     <VurdereSamboerComponent
@@ -84,6 +83,7 @@ export default function VurderSamboerRoute({ loaderData }: Route.ComponentProps)
       vurdering={vurdering}
       aktivitet={aktivitet}
       behandling={behandling}
+      avbrytAktivitet={avbrytAktivitet}
     />
   )
 }
@@ -93,6 +93,7 @@ export function VurdereSamboerComponent({
   aktivitet,
   vurdering,
   readOnly,
+  avbrytAktivitet,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const { datepickerProps, inputProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
@@ -133,6 +134,10 @@ export function VurdereSamboerComponent({
             <VStack gap="3">
               <Button type="submit" variant="primary" size="small">
                 Lagre vurdering
+              </Button>
+
+              <Button type="reset" variant="secondary" size="small" onClick={avbrytAktivitet}>
+                Avbryt
               </Button>
             </VStack>
           )}

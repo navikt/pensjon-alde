@@ -7,4 +7,5 @@ import type { AktivitetDTO, BehandlingDTO } from './behandling'
 export interface AktivitetOutletContext {
   behandling: BehandlingDTO
   aktivitet: AktivitetDTO
+  avbrytAktivitet: () => void
 }

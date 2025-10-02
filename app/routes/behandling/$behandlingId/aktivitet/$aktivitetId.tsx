@@ -1,5 +1,5 @@
 import { Alert, Box, Detail, Heading } from '@navikt/ds-react'
-import { Outlet, redirect, useOutlet } from 'react-router'
+import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
@@ -74,10 +74,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   const { behandling, aktivitet, debug, showDebug } = loaderData
   const outlet = useOutlet()
+  const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
 
   return (
     <div className="aktivitet">
-      <Outlet context={{ behandling, aktivitet }} />
+      <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
 
       {!outlet && (
         <Box.New paddingBlock="8 0" style={{ display: 'flex', justifyContent: 'center' }}>

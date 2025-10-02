@@ -6,4 +6,5 @@ export type AktivitetComponentProps<Grunnlag, Vurdering> = {
   vurdering: Vurdering | null
   aktivitet: AktivitetDTO
   behandling: BehandlingDTO
+  avbrytAktivitet: () => void
 }
