@@ -113,6 +113,7 @@ export function VurdereSamboerComponent({
             name="vurdering"
             defaultValue={vurdering?.vurdering}
             readOnly={readOnly}
+            size="small"
           >
             <Radio value="IKKE_SAMBOER">Ikke samboere</Radio>
             <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
