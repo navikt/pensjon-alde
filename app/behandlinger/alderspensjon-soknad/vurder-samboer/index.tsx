@@ -120,7 +120,13 @@ export function VurdereSamboerComponent({
           </RadioGroup>
 
           <DatePicker dropdownCaption {...datepickerProps}>
-            <DatePicker.Input {...inputProps} readOnly={readOnly} label="Virkningstidspunkt fra" name="samboerFra" />
+            <DatePicker.Input
+              {...inputProps}
+              size="small"
+              readOnly={readOnly}
+              label="Virkningstidspunkt fra"
+              name="samboerFra"
+            />
           </DatePicker>
 
           {/*<Textarea
