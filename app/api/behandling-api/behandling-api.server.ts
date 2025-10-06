@@ -1,4 +1,4 @@
-import type { BehandlingDTO, BehandlingSokerDTO } from '~/types/behandling'
+import type { BehandlingDTO } from '~/types/behandling'
 import type { Fetcher } from '../api-client'
 import type { Attesteringsdata } from './types'
 
@@ -7,13 +7,11 @@ export function behandlingApi(fetch: Fetcher) {
     fetch<void>('/avbryt', { method: 'POST', body: JSON.stringify(request) })
 
   const hentBehandling = () => fetch<BehandlingDTO>('', { method: 'GET' })
-  const hentSoker = () => fetch<BehandlingSokerDTO>('/soker', { method: 'GET' })
 
   const hentAttesteringsdata = () => fetch<Attesteringsdata>('/attesteringsdata', { method: 'GET' })
 
   return {
     avbrytBehandling,
-    hentSoker,
     hentBehandling,
     hentAttesteringsdata,
   }
