@@ -169,7 +169,7 @@ export function VurdereSamboerComponent({
       </AktivitetVurderingLayout.Section>
 
       <AktivitetVurderingLayout.Section>
-        <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
+        <HStack gap="8">
           <VStack gap="1">
             <Heading level="2" size="xsmall">
               Brukeroppgitte opplysninger
@@ -207,7 +207,7 @@ export function VurdereSamboerComponent({
               Felles barn: <BodyShort weight="semibold">{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
             </HStack>
           </VStack>
-        </HGrid>
+        </HStack>
       </AktivitetVurderingLayout.Section>
 
       <AktivitetVurderingLayout.Section>
