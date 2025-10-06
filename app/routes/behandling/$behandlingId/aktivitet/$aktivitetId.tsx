@@ -1,4 +1,4 @@
-import { Alert, Box, Detail, Heading } from '@navikt/ds-react'
+import { Alert, Box, Detail, Heading, Page } from '@navikt/ds-react'
 import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
@@ -77,7 +77,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
 
   return (
-    <div className="aktivitet">
+    <Page.Block gutters className="aktivitet">
       <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
 
       {!outlet && (
@@ -98,6 +98,6 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
         </Box.New>
       )}
       {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
-    </div>
+    </Page.Block>
   )
 }

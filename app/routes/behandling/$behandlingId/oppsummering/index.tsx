@@ -1,4 +1,4 @@
-import { Alert, Box, Detail, Heading, VStack } from '@navikt/ds-react'
+import { Alert, Box, Detail, Heading, Page, VStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
@@ -89,7 +89,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <div>
+    <Page.Block gutters>
       <Heading level="1" size="large">
         Oppsummering av behandlingen
       </Heading>
@@ -112,6 +112,6 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
           </VStack>
         ) : null
       })}
-    </div>
+    </Page.Block>
   )
 }

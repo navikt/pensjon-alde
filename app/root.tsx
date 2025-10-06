@@ -3,7 +3,7 @@ import '@navikt/ds-css/darkside'
 
 import { type Faro, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk'
 import { TracingInstrumentation } from '@grafana/faro-web-tracing'
-import { Theme } from '@navikt/ds-react'
+import { Page, Theme } from '@navikt/ds-react'
 import type React from 'react'
 import { useState } from 'react'
 import {
@@ -142,7 +142,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <Page as="body">
         <Theme theme={isDarkmode ? 'dark' : 'light'} className={sketchmode ? styles.sketchMode : ''}>
           <Header
             me={me}
@@ -156,7 +156,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ScrollRestoration />
           <Scripts />
         </Theme>
-      </body>
+      </Page>
     </html>
   )
 }

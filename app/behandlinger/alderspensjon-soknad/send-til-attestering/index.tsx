@@ -44,7 +44,7 @@ export default function SendTilAttesteringRoute() {
       </Heading>
 
       <Form method="post">
-        <VStack gap="4" style={{ maxWidth: '10em' }}>
+        <VStack gap="2" width="10em">
           <Button type="submit" variant="primary" size="small">
             Send til attestering
           </Button>

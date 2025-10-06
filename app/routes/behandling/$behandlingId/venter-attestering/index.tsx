@@ -1,5 +1,5 @@
 import { CheckmarkCircleIcon } from '@navikt/aksel-icons'
-import { Button, Heading, HStack, VStack } from '@navikt/ds-react'
+import { Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
 import { redirect, useNavigate } from 'react-router'
 import type { Route } from './+types'
 
@@ -17,24 +17,26 @@ const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
   const { behandlingId } = loaderData
   const navigate = useNavigate()
   return (
-    <VStack gap="8">
-      <Heading size="medium" level="1">
-        <HStack align="center">
-          <CheckmarkCircleIcon />
-          Sendt til attestering
-        </HStack>
-      </Heading>
+    <Page.Block gutters>
+      <VStack gap="8" className="content">
+        <Heading size="medium" level="1">
+          <HStack align="center">
+            <CheckmarkCircleIcon />
+            Sendt til attestering
+          </HStack>
+        </Heading>
 
-      <VStack width="10em" gap="3">
-        <Button size="small" onClick={() => console.log}>
-          Til Oppgaveoversikt
-        </Button>
+        <VStack gap="2" width="10em">
+          <Button size="small" onClick={() => console.log}>
+            Til Oppgaveoversikt
+          </Button>
 
-        <Button size="small" variant="secondary" onClick={() => navigate(`/behandling/${behandlingId}/oppsummering`)}>
-          Se Oppsummering
-        </Button>
+          <Button size="small" variant="secondary" onClick={() => navigate(`/behandling/${behandlingId}/oppsummering`)}>
+            Se Oppsummering
+          </Button>
+        </VStack>
       </VStack>
-    </VStack>
+    </Page.Block>
   )
 }
 
