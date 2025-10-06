@@ -1,4 +1,4 @@
-import { BodyShort, Box, Button, Heading, HStack, Textarea, VStack } from '@navikt/ds-react'
+import { BodyShort, Box, Button, Heading, HStack, VStack } from '@navikt/ds-react'
 import React from 'react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'

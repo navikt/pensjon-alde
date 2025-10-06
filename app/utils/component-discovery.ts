@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: Trenger any for komponenter, siden man ikke vet hvordan grunnlag og vurdering ser ut */
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 
 export interface ComponentRegistryEntry {

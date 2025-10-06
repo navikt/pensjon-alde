@@ -46,8 +46,7 @@ const handlers = [
   }),
 
   // GET /api/saksbehandling/alde/behandling/:id/attesteringsdata
-  http.get('*/api/saksbehandling/alde/behandling/:id/attesteringsdata', ({ params, request }) => {
-    const { id } = params
+  http.get('*/api/saksbehandling/alde/behandling/:id/attesteringsdata', ({ request }) => {
     console.log(`🎯 MSW intercepted attestering request to: ${request.url}`)
 
     // Mock attestering data

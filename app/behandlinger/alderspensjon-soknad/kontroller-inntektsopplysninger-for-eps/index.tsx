@@ -81,7 +81,6 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   vurdering,
   grunnlag,
   aktivitet,
-  behandling,
   readOnly,
   avbrytAktivitet,
 }) => {

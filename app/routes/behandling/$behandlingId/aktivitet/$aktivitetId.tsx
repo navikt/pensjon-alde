@@ -53,8 +53,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       })
 
       const [grunnlag, vurdering] = await Promise.all([
-        aktivitetApi.hentGrunnlagsdata<any>().catch(() => null),
-        aktivitetApi.hentVurdering<any>().catch(() => null),
+        aktivitetApi
+          // biome-ignore lint/suspicious/noExplicitAny: Bare for debug, og vet ikke hvordan grunnlag ser ut for aktivitet
+          .hentGrunnlagsdata<any>()
+          .catch(() => null),
+        aktivitetApi
+          // biome-ignore lint/suspicious/noExplicitAny: Bare for debug, og vet ikke hvordan vurdering ser ut for aktivitet
+          .hentVurdering<any>()
+          .catch(() => null),
       ])
 
       debugData = { grunnlag, vurdering }

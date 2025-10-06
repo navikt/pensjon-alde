@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: Skal være satt */
 import type { ActionFunctionArgs } from 'react-router'
 import { authenticator, returnToCookie } from '~/auth/auth.server'
 import { isLocalEnv } from '~/utils/env.server'

@@ -1,9 +1,10 @@
+import type { MiddlewareFunction } from 'react-router'
 import { type SettingsContext, settingsContext } from '../context/settings-context'
 
 const COOKIE_NAME = 'alde-settings'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
 
-export async function settingsMiddleware({ request, context }: { request: Request; context: any }) {
+export const settingsMiddleware: MiddlewareFunction = async ({ request, context }) => {
   const cookieHeader = request.headers.get('cookie')
   let settings: SettingsContext = {
     showStepper: false,

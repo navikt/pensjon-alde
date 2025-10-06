@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: Skal være satt */
 import type { LoaderFunctionArgs } from 'react-router'
 import { redirect } from 'react-router'
 import { authenticator, returnToCookie, sessionStorage } from '~/auth/auth.server'

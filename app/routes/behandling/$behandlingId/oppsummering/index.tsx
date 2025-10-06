@@ -104,10 +104,11 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
               vurdering={aktivitet.vurdering}
               aktivitet={aktivitet.aktivitet}
               behandling={behandling}
+              avbrytAktivitet={() => {}}
             />
             <Box.New>
               Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />
-              Vudert tidspunkt: {aktivitet.vurdertTidspunkt}
+              Vurdert tidspunkt: {aktivitet.vurdertTidspunkt}
             </Box.New>
           </VStack>
         ) : null

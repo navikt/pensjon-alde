@@ -43,7 +43,7 @@ export const fetcher =
     const response = await fetch(`${BASE_URL}${url}`, mergedOptions)
 
     if (!response.ok) {
-      let errorBody: any = null
+      let errorBody = null
       const contentType = response.headers.get('content-type')
 
       if (contentType?.includes('application/json')) {

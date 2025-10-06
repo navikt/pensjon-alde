@@ -92,6 +92,7 @@ export async function requireAccessToken(request: Request) {
     const tokenResponse = await exchange(authorization?.substring('bearer '.length), env.penScope)
     return tokenResponse.access_token
   } else if (isLocalEnv) {
+    // biome-ignore lint/style/noNonNullAssertion: Skal være satt før man kommer hit
     const session = await sessionStorage!.getSession(request.headers.get('cookie'))
 
     if (!session.has('user')) {
