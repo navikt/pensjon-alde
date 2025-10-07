@@ -6,7 +6,7 @@ export function aktivitetApi(fetch: Fetcher) {
 
   const hentAttestering = <T>() => fetch<T>(`/attestering`, { method: 'GET' })
 
-  const lagreAttestering = <T>() => fetch<T>(`/attestering`, { method: 'POST' })
+  const lagreAttestering = () => fetch(`/attestering`, { method: 'POST' })
 
   const hentGrunnlagsdata = <T>() => fetch<T>(`/grunnlagsdata`, { method: 'GET' })
 
@@ -24,8 +24,8 @@ export function aktivitetApi(fetch: Fetcher) {
     }
   }
 
-  const lagreVurdering = <T>(vurdering: T) =>
-    fetch<T>(`/vurdering`, { method: 'POST', body: JSON.stringify({ data: vurdering }) })
+  const lagreVurdering = (vurdering: Record<string, any>) =>
+    fetch(`/vurdering`, { method: 'POST', body: JSON.stringify({ data: vurdering }) })
 
   const hentOutput = <T>() => fetch<T>(`/output`, { method: 'GET' })
 

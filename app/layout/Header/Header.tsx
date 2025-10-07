@@ -5,7 +5,7 @@ import type { Me } from '~/types/me'
 import './headers.css'
 
 interface Props {
-  environment: string
+  environment: string | null
   isDarkmode: boolean
   me: Me
   setDarkmode: (darkmode: boolean) => void
