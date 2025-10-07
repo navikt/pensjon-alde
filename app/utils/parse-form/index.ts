@@ -43,13 +43,13 @@ export const dateInput = (value: any): string | null => {
 
 export const radiogroup =
   <T extends string | boolean>(config: Record<string, T>) =>
-  (value: any): T => {
+  (value: any): T | null => {
     if (value === undefined || value === null || value === '') {
-      throw new Error('RadioGroup value is required')
+      return null
     }
 
     if (!(value in config)) {
-      throw new Error(`RadioGroup value "${value}" is not valid. Expected one of: ${Object.keys(config).join(', ')}`)
+      return null
     }
 
     return config[value]

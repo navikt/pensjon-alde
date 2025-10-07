@@ -13,10 +13,10 @@ import {
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
-import { Form, redirect, useOutletContext } from 'react-router'
+import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
-import type { AktivitetComponentProps } from '~/types/aktivitet-component'
+import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { toMonthAndYear } from '~/utils/date'
 import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
@@ -54,7 +54,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   })
   const formData = await request.formData()
 
-  const vurdering = parseForm<SamboerVurdering>(formData, {
+  const parsedForm = parseForm<SamboerVurdering>(formData, {
     samboerFra: dateInput,
     vurdering: radiogroup({
       SAMBOER_1_5: 'SAMBOER_1_5',
@@ -63,16 +63,38 @@ export async function action({ params, request }: Route.ActionArgs) {
     }),
   })
 
+  const errors: FormErrors<SamboerVurdering> = {}
+
+  if (parsedForm.vurdering === null) {
+    errors.vurdering = 'Påkrevd'
+  }
+
+  if (!parsedForm.samboerFra) {
+    errors.samboerFra = 'Påkrevd'
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return data({ errors }, { status: 400 })
+  }
+
   try {
-    await api.lagreVurdering<SamboerVurdering>(vurdering)
+    await api.lagreVurdering(parsedForm)
     return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
-  } catch (error) {
-    console.error(error)
+  } catch {
+    return data(
+      {
+        errors: {
+          _form: 'Det oppstod en feil ved lagring av vurderingen',
+        } as FormErrors<SamboerVurdering>,
+      },
+      { status: 500 },
+    )
   }
 }
 
-export default function VurderSamboerRoute({ loaderData }: Route.ComponentProps) {
+export default function VurderSamboerRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { samboerInformasjon, vurdering, readOnly } = loaderData
+  const { errors } = actionData || {}
 
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
@@ -84,18 +106,20 @@ export default function VurderSamboerRoute({ loaderData }: Route.ComponentProps)
       aktivitet={aktivitet}
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
+      errors={errors}
     />
   )
 }
 
-export function VurdereSamboerComponent({
+function VurdereSamboerComponent({
   grunnlag,
   aktivitet,
   vurdering,
   readOnly,
   avbrytAktivitet,
+  errors,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
-  const { datepickerProps, inputProps } = useDatepicker({
+  const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
     required: true,
   })
@@ -103,7 +127,7 @@ export function VurdereSamboerComponent({
   const { samboer, sokersBostedsadresser, soknad } = grunnlag
 
   const sidebar = (
-    <Form method="post" className="decision-form">
+    <Form method="post" className="decision-form" autoComplete="off">
       <div className="samboer-details"></div>
 
       <div className="samboer-assessment">
@@ -114,6 +138,7 @@ export function VurdereSamboerComponent({
             defaultValue={vurdering?.vurdering}
             readOnly={readOnly}
             size="small"
+            error={errors?.vurdering}
           >
             <Radio value="IKKE_SAMBOER">Ikke samboere</Radio>
             <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
@@ -127,6 +152,7 @@ export function VurdereSamboerComponent({
               readOnly={readOnly}
               label="Virkningstidspunkt fra"
               name="samboerFra"
+              error={errors?.samboerFra}
             />
           </DatePicker>
 
@@ -136,6 +162,12 @@ export function VurdereSamboerComponent({
             description="Kun ved behov for tilleggsopplysninger"
             rows={4}
           />*/}
+
+          {errors?._form && (
+            <Alert variant="error" className="mb-4">
+              {errors._form}
+            </Alert>
+          )}
 
           {!readOnly && (
             <VStack gap="3">
