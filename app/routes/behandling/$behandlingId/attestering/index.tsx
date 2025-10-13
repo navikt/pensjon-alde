@@ -1,6 +1,6 @@
 import { BodyShort, Box, Button, Heading, HStack, VStack } from '@navikt/ds-react'
 import React from 'react'
-import { useOutletContext } from 'react-router'
+import { redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -9,6 +9,7 @@ import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 import './attestering.css'
 import clsx from 'clsx'
+import { userContext } from '~/context/user-context'
 
 interface AktivitetTilAttestering {
   aktivitetId: number
@@ -44,8 +45,9 @@ const enhanceAttesteringAktivitet =
     }
   }
 
-export const loader = async ({ params, request }: Route.LoaderArgs) => {
+export const loader = async ({ params, request, context }: Route.LoaderArgs) => {
   const { behandlingId } = params
+  const { navident } = context.get(userContext)
   const behandlingApi = createBehandlingApi({
     request,
     behandlingId,
@@ -62,6 +64,10 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
       ...aktivitet,
       hasComponent: serverComponents.has(aktivitet.handlerName),
     }))
+
+  if (behandling.sisteSaksbehandlerNavident === navident) {
+    return redirect(`/behandling/${behandlingId}/venter-attestering`)
+  }
 
   return {
     aktiviteter: parsedData,

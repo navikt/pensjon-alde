@@ -12,19 +12,20 @@ import {
   Links,
   type LoaderFunctionArgs,
   Meta,
+  type MiddlewareFunction,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
 } from 'react-router'
-import type { Me } from '~/types/me'
 import { buildUrl } from '~/utils/build-url'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
 import type { Route } from './+types/root'
-import { requireAccessToken } from './auth/auth.server'
 import { settingsContext } from './context/settings-context'
+import { type UserContext, userContext } from './context/user-context'
 import { Header } from './layout/Header/Header'
 import { settingsMiddleware } from './middleware/settings'
+import { userMiddleware } from './middleware/user-middleware'
 import styles from './root.module.css'
 
 // Initialize mocking and auth in mock environment
@@ -34,24 +35,13 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
   })
 }
 
-export const middleware: Route.MiddlewareFunction[] = [settingsMiddleware]
+export const middleware: MiddlewareFunction[] = [settingsMiddleware, userMiddleware]
 
 export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  const token = await requireAccessToken(request)
-
-  const penUrl = `${env.penUrl}/api/saksbehandling/alde`
-
   const environment =
     process.env.NODE_ENV === 'development' ? 'dev' : process.env.NAIS_CLUSTER_NAME === 'dev-gcp' ? 'q2' : null
 
-  // Fetch me data using token from context
-  const meResponse = await fetch(`${penUrl}/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  })
-  const me: Me = await meResponse.json()
+  const me: UserContext = context.get(userContext)
 
   const darkmode = await createCookie('darkmode').parse(request.headers.get('cookie'))
   const { kladdemodus } = context.get(settingsContext)

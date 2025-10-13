@@ -1,13 +1,13 @@
 import { CogIcon, ExternalLinkIcon, MenuGridIcon, MoonIcon, SunIcon } from '@navikt/aksel-icons'
 import { ActionMenu, BodyShort, Detail, Dropdown, Heading, InternalHeader, Spacer } from '@navikt/ds-react'
 import { Link, useLocation } from 'react-router'
-import type { Me } from '~/types/me'
 import './headers.css'
+import type { UserContext } from '~/context/user-context'
 
 interface Props {
   environment: string | null
   isDarkmode: boolean
-  me: Me
+  me: UserContext
   setDarkmode: (darkmode: boolean) => void
   verdandeAktivitetUrl: string | undefined
   verdandeBehandlingUrl: string | undefined
