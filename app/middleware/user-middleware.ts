@@ -4,6 +4,10 @@ import { type UserContext, userContext } from '~/context/user-context'
 import { env } from '~/utils/env.server'
 
 export const userMiddleware: MiddlewareFunction = async ({ request, context }) => {
+  const url = new URL(request.url)
+  if (url.pathname.includes('/auth')) {
+    return
+  }
   const token = await requireAccessToken(request)
   const penUrl = `${env.penUrl}/api/saksbehandling/alde`
 
