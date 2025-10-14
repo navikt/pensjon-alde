@@ -1,6 +1,6 @@
 import { BodyShort, Box, Button, Heading, HStack, VStack } from '@navikt/ds-react'
 import React from 'react'
-import { redirect, useOutletContext } from 'react-router'
+import { Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -74,7 +74,11 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
   }
 }
 
-export const action = async () => {
+export const action = async ({ params, request }: Route.ActionArgs) => {
+  const { behandlingId } = params
+
+  const behandlingApi = createBehandlingApi({ request, behandlingId })
+  await behandlingApi.attester()
   return null
 }
 
@@ -180,18 +184,20 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
 
               <div>
                 {Object.keys(attesteringer).length === aktiviteter.length && (
-                  <HStack gap="1">
-                    <Button className="ferdigstill" onClick={console.log}>
-                      Ferdigstill attestering
-                    </Button>
-                    <Button
-                      className="ferdigstill"
-                      variant="secondary"
-                      onClick={() => setAttestering({ type: 'RESET' })}
-                    >
-                      Reset attestering
-                    </Button>
-                  </HStack>
+                  <Form method="post">
+                    <HStack gap="1">
+                      <Button type="submit" className="ferdigstill">
+                        Ferdigstill attestering
+                      </Button>
+                      <Button
+                        className="ferdigstill"
+                        variant="secondary"
+                        onClick={() => setAttestering({ type: 'RESET' })}
+                      >
+                        Reset attestering
+                      </Button>
+                    </HStack>
+                  </Form>
                 )}
               </div>
             </div>

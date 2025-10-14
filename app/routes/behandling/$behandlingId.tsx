@@ -20,6 +20,7 @@ import { Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from '
 import { createBehandlingApi } from '~/api/behandling-api'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
+import { userContext } from '~/context/user-context'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
@@ -33,6 +34,7 @@ export function meta({ params }: Route.MetaArgs) {
 export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
   const url = new URL(request.url)
+  const { navident } = context.get(userContext)
 
   const { showStepper, showMetadata } = context.get(settingsContext)
   const justCompletedId = url.searchParams.get('justCompleted')
@@ -64,7 +66,10 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   if (!aktivitetSomSkalVises && behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isOppsummering) {
     return redirect(`/behandling/${behandlingId}/oppsummering`)
   } else if (!isException) {
-    if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING) {
+    if (
+      behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING &&
+      behandling.sisteSaksbehandlerNavident === navident
+    ) {
       return redirect(`/behandling/${behandlingId}/venter-attestering`)
     }
 

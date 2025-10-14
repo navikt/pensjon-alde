@@ -10,10 +10,13 @@ export function behandlingApi(fetch: Fetcher) {
 
   const hentAttesteringsdata = () => fetch<Attesteringsdata>('/attesteringsdata', { method: 'GET' })
 
+  const attester = () => fetch<void>('/attester', { method: 'POST' })
+
   return {
     avbrytBehandling,
     hentBehandling,
     hentAttesteringsdata,
+    attester,
   }
 }
 
