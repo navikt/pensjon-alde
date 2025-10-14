@@ -68,6 +68,7 @@ export type VurderSamboerGrunnlag = {
   sokersBostedsadresser: Bostedsadresse[]
   samboer: SamboerInformasjon
   soknad: Soknad | null
+  kravOnsketVirkningsdato: string | null
 }
 
 export type SamboerInformasjon = {

@@ -18,7 +18,7 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { toMonthAndYear } from '~/utils/date'
+import { formatDateToNorwegian, toMonthAndYear } from '~/utils/date'
 import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
@@ -124,7 +124,7 @@ function VurdereSamboerComponent({
     required: true,
   })
 
-  const { samboer, sokersBostedsadresser, soknad } = grunnlag
+  const { samboer, sokersBostedsadresser, soknad, kravOnsketVirkningsdato } = grunnlag
 
   const sidebar = (
     <Form method="post" className="decision-form" autoComplete="off">
@@ -150,7 +150,7 @@ function VurdereSamboerComponent({
               {...inputProps}
               size="small"
               readOnly={readOnly}
-              label="Virkningstidspunkt fra"
+              label="Fra og med"
               name="samboerFra"
               error={errors?.samboerFra}
             />
@@ -187,6 +187,15 @@ function VurdereSamboerComponent({
 
   return (
     <AktivitetVurderingLayout aktivitet={aktivitet} sidebar={sidebar}>
+      <AktivitetVurderingLayout.Section>
+        <VStack>
+          <Heading size={'xsmall'} level="2">
+            Søkt om alderspensjon fra
+          </Heading>
+          {formatDateToNorwegian(kravOnsketVirkningsdato)}
+        </VStack>
+      </AktivitetVurderingLayout.Section>
+
       <AktivitetVurderingLayout.Section>
         <VStack>
           <Heading size="xsmall" level="2">
