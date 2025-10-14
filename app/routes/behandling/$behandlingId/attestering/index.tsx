@@ -79,7 +79,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 
   const behandlingApi = createBehandlingApi({ request, behandlingId })
   await behandlingApi.attester()
-  return null
+  return redirect(`/behandling/${behandlingId}/oppsummering`)
 }
 
 enum AttesteringUtfall {
