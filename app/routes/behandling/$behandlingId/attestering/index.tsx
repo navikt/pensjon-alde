@@ -143,34 +143,6 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
             <VStack gap="6">
-              <div className={clsx('attestant', attesteringer[aktivitet.handlerName])}>
-                <Button
-                  size="small"
-                  className="godkjenn"
-                  onClick={() =>
-                    setAttestering({
-                      type: 'SET',
-                      handlerName: aktivitet.handlerName,
-                      status: AttesteringUtfall.GODKJENT,
-                    })
-                  }
-                >
-                  Godkjenn
-                </Button>
-                <Button
-                  size="small"
-                  className="underkjenn"
-                  onClick={() =>
-                    setAttestering({
-                      type: 'SET',
-                      handlerName: aktivitet.handlerName,
-                      status: AttesteringUtfall.UNDERKJENT,
-                    })
-                  }
-                >
-                  Underkjenn
-                </Button>
-              </div>
               <Box.New>
                 Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />
                 Vudert tidspunkt: {aktivitet.vurdertTidspunkt}
@@ -178,27 +150,14 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
             </VStack>
             <div className="ferdigstill-attestering">
               <div />
-              <BodyShort size="large" weight="semibold">
-                {Object.keys(attesteringer).length} av {aktiviteter.length} aktiviteter attestert
-              </BodyShort>
-
               <div>
-                {Object.keys(attesteringer).length === aktiviteter.length && (
-                  <Form method="post">
-                    <HStack gap="1">
-                      <Button type="submit" className="ferdigstill">
-                        Ferdigstill attestering
-                      </Button>
-                      <Button
-                        className="ferdigstill"
-                        variant="secondary"
-                        onClick={() => setAttestering({ type: 'RESET' })}
-                      >
-                        Reset attestering
-                      </Button>
-                    </HStack>
-                  </Form>
-                )}
+                <Form method="post">
+                  <HStack gap="1">
+                    <Button type="submit" className="ferdigstill">
+                      Godkjenn attestering
+                    </Button>
+                  </HStack>
+                </Form>
               </div>
             </div>
           </div>
