@@ -34,7 +34,6 @@ export interface AktivitetDTO {
   sisteAktiveringsdato: string // LocalDateTime as ISO string
   status: AktivitetStatus
   utsattTil: string | null // LocalDateTime as ISO string
-  trengerAttestering: boolean
 }
 
 export interface BehandlingDTO {

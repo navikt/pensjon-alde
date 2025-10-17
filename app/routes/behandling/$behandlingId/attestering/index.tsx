@@ -59,7 +59,7 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
 
   const parsedData = attesteringData.aktiviter
     .map(enhanceAttesteringAktivitet(behandling))
-    .filter(aktivitet => (aktivitet.grunnlag || aktivitet.vurdering) && aktivitet.aktivitet.trengerAttestering)
+    .filter(aktivitet => aktivitet.grunnlag || aktivitet.vurdering)
     .map(aktivitet => ({
       ...aktivitet,
       hasComponent: serverComponents.has(aktivitet.handlerName),
