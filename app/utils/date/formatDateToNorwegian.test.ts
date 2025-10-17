@@ -35,4 +35,20 @@ describe('formatDateToNorwegian', () => {
     expect(formatDateToNorwegian('2025-01-05')).toBe('05.01.2025')
     expect(formatDateToNorwegian(new Date(2025, 0, 9))).toBe('09.01.2025')
   })
+
+  it('displays time when showTime option is true', () => {
+    const testDate = new Date(2025, 11, 24, 14, 30)
+    expect(formatDateToNorwegian(testDate, { showTime: true })).toBe('24.12.2025 14:30')
+    expect(formatDateToNorwegian('2025-12-24T16:49:34.37642', { showTime: true })).toBe('24.12.2025 16:49')
+  })
+
+  it('ignores showTime option when it is false', () => {
+    const testDate = new Date(2025, 11, 24, 14, 30)
+    expect(formatDateToNorwegian(testDate, { showTime: false })).toBe('24.12.2025')
+  })
+
+  it('ignores empty options object', () => {
+    const testDate = new Date(2025, 11, 24, 14, 30)
+    expect(formatDateToNorwegian(testDate, {})).toBe('24.12.2025')
+  })
 })

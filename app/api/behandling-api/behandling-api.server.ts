@@ -1,4 +1,4 @@
-import type { BehandlingDTO } from '~/types/behandling'
+import type { BehandlingDTO, ReturnerTilSaksbehandlerDTO } from '~/types/behandling'
 import type { Fetcher } from '../api-client'
 import type { Attesteringsdata } from './types'
 
@@ -12,11 +12,15 @@ export function behandlingApi(fetch: Fetcher) {
 
   const attester = () => fetch<void>('/attester', { method: 'POST' })
 
+  const returnerTilSaksbehandler = (begrunnelse: string) =>
+    fetch('/returner', { method: 'POST', body: JSON.stringify({ begrunnelse }) })
+
   return {
-    avbrytBehandling,
-    hentBehandling,
-    hentAttesteringsdata,
     attester,
+    avbrytBehandling,
+    hentAttesteringsdata,
+    hentBehandling,
+    returnerTilSaksbehandler,
   }
 }
 

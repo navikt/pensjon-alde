@@ -5,9 +5,14 @@ import { format, isValid, parseISO } from 'date-fns'
  * Accepts ISO strings, Date objects, or timestamps.
  *
  * @param date - The date to format (ISO string, Date, or number)
- * @returns Formatted date string in "dd.MM.yyyy" or empty string if invalid
+ * @param options - Optional configuration object
+ * @param options.showTime - If true, adds time in 24-hour format (HH:mm)
+ * @returns Formatted date string in "dd.MM.yyyy" or "dd.MM.yyyy HH:mm" if showTime is true, or empty string if invalid
  */
-export function formatDateToNorwegian(date: string | Date | number | null | undefined): string {
+export function formatDateToNorwegian(
+  date: string | Date | number | null | undefined,
+  options?: { showTime?: boolean },
+): string {
   if (!date) return ''
 
   let dateObj: Date
@@ -30,5 +35,5 @@ export function formatDateToNorwegian(date: string | Date | number | null | unde
 
   if (!isValid(dateObj)) return ''
 
-  return format(dateObj, 'dd.MM.yyyy')
+  return format(dateObj, options?.showTime ? 'dd.MM.yyyy HH:mm' : 'dd.MM.yyyy')
 }

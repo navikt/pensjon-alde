@@ -60,3 +60,7 @@ export interface BehandlingDTO {
   etternavn: string | null
   fodselsdato: string | null // LocalDate as ISO string
 }
+
+export interface ReturnerTilSaksbehandlerDTO {
+  begrunnelse: string
+}

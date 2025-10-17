@@ -1,4 +1,16 @@
-import { BodyShort, Box, Button, Heading, HStack, VStack } from '@navikt/ds-react'
+import {
+  Box,
+  Button,
+  Dropdown,
+  Heading,
+  HStack,
+  Label,
+  Page,
+  Radio,
+  RadioGroup,
+  Textarea,
+  VStack,
+} from '@navikt/ds-react'
 import React from 'react'
 import { Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
@@ -10,6 +22,7 @@ import type { Route } from './+types'
 import './attestering.css'
 import clsx from 'clsx'
 import { userContext } from '~/context/user-context'
+import { formatDateToNorwegian } from '~/utils/date'
 
 interface AktivitetTilAttestering {
   aktivitetId: number
@@ -74,95 +87,113 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
   }
 }
 
+enum AttesteringUtfall {
+  GODKJENT = 'GODKJENT',
+  IKKE_GODKJENT = 'IKKE_GODKJENT',
+}
+
 export const action = async ({ params, request }: Route.ActionArgs) => {
   const { behandlingId } = params
 
+  const formData = await request.formData()
+  const attesteringUtfall = formData.get('utfall') as AttesteringUtfall
+
   const behandlingApi = createBehandlingApi({ request, behandlingId })
-  await behandlingApi.attester()
+  if (attesteringUtfall === AttesteringUtfall.GODKJENT) {
+    await behandlingApi.attester()
+  } else if (attesteringUtfall === AttesteringUtfall.IKKE_GODKJENT) {
+    const begrunnelse = formData.get('begrunnelse') as string
+    if (begrunnelse) {
+      await behandlingApi.returnerTilSaksbehandler(begrunnelse)
+    } else {
+      throw new Error('Begrunnelse må fylles ut')
+    }
+  }
+
   return redirect(`/behandling/${behandlingId}/oppsummering`)
-}
-
-enum AttesteringUtfall {
-  GODKJENT = 'godkjent',
-  UNDERKJENT = 'underkjent',
-}
-
-interface AttesteringAction {
-  type: 'SET' | 'RESET'
-  handlerName?: string
-  status?: AttesteringUtfall
 }
 
 export default function Attestering({ loaderData }: Route.ComponentProps) {
   const { aktiviteter } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
 
-  const [attesteringer, setAttestering] = React.useReducer(
-    (state: Record<string, AttesteringUtfall>, action: AttesteringAction) => {
-      if (action.type === 'RESET') {
-        return {}
-      }
-      if (action.type === 'SET' && action.handlerName && action.status) {
-        return {
-          ...state,
-          [action.handlerName]: action.status,
-        }
-      }
-      return state
-    },
-    {},
-  )
-
   const components = getAllServerComponents()
 
-  return (
-    <VStack gap="5">
-      <Heading level="1" size="large">
-        Oppgaven er til attestering
-      </Heading>
+  // biome-ignore lint/correctness/noNestedComponentDefinitions: <explanation>
+  const AktivitetAttestering = () => {
+    const [utfall, setUtfall] = React.useState<AttesteringUtfall>()
 
-      {aktiviteter.map(aktivitet => {
-        const Component = components.get(aktivitet.handlerName)
-
-        return Component ? (
-          <div
-            id={aktivitet.handlerName}
-            key={aktivitet.aktivitetId}
-            className={clsx('attestering', attesteringer[aktivitet.handlerName])}
-          >
-            <div className="component-area">
-              <div className={clsx('bar', attesteringer[aktivitet.handlerName])} />
-              <div className="component">
-                <Component
-                  readOnly={true}
-                  grunnlag={aktivitet.grunnlag}
-                  vurdering={aktivitet.vurdering}
-                  aktivitet={aktivitet.aktivitet}
-                  behandling={behandling}
-                />
-              </div>
-            </div>
-            <VStack gap="6">
-              <Box.New>
-                Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />
-                Vudert tidspunkt: {aktivitet.vurdertTidspunkt}
-              </Box.New>
+    return (
+      <Box.New as="div" paddingBlock="space-48 0">
+        <VStack gap="space-48">
+          <Dropdown.Menu.Divider />
+          <Form method="POST">
+            <VStack gap="5">
+              <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall}>
+                <Radio size="small" value={AttesteringUtfall.GODKJENT}>
+                  Godkjent
+                </Radio>
+                <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENT}>
+                  Ikke godkjent
+                </Radio>
+              </RadioGroup>
+              {utfall === AttesteringUtfall.IKKE_GODKJENT && (
+                <Textarea size="small" label="Begrunnelse" name="begrunnelse" />
+              )}
+              {utfall && (
+                <Button size="small" type="submit">
+                  {utfall === AttesteringUtfall.IKKE_GODKJENT ? 'Returner til saksbehandler' : 'Iverksett'}
+                </Button>
+              )}
             </VStack>
-            <div className="ferdigstill-attestering">
-              <div />
-              <div>
-                <Form method="post">
-                  <HStack gap="1">
-                    <Button type="submit" className="ferdigstill">
-                      Godkjenn attestering
-                    </Button>
-                  </HStack>
-                </Form>
+          </Form>
+        </VStack>
+      </Box.New>
+    )
+  }
+
+  return (
+    <Page.Block gutters>
+      <VStack gap="5">
+        <Heading level="1" size="large">
+          Oppgaven er til attestering
+        </Heading>
+
+        {aktiviteter.map(aktivitet => {
+          const Component = components.get(aktivitet.handlerName)
+
+          return Component ? (
+            <div id={aktivitet.handlerName} key={aktivitet.aktivitetId}>
+              <Box.New padding="2">
+                <HStack gap="8">
+                  <VStack>
+                    <Label>Vurdert av</Label>
+                    <div>
+                      {aktivitet.vurdertAvBrukerNavn} ({aktivitet.vurdertAvBrukerId})
+                    </div>
+                  </VStack>
+                  <VStack>
+                    <Label>Tidspunkt for vurdering</Label>
+                    <div>{formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}</div>
+                  </VStack>
+                </HStack>
+              </Box.New>
+              <div className="component-area">
+                <div className="component">
+                  <Component
+                    readOnly={true}
+                    grunnlag={aktivitet.grunnlag}
+                    vurdering={aktivitet.vurdering}
+                    aktivitet={aktivitet.aktivitet}
+                    behandling={behandling}
+                    AttesteringKomponent={<AktivitetAttestering />}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        ) : null
-      })}
-    </VStack>
+          ) : null
+        })}
+      </VStack>
+    </Page.Block>
   )
 }

@@ -107,6 +107,7 @@ export default function VurderSamboerRoute({ loaderData, actionData }: Route.Com
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
       errors={errors}
+      AttesteringKomponent={null}
     />
   )
 }
@@ -118,6 +119,7 @@ function VurdereSamboerComponent({
   readOnly,
   avbrytAktivitet,
   errors,
+  AttesteringKomponent,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
@@ -127,62 +129,65 @@ function VurdereSamboerComponent({
   const { samboer, sokersBostedsadresser, soknad, kravOnsketVirkningsdato } = grunnlag
 
   const sidebar = (
-    <Form method="post" className="decision-form" autoComplete="off">
-      <div className="samboer-details"></div>
+    <div>
+      <Form method="post" className="decision-form" autoComplete="off">
+        <div className="samboer-details"></div>
 
-      <div className="samboer-assessment">
-        <VStack gap="6">
-          <RadioGroup
-            legend="Vurder samboerskap"
-            name="vurdering"
-            defaultValue={vurdering?.vurdering}
-            readOnly={readOnly}
-            size="small"
-            error={errors?.vurdering}
-          >
-            <Radio value="IKKE_SAMBOER">Ikke samboere</Radio>
-            <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
-            <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
-          </RadioGroup>
-
-          <DatePicker dropdownCaption {...datepickerProps}>
-            <DatePicker.Input
-              {...inputProps}
-              size="small"
+        <div className="samboer-assessment">
+          <VStack gap="6">
+            <RadioGroup
+              legend="Vurder samboerskap"
+              name="vurdering"
+              defaultValue={vurdering?.vurdering}
               readOnly={readOnly}
-              label="Fra og med"
-              name="samboerFra"
-              error={errors?.samboerFra}
-            />
-          </DatePicker>
+              size="small"
+              error={errors?.vurdering}
+            >
+              <Radio value="IKKE_SAMBOER">Ikke samboere</Radio>
+              <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
+              <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
+            </RadioGroup>
 
-          {/*<Textarea
+            <DatePicker dropdownCaption {...datepickerProps}>
+              <DatePicker.Input
+                {...inputProps}
+                size="small"
+                readOnly={readOnly}
+                label="Fra og med"
+                name="samboerFra"
+                error={errors?.samboerFra}
+              />
+            </DatePicker>
+
+            {/*<Textarea
             readOnly={readOnly}
             label="Kommentar samboervurdering"
             description="Kun ved behov for tilleggsopplysninger"
             rows={4}
           />*/}
 
-          {errors?._form && (
-            <Alert variant="error" className="mb-4">
-              {errors._form}
-            </Alert>
-          )}
+            {errors?._form && (
+              <Alert variant="error" className="mb-4">
+                {errors._form}
+              </Alert>
+            )}
 
-          {!readOnly && (
-            <VStack gap="3">
-              <Button type="submit" variant="primary" size="small">
-                Lagre vurdering
-              </Button>
+            {!readOnly && (
+              <VStack gap="3">
+                <Button type="submit" variant="primary" size="small">
+                  Lagre vurdering
+                </Button>
 
-              <Button type="reset" variant="secondary" size="small" onClick={avbrytAktivitet}>
-                Avbryt
-              </Button>
-            </VStack>
-          )}
-        </VStack>
-      </div>
-    </Form>
+                <Button type="reset" variant="secondary" size="small" onClick={avbrytAktivitet}>
+                  Avbryt
+                </Button>
+              </VStack>
+            )}
+          </VStack>
+        </div>
+      </Form>
+      {AttesteringKomponent}
+    </div>
   )
 
   return (

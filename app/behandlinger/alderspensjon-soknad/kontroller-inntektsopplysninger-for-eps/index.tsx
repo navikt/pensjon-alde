@@ -68,6 +68,7 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
       aktivitet={aktivitet}
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
+      AttesteringKomponent={null}
     />
   )
 }
