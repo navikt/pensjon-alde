@@ -96,7 +96,9 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
             <Detail>
               <strong>Aktivitet:</strong> {aktivitet.friendlyName}
             </Detail>
-
+            <Detail>
+              <strong>Type:</strong> {aktivitet.type}
+            </Detail>
             <Detail>
               <strong>Behandling:</strong> {behandling.friendlyName}
             </Detail>
