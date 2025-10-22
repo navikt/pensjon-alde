@@ -16,7 +16,7 @@ import { Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
+import { type AktivitetDTO, AldeBehandlingStatus, type BehandlingDTO } from '~/types/behandling'
 import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 import './attestering.css'
@@ -79,10 +79,12 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
 
   if (behandling.sisteSaksbehandlerNavident === navident) {
     return redirect(`/behandling/${behandlingId}/venter-attestering`)
-  }
-
-  return {
-    aktiviteter: parsedData,
+  } else if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_ATTESTERING) {
+    return redirect(`/behandling/${behandlingId}`)
+  } else {
+    return {
+      aktiviteter: parsedData,
+    }
   }
 }
 
