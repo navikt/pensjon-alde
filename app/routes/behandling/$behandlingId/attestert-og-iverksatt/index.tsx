@@ -15,7 +15,7 @@ export const loader: Loader = async ({ request, params }) => {
 
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
-  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING) {
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING || AldeBehandlingStatus.FULLFORT) {
     return { behandlingId, psakOppgaveoversikt }
   } else {
     return redirect(`/behandling/${behandlingId}`)
