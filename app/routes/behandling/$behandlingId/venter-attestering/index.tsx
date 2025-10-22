@@ -4,19 +4,23 @@ import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
 import { AldeBehandlingStatus } from '~/types/behandling'
+import { buildUrl } from '~/utils/build-url'
 import { env } from '~/utils/env.server'
 import type { Route } from './+types'
 
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
   const { behandlingId } = params
-  const { psakOppgaveoversikt } = env
 
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
   if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_ATTESTERING) {
     return redirect(`/behandling/${behandlingId}`)
   } else {
-    return { behandlingId, psakOppgaveoversikt }
+    return {
+      behandlingId,
+      psakOppgaveoversikt: env.psakOppgaveoversikt,
+      psakPensjonsoversikt: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
+    }
   }
 }
 
