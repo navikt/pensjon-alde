@@ -55,6 +55,10 @@ export function getRedirectPath({
     return `/behandling/${behandlingId}/avbrutt-automatisk`
   }
 
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.AVBRUTT_AV_BRUKER) {
+    return `/behandling/${behandlingId}/avbrutt-manuelt`
+  }
+
   if (
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING &&
     behandling.sisteSaksbehandlerNavident === navident
@@ -153,7 +157,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     begrunnelse: formData.get('begrunnelse')?.toString(),
   })
 
-  return redirect(`/behandling/${behandlingId}/oppsummering`)
+  return redirect(`/behandling/${behandlingId}`)
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {

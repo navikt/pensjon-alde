@@ -21,13 +21,13 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   }
 }
 
-const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
+const AvbruttAutomatisk = ({ loaderData }: Route.ComponentProps) => {
   const { pensjonsoversiktUrl } = loaderData
   return (
     <Page.Block gutters className={commonStyles.page}>
       <VStack gap="8">
         <Heading size="medium" level="1">
-          Behandlingen i pilot er avbrutt
+          Kravet kan ikke behandles i pilot
         </Heading>
 
         <HStack gap="2" justify="center">
@@ -40,4 +40,4 @@ const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
   )
 }
 
-export default Avbrutt
+export default AvbruttAutomatisk
