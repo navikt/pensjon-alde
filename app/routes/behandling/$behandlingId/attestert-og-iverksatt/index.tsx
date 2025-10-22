@@ -15,11 +15,10 @@ export const loader: Loader = async ({ request, params }) => {
 
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
-  // TODO: Logikk for at aktiviteten sitt utfall er ATTESTERT, elns.
-  if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.FULLFORT) {
-    return redirect(`/behandling/${behandlingId}`)
-  } else {
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING) {
     return { behandlingId, psakOppgaveoversikt }
+  } else {
+    return redirect(`/behandling/${behandlingId}`)
   }
 }
 

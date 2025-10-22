@@ -12,7 +12,7 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import React from 'react'
-import { Form, redirect, useOutletContext } from 'react-router'
+import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -97,40 +97,52 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
   const { behandlingId } = params
 
   const formData = await request.formData()
-  const attesteringUtfall = formData.get('utfall') as AttesteringUtfall
+  const utfall = formData.get('utfall') as AttesteringUtfall
 
   const behandlingApi = createBehandlingApi({ request, behandlingId })
-  if (attesteringUtfall === AttesteringUtfall.GODKJENT) {
+  if (utfall === AttesteringUtfall.GODKJENT) {
     await behandlingApi.attester()
-  } else if (attesteringUtfall === AttesteringUtfall.IKKE_GODKJENT) {
+    return redirect(`/behandling/${behandlingId}/attestert-og-iverksatt`)
+  } else if (utfall === AttesteringUtfall.IKKE_GODKJENT) {
     const begrunnelse = formData.get('begrunnelse') as string
+
     if (begrunnelse) {
       await behandlingApi.returnerTilSaksbehandler(begrunnelse)
+      return redirect(`/behandling/${behandlingId}/avbrutt-automatisk`)
     } else {
-      throw new Error('Begrunnelse må fylles ut')
+      return data(
+        {
+          errors: { begrunnelse: 'Begrunnelse må fylles ut' },
+          data: {
+            utfall,
+            begrunnelse,
+          },
+        },
+        { status: 400 },
+      )
     }
   }
-
-  return redirect(`/behandling/${behandlingId}/attestert-og-iverksatt`)
 }
 
-export default function Attestering({ loaderData }: Route.ComponentProps) {
+export default function Attestering({ loaderData, actionData }: Route.ComponentProps) {
   const { aktiviteter } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
+  const { errors, data } = actionData || {}
 
   const components = getAllServerComponents()
+  const [utfall, setUtfall] = React.useState<AttesteringUtfall | undefined>(data?.utfall)
+
+  const begrunnelseRef = React.useRef<HTMLFieldSetElement>(null)
 
   // biome-ignore lint/correctness/noNestedComponentDefinitions: <explanation>
   const AktivitetAttestering = () => {
-    const [utfall, setUtfall] = React.useState<AttesteringUtfall>()
-
     return (
       <Box.New as="div" paddingBlock="space-48 0">
         <VStack gap="space-48">
           <Dropdown.Menu.Divider />
           <Form method="POST">
-            <VStack gap="5">
-              <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall}>
+            <VStack gap="space-40">
+              <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
                 <Radio size="small" value={AttesteringUtfall.GODKJENT}>
                   Godkjent
                 </Radio>
@@ -139,7 +151,31 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
                 </Radio>
               </RadioGroup>
               {utfall === AttesteringUtfall.IKKE_GODKJENT && (
-                <Textarea size="small" label="Begrunnelse" name="begrunnelse" />
+                <Box.New paddingInline="space-20 0">
+                  <RadioGroup
+                    ref={begrunnelseRef}
+                    legend="Velg begrunnelse"
+                    name="begrunnelse"
+                    error={errors?.begrunnelse}
+                    defaultValue={data?.begrunnelse}
+                  >
+                    <Radio size="small" value="Feil i vedtak">
+                      Feil i vedtak
+                    </Radio>
+
+                    <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
+                      Forvaltningsnotat utilstrekkelig
+                    </Radio>
+
+                    <Radio size="small" value="Hent inn nytt grunnlag">
+                      Hent inn nytt grunnlag
+                    </Radio>
+
+                    <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
+                      Saksbehandlerstandard ikke fulgt
+                    </Radio>
+                  </RadioGroup>
+                </Box.New>
               )}
               {utfall && (
                 <Button size="small" type="submit">
