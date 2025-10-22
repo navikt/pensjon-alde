@@ -1,10 +1,11 @@
 import { RobotSmileIcon } from '@navikt/aksel-icons'
 import { BodyShort, HStack, Label, Loader, VStack } from '@navikt/ds-react'
 import './loader.css'
+import commonStyles from '~/common.module.css'
 
 export const AldeLoader = () => {
   return (
-    <HStack gap="4" justify="center" align="center" className="loader">
+    <HStack gap="4" justify="center" align="center" className={`loader ${commonStyles.page}`}>
       <div>
         <RobotSmileIcon className="robot-smile" fontSize="2.2em" />
         <Loader size="3xlarge" />

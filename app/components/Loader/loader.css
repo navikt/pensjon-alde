@@ -1,6 +1,4 @@
 .loader {
-  min-height: 30vh;
-
   .robot-smile {
     color: var(--ax-bg-info-strong);
     position: relative;
