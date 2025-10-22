@@ -13,6 +13,7 @@ pen:
 
 psak:
   sak_url_template: 'https://pensjon-psak-q2.dev.adeo.no/psak/sak/sakId={sakId}'
+  oppgaveoversikt: 'https://pensjon-psak-q2.dev.adeo.no/psak'
 
 verdande:
   links_enabled: true
