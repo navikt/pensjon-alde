@@ -32,6 +32,7 @@ export const env = loadEnv({
   penUrl: 'PEN_URL',
 
   psakSakUrlTemplate: 'PSAK_SAK_URL_TEMPLATE',
+  psakOppgaveoversikt: 'PSAK_OPPGAVEOVERSIKT',
 
   verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
   verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',

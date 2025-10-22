@@ -44,6 +44,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')
+  const isAttestertOgIverksatt = url.pathname.includes('/attestert-og-iverksatt')
   const isManueltAvbrutt = url.pathname.includes('/avbrutt-manuelt')
   const isAutomatiskAvbrutt = url.pathname.includes('/avbrutt-automatisk')
   const isSendTilAttestering = url.pathname.includes('/send-til-attestering')
@@ -55,7 +56,8 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     isManueltAvbrutt ||
     isAutomatiskAvbrutt ||
     isSendTilAttestering ||
-    isVenterAttestering
+    isVenterAttestering ||
+    isAttestertOgIverksatt
 
   const behandlingJobber =
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
@@ -63,11 +65,15 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
   function getRedirectPath() {
     // Oppsummering
-    if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isOppsummering) {
+    if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isException) {
       return `/behandling/${behandlingId}/oppsummering`
     }
     // Avbrutt automatisk
-    if (!isAutomatiskAvbrutt && behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL) {
+    if (
+      !isAutomatiskAvbrutt &&
+      behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL &&
+      !isException
+    ) {
       return `/behandling/${behandlingId}/avbrutt-automatisk`
     }
     // Venter attestering

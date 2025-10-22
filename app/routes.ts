@@ -47,6 +47,7 @@ export default [
     route('avbrutt-manuelt', 'routes/behandling/$behandlingId/avbrutt-manuelt/index.tsx'),
     route('avbrutt-automatisk', 'routes/behandling/$behandlingId/avbrutt-automatisk/index.tsx'),
     route('venter-attestering', 'routes/behandling/$behandlingId/venter-attestering/index.tsx'),
+    route('attestert-og-iverksatt', 'routes/behandling/$behandlingId/attestert-og-iverksatt/index.tsx'),
 
     // The main aktivitet route that handles redirection to the correct implementation
     route(

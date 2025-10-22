@@ -1,6 +1,7 @@
-import { Button, Heading, VStack } from '@navikt/ds-react'
+import { Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
 import { Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
+import styles from '~/common.module.css'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import type { Route } from './+types'
 
@@ -38,22 +39,24 @@ export default function SendTilAttesteringRoute() {
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
   return (
-    <VStack gap="8">
-      <Heading size="medium" level="2">
-        Alle vurderinger på saken er gjennomført
-      </Heading>
+    <Page.Block gutters className={styles.page}>
+      <VStack gap="8">
+        <Heading size="medium" level="2">
+          Alle vurderinger på saken er gjennomført
+        </Heading>
 
-      <Form method="post">
-        <VStack gap="2" width="10em">
-          <Button type="submit" variant="primary" size="small">
-            Send til attestering
-          </Button>
+        <Form method="post">
+          <HStack gap="2" justify="center">
+            <Button type="submit" variant="primary" size="small">
+              Send til attestering
+            </Button>
 
-          <Button type="button" variant="secondary" size="small" onClick={avbrytAktivitet}>
-            Avbryt
-          </Button>
-        </VStack>
-      </Form>
-    </VStack>
+            <Button type="button" variant="secondary" size="small" onClick={avbrytAktivitet}>
+              Avbryt
+            </Button>
+          </HStack>
+        </Form>
+      </VStack>
+    </Page.Block>
   )
 }

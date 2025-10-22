@@ -20,7 +20,6 @@ import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 import './attestering.css'
-import clsx from 'clsx'
 import { userContext } from '~/context/user-context'
 import { formatDateToNorwegian } from '~/utils/date'
 
@@ -110,7 +109,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
     }
   }
 
-  return redirect(`/behandling/${behandlingId}/oppsummering`)
+  return redirect(`/behandling/${behandlingId}/attestert-og-iverksatt`)
 }
 
 export default function Attestering({ loaderData }: Route.ComponentProps) {
