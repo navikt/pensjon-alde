@@ -61,45 +61,52 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
     (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
-  // TODO: Rydd opp logikk, flytte oppsummering?
-  let aktivitetSomSkalVises = null
-  if (!aktivitetSomSkalVises && behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isOppsummering) {
-    return redirect(`/behandling/${behandlingId}/oppsummering`)
-  } else if (!isException) {
+  function getRedirectPath() {
+    // Oppsummering
+    if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isOppsummering) {
+      return `/behandling/${behandlingId}/oppsummering`
+    }
+    // Avbrutt automatisk
+    if (!isAutomatiskAvbrutt && behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL) {
+      return `/behandling/${behandlingId}/avbrutt-automatisk`
+    }
+    // Venter attestering
     if (
+      !isException &&
       behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING &&
       behandling.sisteSaksbehandlerNavident === navident
     ) {
-      return redirect(`/behandling/${behandlingId}/venter-attestering`)
+      return `/behandling/${behandlingId}/venter-attestering`
     }
-
-    if (!params.aktivitetId && behandling.aktiviteter.length > 0) {
-      aktivitetSomSkalVises = behandling.aktiviteter.find(
+    // Aktivitet redirects
+    if (!isException && !params.aktivitetId && behandling.aktiviteter.length > 0) {
+      let aktivitetSomSkalVises = behandling.aktiviteter.find(
         aktivitet =>
           (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
           aktivitet.handlerName &&
           aktivitet.friendlyName,
       )
-
       if (!aktivitetSomSkalVises) {
         aktivitetSomSkalVises = behandling.aktiviteter.find(
           aktivitet =>
             aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
         )
       }
-
-      // TODO: Må ha en annen måte å vite hva som er attestering fra AldeAktivitet
       if (aktivitetSomSkalVises?.handlerName === 'attestering') {
-        return redirect(`/behandling/${behandlingId}/attestering`)
+        return `/behandling/${behandlingId}/attestering`
       }
-
       const shouldRefetchAfterCompletion =
         aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
-
       if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
-        return redirect(`/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`)
+        return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
       }
     }
+    return null
+  }
+
+  const redirectPath = getRedirectPath()
+  if (redirectPath) {
+    return redirect(redirectPath)
   }
 
   return {
@@ -108,7 +115,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     behandlingId,
     behandlingJobber:
       behandlingJobber ||
-      (aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId),
+      (behandling.aktiviteter.find(a => a.aktivitetId?.toString() === justCompletedId) && justCompletedId),
     isOppsummering,
     isAttestering,
     showStepper: showStepper && !isOppsummering && !isAttestering,
