@@ -89,6 +89,7 @@ Check existing implementations in `app/behandlinger/alderspensjon-soknad/vurder-
 - ❌ Change folder names without checking API handler names
 - ❌ Use underscores in folder names (use hyphens)
 - ❌ Use plain HTML elements when Aksel components exist
+- ❌ **Declare work complete without checking diagnostics** - always verify!
 
 ## Styling
 
@@ -148,10 +149,37 @@ The system automatically:
 ## Testing Your Implementation
 
 ```sh
-npm test          # Run tests
+npm test          # Run tests in watch mode
+npm run test:ci   # Run tests once (use this after editing tests or tested files)
 npm run typecheck # Type checking
 npm run dev:mock  # Development with mock API
 ```
+
+### IMPORTANT: Run Tests After Changes
+
+**ALWAYS run `npm run test:ci` after:**
+- Creating or modifying test files
+- Editing files that have associated tests
+- Making changes to core functionality
+
+This ensures your changes don't break existing tests and that new tests actually run and pass.
+
+### IMPORTANT: Check Diagnostics Before Finishing
+
+**ALWAYS check for TypeScript/linting errors before declaring work complete:**
+- Use the diagnostics tool to check files you've edited
+- Fix all red lines and type errors
+- Even if tests pass, diagnostics might reveal issues
+- Don't assume - verify!
+- Check BOTH the implementation file AND test file
+
+### TypeScript Best Practices
+
+- Types are in `~/types/` - check existing types before creating new ones
+- React Router generates types in `./+types/[filename]` for route-specific types
+- Add explicit types to callback parameters to avoid implicit `any` errors
+- When writing tests, check the actual interfaces for required vs optional fields
+- Extract business logic into pure functions for easier testing
 
 ## Mock Data
 

@@ -21,11 +21,71 @@ import { createBehandlingApi } from '~/api/behandling-api'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import { userContext } from '~/context/user-context'
+import type { BehandlingDTO } from '~/types/behandling'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import type { Route } from './+types/$behandlingId'
+
+export function getRedirectPath({
+  pathname,
+  behandlingId,
+  behandling,
+  navident,
+  justCompletedId,
+}: {
+  pathname: string
+  behandlingId: string
+  behandling: BehandlingDTO
+  navident: string
+  justCompletedId: string | null
+}): string | null {
+  const exactBehandlingRoute = pathname === `/behandling/${behandlingId}`
+
+  if (!exactBehandlingRoute) {
+    return null
+  }
+
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT) {
+    return `/behandling/${behandlingId}/oppsummering`
+  }
+
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL) {
+    return `/behandling/${behandlingId}/avbrutt-automatisk`
+  }
+
+  if (
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING &&
+    behandling.sisteSaksbehandlerNavident === navident
+  ) {
+    return `/behandling/${behandlingId}/venter-attestering`
+  }
+
+  if (behandling.aktiviteter.length > 0) {
+    let aktivitetSomSkalVises = behandling.aktiviteter.find(
+      aktivitet =>
+        (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
+        aktivitet.handlerName &&
+        aktivitet.friendlyName,
+    )
+    if (!aktivitetSomSkalVises) {
+      aktivitetSomSkalVises = behandling.aktiviteter.find(
+        aktivitet =>
+          aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
+      )
+    }
+    if (aktivitetSomSkalVises?.handlerName === 'attestering') {
+      return `/behandling/${behandlingId}/attestering`
+    }
+    const shouldRefetchAfterCompletion =
+      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
+    if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
+      return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
+    }
+  }
+  return null
+}
 
 export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Behandling ${params.behandlingId}` }, { name: 'description', content: 'Behandling detaljer' }]
@@ -44,73 +104,18 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')
-  const isAttestertOgIverksatt = url.pathname.includes('/attestert-og-iverksatt')
-  const isManueltAvbrutt = url.pathname.includes('/avbrutt-manuelt')
-  const isAutomatiskAvbrutt = url.pathname.includes('/avbrutt-automatisk')
-  const isSendTilAttestering = url.pathname.includes('/send-til-attestering')
-  const isVenterAttestering = url.pathname.includes('/venter-attestering')
-
-  const isException =
-    isOppsummering ||
-    isAttestering ||
-    isManueltAvbrutt ||
-    isAutomatiskAvbrutt ||
-    isSendTilAttestering ||
-    isVenterAttestering ||
-    isAttestertOgIverksatt
 
   const behandlingJobber =
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
     (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
-  function getRedirectPath() {
-    // Oppsummering
-    if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT && !isException) {
-      return `/behandling/${behandlingId}/oppsummering`
-    }
-    // Avbrutt automatisk
-    if (
-      !isAutomatiskAvbrutt &&
-      behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL &&
-      !isException
-    ) {
-      return `/behandling/${behandlingId}/avbrutt-automatisk`
-    }
-    // Venter attestering
-    if (
-      !isException &&
-      behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING &&
-      behandling.sisteSaksbehandlerNavident === navident
-    ) {
-      return `/behandling/${behandlingId}/venter-attestering`
-    }
-    // Aktivitet redirects
-    if (!isException && !params.aktivitetId && behandling.aktiviteter.length > 0) {
-      let aktivitetSomSkalVises = behandling.aktiviteter.find(
-        aktivitet =>
-          (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
-          aktivitet.handlerName &&
-          aktivitet.friendlyName,
-      )
-      if (!aktivitetSomSkalVises) {
-        aktivitetSomSkalVises = behandling.aktiviteter.find(
-          aktivitet =>
-            aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
-        )
-      }
-      if (aktivitetSomSkalVises?.handlerName === 'attestering') {
-        return `/behandling/${behandlingId}/attestering`
-      }
-      const shouldRefetchAfterCompletion =
-        aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
-      if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
-        return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
-      }
-    }
-    return null
-  }
-
-  const redirectPath = getRedirectPath()
+  const redirectPath = getRedirectPath({
+    pathname: url.pathname,
+    behandlingId,
+    behandling,
+    navident,
+    justCompletedId,
+  })
   if (redirectPath) {
     return redirect(redirectPath)
   }
