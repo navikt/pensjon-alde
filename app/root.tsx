@@ -3,7 +3,7 @@ import '@navikt/ds-css/darkside'
 
 import { type Faro, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk'
 import { TracingInstrumentation } from '@grafana/faro-web-tracing'
-import { Page, Theme } from '@navikt/ds-react'
+import { BodyLong, BodyShort, Box, CopyButton, Heading, HStack, Link, Page, Theme, VStack } from '@navikt/ds-react'
 import type React from 'react'
 import { useState } from 'react'
 import {
@@ -18,7 +18,9 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from 'react-router'
+import commonStyles from '~/common.module.css'
 import { buildUrl } from '~/utils/build-url'
+import { formatDateToNorwegian } from '~/utils/date'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
 import type { Route } from './+types/root'
 import { settingsContext } from './context/settings-context'
@@ -156,27 +158,44 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!'
-  let details = 'An unexpected error occurred.'
-  let stack: string | undefined
+  let details = 'En uventet feil oppsto'
+  const dato = Date.now()
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error'
     details = error.status === 404 ? 'The requested page could not be found.' : error.statusText || details
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message
-    stack = error.stack
   }
-
+  //TODO: Legg til stacktrace
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <Page.Block gutters className={commonStyles.page}>
+      <VStack gap="8">
+        <Heading size="xlarge" level="1">
+          Noe gikk galt
+        </Heading>
+        <BodyLong size="medium">
+          Dette skyldes en teknisk feil. Vennligst kopier feilmeldingen nedenfor og{' '}
+          <Link href="https://teams.microsoft.com/v2/" target="_blank" rel="noopener noreferrer">
+            meld fra i Teams
+          </Link>
+          .
+        </BodyLong>
+        <VStack gap="1">
+          <BodyShort size="medium">
+            <b>Feilmelding</b>
+          </BodyShort>
+
+          <HStack className={styles.errorBox}>
+            <BodyLong size="small" style={{ padding: '1rem' }}>
+              {details}
+            </BodyLong>
+            <CopyButton copyText={details} variant="action" text="Kopier" activeText="Kopiert" />
+          </HStack>
+          <BodyLong size="small" color="neutral-sublte">
+            {formatDateToNorwegian(dato, { showTime: true })}
+          </BodyLong>
+        </VStack>
+      </VStack>
+    </Page.Block>
   )
 }
