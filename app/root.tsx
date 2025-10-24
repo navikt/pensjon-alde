@@ -170,7 +170,21 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
     <Page.Block gutters className={commonStyles.page}>
       <VStack gap="8">
-        <Heading size="xlarge" level="1">
+        <Heading
+          size="xlarge"
+          level="1"
+          style={{
+            color: 'var(--ax-text-danger-subtle)',
+            fontFeatureSettings: 'liga off clig off',
+            /* Heading/Desktop/XLarge */
+            fontFamily: 'Source Sans Pro',
+            fontSize: '2.5rem',
+            fontStyle: 'normal',
+            fontWeight: '600',
+            lineHeight: '3.25rem' /* 130% */,
+            letterSpacing: '-0.025rem',
+          }}
+        >
           Noe gikk galt
         </Heading>
         <BodyLong size="medium">
@@ -185,13 +199,13 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             <b>Feilmelding</b>
           </BodyShort>
 
-          <HStack className={styles.errorBox}>
+          <HStack className={commonStyles.errorBox}>
             <BodyLong size="small" style={{ padding: '1rem' }}>
               {details}
             </BodyLong>
             <CopyButton copyText={details} variant="action" text="Kopier" activeText="Kopiert" />
           </HStack>
-          <BodyLong size="small" color="neutral-sublte">
+          <BodyLong size="small" textColor="subtle">
             {formatDateToNorwegian(dato, { showTime: true })}
           </BodyLong>
         </VStack>
