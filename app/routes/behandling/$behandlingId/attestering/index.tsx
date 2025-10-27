@@ -108,7 +108,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 
     if (begrunnelse) {
       await behandlingApi.returnerTilSaksbehandler(begrunnelse)
-      return redirect(`/behandling/${behandlingId}/avbrutt-automatisk`)
+      return redirect(`/behandling/${behandlingId}/attestering-returnert-til-saksbehandler`)
     } else {
       return data(
         {
