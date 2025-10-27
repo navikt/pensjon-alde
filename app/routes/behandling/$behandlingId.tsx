@@ -292,10 +292,20 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               </VStack>
 
               <VStack>
-                <Label size="small">Status</Label>
+                <Label size="small">Alde Status</Label>
+                <Tag
+                  variant={behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT ? 'success' : 'info'}
+                  size="small"
+                >
+                  {behandling.aldeBehandlingStatus}
+                </Tag>
+              </VStack>
+
+              <VStack>
+                <Label size="small">Behandling Status</Label>
                 <Tag
                   variant={
-                    behandling.status === BehandlingStatus.FERDIG
+                    behandling.status === BehandlingStatus.FULLFORT
                       ? 'success'
                       : behandling.status === BehandlingStatus.FEILENDE
                         ? 'error'
@@ -303,7 +313,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                   }
                   size="small"
                 >
-                  {behandling.aldeBehandlingStatus}
+                  {behandling.status}
                 </Tag>
               </VStack>
 
