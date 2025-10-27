@@ -1,10 +1,12 @@
-import { Alert, Box, Detail, Heading, Page, VStack } from '@navikt/ds-react'
+import { Alert, BodyLong, Box, Button, Detail, Heading, HStack, Page, VStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
+import { type AktivitetDTO, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
+import { buildUrl } from '~/utils/build-url'
 import { getAllServerComponents } from '~/utils/component-discovery'
+import { env } from '~/utils/env.server'
 import type { Route } from './+types'
 
 interface AktivitetTilAttestering {
@@ -62,6 +64,9 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 
   return {
     aktiviteter: parsedData,
+    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
+    behandlingErFullført: behandling.status === BehandlingStatus.FULLFORT,
+    behandlingFeilende: behandling.status === BehandlingStatus.FEILENDE,
   }
 }
 
@@ -70,7 +75,7 @@ export const action = async () => {
 }
 
 export default function Attestering({ loaderData }: Route.ComponentProps) {
-  const { aktiviteter } = loaderData
+  const { aktiviteter, behandlingErFullført } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const components = getAllServerComponents()
 
@@ -93,6 +98,19 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
       <Heading level="1" size="large">
         Oppsummering av behandlingen
       </Heading>
+
+      {behandlingErFullført && (
+        <Alert variant="info" size="medium">
+          <HStack gap="space-16">
+            Behandlingen er fullført. Vi kan ikke behandle denne videre og har samlet en oppsummering på hva som har
+            blitt utført.
+            <Button as="a" href={loaderData.pensjonsoversiktUrl} size="small" variant="secondary-neutral">
+              Til pensjonsoversikten
+            </Button>
+          </HStack>
+        </Alert>
+      )}
+
       {aktiviteter.map(aktivitet => {
         const Component = components.get(aktivitet.handlerName)
 

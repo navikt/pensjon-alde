@@ -10,8 +10,8 @@ export enum AldeBehandlingStatus {
 export enum BehandlingStatus {
   OPPRETTET = 'OPPRETTET',
   STARTET = 'STARTET',
-  FERDIG = 'FERDIG',
   FEILENDE = 'FEILENDE',
+  FULLFORT = 'FULLFORT',
   STOPPET = 'STOPPET',
   UTSATT = 'UTSATT',
   UNDER_BEHANDLING = 'UNDER_BEHANDLING',
