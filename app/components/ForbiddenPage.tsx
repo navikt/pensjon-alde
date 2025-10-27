@@ -1,0 +1,54 @@
+import { BodyLong, Box, CopyButton, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
+import commonStyles from '~/common.module.css'
+import { formatDateToNorwegian } from '~/utils/date'
+
+export default function ForbiddenPage({ dato, traceId }: { dato: number; traceId: string | undefined }) {
+  return (
+    <Page>
+      <Page.Block gutters className={commonStyles.page} width="md">
+        <VStack gap="8">
+          <Heading
+            size="xlarge"
+            level="1"
+            style={{
+              color: 'var(--ax-text-danger-subtle)',
+            }}
+          >
+            Ikke tilgang
+          </Heading>
+          <BodyLong size="medium">
+            Du har ikke tilgang til å denne behandlingen. Dette kan skyldes at en involvert person på saken er egen
+            ansatt eller har diskresjon, eller at du mangler andre nødvendige tilganger.
+          </BodyLong>
+
+          <BodyLong size="medium">
+            Vennligst kopier feilsøkingsinformasjonen nedenfor og{' '}
+            <Link href="https://teams.microsoft.com/v2/" target="_blank" rel="noopener noreferrer">
+              meld fra i Teams
+            </Link>{' '}
+            om du mener dette er feil.
+          </BodyLong>
+          {traceId && (
+            <VStack gap="1">
+              <BodyLong size="medium">
+                <strong>Feilsøkingsinformasjon</strong>
+              </BodyLong>
+
+              <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
+                <HStack justify="space-between">
+                  <BodyLong size="small" style={{ padding: '1rem' }}>
+                    {traceId}
+                  </BodyLong>
+                  <CopyButton copyText={traceId} size="small" variant="action" text="Kopier" activeText="Kopiert" />
+                </HStack>
+              </Box.New>
+              <BodyLong size="small" textColor="subtle">
+                {formatDateToNorwegian(dato, { showTime: true })}
+              </BodyLong>
+            </VStack>
+          )}
+        </VStack>
+      </Page.Block>
+    </Page>
+  )
+}
