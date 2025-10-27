@@ -123,6 +123,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
               aktivitet={aktivitet.aktivitet}
               behandling={behandling}
               avbrytAktivitet={() => {}}
+              AttesteringKomponent={null}
             />
             <Box.New>
               Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />
