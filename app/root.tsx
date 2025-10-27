@@ -158,13 +158,13 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let details = 'En uventet feil oppsto'
+  let details: string | undefined = 'En uventet feil oppsto'
   const dato = Date.now()
 
   if (isRouteErrorResponse(error)) {
     details = error.status === 404 ? 'The requested page could not be found.' : error.statusText || details
   } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message
+    details = error.stack
   }
   //TODO: Legg til stacktrace
   return (
@@ -175,14 +175,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           level="1"
           style={{
             color: 'var(--ax-text-danger-subtle)',
-            fontFeatureSettings: 'liga off clig off',
-            /* Heading/Desktop/XLarge */
-            fontFamily: 'Source Sans Pro',
-            fontSize: '2.5rem',
-            fontStyle: 'normal',
-            fontWeight: '600',
-            lineHeight: '3.25rem' /* 130% */,
-            letterSpacing: '-0.025rem',
           }}
         >
           Noe gikk galt
@@ -195,16 +187,19 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           .
         </BodyLong>
         <VStack gap="1">
-          <BodyShort size="medium">
-            <b>Feilmelding</b>
-          </BodyShort>
+          <BodyLong size="medium">
+            <strong>Feilmelding</strong>
+          </BodyLong>
 
-          <HStack className={commonStyles.errorBox}>
-            <BodyLong size="small" style={{ padding: '1rem' }}>
-              {details}
-            </BodyLong>
-            <CopyButton copyText={details} variant="action" text="Kopier" activeText="Kopiert" />
-          </HStack>
+          <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
+            <HStack justify="space-between">
+              <BodyLong size="small" style={{ padding: '1rem' }}>
+                {details}
+              </BodyLong>
+              {/** biome-ignore lint/style/noNonNullAssertion: <explanation> */}
+              <CopyButton copyText={details!} size="small" variant="action" text="Kopier" activeText="Kopiert" />
+            </HStack>
+          </Box.New>
           <BodyLong size="small" textColor="subtle">
             {formatDateToNorwegian(dato, { showTime: true })}
           </BodyLong>
