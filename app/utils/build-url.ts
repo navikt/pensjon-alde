@@ -4,13 +4,18 @@ type ExtractPathParams<T extends string> = T extends `${string}{${infer Param}}$
 
 export function buildUrl<T extends string>(
   template: T,
-  params: Record<ExtractPathParams<T>, string | number>,
+  params: Omit<Record<ExtractPathParams<T>, string | number>, 'subdomain'>,
   request?: Request,
 ): string {
   const subdomain = request ? subdomainHelper(request) : 'intern'
   let url = template as string
-  for (const [key, value] of Object.entries({ params, ...{ subdomain } })) {
-    url = url.replace(`{${key}}`, encodeURIComponent(String(value)))
+
+  const mergedParams = {
+    ...params,
+    subdomain,
+  }
+  for (const [key, value] of Object.entries(mergedParams)) {
+    url = url.replaceAll(`{${key}}`, encodeURIComponent(String(value)))
   }
   return url
 }
