@@ -3,7 +3,7 @@ import '@navikt/ds-css/darkside'
 
 import { type Faro, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk'
 import { TracingInstrumentation } from '@grafana/faro-web-tracing'
-import { BodyLong, BodyShort, Box, CopyButton, Heading, HStack, Link, Page, Theme, VStack } from '@navikt/ds-react'
+import { BodyLong, Box, CopyButton, Heading, HStack, Link, Page, Theme, VStack } from '@navikt/ds-react'
 import type React from 'react'
 import { useState } from 'react'
 import {
@@ -17,8 +17,10 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRouteLoaderData,
 } from 'react-router'
 import commonStyles from '~/common.module.css'
+import ForbiddenPage from '~/components/ForbiddenPage'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
@@ -81,6 +83,7 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
     verdandeAktivitetUrl,
     verdandeBehandlingUrl,
     environment,
+    serverNowIso: new Date().toISOString(),
   }
 }
 
@@ -166,53 +169,75 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let details: string | undefined = 'En uventet feil oppsto'
-  const dato = Date.now()
+  const root = useRouteLoaderData<typeof loader>('root')
+  const iso = root?.serverNowIso ?? Date.now()
+  const dato = new Date(iso).getTime()
 
-  if (isRouteErrorResponse(error)) {
-    details = error.status === 404 ? 'The requested page could not be found.' : error.data || details
+  let details: string | undefined
+
+  let traceId: string | undefined
+
+  if (isRouteErrorResponse(error) || (typeof error === 'object' && error !== null && 'status' in error)) {
+    const data = ('data' in error && typeof error.data === 'object' && error.data) || undefined
+    traceId = (data !== undefined && 'traceId' in data && typeof data.traceId === 'string' && data.traceId) || undefined
+
+    if (error.status === 403) {
+      return <ForbiddenPage dato={dato} traceId={traceId} />
+    }
+
+    details = error.status === 404 ? 'The requested page could not be found.' : JSON.stringify(error, null, 2)
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message
+  } else {
+    details = 'En uventet feil oppsto'
   }
+
+  if (details !== 'string') {
+    details = JSON.stringify(details, null, 2)
+  }
+
   //TODO: Legg til stacktrace
   return (
-    <Page.Block gutters className={commonStyles.page}>
-      <VStack gap="8">
-        <Heading
-          size="xlarge"
-          level="1"
-          style={{
-            color: 'var(--ax-text-danger-subtle)',
-          }}
-        >
-          Noe gikk galt
-        </Heading>
-        <BodyLong size="medium">
-          Dette skyldes en teknisk feil. Vennligst kopier feilmeldingen nedenfor og{' '}
-          <Link href="https://teams.microsoft.com/v2/" target="_blank" rel="noopener noreferrer">
-            meld fra i Teams
-          </Link>
-          .
-        </BodyLong>
-        <VStack gap="1">
+    <Page>
+      <Page.Block gutters className={commonStyles.page} width="md">
+        <VStack gap="8">
+          <Heading
+            size="xlarge"
+            level="1"
+            style={{
+              color: 'var(--ax-text-danger-subtle)',
+            }}
+          >
+            Noe gikk galt
+          </Heading>
           <BodyLong size="medium">
-            <strong>Feilmelding</strong>
+            Dette skyldes en teknisk feil. Vennligst kopier feilmeldingen nedenfor og{' '}
+            <Link href="https://teams.microsoft.com/v2/" target="_blank" rel="noopener noreferrer">
+              meld fra i Teams
+            </Link>
+            .
           </BodyLong>
+          <VStack gap="1">
+            <BodyLong size="medium">
+              <strong>Feilmelding</strong>
+            </BodyLong>
 
-          <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
-            <HStack justify="space-between">
-              <BodyLong size="small" style={{ padding: '1rem' }}>
-                {details}
-              </BodyLong>
-              {/** biome-ignore lint/style/noNonNullAssertion: <explanation> */}
-              <CopyButton copyText={details!} size="small" variant="action" text="Kopier" activeText="Kopiert" />
-            </HStack>
-          </Box.New>
-          <BodyLong size="small" textColor="subtle">
-            {formatDateToNorwegian(dato, { showTime: true })}
-          </BodyLong>
+            <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
+              <HStack justify="space-between">
+                <BodyLong size="small" style={{ padding: '1rem' }}>
+                  {details}
+                </BodyLong>
+                {traceId && (
+                  <CopyButton copyText={traceId} size="small" variant="action" text="Kopier" activeText="Kopiert" />
+                )}
+              </HStack>
+            </Box.New>
+            <BodyLong size="small" textColor="subtle">
+              {formatDateToNorwegian(dato, { showTime: true })}
+            </BodyLong>
+          </VStack>
         </VStack>
-      </VStack>
-    </Page.Block>
+      </Page.Block>
+    </Page>
   )
 }

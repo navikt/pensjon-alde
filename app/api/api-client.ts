@@ -1,5 +1,6 @@
 import { data } from 'react-router'
 import { requireAccessToken } from '~/auth/auth.server'
+import { parseTraceparent } from '~/utils/traceparent'
 
 export type Fetcher = <T>(url: string, options: RequestInit) => Promise<T>
 
@@ -50,11 +51,23 @@ export const fetcher =
         errorBody = await response.json()
       }
 
+      function traceId() {
+        const traceparent = response.headers.get('traceparent')
+        const navTraceId = response.headers.get('nav-call-id')
+
+        if (traceparent !== null) {
+          return parseTraceparent(traceparent)?.traceId || navTraceId
+        } else {
+          return navTraceId
+        }
+      }
+
       throw data(
         {
           status: response.status,
           title: errorBody?.error || response.statusText || 'API Error',
           message: errorBody?.message,
+          traceId: traceId(),
           detail: errorBody?.detail,
           path: errorBody?.path,
           timestamp: errorBody?.timestamp,
