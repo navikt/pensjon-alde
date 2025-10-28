@@ -1,4 +1,5 @@
 import {
+  BodyShort,
   Box,
   Button,
   Dropdown,
@@ -192,7 +193,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   return (
     <Page.Block gutters>
       <VStack gap="5">
-        <Heading level="1" size="large">
+        <Heading level="1" size="large" style={{ paddingTop: '1rem' }}>
           Oppgaven er til attestering
         </Heading>
 
@@ -201,17 +202,16 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
 
           return Component ? (
             <div id={aktivitet.handlerName} key={aktivitet.aktivitetId}>
-              <Box.New padding="2">
+              <Box.New>
                 <HStack gap="8">
                   <VStack>
                     <Label>Vurdert av</Label>
                     <div>
                       {aktivitet.vurdertAvBrukerNavn} ({aktivitet.vurdertAvBrukerId})
                     </div>
-                  </VStack>
-                  <VStack>
-                    <Label>Tidspunkt for vurdering</Label>
-                    <div>{formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}</div>
+                    <BodyShort textColor="subtle" size="small">
+                      {formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}
+                    </BodyShort>
                   </VStack>
                 </HStack>
               </Box.New>
