@@ -257,7 +257,7 @@ function VurdereSamboerComponent({
       </AktivitetVurderingLayout.Section>
 
       <AktivitetVurderingLayout.Section>
-        <HGrid gap="8" columns={{ xs: 1, sm: 2 }}>
+        <HGrid gap="8" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">
           <AddressWrapper
             title="Samboers bostedsadresser"
             description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
