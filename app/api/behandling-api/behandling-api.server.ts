@@ -1,4 +1,4 @@
-import type { BehandlingDTO, ReturnerTilSaksbehandlerDTO } from '~/types/behandling'
+import type { BehandlingDTO } from '~/types/behandling'
 import type { Fetcher } from '../api-client'
 import type { Attesteringsdata } from './types'
 

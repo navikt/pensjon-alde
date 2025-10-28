@@ -9,7 +9,6 @@ import {
   Page,
   Radio,
   RadioGroup,
-  Textarea,
   VStack,
 } from '@navikt/ds-react'
 import React from 'react'

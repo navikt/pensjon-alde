@@ -3,7 +3,8 @@ import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
-import type { AktivitetDTO } from '~/types/behandling'
+import FeilendeBehandling from '~/components/FeilendeBehandling'
+import { type AktivitetDTO, BehandlingStatus } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 
@@ -74,38 +75,43 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     aktivitet,
     debug: debugData,
     showDebug,
+    dato: Date.now(),
   }
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandling, aktivitet, debug, showDebug } = loaderData
+  const { behandling, aktivitet, debug, showDebug, dato } = loaderData
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
 
-  return (
-    <Page.Block gutters className="aktivitet">
-      <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
+  if (behandling.status === BehandlingStatus.FEILENDE) {
+    return <FeilendeBehandling dato={dato} behandling={behandling} />
+  } else {
+    return (
+      <Page.Block gutters className="aktivitet">
+        <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
 
-      {!outlet && (
-        <Box.New paddingBlock="8 0" style={{ display: 'flex', justifyContent: 'center' }}>
-          <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
-            <Heading spacing size="small" level="3">
-              Aktivitet ikke implementert enda
-            </Heading>
+        {!outlet && (
+          <Box.New paddingBlock="8 0" style={{ display: 'flex', justifyContent: 'center' }}>
+            <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
+              <Heading spacing size="small" level="3">
+                Aktivitet ikke implementert enda
+              </Heading>
 
-            <Detail>
-              <strong>Aktivitet:</strong> {aktivitet.friendlyName}
-            </Detail>
-            <Detail>
-              <strong>Type:</strong> {aktivitet.type}
-            </Detail>
-            <Detail>
-              <strong>Behandling:</strong> {behandling.friendlyName}
-            </Detail>
-          </Alert>
-        </Box.New>
-      )}
-      {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
-    </Page.Block>
-  )
+              <Detail>
+                <strong>Aktivitet:</strong> {aktivitet.friendlyName}
+              </Detail>
+              <Detail>
+                <strong>Type:</strong> {aktivitet.type}
+              </Detail>
+              <Detail>
+                <strong>Behandling:</strong> {behandling.friendlyName}
+              </Detail>
+            </Alert>
+          </Box.New>
+        )}
+        {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
+      </Page.Block>
+    )
+  }
 }

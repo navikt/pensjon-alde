@@ -16,12 +16,11 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
-import { data, Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
+import { Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import { userContext } from '~/context/user-context'
-import type { BehandlingDTO } from '~/types/behandling'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
@@ -105,10 +104,6 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
-
-  if (behandling.status === BehandlingStatus.FEILENDE) {
-    throw data(`Behandling ${behandling.behandlingId} feilet`)
-  }
 
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')

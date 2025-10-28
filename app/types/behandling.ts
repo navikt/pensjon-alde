@@ -46,7 +46,9 @@ export interface BehandlingDTO {
   handlerName: string | null
   friendlyName: string | null
 
-  sisteKjoring: string // LocalDateTime as ISO string
+  sisteKjoring: AldeBehandlingKjoringDTO | null // LocalDateTime as ISO string
+
+  sisteKjoringDato: string // LocalDateTime as ISO string
   utsattTil: string | null // LocalDateTime as ISO string
   opprettet: string // LocalDateTime as ISO string
   stoppet: string | null // LocalDateTime as ISO string
@@ -61,6 +63,19 @@ export interface BehandlingDTO {
   mellomnavn: string | null
   etternavn: string | null
   fodselsdato: string | null // LocalDate as ISO string
+}
+
+export interface AldeBehandlingKjoringDTO {
+  behandlingId: number
+  aktivitetId: number | null
+  startet: string // LocalDateTime as ISO string
+  avsluttet: string // LocalDateTime as ISO string
+  uuid: string | null
+  traceId: string | null
+  behandlingKjoringId: number | null
+  correlationId: string
+  feilmelding: string | null
+  stackTrace: string | null
 }
 
 export interface ReturnerTilSaksbehandlerDTO {
