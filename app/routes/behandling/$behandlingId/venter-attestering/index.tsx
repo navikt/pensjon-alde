@@ -32,7 +32,7 @@ export const action = async ({ params }: Route.ActionArgs) => {
 const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
   const { psakOppgaveoversikt } = loaderData
   return (
-    <Page.Block gutters className={commonStyles.page}>
+    <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="space-32" className="content" align="center">
         <Heading size="medium" level="1">
           <HStack align="center">Sendt til attestering</HStack>

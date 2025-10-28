@@ -1,6 +1,7 @@
 import { PersonCheckmarkIcon } from '@navikt/aksel-icons'
-import { Box, Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
-import { redirect } from 'react-router'
+import { Box, Button, Heading, HStack, Loader, Page, VStack } from '@navikt/ds-react'
+import { useEffect } from 'react'
+import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
 import { AldeBehandlingStatus } from '~/types/behandling'
@@ -13,20 +14,51 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
-  if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL) {
-    return redirect(`/behandling/${behandlingId}`)
-  } else {
+  if (
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING ||
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL
+  ) {
     return {
       pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
       oppsummeringUrl: `/behandling/${behandling.behandlingId}/oppsummering`,
+      status: behandling.aldeBehandlingStatus,
     }
+  } else {
+    return redirect(`/behandling/${behandlingId}`)
   }
 }
 
 const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentProps) => {
-  const { pensjonsoversiktUrl } = loaderData
+  const { pensjonsoversiktUrl, status } = loaderData
+
+  const revalidator = useRevalidator()
+
+  useEffect(() => {
+    if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
+      const intervalId = setInterval(() => {
+        revalidator.revalidate()
+      }, 1000)
+
+      return () => clearInterval(intervalId)
+    }
+  }, [status, revalidator])
+
+  if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
+    return (
+      <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
+        <VStack gap="space-32" className="content" align="center">
+          <Heading size="medium" level="1">
+            Sender tilbake til saksbehandler
+          </Heading>
+
+          <Loader size="3xlarge" title="Sender tilbake til saksbehandler" />
+        </VStack>
+      </Page.Block>
+    )
+  }
+
   return (
-    <Page.Block gutters className={commonStyles.page}>
+    <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="8">
         <Heading size="medium" level="1">
           Kravet er retunert til saksbehandler.

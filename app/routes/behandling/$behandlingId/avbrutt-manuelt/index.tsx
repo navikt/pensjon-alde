@@ -24,7 +24,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 const AvbruttManuelt = ({ loaderData }: Route.ComponentProps) => {
   const { pensjonsoversiktUrl } = loaderData
   return (
-    <Page.Block gutters className={commonStyles.page}>
+    <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="8">
         <Heading size="medium" level="1">
           Behandlingen i pilot er avbrutt

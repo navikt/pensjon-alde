@@ -39,7 +39,7 @@ export default function SendTilAttesteringRoute() {
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
   return (
-    <Page.Block gutters className={styles.page}>
+    <Page.Block gutters className={`${styles.page} ${styles.center}`}>
       <VStack gap="8">
         <Heading size="medium" level="2">
           Alle vurderinger på saken er gjennomført
