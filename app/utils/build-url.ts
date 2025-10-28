@@ -15,7 +15,8 @@ export function buildUrl<T extends string>(
     subdomain,
   }
   for (const [key, value] of Object.entries(mergedParams)) {
-    url = url.replaceAll(`{${key}}`, encodeURIComponent(String(value)))
+    const token = `{${key}}`
+    url = url.split(token).join(encodeURIComponent(String(value)))
   }
   return url
 }
