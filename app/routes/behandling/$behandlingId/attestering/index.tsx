@@ -193,7 +193,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   return (
     <Page.Block gutters>
       <VStack gap="5">
-        <Heading level="1" size="large" style={{ paddingTop: '1rem' }}>
+        <Heading level="1" size="large" style={{ paddingTop: '2rem' }}>
           Oppgaven er til attestering
         </Heading>
 
