@@ -18,8 +18,8 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
   } else {
     return {
       behandlingId,
-      psakOppgaveoversikt: env.psakOppgaveoversikt,
-      psakPensjonsoversikt: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
+      psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request),
+      psakPensjonsoversikt: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }, request),
     }
   }
 }
@@ -32,7 +32,7 @@ export const action = async ({ params }: Route.ActionArgs) => {
 const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
   const { psakOppgaveoversikt } = loaderData
   return (
-    <Page.Block gutters className={commonStyles.page}>
+    <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="space-32" className="content" align="center">
         <Heading size="medium" level="1">
           <HStack align="center">Sendt til attestering</HStack>

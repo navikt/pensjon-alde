@@ -40,7 +40,7 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
 
   if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
     return (
-      <Page.Block gutters className={commonStyles.page}>
+      <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
         <VStack gap="space-32" className="content" align="center">
           <Heading size="medium" level="1">
             Iverksetter

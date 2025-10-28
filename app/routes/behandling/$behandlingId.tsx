@@ -139,7 +139,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     isAttestering,
     showStepper: showStepper && !isOppsummering && !isAttestering,
     showMetadata,
-    psakUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
+    psakUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }, request),
   }
 }
 

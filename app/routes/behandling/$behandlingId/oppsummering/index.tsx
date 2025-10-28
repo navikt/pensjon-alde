@@ -1,7 +1,8 @@
-import { Alert, BodyLong, Box, Button, Detail, Heading, HStack, Page, VStack } from '@navikt/ds-react'
+import { Alert, Box, Button, Detail, Heading, HStack, Page, VStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
+import commonStyles from '~/common.module.css'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { type AktivitetDTO, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
@@ -64,7 +65,7 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 
   return {
     aktiviteter: parsedData,
-    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
+    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }, request),
     behandlingErFullført: behandling.status === BehandlingStatus.FULLFORT,
     behandlingFeilende: behandling.status === BehandlingStatus.FEILENDE,
   }
@@ -94,8 +95,8 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <Page.Block gutters>
-      <Heading level="1" size="large">
+    <Page.Block gutters className={commonStyles.page}>
+      <Heading level="1" size="large" spacing>
         Oppsummering av behandlingen
       </Heading>
 

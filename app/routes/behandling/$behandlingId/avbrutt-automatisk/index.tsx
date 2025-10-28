@@ -16,7 +16,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     return redirect(`/behandling/${behandlingId}`)
   } else {
     return {
-      pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }),
+      pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }, request),
       oppsummeringUrl: `/behandling/${behandling.behandlingId}/oppsummering`,
     }
   }
@@ -25,7 +25,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 const AvbruttAutomatisk = ({ loaderData }: Route.ComponentProps) => {
   const { pensjonsoversiktUrl } = loaderData
   return (
-    <Page.Block gutters className={commonStyles.page}>
+    <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="8">
         <Heading size="medium" level="1">
           Kravet kan ikke behandles i pilot
