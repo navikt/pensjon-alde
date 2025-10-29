@@ -39,7 +39,7 @@ export interface AktivitetDTO {
 }
 
 export interface BehandlingDTO {
-  behandlingId: number | null
+  behandlingId: number
   type: string
   aldeBehandlingStatus: AldeBehandlingStatus
 

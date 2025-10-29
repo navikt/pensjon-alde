@@ -12,12 +12,15 @@ export function behandlingApi(fetch: Fetcher) {
 
   const attester = () => fetch<void>('/attester', { method: 'POST' })
 
+  const fortsett = () => fetch<void>('/fortsett', { method: 'POST' })
+
   const returnerTilSaksbehandler = (begrunnelse: string) =>
     fetch('/returner', { method: 'POST', body: JSON.stringify({ begrunnelse }) })
 
   return {
     attester,
     avbrytBehandling,
+    fortsett,
     hentAttesteringsdata,
     hentBehandling,
     returnerTilSaksbehandler,

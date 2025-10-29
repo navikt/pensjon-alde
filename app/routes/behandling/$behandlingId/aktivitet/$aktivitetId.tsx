@@ -1,5 +1,5 @@
 import { Alert, Box, Detail, Heading, Page } from '@navikt/ds-react'
-import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
+import { Outlet, redirect, useFetcher, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
@@ -79,13 +79,34 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 }
 
+export async function action({ params, request }: Route.ActionArgs) {
+  const { behandlingId } = params
+
+  const api = createBehandlingApi({ request, behandlingId })
+
+  await api.fortsett()
+
+  return redirect(`/behandling/${behandlingId}`)
+}
+
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   const { behandling, aktivitet, debug, showDebug, dato } = loaderData
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
 
+  const fetcher = useFetcher()
+
+  function retry() {
+    fetcher.submit(
+      {},
+      {
+        method: 'POST',
+      },
+    )
+  }
+
   if (behandling.status === BehandlingStatus.FEILENDE) {
-    return <FeilendeBehandling dato={dato} behandling={behandling} />
+    return <FeilendeBehandling dato={dato} behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
   } else {
     return (
       <Page.Block gutters className="aktivitet">

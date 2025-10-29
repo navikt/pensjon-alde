@@ -3,8 +3,27 @@ import commonStyles from '~/common.module.css'
 import type { BehandlingDTO } from '~/types/behandling'
 import { formatDateToNorwegian } from '~/utils/date'
 
-export default function FeilendeBehandling({ dato, behandling }: { dato: number; behandling: BehandlingDTO }) {
+export default function FeilendeBehandling({
+  dato,
+  behandling,
+  retry,
+  avbrytAktivitet,
+}: {
+  dato: number
+  behandling: BehandlingDTO
+  retry: () => void
+  avbrytAktivitet: () => void
+}) {
   const nesteKjoring = behandling.utsattTil ? new Date(behandling.utsattTil)?.getTime() : undefined
+
+  function finnFeilendeAktivitet() {
+    const feilendeAktivitetId = behandling?.sisteKjoring?.aktivitetId
+    if (feilendeAktivitetId != null) {
+      return behandling.aktiviteter.find(it => it.aktivitetId === feilendeAktivitetId)
+    }
+  }
+
+  const feilendeAktivitet = finnFeilendeAktivitet()
 
   return (
     <Page>
@@ -20,7 +39,22 @@ export default function FeilendeBehandling({ dato, behandling }: { dato: number;
             Feil ved automatisk saksbehandling
           </Heading>
           <BodyLong size="medium">
-            Noe gikk galt ved automatisk saksbehandling.
+            {feilendeAktivitet ? (
+              <>
+                Aktiviteten{' '}
+                <b>
+                  {feilendeAktivitet.friendlyName ? `${feilendeAktivitet.friendlyName} ` : `${feilendeAktivitet.type} `}
+                </b>
+                har feilet{' '}
+                {feilendeAktivitet.antallGangerKjort === 1
+                  ? ' en gang '
+                  : `${feilendeAktivitet.antallGangerKjort} ganger`}
+                .
+              </>
+            ) : (
+              <>Noe gikk galt ved automatisk saksbehandling.</>
+            )}
+
             {nesteKjoring &&
               ` Pesys vil prøve på nytt automatisk klokken ${formatDateToNorwegian(nesteKjoring, {
                 showTime: true,
@@ -29,10 +63,10 @@ export default function FeilendeBehandling({ dato, behandling }: { dato: number;
           </BodyLong>
 
           <HStack gap="4">
-            <Button size="small" variant={'primary'}>
+            <Button size="small" variant={'primary'} onClick={retry}>
               Prøv igjen nå
             </Button>
-            <Button size="small" variant={'secondary'}>
+            <Button size="small" variant={'secondary'} onClick={avbrytAktivitet}>
               Ta saken til manuell behandling
             </Button>
           </HStack>
@@ -48,29 +82,26 @@ export default function FeilendeBehandling({ dato, behandling }: { dato: number;
             <VStack>
               <VStack gap="4">
                 <BodyLong size="medium">
-                  <HStack align="center" justify="space-between">
-                    <strong>Feilmelding</strong>
-                    <CopyButton
-                      copyText={
-                        (behandling.sisteKjoring?.feilmelding || '') + ' ' + (behandling.sisteKjoring?.uuid || '')
-                      }
-                      size="small"
-                      variant="action"
-                      text="Kopier"
-                      activeText="Kopiert"
-                    />
-                  </HStack>
+                  <strong>Feilmelding</strong>
                 </BodyLong>
 
                 <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
-                  <HStack justify="space-between">
-                    <BodyLong size="small" style={{ padding: '1rem' }}>
+                  <HStack justify="space-between" gap="space-8">
+                    <BodyLong size="small" style={{ wordBreak: 'break-all' }}>
                       {behandling.sisteKjoring?.feilmelding}
                     </BodyLong>
                     {behandling.sisteKjoring?.uuid && (
-                      <BodyShort size="small" style={{ padding: '1rem' }} textColor="subtle">
-                        {behandling.sisteKjoring?.uuid}
-                      </BodyShort>
+                      <HStack align="center">
+                        <BodyShort size="small" textColor="subtle">
+                          {behandling.sisteKjoring?.uuid}
+                        </BodyShort>
+                        <CopyButton
+                          copyText={behandling.sisteKjoring?.uuid || behandling.behandlingId.toString()}
+                          size="small"
+                          variant="action"
+                          activeText="Kopiert"
+                        />
+                      </HStack>
                     )}
                   </HStack>
                 </Box.New>
