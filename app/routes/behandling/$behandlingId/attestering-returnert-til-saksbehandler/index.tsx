@@ -61,7 +61,7 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="8">
         <Heading size="medium" level="1">
-          Kravet er retunert til saksbehandler.
+          Kravet er returnert til saksbehandler.
         </Heading>
 
         <Box.New style={{ display: 'flex', justifyContent: 'center' }}>
