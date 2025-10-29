@@ -3,7 +3,6 @@ import {
   Alert,
   BodyShort,
   Button,
-  CopyButton,
   DatePicker,
   Heading,
   HGrid,
@@ -25,6 +24,10 @@ import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
 import type { SamboerVurdering, VurderSamboerGrunnlag } from './samboer-types'
+
+export function meta() {
+  return [{ title: `Samboervurdering` }, { name: 'description', content: 'Samboervurdering' }]
+}
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
