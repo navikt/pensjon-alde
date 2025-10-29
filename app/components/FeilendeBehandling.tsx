@@ -42,9 +42,9 @@ export default function FeilendeBehandling({
             {feilendeAktivitet ? (
               <>
                 Aktiviteten{' '}
-                <b>
+                <i>
                   {feilendeAktivitet.friendlyName ? `${feilendeAktivitet.friendlyName} ` : `${feilendeAktivitet.type} `}
-                </b>
+                </i>
                 har feilet{' '}
                 {feilendeAktivitet.antallGangerKjort === 1
                   ? ' en gang '
