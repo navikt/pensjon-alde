@@ -5,6 +5,7 @@ import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
 import { AldeBehandlingStatus } from '~/types/behandling'
+import { buildUrl } from '~/utils/build-url'
 import { env } from '~/utils/env.server'
 import type { Route } from './+types'
 
@@ -18,7 +19,11 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING ||
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT
   ) {
-    return { behandlingId, psakOppgaveoversikt, status: behandling.aldeBehandlingStatus }
+    return {
+      behandlingId,
+      psakOppgaveoversikt: buildUrl(psakOppgaveoversikt, request),
+      status: behandling.aldeBehandlingStatus,
+    }
   } else {
     return redirect(`/behandling/${behandlingId}`)
   }
@@ -63,7 +68,7 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
 
         <HStack gap="2">
           <Button as="a" size="small" href={psakOppgaveoversikt}>
-            Til Oppgaveoversikt
+            Til Oppgavelisten
           </Button>
         </HStack>
       </VStack>
