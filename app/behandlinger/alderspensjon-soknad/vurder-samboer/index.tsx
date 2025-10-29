@@ -12,6 +12,7 @@ import {
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
+import { formatDate } from 'date-fns'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
@@ -238,7 +239,7 @@ function VurdereSamboerComponent({
 
                 <HStack gap="1">
                   Dato for samboerskap:{' '}
-                  <BodyShort weight="semibold">{toMonthAndYear(soknad.datoForSamboerskap)}</BodyShort>
+                  <BodyShort weight="semibold">{formatDateToNorwegian(soknad.datoForSamboerskap)}</BodyShort>
                 </HStack>
               </>
             ) : (
