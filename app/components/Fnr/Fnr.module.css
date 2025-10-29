@@ -1,0 +1,15 @@
+.fnrWrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.fnr {
+  display: inline;
+}
+
+.space {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}

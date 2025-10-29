@@ -15,6 +15,7 @@ import {
 } from '@navikt/ds-react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
+import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -207,8 +208,7 @@ function VurdereSamboerComponent({
             <PersonIcon /> Samboer
           </Heading>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            {samboer.fnr}
-            <CopyButton size="small" copyText={samboer.fnr} />
+            <Fnr value={samboer.fnr} />
           </div>
           {samboer.navn.etternavn.toUpperCase()}, {samboer.navn.fornavn} {samboer.navn.mellomnavn}
         </VStack>

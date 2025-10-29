@@ -18,6 +18,7 @@ import {
 import React, { useEffect, useRef } from 'react'
 import { Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
+import { Fnr } from '~/components/Fnr'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import { userContext } from '~/context/user-context'
@@ -262,8 +263,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         >
           <HStack align="center" gap="1">
             <HStack align="center">
-              <PersonIcon fontSize="1.5em" /> {behandling.fnr}
-              <CopyButton size="small" variant="action" copyText={behandling.fnr ?? ''} />
+              <PersonIcon fontSize="1.5em" /> <Fnr value={behandling.fnr} />
             </HStack>
             <span>/</span>
             {behandling.etternavn}, {behandling.fornavn} {behandling.mellomnavn}
