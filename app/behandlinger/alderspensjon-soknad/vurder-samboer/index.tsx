@@ -179,7 +179,7 @@ function VurdereSamboerComponent({
                 </Button>
 
                 <Button type="reset" variant="secondary" size="small" onClick={avbrytAktivitet}>
-                  Avbryt
+                  Avbryt behandling i pilot
                 </Button>
               </VStack>
             )}
@@ -224,7 +224,8 @@ function VurdereSamboerComponent({
             {soknad ? (
               <>
                 <HStack gap="1">
-                  Tidligere gift: <BodyShort weight="semibold">{soknad.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
+                  Tidligere gift med hverandre:{' '}
+                  <BodyShort weight="semibold">{soknad.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
                 </HStack>
 
                 <HStack gap="1">
@@ -247,7 +248,8 @@ function VurdereSamboerComponent({
               Opplysninger fra vårt register
             </Heading>
             <HStack gap="1">
-              Tidligere gift: <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
+              Tidligere gift med hverandre:{' '}
+              <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
             </HStack>
             <HStack gap="1">
               Felles barn: <BodyShort weight="semibold">{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
@@ -260,7 +262,7 @@ function VurdereSamboerComponent({
         <HGrid gap="8" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">
           <AddressWrapper
             title="Samboers bostedsadresser"
-            description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
+            description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
           >
             {samboer.bostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={samboer.bostedsadresser} />
@@ -271,7 +273,7 @@ function VurdereSamboerComponent({
 
           <AddressWrapper
             title="Søkers bostedsadresser"
-            description="Adresser fra siste 18 måneder og 1 dag i Folkeregisteret. "
+            description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
           >
             {sokersBostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={sokersBostedsadresser} />

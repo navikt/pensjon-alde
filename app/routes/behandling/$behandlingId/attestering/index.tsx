@@ -179,7 +179,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
               )}
               {utfall && (
                 <Button size="small" type="submit">
-                  {utfall === AttesteringUtfall.IKKE_GODKJENT ? 'Returner til saksbehandler' : 'Iverksett'}
+                  {utfall === AttesteringUtfall.IKKE_GODKJENT ? 'Returner til saksbehandler' : 'Attester og iverksett'}
                 </Button>
               )}
             </VStack>

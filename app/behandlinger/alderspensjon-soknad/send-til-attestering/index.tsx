@@ -52,7 +52,7 @@ export default function SendTilAttesteringRoute() {
             </Button>
 
             <Button type="button" variant="secondary" size="small" onClick={avbrytAktivitet}>
-              Avbryt
+              Avbryt behandling i pilot
             </Button>
           </HStack>
         </Form>

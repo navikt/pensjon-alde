@@ -42,10 +42,10 @@ const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
 
         <HStack gap="2">
           <Button as="a" size="small" href={psakOppgaveoversikt}>
-            Til Pensjonsoversikten
+            Til Pensjonsoversikt
           </Button>
           <Button as="a" variant="secondary" size="small" href={psakOppgaveoversikt}>
-            Til Oppgaveoversikt
+            Til Oppgavelisten
           </Button>
         </HStack>
       </VStack>
