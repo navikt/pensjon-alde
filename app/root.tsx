@@ -1,11 +1,9 @@
 /** biome-ignore-all lint/suspicious/noDocumentCookie: TODO: Refactor this */
 import '@navikt/ds-css/darkside'
 
-import { type Faro, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk'
-import { TracingInstrumentation } from '@grafana/faro-web-tracing'
 import { BodyLong, Box, CopyButton, Heading, HStack, Link, Page, Theme, VStack } from '@navikt/ds-react'
 import type React from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   createCookie,
   isRouteErrorResponse,
@@ -17,6 +15,8 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
+  useParams,
   useRouteLoaderData,
 } from 'react-router'
 import commonStyles from '~/common.module.css'
@@ -27,10 +27,12 @@ import { env, isVerdandeLinksEnabled } from '~/utils/env.server'
 import type { Route } from './+types/root'
 import { settingsContext } from './context/settings-context'
 import { type UserContext, userContext } from './context/user-context'
+import { useTelemetry } from './hooks/use-telemetry'
 import { Header } from './layout/Header/Header'
 import { settingsMiddleware } from './middleware/settings'
 import { userMiddleware } from './middleware/user-middleware'
 import styles from './root.module.css'
+import { getFaro, initInstrumentation, type TelemetryConfig } from './utils/faro.client'
 
 // Initialize mocking and auth in mock environment
 if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
@@ -42,10 +44,17 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
 export const middleware: MiddlewareFunction[] = [settingsMiddleware, userMiddleware]
 
 export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  const environment =
-    process.env.NODE_ENV === 'development' ? 'dev' : process.env.NAIS_CLUSTER_NAME === 'dev-gcp' ? 'q2' : null
-
   const me: UserContext = context.get(userContext)
+
+  const appVersion = process.env.npm_package_version || 'dev'
+  const environment = process.env.TELEMETRY_ENVIRONMENT || 'local'
+
+  const telemetry: TelemetryConfig = {
+    telemetryUrl: env.telemetryUrl,
+    appName: 'pensjon-alde',
+    appVersion,
+    environment,
+  }
 
   const darkmode = await createCookie('darkmode').parse(request.headers.get('cookie'))
   const { kladdemodus } = context.get(settingsContext)
@@ -82,40 +91,10 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
     sketchmode: kladdemodus === true,
     verdandeAktivitetUrl,
     verdandeBehandlingUrl,
-    environment,
     serverNowIso: new Date().toISOString(),
+    telemetry,
   }
 }
-
-let faro: Faro | null = null
-
-export function initInstrumentation(): void {
-  if (typeof window === 'undefined' || faro !== null) return
-
-  getFaro()
-}
-
-export function getFaro(): Faro {
-  if (faro != null) return faro
-
-  faro = initializeFaro({
-    url: 'https://telemetry.ekstern.dev.nav.no/collect', // TODO: Sett URL til miljøvariabel
-    app: {
-      name: 'pensjon-alde',
-      version: 'dev', // TODO: Oppdater versjon, pakkeversjon eller git commit hash?
-    },
-
-    instrumentations: [
-      ...getWebInstrumentations({
-        captureConsole: true,
-      }),
-      new TracingInstrumentation(),
-    ],
-  })
-  return faro
-}
-
-process.env.NODE_ENV !== 'development' && initInstrumentation()
 
 export function links() {
   return [
@@ -128,14 +107,45 @@ export function links() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { darkmode, me, environment, sketchmode, verdandeAktivitetUrl, verdandeBehandlingUrl } =
+  const { darkmode, me, telemetry, sketchmode, verdandeAktivitetUrl, verdandeBehandlingUrl } =
     useLoaderData<typeof loader>()
   const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
+  const location = useLocation()
+  const params = useParams()
 
   function setDarkmode(darkmode: boolean) {
     setIsDarkmode(darkmode)
     document.cookie = `darkmode=${encodeURIComponent(btoa(darkmode.toString()))}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
   }
+
+  useEffect(() => {
+    initInstrumentation(telemetry)
+  }, [telemetry])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const faro = getFaro()
+    if (!faro) return
+
+    const attributes: Record<string, string> = {
+      path: location.pathname,
+    }
+
+    if (location.search) {
+      attributes.search = location.search
+    }
+
+    if (params.behandlingId) {
+      attributes.behandlingId = params.behandlingId
+    }
+
+    if (params.aktivitetId) {
+      attributes.aktivitetId = params.aktivitetId
+    }
+
+    faro.api.pushEvent('page_view', attributes)
+  }, [location.pathname, location.search, params.behandlingId, params.aktivitetId])
 
   return (
     <html lang="en">
@@ -151,7 +161,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             me={me}
             isDarkmode={isDarkmode}
             setDarkmode={setDarkmode}
-            environment={environment}
+            environment={telemetry.environment}
             verdandeAktivitetUrl={verdandeAktivitetUrl}
             verdandeBehandlingUrl={verdandeBehandlingUrl}
           />
@@ -169,6 +179,7 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const { logError } = useTelemetry()
   const root = useRouteLoaderData<typeof loader>('root')
   const iso = root?.serverNowIso ?? Date.now()
   const dato = new Date(iso).getTime()
@@ -196,7 +207,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     details = JSON.stringify(details, null, 2)
   }
 
-  //TODO: Legg til stacktrace
+  logError(new Error(details))
+
   return (
     <Page>
       <Page.Block gutters className={commonStyles.page} width="md">

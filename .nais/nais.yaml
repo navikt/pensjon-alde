@@ -45,6 +45,10 @@ spec:
       value: "{{{ verdande.behandling_url }}}"
     - name: "VERDANDE_LINKS_ENABLED"
       value: "{{{ verdande.links_enabled }}}"
+    - name: "TELEMETRY_URL"
+      value: "{{{ telemetry.url }}}"
+    - name: "TELEMETRY_ENVIRONMENT"
+      value: "{{{ telemetry.environment }}}"
 
   image: "{{{ image }}}"
   ingresses:

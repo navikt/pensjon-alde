@@ -104,6 +104,8 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pen
   echo VERDANDE_BEHANDLING_URL="'http://localhost:3000/behandling/{behandlingId}'"
   echo VERDANDE_AKTIVITET_URL="'http://localhost:3000/behandling/{behandlingId}/aktivitet/{aktivitetId}'"
   echo VERDANDE_LINKS_ENABLED="'true'"
+  echo TELEMETRY_URL="https://telemetry.ekstern.dev.nav.no/collect"
+  echo TELEMETRY_ENVIRONMENT="local"
 } >> ${envfile}
 
 echo
