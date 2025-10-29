@@ -89,8 +89,8 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
 }
 
 enum AttesteringUtfall {
-  GODKJENT = 'GODKJENT',
-  IKKE_GODKJENT = 'IKKE_GODKJENT',
+  GODKJENN = 'GODKJENN',
+  IKKE_GODKJENN = 'IKKE_GODKJENN',
 }
 
 export const action = async ({ params, request }: Route.ActionArgs) => {
@@ -100,10 +100,10 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
   const utfall = formData.get('utfall') as AttesteringUtfall
 
   const behandlingApi = createBehandlingApi({ request, behandlingId })
-  if (utfall === AttesteringUtfall.GODKJENT) {
+  if (utfall === AttesteringUtfall.GODKJENN) {
     await behandlingApi.attester()
     return redirect(`/behandling/${behandlingId}/attestert-og-iverksatt`)
-  } else if (utfall === AttesteringUtfall.IKKE_GODKJENT) {
+  } else if (utfall === AttesteringUtfall.IKKE_GODKJENN) {
     const begrunnelse = formData.get('begrunnelse') as string
 
     if (begrunnelse) {
@@ -134,7 +134,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
 
   const begrunnelseRef = React.useRef<HTMLFieldSetElement>(null)
 
-  // biome-ignore lint/correctness/noNestedComponentDefinitions: <explanation>
+  // biome-ignore lint/correctness/noNestedComponentDefinitions: Trenger en komponent som sendes til aktivitet komponent
   const AktivitetAttestering = () => {
     return (
       <Box.New as="div" paddingBlock="space-48 0">
@@ -143,14 +143,14 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
           <Form method="POST">
             <VStack gap="space-40">
               <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
-                <Radio size="small" value={AttesteringUtfall.GODKJENT}>
-                  Godkjent
+                <Radio size="small" value={AttesteringUtfall.GODKJENN}>
+                  Godkjenn
                 </Radio>
-                <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENT}>
-                  Ikke godkjent
+                <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
+                  Ikke godkjenn
                 </Radio>
               </RadioGroup>
-              {utfall === AttesteringUtfall.IKKE_GODKJENT && (
+              {utfall === AttesteringUtfall.IKKE_GODKJENN && (
                 <Box.New paddingInline="space-20 0">
                   <RadioGroup
                     ref={begrunnelseRef}
@@ -179,7 +179,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
               )}
               {utfall && (
                 <Button size="small" type="submit">
-                  {utfall === AttesteringUtfall.IKKE_GODKJENT ? 'Returner til saksbehandler' : 'Attester og iverksett'}
+                  {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
                 </Button>
               )}
             </VStack>
