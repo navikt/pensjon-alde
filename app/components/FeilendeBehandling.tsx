@@ -1,4 +1,16 @@
-import { BodyLong, Box, Button, CopyButton, Heading, HStack, Link, Page, Spacer, VStack } from '@navikt/ds-react'
+import {
+  BodyLong,
+  BodyShort,
+  Box,
+  Button,
+  CopyButton,
+  Heading,
+  HStack,
+  Link,
+  Page,
+  Spacer,
+  VStack,
+} from '@navikt/ds-react'
 import commonStyles from '~/common.module.css'
 import type { BehandlingDTO } from '~/types/behandling'
 import { formatDateToNorwegian } from '~/utils/date'
@@ -22,7 +34,10 @@ export default function FeilendeBehandling({ dato, behandling }: { dato: number;
           <BodyLong size="medium">
             Noe gikk galt ved automatisk saksbehandling.
             {nesteKjoring &&
-              ` Pesys vil prøve på nytt automatisk klokken ${formatDateToNorwegian(nesteKjoring, { showTime: true, onlyTimeIfSameDate: true })}.`}
+              ` Pesys vil prøve på nytt automatisk klokken ${formatDateToNorwegian(nesteKjoring, {
+                showTime: true,
+                onlyTimeIfSameDate: true,
+              })}.`}
           </BodyLong>
 
           <BodyLong size="medium">
@@ -40,7 +55,18 @@ export default function FeilendeBehandling({ dato, behandling }: { dato: number;
           <VStack gap="4">
             <VStack gap="4">
               <BodyLong size="medium">
-                <strong>Feilmelding</strong>
+                <HStack align="center" justify="space-between">
+                  <strong>Feilmelding</strong>
+                  <CopyButton
+                    copyText={
+                      (behandling.sisteKjoring?.feilmelding || '') + ' ' + (behandling.sisteKjoring?.uuid || '')
+                    }
+                    size="small"
+                    variant="action"
+                    text="Kopier"
+                    activeText="Kopiert"
+                  />
+                </HStack>
               </BodyLong>
 
               <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
@@ -48,39 +74,18 @@ export default function FeilendeBehandling({ dato, behandling }: { dato: number;
                   <BodyLong size="small" style={{ padding: '1rem' }}>
                     {behandling.sisteKjoring?.feilmelding}
                   </BodyLong>
+                  {behandling.sisteKjoring?.uuid && (
+                    <BodyShort size="small" style={{ padding: '1rem' }} textColor="subtle">
+                      {behandling.sisteKjoring?.uuid}
+                    </BodyShort>
+                  )}
                 </HStack>
               </Box.New>
             </VStack>
-
-            {behandling.sisteKjoring?.uuid && (
-              <>
-                <VStack gap="4">
-                  <BodyLong size="medium">
-                    <strong>Feilsøkningsinformasjon</strong>
-                  </BodyLong>
-
-                  <HStack>
-                    <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
-                      <HStack align="center">
-                        {behandling.sisteKjoring?.uuid}
-                        <CopyButton
-                          copyText={behandling.sisteKjoring?.uuid}
-                          size="small"
-                          variant="action"
-                          text="Kopier"
-                          activeText="Kopiert"
-                        />
-                      </HStack>
-                    </Box.New>
-                    <Spacer />
-                  </HStack>
-                </VStack>
-                <BodyLong size="small" textColor="subtle">
-                  {formatDateToNorwegian(dato, { showTime: true })}
-                </BodyLong>
-              </>
-            )}
           </VStack>
+          <BodyLong size="small" textColor="subtle">
+            {formatDateToNorwegian(dato, { showTime: true })}
+          </BodyLong>
         </VStack>
       </Page.Block>
     </Page>
