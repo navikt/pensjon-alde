@@ -22,7 +22,7 @@ export default function FeilendeBehandling({ dato, behandling }: { dato: number;
           <BodyLong size="medium">
             Noe gikk galt ved automatisk saksbehandling.
             {nesteKjoring &&
-              ` Pesys vil prøve på nytt automatisk ${formatDateToNorwegian(nesteKjoring, { showTime: true })}.`}
+              ` Pesys vil prøve på nytt automatisk klokken ${formatDateToNorwegian(nesteKjoring, { showTime: true, onlyTimeIfSameDate: true })}.`}
           </BodyLong>
 
           <BodyLong size="medium">
