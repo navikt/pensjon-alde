@@ -17,6 +17,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 
   if (
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING ||
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL ||
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT
   ) {
     return {
