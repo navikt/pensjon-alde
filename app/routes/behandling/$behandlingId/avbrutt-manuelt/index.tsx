@@ -16,7 +16,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     return redirect(`/behandling/${behandlingId}`)
   } else {
     return {
-      pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }, request),
+      pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
     }
   }
 }

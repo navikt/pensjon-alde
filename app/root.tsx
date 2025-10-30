@@ -64,25 +64,17 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
 
   const verdandeAktivitetUrl =
     isVerdandeLinksEnabled && behandlingId && aktivitetId
-      ? buildUrl(
-          env.verdandeAktivitetUrl,
-          {
-            behandlingId: behandlingId,
-            aktivitetId: aktivitetId,
-          },
-          request,
-        )
+      ? buildUrl(env.verdandeAktivitetUrl, request, {
+          behandlingId: behandlingId,
+          aktivitetId: aktivitetId,
+        })
       : undefined
 
   const verdandeBehandlingUrl =
     isVerdandeLinksEnabled && behandlingId
-      ? buildUrl(
-          env.verdandeBehandlingUrl,
-          {
-            behandlingId: behandlingId,
-          },
-          request,
-        )
+      ? buildUrl(env.verdandeBehandlingUrl, request, {
+          behandlingId: behandlingId,
+        })
       : undefined
 
   return {

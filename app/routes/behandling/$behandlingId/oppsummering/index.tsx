@@ -65,7 +65,7 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 
   return {
     aktiviteter: parsedData,
-    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }, request),
+    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
     behandlingErFullført: behandling.status === BehandlingStatus.FULLFORT,
     behandlingFeilende: behandling.status === BehandlingStatus.FEILENDE,
   }

@@ -20,7 +20,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL
   ) {
     return {
-      pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }, request),
+      pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
       oppsummeringUrl: `/behandling/${behandling.behandlingId}/oppsummering`,
       status: behandling.aldeBehandlingStatus,
     }

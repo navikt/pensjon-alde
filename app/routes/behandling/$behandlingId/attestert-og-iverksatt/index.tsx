@@ -22,7 +22,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   ) {
     return {
       behandlingId,
-      psakOppgaveoversikt: buildUrl(psakOppgaveoversikt, request),
+      psakOppgaveoversikt: buildUrl(psakOppgaveoversikt, request, {}),
       status: behandling.aldeBehandlingStatus,
     }
   } else {

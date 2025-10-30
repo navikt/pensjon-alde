@@ -18,8 +18,8 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
   } else {
     return {
       behandlingId,
-      psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request),
-      psakPensjonsoversikt: buildUrl(env.psakSakUrlTemplate, { sakId: behandling.sakId }, request),
+      psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
+      psakPensjonsoversikt: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
     }
   }
 }
