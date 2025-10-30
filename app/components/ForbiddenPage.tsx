@@ -17,9 +17,8 @@ export default function ForbiddenPage({ dato, traceId }: { dato: number; traceId
             Ikke tilgang
           </Heading>
           <BodyLong size="medium">
-            Du har ikke tilgang til å denne behandlingen. Dette kan skyldes at saken er på en enhet du ikke har tilgang
-            til, en involvert person på saken er egen ansatt eller har diskresjon, eller at du mangler andre nødvendige
-            tilganger.
+            Du har ikke tilgang til å saksbehandle dette. Det kan skyldes at saken er på en enhet du ikke har tilgang
+            til, en involvert person på saken er egen ansatt eller at du mangler andre nødvendige tilganger.
           </BodyLong>
 
           <BodyLong size="medium">
