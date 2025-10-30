@@ -100,7 +100,7 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pen
   echo PEN_SCOPE="'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'"
   echo PEN_URL="'http://localhost:8089'"
   echo PSAK_SAK_URL_TEMPLATE='http://localhost:9080/psak/sak/sakId={sakId}'
-  echo PSAK_OPPGAVEOVERSIKT='http://localhost:9080/psak'
+  echo PSAK_OPPGAVEOVERSIKT='http://localhost:9080/psak/springapi/redirect/oppgave/oppgaveliste'
   echo VERDANDE_BEHANDLING_URL="'http://localhost:3000/behandling/{behandlingId}'"
   echo VERDANDE_AKTIVITET_URL="'http://localhost:3000/behandling/{behandlingId}/aktivitet/{aktivitetId}'"
   echo VERDANDE_LINKS_ENABLED="'true'"
