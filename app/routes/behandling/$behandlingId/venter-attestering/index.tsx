@@ -17,7 +17,6 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
     return redirect(`/behandling/${behandlingId}`)
   } else {
     return {
-      behandlingId,
       psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
       psakPensjonsoversikt: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
     }
@@ -30,7 +29,8 @@ export const action = async ({ params }: Route.ActionArgs) => {
 }
 
 const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
-  const { psakOppgaveoversikt } = loaderData
+  const { psakOppgaveoversikt, psakPensjonsoversikt } = loaderData
+
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="space-32" className="content" align="center">
@@ -41,7 +41,7 @@ const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
         <CheckmarkCircleIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
 
         <HStack gap="2">
-          <Button as="a" size="small" href={psakOppgaveoversikt}>
+          <Button as="a" size="small" href={psakPensjonsoversikt}>
             Til Pensjonsoversikt
           </Button>
           <Button as="a" variant="secondary" size="small" href={psakOppgaveoversikt}>

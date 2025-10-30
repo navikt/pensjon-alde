@@ -106,7 +106,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
             Behandlingen er fullført. Vi kan ikke behandle denne videre og har samlet en oppsummering på hva som har
             blitt utført.
             <Button as="a" href={loaderData.pensjonsoversiktUrl} size="small" variant="secondary-neutral">
-              Til pensjonsoversikten
+              Til Pensjonsoversikt
             </Button>
           </HStack>
         </Alert>
