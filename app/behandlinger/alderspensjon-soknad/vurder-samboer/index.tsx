@@ -78,6 +78,13 @@ export async function action({ params, request }: Route.ActionArgs) {
     errors.samboerFra = 'Påkrevd'
   }
 
+  if (parsedForm.samboerFra) {
+    const today = new Date()
+    if (new Date(parsedForm.samboerFra) > today) {
+      errors.samboerFra = 'Dato kan ikke være etter dagens dato'
+    }
+  }
+
   if (Object.keys(errors).length > 0) {
     return data({ errors }, { status: 400 })
   }
