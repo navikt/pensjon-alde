@@ -151,31 +151,29 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                 </Radio>
               </RadioGroup>
               {utfall === AttesteringUtfall.IKKE_GODKJENN && (
-                <Box.New paddingInline="space-20 0">
-                  <RadioGroup
-                    ref={begrunnelseRef}
-                    legend="Velg begrunnelse"
-                    name="begrunnelse"
-                    error={errors?.begrunnelse}
-                    defaultValue={data?.begrunnelse}
-                  >
-                    <Radio size="small" value="Feil i vedtak">
-                      Feil i vedtak
-                    </Radio>
+                <RadioGroup
+                  ref={begrunnelseRef}
+                  legend="Velg begrunnelse"
+                  name="begrunnelse"
+                  error={errors?.begrunnelse}
+                  defaultValue={data?.begrunnelse}
+                >
+                  <Radio size="small" value="Feil i vedtak">
+                    Feil i vedtak
+                  </Radio>
 
-                    <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
-                      Forvaltningsnotat utilstrekkelig
-                    </Radio>
+                  <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
+                    Forvaltningsnotat utilstrekkelig
+                  </Radio>
 
-                    <Radio size="small" value="Hent inn nytt grunnlag">
-                      Hent inn nytt grunnlag
-                    </Radio>
+                  <Radio size="small" value="Hent inn nytt grunnlag">
+                    Hent inn nytt grunnlag
+                  </Radio>
 
-                    <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
-                      Saksbehandlerstandard ikke fulgt
-                    </Radio>
-                  </RadioGroup>
-                </Box.New>
+                  <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
+                    Saksbehandlerstandard ikke fulgt
+                  </Radio>
+                </RadioGroup>
               )}
               {utfall && (
                 <Button size="small" type="submit">
