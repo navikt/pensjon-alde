@@ -70,7 +70,7 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
         </Box.New>
         <HStack gap="2" justify="center">
           <Button size="small" as="a" href={pensjonsoversiktUrl}>
-            Til pensjonsoversikt
+            Til Pensjonsoversikt
           </Button>
         </HStack>
       </VStack>
