@@ -66,7 +66,7 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
         </Heading>
 
         <Box.New style={{ display: 'flex', justifyContent: 'center' }}>
-          <PersonCheckmarkIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
+          <PersonCheckmarkIcon fontSize="6rem" style={{ color: 'var(--ax-text-success-decoration)' }} />
         </Box.New>
         <HStack gap="2" justify="center">
           <Button size="small" as="a" href={pensjonsoversiktUrl}>
