@@ -426,7 +426,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                   bedre. Ikke skriv personopplysninger.
                 </BodyLong>
 
-                <Textarea label="Tilbakemelding (frivillig)" name="begrunnelse" />
+                <Textarea label="Tilbakemelding (frivillig, ikke anonymt)" name="begrunnelse" />
               </VStack>
             </Modal.Body>
             <Modal.Footer>
