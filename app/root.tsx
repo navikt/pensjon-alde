@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noDocumentCookie: TODO: Refactor this */
 import '@navikt/ds-css/darkside'
 
-import { BodyLong, Box, CopyButton, Heading, HStack, Link, Page, Theme, VStack } from '@navikt/ds-react'
+import { BodyLong, BodyShort, Box, CopyButton, Heading, HStack, Link, Page, Theme, VStack } from '@navikt/ds-react'
 import type React from 'react'
 import { useEffect, useState } from 'react'
 import {
@@ -221,24 +221,34 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             </Link>
             .
           </BodyLong>
-          <VStack gap="1">
-            <BodyLong size="medium">
-              <strong>Feilmelding</strong>
-            </BodyLong>
 
-            <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
-              <HStack justify="space-between">
-                <BodyLong size="small" style={{ padding: '1rem' }}>
-                  {details}
+          <VStack gap="4">
+            <VStack>
+              <VStack gap="4">
+                <BodyLong size="medium">
+                  <strong>Feilmelding</strong>
                 </BodyLong>
-                {traceId && (
-                  <CopyButton copyText={traceId} size="small" variant="action" text="Kopier" activeText="Kopiert" />
-                )}
-              </HStack>
-            </Box.New>
-            <BodyLong size="small" textColor="subtle">
-              {formatDateToNorwegian(dato, { showTime: true })}
-            </BodyLong>
+
+                <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
+                  <HStack justify="space-between" gap="space-8">
+                    <BodyLong size="small" style={{ wordBreak: 'break-all' }}>
+                      {details}
+                    </BodyLong>
+                    {traceId && (
+                      <HStack align="center">
+                        <BodyShort size="small" textColor="subtle">
+                          {traceId}
+                        </BodyShort>
+                        <CopyButton copyText={traceId} size="small" variant="action" activeText="Kopiert" />
+                      </HStack>
+                    )}
+                  </HStack>
+                </Box.New>
+              </VStack>
+              <BodyLong size="small" textColor="subtle">
+                {formatDateToNorwegian(dato, { showTime: true })}
+              </BodyLong>
+            </VStack>
           </VStack>
         </VStack>
       </Page.Block>
