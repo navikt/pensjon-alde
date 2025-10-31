@@ -12,14 +12,13 @@ import {
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
-import { formatDate } from 'date-fns'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { formatDateToNorwegian, toMonthAndYear } from '~/utils/date'
+import { formatDateToNorwegian } from '~/utils/date'
 import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
@@ -155,9 +154,9 @@ function VurdereSamboerComponent({
               size="small"
               error={errors?.vurdering}
             >
-              <Radio value="IKKE_SAMBOER">Ikke samboere</Radio>
-              <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
               <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
+              <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
+              <Radio value="IKKE_SAMBOER">Ikke samboer</Radio>
             </RadioGroup>
 
             <DatePicker dropdownCaption {...datepickerProps}>
