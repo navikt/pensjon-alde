@@ -11,7 +11,7 @@ import type { Route } from './+types'
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const { behandlingId } = params
-  const { psakOppgaveoversikt } = env
+  const { psakOppgaveoversikt, psakSakUrlTemplate } = env
 
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
@@ -23,6 +23,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     return {
       behandlingId,
       psakOppgaveoversikt: buildUrl(psakOppgaveoversikt, request, {}),
+      psakPensjonsoversikt: buildUrl(psakSakUrlTemplate, request, { sakId: behandling.sakId }),
       status: behandling.aldeBehandlingStatus,
     }
   } else {
@@ -31,7 +32,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 }
 
 const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
-  const { psakOppgaveoversikt, status } = loaderData
+  const { psakOppgaveoversikt, psakPensjonsoversikt, status } = loaderData
   const revalidator = useRevalidator()
 
   useEffect(() => {
@@ -68,7 +69,10 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
         <CheckmarkCircleIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
 
         <HStack gap="2">
-          <Button as="a" size="small" href={psakOppgaveoversikt}>
+          <Button as="a" size="small" href={psakPensjonsoversikt}>
+            Til Pensjonsoversikt
+          </Button>
+          <Button as="a" size="small" href={psakOppgaveoversikt} variant="secondary">
             Til Oppgavelisten
           </Button>
         </HStack>
