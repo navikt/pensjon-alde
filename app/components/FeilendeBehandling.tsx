@@ -86,7 +86,7 @@ export default function FeilendeBehandling({
                 </BodyLong>
 
                 <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
-                  <HStack justify="space-between" gap="space-8">
+                  <VStack gap="space-8">
                     <BodyLong size="small" style={{ wordBreak: 'break-all' }}>
                       {behandling.sisteKjoring?.feilmelding}
                     </BodyLong>
@@ -99,11 +99,10 @@ export default function FeilendeBehandling({
                           copyText={behandling.sisteKjoring?.uuid || behandling.behandlingId.toString()}
                           size="small"
                           variant="action"
-                          activeText="Kopiert"
                         />
                       </HStack>
                     )}
-                  </HStack>
+                  </VStack>
                 </Box.New>
               </VStack>
               <BodyLong size="small" textColor="subtle">
