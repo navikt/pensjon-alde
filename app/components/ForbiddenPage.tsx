@@ -1,4 +1,4 @@
-import { BodyLong, BodyShort, Box, CopyButton, Heading, Link, Page, VStack } from '@navikt/ds-react'
+import { BodyLong, BodyShort, Box, CopyButton, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import commonStyles from '~/common.module.css'
 import { formatDateToNorwegian } from '~/utils/date'
 
@@ -35,10 +35,12 @@ export default function ForbiddenPage({ dato, traceId }: { dato: number; traceId
               </BodyLong>
 
               <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
-                <BodyShort size="small" textColor="subtle">
-                  {traceId}
-                </BodyShort>
-                <CopyButton copyText={traceId} size="small" variant="action" />
+                <HStack align="center">
+                  <BodyShort size="small" textColor="subtle">
+                    {traceId}
+                  </BodyShort>
+                  <CopyButton copyText={traceId} size="small" variant="action" />
+                </HStack>
               </Box.New>
               <BodyLong size="small" textColor="subtle">
                 {formatDateToNorwegian(dato, { showTime: true })}
