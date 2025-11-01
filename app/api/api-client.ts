@@ -1,29 +1,9 @@
 import { data } from 'react-router'
+import type { ProblemDetails } from '~/api/error.types'
 import { requireAccessToken } from '~/auth/auth.server'
 import { parseTraceparent } from '~/utils/traceparent'
 
 export type Fetcher = <T>(url: string, options: RequestInit) => Promise<T>
-
-export interface ApiErrorData {
-  status: number
-  title: string
-  message?: string
-  detail?: string
-  path?: string
-  timestamp?: string
-}
-
-export function isApiError(error: unknown): error is { data: ApiErrorData } {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'data' in error &&
-    typeof (error as { data: unknown }).data === 'object' &&
-    (error as { data: unknown }).data !== null &&
-    typeof (error as { data: { status: unknown } }).data.status === 'number' &&
-    typeof (error as { data: { title: unknown } }).data.title === 'string'
-  )
-}
 
 export const fetcher =
   (BASE_URL: string, request: Request): Fetcher =>
@@ -44,13 +24,6 @@ export const fetcher =
     const response = await fetch(`${BASE_URL}${url}`, mergedOptions)
 
     if (!response.ok) {
-      let errorBody = null
-      const contentType = response.headers.get('content-type')
-
-      if (contentType?.includes('application/json')) {
-        errorBody = await response.json()
-      }
-
       function traceId() {
         const traceparent = response.headers.get('traceparent')
         const navTraceId = response.headers.get('nav-call-id')
@@ -62,21 +35,58 @@ export const fetcher =
         }
       }
 
-      throw data(
-        {
-          status: response.status,
-          title: errorBody?.error || response.statusText || 'API Error',
-          message: errorBody?.message,
-          traceId: traceId(),
-          detail: errorBody?.detail,
-          path: errorBody?.path,
-          timestamp: errorBody?.timestamp,
-        },
-        {
-          status: response.status,
-          statusText: response.statusText,
-        },
-      )
+      const contentType = response.headers.get('content-type')
+
+      if (contentType?.includes('application/json')) {
+        const errorBody = await response.json()
+
+        throw data(
+          {
+            status: response.status,
+            title: errorBody?.error || response.statusText || 'API Error',
+            message: errorBody?.message,
+            traceId: traceId(),
+            detail: errorBody?.detail,
+            path: errorBody?.path,
+            timestamp: errorBody?.timestamp,
+          },
+          {
+            status: response.status,
+            statusText: response.statusText,
+          },
+        )
+      } else if (contentType?.includes('application/problem+json')) {
+        const problemDetails: ProblemDetails = (await response.json()) as ProblemDetails
+
+        throw data(
+          {
+            problemDetails: problemDetails,
+            traceId: traceId(),
+          },
+          {
+            status: response.status,
+            statusText: response.statusText,
+          },
+        )
+      } else {
+        const errorBody = await response.text()
+
+        throw data(
+          {
+            status: response.status,
+            title: errorBody?.error || response.statusText || 'API Error',
+            message: errorBody?.message,
+            traceId: traceId(),
+            detail: errorBody?.detail,
+            path: errorBody?.path,
+            timestamp: errorBody?.timestamp,
+          },
+          {
+            status: response.status,
+            statusText: response.statusText,
+          },
+        )
+      }
     }
 
     const contentType = response.headers.get('content-type')

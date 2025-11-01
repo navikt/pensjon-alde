@@ -1,5 +1,5 @@
+import { isApiError } from '~/api/error.types'
 import type { Fetcher } from '../api-client'
-import { isApiError } from '../api-client'
 
 export function aktivitetApi(fetch: Fetcher) {
   const hentAktivitet = <T>() => fetch<T>('', { method: 'GET' })

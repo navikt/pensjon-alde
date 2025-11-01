@@ -19,6 +19,7 @@ import {
   useParams,
   useRouteLoaderData,
 } from 'react-router'
+import { isProblemDetails } from '~/api/error.types'
 import commonStyles from '~/common.module.css'
 import ForbiddenPage from '~/components/ForbiddenPage'
 import { buildUrl } from '~/utils/build-url'
@@ -188,15 +189,22 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       return <ForbiddenPage dato={dato} traceId={traceId} />
     }
 
-    details = error.status === 404 ? 'The requested page could not be found.' : JSON.stringify(error, null, 2)
+    const problemDetails =
+      (data !== undefined &&
+        'problemDetails' in data &&
+        isProblemDetails(data.problemDetails) &&
+        data.problemDetails) ||
+      undefined
+
+    if (problemDetails != null) {
+      details = problemDetails.detail || 'En ukjent feil skjedde'
+    } else {
+      details = error.status === 404 ? 'The requested page could not be found.' : JSON.stringify(error, null, 2)
+    }
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message
   } else {
     details = 'En uventet feil oppsto'
-  }
-
-  if (details !== 'string') {
-    details = JSON.stringify(details, null, 2)
   }
 
   logError(new Error(details))
