@@ -17,7 +17,6 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   } else {
     return {
       pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
-      oppsummeringUrl: `/behandling/${behandling.behandlingId}/oppsummering`,
     }
   }
 }
@@ -35,11 +34,7 @@ const AvbruttAutomatisk = ({ loaderData }: Route.ComponentProps) => {
         </VStack>
         <HStack gap="2" justify="center">
           <Button size="small" as="a" href={pensjonsoversiktUrl}>
-            Til pensjonsoversikt
-          </Button>
-
-          <Button size="small" variant="secondary" as="a" href={loaderData.oppsummeringUrl}>
-            Vis oppsummering
+            Til Pensjonsoversikt
           </Button>
         </HStack>
       </VStack>
