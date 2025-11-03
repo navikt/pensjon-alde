@@ -1,4 +1,4 @@
-import { Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
+import { BodyLong, Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
 import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
@@ -26,11 +26,13 @@ const AvbruttAutomatisk = ({ loaderData }: Route.ComponentProps) => {
   const { pensjonsoversiktUrl } = loaderData
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
-      <VStack gap="8">
-        <Heading size="medium" level="1">
-          Kravet kan ikke behandles i pilot
-        </Heading>
-
+      <VStack gap="space-40">
+        <VStack align="center" gap="space-8">
+          <Heading size="medium" level="1">
+            Kravet kan ikke behandles i pilot
+          </Heading>
+          <BodyLong>Saksbehandlig må fortsettes som normal kravbehandling.</BodyLong>
+        </VStack>
         <HStack gap="2" justify="center">
           <Button size="small" as="a" href={pensjonsoversiktUrl}>
             Til pensjonsoversikt
