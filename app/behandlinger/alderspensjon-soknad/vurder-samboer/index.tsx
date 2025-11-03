@@ -70,7 +70,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   const errors: FormErrors<SamboerVurdering> = {}
 
   if (parsedForm.vurdering === null) {
-    errors.vurdering = 'Påkrevd'
+    errors.vurdering = 'Du må velge et alternativ'
   }
 
   if (!parsedForm.samboerFra) {
