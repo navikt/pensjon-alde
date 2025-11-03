@@ -23,11 +23,6 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
   }
 }
 
-export const action = async ({ params }: Route.ActionArgs) => {
-  const { behandlingId } = params
-  return redirect(`/behandling/${behandlingId}/oppsummering`)
-}
-
 const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
   const { psakOppgaveoversikt, psakPensjonsoversikt } = loaderData
 
