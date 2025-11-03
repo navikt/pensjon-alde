@@ -74,7 +74,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   if (!parsedForm.samboerFra) {
-    errors.samboerFra = 'Påkrevd'
+    errors.samboerFra = 'Du må skrive en dato, f.eks. på denne måten: ddmmåååå'
   }
 
   if (parsedForm.samboerFra) {
