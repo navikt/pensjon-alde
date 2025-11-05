@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 interface Props {
   title: string
   children: ReactNode
-  description: string
+  description?: string
 }
 
 const AddressWrapper = ({ title, children, description }: Props) => (

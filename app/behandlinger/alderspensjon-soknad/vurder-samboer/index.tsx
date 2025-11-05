@@ -270,10 +270,7 @@ function VurdereSamboerComponent({
 
       <AktivitetVurderingLayout.Section>
         <HGrid gap="8" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">
-          <AddressWrapper
-            title="Samboers bostedsadresser"
-            description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
-          >
+          <AddressWrapper title="Samboers bostedsadresser">
             {samboer.bostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={samboer.bostedsadresser} />
             ) : (
@@ -281,10 +278,7 @@ function VurdereSamboerComponent({
             )}
           </AddressWrapper>
 
-          <AddressWrapper
-            title="Søkers bostedsadresser"
-            description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
-          >
+          <AddressWrapper title="Søkers bostedsadresser">
             {sokersBostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={sokersBostedsadresser} />
             ) : (

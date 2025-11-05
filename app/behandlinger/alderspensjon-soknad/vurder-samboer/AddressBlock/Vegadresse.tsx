@@ -9,12 +9,6 @@ interface Props {
 
 export const VegadresseBlokk = ({ adresse }: Props) => (
   <>
-    {/*
-    <Heading size="small" level="5" style={{ marginTop: '6px', marginBottom: '12px' }}>
-      Vegadresse
-    </Heading>
-    */}
-
     <VStack gap="4">
       <div>
         {adresse.adresselinjer.map((linje, index) => (
