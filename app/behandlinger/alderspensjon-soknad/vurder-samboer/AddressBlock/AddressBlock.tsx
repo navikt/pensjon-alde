@@ -1,8 +1,7 @@
 import { Box, VStack } from '@navikt/ds-react'
 import { useMemo } from 'react'
-import type { Bostedsadresse, MatrikkelAdresse, RegoppslagAdresse, Vegadresse } from '../samboer-types'
+import type { Bostedsadresse, MatrikkelAdresse, Vegadresse } from '../samboer-types'
 import { MatrikkeladresserBlokk } from './Matrikkeladresse'
-import { RegoppslagAdresseBlokk } from './RegoppslagAdresse'
 import { VegadresseBlokk } from './Vegadresse'
 
 interface Props {
@@ -29,9 +28,6 @@ const AddressBlock = ({ bostedadresser }: Props) => {
         break
       case 'MatrikkeladresseModel':
         content = <MatrikkeladresserBlokk adresse={adresse as MatrikkelAdresse} />
-        break
-      case 'RegoppslagAdresseModel':
-        content = <RegoppslagAdresseBlokk adresse={adresse as RegoppslagAdresse} />
         break
       default:
         content = <div>Ingen støtte for {(adresse as Bostedsadresse).type}</div>

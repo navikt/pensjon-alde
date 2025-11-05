@@ -17,14 +17,11 @@ export const VegadresseBlokk = ({ adresse }: Props) => (
 
     <VStack gap="4">
       <div>
-        <AddressItem bold>
-          {adresse.adressenavn} {adresse.husnummer}
-          {adresse.husbokstav} {adresse.bruksenhetsnummer && `- ${adresse.bruksenhetsnummer}`}
-        </AddressItem>
-
-        <AddressItem>
-          {adresse.postnummer} {adresse.poststed}
-        </AddressItem>
+        {adresse.adresselinjer.map((linje, index) => (
+          <AddressItem key={linje} bold={index === 0}>
+            {linje}
+          </AddressItem>
+        ))}
       </div>
 
       <div>

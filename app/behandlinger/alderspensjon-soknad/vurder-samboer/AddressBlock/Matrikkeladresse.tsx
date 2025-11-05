@@ -9,18 +9,13 @@ interface Props {
 
 export const MatrikkeladresserBlokk = ({ adresse }: Props) => (
   <>
-    {/*
-    <Heading size="small" level="5" style={{ marginTop: '6px', marginBottom: '12px' }}>
-      Matrikkeladresse
-    </Heading>
-    */}
-
     <VStack gap="4">
       <div>
-        <AddressItem bold>{adresse.matrikkelId}</AddressItem>
-        <AddressItem>
-          {adresse.postnummer} {adresse.poststed}
-        </AddressItem>
+        {adresse.adresselinjer.map((linje, index) => (
+          <AddressItem key={linje} bold={index === 0}>
+            {linje}
+          </AddressItem>
+        ))}
       </div>
 
       <div>

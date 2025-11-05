@@ -14,18 +14,6 @@ export interface AdresseTilleggsdata {
   type: string | null
 }
 
-export interface RegoppslagAdresse {
-  adresseString: string
-  adresselinjer: string[]
-  adresseTilleggsdata: AdresseTilleggsdata
-  postnummer: string
-  poststed: string
-  landkode: string
-  land: string
-  adresseKilde: string
-  type: 'RegoppslagAdresseModel'
-}
-
 export interface Vegadresse {
   matrikkelId: string | null
   adressenavn: string
@@ -47,17 +35,20 @@ export interface Vegadresse {
 
 export interface MatrikkelAdresse {
   matrikkelId: string | null
+  postnummer: string | null
+  poststed: string | null
+  tilleggsnavn: string | null
+  kommunenummer: string | null
+  bruksenhetsnummer: string | null
+  bydelsnummer: string | null
+  koordinater: string | null
   adresseString: string
   adresselinjer: string[]
-  adresseTilleggsdata: AdresseTilleggsdata
-  postnummer: string
-  poststed: string
-  kommunenummer: string
-  koordinater: unknown | null
+  adresseTilleggsdata: AdresseTilleggsdata | null
   type: 'MatrikkeladresseModel'
 }
 
-export type Bostedsadresse = RegoppslagAdresse | Vegadresse | MatrikkelAdresse
+export type Bostedsadresse = Vegadresse | MatrikkelAdresse
 
 export type Soknad = {
   datoForSamboerskap: string
