@@ -42,6 +42,8 @@ jobs:
         include:
           -  vars_file: vars-q2.yaml
              cluster: dev-gcp
+          -  vars_file: prod.yaml
+             cluster: prod-gcp
 
     steps:
       - uses: actions/checkout@v5
