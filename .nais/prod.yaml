@@ -1,0 +1,29 @@
+app:
+  name: 'pensjon-alde'
+  namespace: 'pensjon-saksbehandling'
+
+ingresses:
+
+  - "https://pensjon-alde.intern.nav.no"
+
+pen:
+  host: 'pensjon-pen.prod-fss-pub.nais.io'
+  scope: 'api://prod-fss.pensjondeployer.pensjon-pen/.default'
+  url: 'https://pensjon-pen.prod-fss-pub.nais.io'
+
+psak:
+  sak_url_template: 'https://pensjon-psak.nais.adeo.no/psak/sak/sakId={sakId}'
+  oppgaveoversikt: 'https://pensjon-psak.nais.adeo.no/psak/springapi/redirect/oppgave/oppgaveliste'
+
+verdande:
+  links_enabled: true
+  aktivitet_url: 'https://pensjon-verdande.intern.nav.no/aktivitet/{behandlingId}/{aktivitetId}'
+  behandling_url: 'https://pensjon-verdande.intern.nav.no/behandling/{behandlingId}'
+
+telemetry:
+    url: 'https://telemetry.nav.no/collect'
+    environment: 'prod'
+
+azure:
+  groups:
+    - "0af3955f-df85-4eb0-b5b2-45bf2c8aeb9e" # 0000-GA-PENSJON_SAKSBEHANDLER
