@@ -186,7 +186,7 @@ function VurdereSamboerComponent({
             {!readOnly && (
               <VStack gap="3">
                 <Button type="submit" variant="primary" size="small">
-                  Lagre vurdering
+                  Fortsett behandling
                 </Button>
 
                 <Button type="reset" variant="secondary" size="small" onClick={avbrytAktivitet}>

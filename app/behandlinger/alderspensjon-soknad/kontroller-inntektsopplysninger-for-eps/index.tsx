@@ -120,7 +120,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
       {!readOnly && (
         <div className="button-group">
           <Button type="submit" variant="primary" size="small">
-            Lagre vurdering
+            Fortsett behandling
           </Button>
 
           <Button type="reset" variant="secondary" size="small" onClick={avbrytAktivitet}>
