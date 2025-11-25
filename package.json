@@ -52,7 +52,7 @@
     "@tailwindcss/vite": "^4.1.16",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.0",
+    "@types/react-dom": "^19.2.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
     "msw": "^2.11.3",
