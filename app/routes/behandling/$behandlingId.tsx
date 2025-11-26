@@ -16,12 +16,23 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
-import { Form, Outlet, redirect, useNavigate, useParams, useRevalidator } from 'react-router'
+import {
+  Form,
+  Outlet,
+  redirect,
+  useNavigate,
+  useOutletContext,
+  useParams,
+  useRevalidator,
+  useRouteLoaderData,
+} from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import { Fnr } from '~/components/Fnr'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import { userContext } from '~/context/user-context'
+import { Header } from '~/layout/Header/Header'
+import type { RootOutletContext, loader as rootLoader } from '~/root'
 import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
@@ -106,6 +117,13 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
 
+  const urls = {
+    oppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
+    pensjonsoversikt: behandling.sakId
+      ? buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId })
+      : undefined,
+  }
+
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')
 
@@ -135,7 +153,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     isAttestering,
     showStepper: showStepper && !isOppsummering && !isAttestering,
     showMetadata,
-    psakUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
+    urls,
   }
 }
 
@@ -161,13 +179,19 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, isOppsummering, psakUrl } = loaderData
+  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, isOppsummering, urls } = loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
   const stepperContainerRef = useRef<HTMLDivElement>(null)
   const revalidator = useRevalidator()
   const ref = useRef<HTMLDialogElement>(null)
+
+  const root = useRouteLoaderData<typeof rootLoader>('root')
+  if (!root) throw new Error('Root loader data not found')
+
+  const { me, verdandeAktivitetUrl, verdandeBehandlingUrl, telemetry } = root
+  const { setDarkmode, isDarkmode } = useOutletContext<RootOutletContext>()
 
   const avbrytAktivitet = () => ref.current?.showModal()
 
@@ -252,194 +276,210 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   }, [activeStepIndex])
 
   return (
-    <Box.New asChild background={'default'}>
-      <Page>
-        <Box.New
-          paddingInline="10"
-          paddingBlock="2"
-          borderWidth="1 0"
-          background="neutral-soft"
-          borderColor="neutral-subtle"
-        >
-          <HStack align="center" gap="1">
-            <HStack align="center">
-              <PersonIcon fontSize="1.5em" /> <Fnr value={behandling.fnr} />
-            </HStack>
-            <span>/</span>
-            {behandling.etternavn}, {behandling.fornavn} {behandling.mellomnavn}
-            <span>/</span>
-            Født: {formatDateToNorwegian(behandling.fodselsdato)} ({formatDateToAge(behandling.fodselsdato)})
-            <Spacer />
-            {behandling.friendlyName}
-            <span>/</span>
-            <HStack align="center">
-              {behandling.sakId}
-              <CopyButton size="small" variant="action" copyText={behandling.sakId?.toString() ?? ''} />
-            </HStack>
-          </HStack>
-        </Box.New>
-        {showMetadata && (
-          <Box.New padding="4" borderWidth="1 0">
-            <HStack gap="6" align="center">
-              <VStack>
-                <Label size="small">Behandling</Label>
-                <BodyShort>{behandling.friendlyName}</BodyShort>
-              </VStack>
-
-              <VStack>
-                <Label size="small">Alde Status</Label>
-                <Tag
-                  variant={behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT ? 'success' : 'info'}
-                  size="small"
-                >
-                  {behandling.aldeBehandlingStatus}
-                </Tag>
-              </VStack>
-
-              <VStack>
-                <Label size="small">Behandling Status</Label>
-                <Tag
-                  variant={
-                    behandling.status === BehandlingStatus.FULLFORT
-                      ? 'success'
-                      : behandling.status === BehandlingStatus.FEILENDE
-                        ? 'error'
-                        : 'info'
-                  }
-                  size="small"
-                >
-                  {behandling.status}
-                </Tag>
-              </VStack>
-
-              <VStack>
-                <Label size="small">Opprettet</Label>
-                <BodyShort size="small">{formatDateToNorwegian(behandling.opprettet)}</BodyShort>
-              </VStack>
-
-              {behandling.kravId && (
-                <VStack>
-                  <Label size="small">Krav</Label>
-                  <CopyButton
-                    text={behandling.kravId.toString()}
-                    copyText={behandling.kravId.toString()}
-                    size="small"
-                  />
-                </VStack>
-              )}
-
-              {behandling.sakId && (
-                <VStack>
-                  <Label size="small">Sak</Label>
-                  <CopyButton text={behandling.sakId.toString()} copyText={behandling.sakId.toString()} size="small" />
-                </VStack>
-              )}
-
+    <div>
+      <Header
+        me={me}
+        isDarkmode={isDarkmode}
+        setDarkmode={setDarkmode}
+        pensjonsoversiktUrl={urls.pensjonsoversikt}
+        oppgaveoversiktUrl={urls.oppgaveoversikt}
+        environment={telemetry.environment}
+        verdandeAktivitetUrl={verdandeAktivitetUrl}
+        verdandeBehandlingUrl={verdandeBehandlingUrl}
+      />
+      <Box.New asChild background={'default'}>
+        <Page>
+          <Box.New
+            paddingInline="10"
+            paddingBlock="2"
+            borderWidth="1 0"
+            background="neutral-soft"
+            borderColor="neutral-subtle"
+          >
+            <HStack align="center" gap="1">
+              <HStack align="center">
+                <PersonIcon fontSize="1.5em" /> <Fnr value={behandling.fnr} />
+              </HStack>
+              <span>/</span>
+              {behandling.etternavn}, {behandling.fornavn} {behandling.mellomnavn}
+              <span>/</span>
+              Født: {formatDateToNorwegian(behandling.fodselsdato)} ({formatDateToAge(behandling.fodselsdato)})
               <Spacer />
-
-              {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && !isOppsummering && (
-                <Button
-                  type="submit"
-                  size="small"
-                  onClick={() => window.open(`/behandling/${behandling.behandlingId}/oppsummering`, '_self')}
-                >
-                  Vis oppsummering
-                </Button>
-              )}
-
-              {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && isOppsummering && (
-                <Button
-                  type="submit"
-                  size="small"
-                  onClick={() => window.open(`/behandling/${behandling.behandlingId}`, '_self')}
-                >
-                  Fortsett saksbehandling
-                </Button>
-              )}
-
-              {isOppsummering && behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
-                <Button
-                  type="submit"
-                  size="small"
-                  onClick={() => window.open(psakUrl, '_blank')}
-                  icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
-                  iconPosition="right"
-                >
-                  Åpne pensjonsoversikten
-                </Button>
-              )}
-
-              {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
-                <Button type="submit" size="small" variant="danger" onClick={() => ref.current?.showModal()}>
-                  Ta til manuell
-                </Button>
-              )}
+              {behandling.friendlyName}
+              <span>/</span>
+              <HStack align="center">
+                {behandling.sakId}
+                <CopyButton size="small" variant="action" copyText={behandling.sakId?.toString() ?? ''} />
+              </HStack>
             </HStack>
           </Box.New>
-        )}
+          {showMetadata && (
+            <Box.New padding="4" borderWidth="1 0">
+              <HStack gap="6" align="center">
+                <VStack>
+                  <Label size="small">Behandling</Label>
+                  <BodyShort>{behandling.friendlyName}</BodyShort>
+                </VStack>
 
-        {allSteps.length > 0 && showStepper && (
-          <Box.New padding="space-12">
-            <div
-              ref={stepperContainerRef}
-              style={{
-                overflowX: 'auto',
-                overflowY: 'hidden',
-                scrollbarWidth: 'thin',
-                WebkitOverflowScrolling: 'touch',
-              }}
-            >
-              <Stepper orientation="horizontal" activeStep={activeStepIndex + 1} style={{ minWidth: 'max-content' }}>
-                {allSteps.map((step, index) => (
-                  <Stepper.Step
-                    key={step.aktivitetId}
-                    completed={step.status === AktivitetStatus.FULLFORT}
-                    onClick={() => {
-                      if (!step.redirectUrl) return
-
-                      navigate(step.redirectUrl)
-                    }}
-                    style={{ cursor: 'pointer' }}
-                    data-step-index={index}
+                <VStack>
+                  <Label size="small">Alde Status</Label>
+                  <Tag
+                    variant={behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT ? 'success' : 'info'}
+                    size="small"
                   >
-                    {step.friendlyName ?? ''}
-                  </Stepper.Step>
-                ))}
-              </Stepper>
-            </div>
-          </Box.New>
-        )}
+                    {behandling.aldeBehandlingStatus}
+                  </Tag>
+                </VStack>
 
-        {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
+                <VStack>
+                  <Label size="small">Behandling Status</Label>
+                  <Tag
+                    variant={
+                      behandling.status === BehandlingStatus.FULLFORT
+                        ? 'success'
+                        : behandling.status === BehandlingStatus.FEILENDE
+                          ? 'error'
+                          : 'info'
+                    }
+                    size="small"
+                  >
+                    {behandling.status}
+                  </Tag>
+                </VStack>
 
-        <Modal ref={ref} header={{ heading: 'Vil du avbryte behandlingen i piloten?' }}>
-          <Form method="post">
-            <input hidden name="aktivitetId" value={aktivitetId} />
-            <Modal.Body>
-              <VStack gap="4">
-                <BodyLong>
-                  Når du tar dette kravet tilbake til vanlig behandling, vil du ikke lenger kunne saksbehandle det i
-                  piloten. Saksbehandlig vil fortsettes som normal kravbehandling.
-                </BodyLong>
-                <BodyLong>
-                  Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
-                  bedre. Ikke skriv personopplysninger.
-                </BodyLong>
+                <VStack>
+                  <Label size="small">Opprettet</Label>
+                  <BodyShort size="small">{formatDateToNorwegian(behandling.opprettet)}</BodyShort>
+                </VStack>
 
-                <Textarea label="Tilbakemelding (frivillig, ikke anonymt)" name="begrunnelse" />
-              </VStack>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button type="submit" variant="primary" onClick={() => ref.current?.close()}>
-                Avbryt behandling i piloten{' '}
-              </Button>
-              <Button type="button" variant="secondary" onClick={() => ref.current?.close()}>
-                Fortsett i piloten
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal>
-      </Page>
-    </Box.New>
+                {behandling.kravId && (
+                  <VStack>
+                    <Label size="small">Krav</Label>
+                    <CopyButton
+                      text={behandling.kravId.toString()}
+                      copyText={behandling.kravId.toString()}
+                      size="small"
+                    />
+                  </VStack>
+                )}
+
+                {behandling.sakId && (
+                  <VStack>
+                    <Label size="small">Sak</Label>
+                    <CopyButton
+                      text={behandling.sakId.toString()}
+                      copyText={behandling.sakId.toString()}
+                      size="small"
+                    />
+                  </VStack>
+                )}
+
+                <Spacer />
+
+                {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && !isOppsummering && (
+                  <Button
+                    type="submit"
+                    size="small"
+                    onClick={() => window.open(`/behandling/${behandling.behandlingId}/oppsummering`, '_self')}
+                  >
+                    Vis oppsummering
+                  </Button>
+                )}
+
+                {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && isOppsummering && (
+                  <Button
+                    type="submit"
+                    size="small"
+                    onClick={() => window.open(`/behandling/${behandling.behandlingId}`, '_self')}
+                  >
+                    Fortsett saksbehandling
+                  </Button>
+                )}
+
+                {isOppsummering && behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
+                  <Button
+                    type="submit"
+                    size="small"
+                    onClick={() => window.open(urls.pensjonsoversikt, '_blank')}
+                    icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
+                    iconPosition="right"
+                  >
+                    Åpne pensjonsoversikten
+                  </Button>
+                )}
+
+                {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
+                  <Button type="submit" size="small" variant="danger" onClick={() => ref.current?.showModal()}>
+                    Ta til manuell
+                  </Button>
+                )}
+              </HStack>
+            </Box.New>
+          )}
+
+          {allSteps.length > 0 && showStepper && (
+            <Box.New padding="space-12">
+              <div
+                ref={stepperContainerRef}
+                style={{
+                  overflowX: 'auto',
+                  overflowY: 'hidden',
+                  scrollbarWidth: 'thin',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+              >
+                <Stepper orientation="horizontal" activeStep={activeStepIndex + 1} style={{ minWidth: 'max-content' }}>
+                  {allSteps.map((step, index) => (
+                    <Stepper.Step
+                      key={step.aktivitetId}
+                      completed={step.status === AktivitetStatus.FULLFORT}
+                      onClick={() => {
+                        if (!step.redirectUrl) return
+
+                        navigate(step.redirectUrl)
+                      }}
+                      style={{ cursor: 'pointer' }}
+                      data-step-index={index}
+                    >
+                      {step.friendlyName ?? ''}
+                    </Stepper.Step>
+                  ))}
+                </Stepper>
+              </div>
+            </Box.New>
+          )}
+
+          {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
+
+          <Modal ref={ref} header={{ heading: 'Vil du avbryte behandlingen i piloten?' }}>
+            <Form method="post">
+              <input hidden name="aktivitetId" value={aktivitetId} />
+              <Modal.Body>
+                <VStack gap="4">
+                  <BodyLong>
+                    Når du tar dette kravet tilbake til vanlig behandling, vil du ikke lenger kunne saksbehandle det i
+                    piloten. Saksbehandlig vil fortsettes som normal kravbehandling.
+                  </BodyLong>
+                  <BodyLong>
+                    Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
+                    bedre. Ikke skriv personopplysninger.
+                  </BodyLong>
+
+                  <Textarea label="Tilbakemelding (frivillig, ikke anonymt)" name="begrunnelse" />
+                </VStack>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button type="submit" variant="primary" onClick={() => ref.current?.close()}>
+                  Avbryt behandling i piloten{' '}
+                </Button>
+                <Button type="button" variant="secondary" onClick={() => ref.current?.close()}>
+                  Fortsett i piloten
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
+        </Page>
+      </Box.New>
+    </div>
   )
 }

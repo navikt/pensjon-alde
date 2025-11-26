@@ -9,6 +9,8 @@ interface Props {
   isDarkmode: boolean
   me: UserContext
   setDarkmode: (darkmode: boolean) => void
+  oppgaveoversiktUrl: string | undefined
+  pensjonsoversiktUrl: string | undefined
   verdandeAktivitetUrl: string | undefined
   verdandeBehandlingUrl: string | undefined
 }
@@ -18,6 +20,8 @@ export const Header = ({
   isDarkmode,
   me,
   setDarkmode,
+  oppgaveoversiktUrl,
+  pensjonsoversiktUrl,
   verdandeAktivitetUrl,
   verdandeBehandlingUrl,
 }: Props) => {
@@ -36,6 +40,20 @@ export const Header = ({
           </div>
         )}
       </InternalHeader.Title>
+      <nav className="menu">
+        <ul>
+          {oppgaveoversiktUrl && (
+            <li>
+              <a href={oppgaveoversiktUrl}>Oppgavelisten</a>
+            </li>
+          )}
+          {pensjonsoversiktUrl && (
+            <li>
+              <a href={pensjonsoversiktUrl}>Pensjonsoversikt</a>
+            </li>
+          )}
+        </ul>
+      </nav>
 
       <Spacer />
 
