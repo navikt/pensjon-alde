@@ -51,7 +51,7 @@ export default function SendTilAttesteringRoute() {
               Send til attestering
             </Button>
 
-            <Button type="button" variant="secondary" size="small" onClick={avbrytAktivitet}>
+            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet}>
               Avbryt behandling i pilot
             </Button>
           </HStack>
