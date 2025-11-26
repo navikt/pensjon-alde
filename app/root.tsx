@@ -29,7 +29,6 @@ import type { Route } from './+types/root'
 import { settingsContext } from './context/settings-context'
 import { type UserContext, userContext } from './context/user-context'
 import { useTelemetry } from './hooks/use-telemetry'
-import { Header } from './layout/Header/Header'
 import { settingsMiddleware } from './middleware/settings'
 import { userMiddleware } from './middleware/user-middleware'
 import styles from './root.module.css'
@@ -100,16 +99,9 @@ export function links() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { darkmode, me, telemetry, sketchmode, verdandeAktivitetUrl, verdandeBehandlingUrl } =
-    useLoaderData<typeof loader>()
-  const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
+  const { telemetry } = useLoaderData<typeof loader>()
   const location = useLocation()
   const params = useParams()
-
-  function setDarkmode(darkmode: boolean) {
-    setIsDarkmode(darkmode)
-    document.cookie = `darkmode=${encodeURIComponent(btoa(darkmode.toString()))}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
-  }
 
   useEffect(() => {
     initInstrumentation(telemetry)
@@ -149,26 +141,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <Page as="body">
-        <Theme theme={isDarkmode ? 'dark' : 'light'} className={sketchmode ? styles.sketchMode : ''}>
-          <Header
-            me={me}
-            isDarkmode={isDarkmode}
-            setDarkmode={setDarkmode}
-            environment={telemetry.environment}
-            verdandeAktivitetUrl={verdandeAktivitetUrl}
-            verdandeBehandlingUrl={verdandeBehandlingUrl}
-          />
-          {children}
-          <ScrollRestoration />
-          <Scripts />
-        </Theme>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
       </Page>
     </html>
   )
 }
 
-export default function App() {
-  return <Outlet />
+export type RootOutletContext = {
+  setDarkmode: (darkmode: boolean) => void
+  isDarkmode: boolean
+}
+
+export default function App({ loaderData }: Route.ComponentProps) {
+  const { darkmode, sketchmode } = loaderData
+  const [isDarkmode, setIsDarkmode] = useState<boolean>(darkmode)
+
+  function setDarkmode(darkmode: boolean) {
+    setIsDarkmode(darkmode)
+    document.cookie = `darkmode=${encodeURIComponent(btoa(darkmode.toString()))}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
+  }
+
+  const outletContext: RootOutletContext = { setDarkmode, isDarkmode }
+
+  return (
+    <Theme theme={isDarkmode ? 'dark' : 'light'} className={sketchmode ? styles.sketchMode : ''}>
+      <Outlet context={outletContext} />
+    </Theme>
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
