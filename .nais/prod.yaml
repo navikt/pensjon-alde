@@ -20,6 +20,9 @@ verdande:
   aktivitet_url: 'https://pensjon-verdande.intern.nav.no/aktivitet/{behandlingId}/{aktivitetId}'
   behandling_url: 'https://pensjon-verdande.intern.nav.no/behandling/{behandlingId}'
 
+modia:
+  oversikt: 'https://modiapersonoversikt.intern.nav.no/person/{fnr}'
+
 telemetry:
     url: 'https://telemetry.nav.no/collect'
     environment: 'prod'

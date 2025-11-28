@@ -37,6 +37,7 @@ export const env = loadEnv({
   verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
   verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
   telemetryUrl: 'TELEMETRY_URL',
+  modia: 'MODIA_PERSONOVERSIKT',
 })
 
 export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'

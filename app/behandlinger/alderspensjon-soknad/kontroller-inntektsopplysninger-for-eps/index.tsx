@@ -15,10 +15,13 @@ import {
 import { useMemo } from 'react'
 import { Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
+import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
+import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
+import { env } from '~/utils/env.server'
 import { parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import type {
@@ -29,18 +32,27 @@ import type {
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 
-  const api = createAktivitetApi({
+  const behandlingApi = createBehandlingApi({
+    request,
+    behandlingId,
+  })
+
+  const aktivtetApi = createAktivitetApi({
     request,
     behandlingId,
     aktivitetId,
   })
 
-  const grunnlag = await api.hentGrunnlagsdata<KontrollerInntektsopplysningerForEpsGrunnlag>()
+  const behandling = await behandlingApi.hentBehandling()
+  const grunnlag = await aktivtetApi.hentGrunnlagsdata<KontrollerInntektsopplysningerForEpsGrunnlag>()
 
   // const vurdering = await api.hentVurdering<KontrollerInntektsopplysningerForEpsVurdering>()
   const vurdering = null
 
+  const modiaUrl = buildUrl(env.modia, request, { fnr: behandling.fnr })
+
   return {
+    modiaUrl,
     grunnlag,
     vurdering,
   }
@@ -74,12 +86,13 @@ const formatCurrencyNok = (amount: string | number) => {
 
 const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.ComponentProps) => {
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
-  const { grunnlag, vurdering } = loaderData
+  const { grunnlag, vurdering, modiaUrl } = loaderData
 
   return (
     <KontrollerInntektsopplysningerForEPS
       readOnly={false}
       grunnlag={grunnlag}
+      modiaUrl={modiaUrl}
       vurdering={vurdering}
       aktivitet={aktivitet}
       behandling={behandling}
@@ -92,10 +105,13 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
 type KontrollerInntektsopplysningerForEPSInterface = AktivitetComponentProps<
   KontrollerInntektsopplysningerForEpsGrunnlag,
   KontrollerInntektsopplysningerForEpsVurdering
->
+> & {
+  modiaUrl: string
+}
 
 const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysningerForEPSInterface> = ({
   vurdering,
+  modiaUrl,
   grunnlag,
   aktivitet,
   readOnly,
@@ -206,9 +222,11 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             </Heading>
             <BodyShort>{grunnlag.sokerKontaktinfo.aktivDigitalt ? 'Ja' : 'Nei'}</BodyShort>
           </div>
-          <Link>
-            Modia <ExternalLinkIcon />
-          </Link>
+          <div>
+            <Link href={modiaUrl} target="_blank">
+              Modia <ExternalLinkIcon />
+            </Link>
+          </div>
         </VStack>
       </div>
     </VStack>

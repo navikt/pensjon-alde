@@ -20,6 +20,9 @@ verdande:
   aktivitet_url: 'https://pensjon-verdande-q2.{subdomain}.dev.nav.no/aktivitet/{behandlingId}/{aktivitetId}'
   behandling_url: 'https://pensjon-verdande-q2.{subdomain}.dev.nav.no/behandling/{behandlingId}'
 
+modia:
+  oversikt: 'https://modiapersonoversikt.ansatt.dev.nav.no/person/{fnr}'
+
 telemetry:
     url: 'https://telemetry.ekstern.dev.nav.no/collect'
     environment: 'q2'
