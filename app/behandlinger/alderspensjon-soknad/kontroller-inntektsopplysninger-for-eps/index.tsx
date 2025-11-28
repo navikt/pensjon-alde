@@ -151,7 +151,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             <Heading level="2" size="small">
               <HStack gap="2" align="center">
                 <PersonIcon aria-hidden />
-                <BodyShort weight="semibold">{epsType.capitalized}</BodyShort>
+                {epsType.capitalized}
               </HStack>
             </Heading>
 
