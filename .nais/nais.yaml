@@ -49,6 +49,8 @@ spec:
       value: "{{{ telemetry.url }}}"
     - name: "TELEMETRY_ENVIRONMENT"
       value: "{{{ telemetry.environment }}}"
+    - name: "MODIA_PERSONOVERSIKT"
+      value: "{{{ modia.oversikt }}}"
 
   image: "{{{ image }}}"
   ingresses:

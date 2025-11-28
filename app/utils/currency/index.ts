@@ -1,0 +1,1 @@
+export { formatCurrencyNok } from './currency'
