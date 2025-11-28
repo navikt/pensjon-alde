@@ -2,7 +2,6 @@ import { ExternalLinkIcon, PersonIcon } from '@navikt/aksel-icons'
 import {
   BodyLong,
   BodyShort,
-  Box,
   Button,
   CopyButton,
   Heading,
@@ -20,6 +19,7 @@ import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayo
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { buildUrl } from '~/utils/build-url'
+import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import { parseForm, radiogroup } from '~/utils/parse-form'
@@ -73,11 +73,6 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   await api.lagreVurdering(vurdering)
   return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
-}
-
-const formatCurrencyNok = (amount: string | number) => {
-  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
-  return new Intl.NumberFormat('nb-NO', { style: 'currency', currency: 'NOK' }).format(numAmount)
 }
 
 const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.ComponentProps) => {
@@ -199,7 +194,6 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
           </VStack>
         </VStack>
       </div>
-
       <div>
         <Heading level="2" size="small" spacing>
           Kontakt søker
@@ -253,11 +247,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             </Button>
           </VStack>
         ) : (
-          <VStack gap="6">
-            <Box.New borderColor="success" borderWidth="1">
-              Vurdert til over 2G
-            </Box.New>
-          </VStack>
+          <VStack gap="6">Vurdert til under 2G</VStack>
         )}
       </VStack>
     </Form>
