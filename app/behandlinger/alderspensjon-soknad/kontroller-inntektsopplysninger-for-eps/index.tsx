@@ -71,12 +71,8 @@ export async function action({ params, request }: Route.ActionArgs) {
     epsInntektOver2G: radiogroup({ over2G: true, under2G: false }),
   })
 
-  try {
-    await api.lagreVurdering(vurdering)
-    return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
-  } catch (error) {
-    console.error(error)
-  }
+  await api.lagreVurdering(vurdering)
+  return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
 }
 
 const formatCurrencyNok = (amount: string | number) => {
