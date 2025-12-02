@@ -178,7 +178,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
                 Brukeroppgitt
               </Heading>
               <BodyShort>
-                {formatCurrencyNok(grunnlag.oppgittInntekt)} = <strong>{oppgittInntektIG}G</strong>
+                {formatCurrencyNok(grunnlag.oppgittInntekt)} ≈ <strong>{oppgittInntektIG}G</strong>
               </BodyShort>
             </div>
 
