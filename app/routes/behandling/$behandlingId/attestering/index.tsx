@@ -203,9 +203,11 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
               </RadioGroup>
             )}
             {utfall && (
-              <Button size="small" type="submit" style={{ maxWidth: '18em' }}>
-                {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
-              </Button>
+              <div>
+                <Button size="small" type="submit">
+                  {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
+                </Button>
+              </div>
             )}
           </VStack>
         </Form>
@@ -215,67 +217,79 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
 
   return (
     <Page.Block gutters>
-      <VStack gap="5">
+      <VStack gap="space-28">
         <Heading level="1" size="large" style={{ paddingTop: '2rem' }}>
           Oppgaven er til attestering
         </Heading>
+        <VStack gap="space-56">
+          {aktiviteter.map(aktivitet => {
+            const Component = components.get(aktivitet.handlerName)
 
-        {aktiviteter.map(aktivitet => {
-          const Component = components.get(aktivitet.handlerName)
-
-          return Component ? (
-            <VStack
-              key={aktivitet.aktivitetId}
-              ref={el => {
-                if (el) {
-                  aktiviteterRefs.current.set(aktivitet.aktivitetId, el)
-                }
-              }}
-            >
-              <Box.New
-                borderColor="neutral-subtleA"
-                borderWidth="1"
-                padding="space-28"
-                borderRadius="xlarge xlarge 0 0"
+            return Component ? (
+              <VStack
+                key={aktivitet.aktivitetId}
+                ref={el => {
+                  if (el) {
+                    aktiviteterRefs.current.set(aktivitet.aktivitetId, el)
+                  }
+                }}
               >
-                <div className="component-area">
-                  <div className="component">
-                    <Component
-                      readOnly={true}
-                      grunnlag={aktivitet.grunnlag}
-                      vurdering={aktivitet.vurdering}
-                      aktivitet={aktivitet.aktivitet}
-                      behandling={behandling}
-                    />
-                  </div>
-                </div>
-              </Box.New>
-              <Box.New
-                background="neutral-softA"
-                borderWidth="0 1 1 1"
-                borderRadius="0 0 xlarge xlarge"
-                borderColor="neutral-subtleA"
-                padding="space-20"
-              >
-                <HStack gap="8" align="center" justify="space-between">
-                  <VStack>
-                    <Label>Vurdert av</Label>
-                    <div>
-                      {aktivitet.vurdertAvBrukerNavn} ({aktivitet.vurdertAvBrukerId})
+                <Box.New
+                  borderColor="neutral-subtleA"
+                  borderWidth="1 1 0 1"
+                  padding="space-28"
+                  borderRadius="xlarge xlarge 0 0"
+                >
+                  <div className="component-area">
+                    <div className="component">
+                      <Component
+                        readOnly={true}
+                        grunnlag={aktivitet.grunnlag}
+                        vurdering={aktivitet.vurdering}
+                        aktivitet={aktivitet.aktivitet}
+                        behandling={behandling}
+                      />
                     </div>
-                    <BodyShort textColor="subtle" size="small">
-                      {formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}
-                    </BodyShort>
-                  </VStack>
-                  {aktiviteter.length > 1 && (
-                    <Checkbox onChange={e => onSjekketClick(aktivitet.aktivitetId, e.target.checked)}>Sjekket</Checkbox>
-                  )}
-                </HStack>
-              </Box.New>
-            </VStack>
-          ) : null
-        })}
-
+                  </div>
+                </Box.New>
+                <Box.New
+                  background="neutral-softA"
+                  borderWidth="0 1 1 1"
+                  borderRadius="0 0 xlarge xlarge"
+                  borderColor="neutral-subtleA"
+                  padding="space-20 space-28"
+                >
+                  <HStack gap="8" align="center" justify="space-between">
+                    <VStack>
+                      <Label>Saksbehandler</Label>
+                      <div>
+                        {aktivitet.vurdertAvBrukerNavn} ({aktivitet.vurdertAvBrukerId})
+                      </div>
+                      <BodyShort textColor="subtle" size="small">
+                        {formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}
+                      </BodyShort>
+                    </VStack>
+                    {aktiviteter.length > 1 && false && (
+                      <div>
+                        <Button
+                          variant="secondary"
+                          size="small"
+                          icon={<ArrowDownIcon aria-hidden />}
+                          onClick={() => onSjekketClick(aktivitet.aktivitetId, true)}
+                        >
+                          Videre
+                        </Button>
+                        <Checkbox onChange={e => onSjekketClick(aktivitet.aktivitetId, e.target.checked)}>
+                          Sjekket
+                        </Checkbox>
+                      </div>
+                    )}
+                  </HStack>
+                </Box.New>
+              </VStack>
+            ) : null
+          })}
+        </VStack>
         <AktivitetAttestering />
       </VStack>
     </Page.Block>
