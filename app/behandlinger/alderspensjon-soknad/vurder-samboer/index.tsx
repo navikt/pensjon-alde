@@ -118,7 +118,6 @@ export default function VurderSamboerRoute({ loaderData, actionData }: Route.Com
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
       errors={errors}
-      AttesteringKomponent={null}
     />
   )
 }
@@ -130,7 +129,6 @@ function VurdereSamboerComponent({
   readOnly,
   avbrytAktivitet,
   errors,
-  AttesteringKomponent,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
@@ -197,7 +195,6 @@ function VurdereSamboerComponent({
           </VStack>
         </div>
       </Form>
-      {AttesteringKomponent}
     </div>
   )
 
