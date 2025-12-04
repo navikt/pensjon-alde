@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Checkbox,
-  Dropdown,
   Heading,
   HStack,
   Label,
@@ -21,6 +20,7 @@ import { type AktivitetDTO, AldeBehandlingStatus, type BehandlingDTO } from '~/t
 import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 import './attestering.css'
+import { ArrowDownIcon } from '@navikt/aksel-icons'
 import { userContext } from '~/context/user-context'
 import { formatDateToNorwegian } from '~/utils/date'
 
@@ -257,7 +257,8 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                   borderWidth="0 1 1 1"
                   borderRadius="0 0 xlarge xlarge"
                   borderColor="neutral-subtleA"
-                  padding="space-20 space-28"
+                  paddingBlock="space-20"
+                  paddingInline="space-28"
                 >
                   <HStack gap="8" align="center" justify="space-between">
                     <VStack>
