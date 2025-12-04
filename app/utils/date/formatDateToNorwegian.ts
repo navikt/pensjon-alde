@@ -41,5 +41,5 @@ export function formatDateToNorwegian(
     return format(dateObj, 'HH:mm')
   }
 
-  return format(dateObj, options?.showTime ? 'dd.MM.yyyy HH:mm' : 'dd.MM.yyyy')
+  return format(dateObj, options?.showTime ? "dd.MM.yyyy - 'kl.' HH:mm" : 'dd.MM.yyyy')
 }
