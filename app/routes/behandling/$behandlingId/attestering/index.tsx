@@ -2,6 +2,7 @@ import {
   BodyShort,
   Box,
   Button,
+  Checkbox,
   Dropdown,
   Heading,
   HStack,
@@ -11,7 +12,7 @@ import {
   RadioGroup,
   VStack,
 } from '@navikt/ds-react'
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
@@ -72,6 +73,8 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
   const parsedData = attesteringData.aktiviter
     .map(enhanceAttesteringAktivitet(behandling))
     .filter(aktivitet => aktivitet.grunnlag || aktivitet.vurdering)
+    .filter(aktivitet => aktivitet.handlerName !== 'send-til-attestering')
+    .filter(aktivitet => aktivitet.handlerName !== 'attestering')
     .map(aktivitet => ({
       ...aktivitet,
       hasComponent: serverComponents.has(aktivitet.handlerName),
@@ -134,55 +137,78 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
 
   const begrunnelseRef = React.useRef<HTMLFieldSetElement>(null)
 
+  const attesteringViewRef = React.useRef<HTMLDivElement>(null)
+
+  const aktiviteterRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  const onSjekketClick = (aktivitetId: number, checked: boolean) => {
+    if (!checked) return
+
+    const currentIndex = aktiviteter.findIndex(a => a.aktivitetId === aktivitetId)
+    const nextAktivitet = aktiviteter[currentIndex + 1]
+    if (nextAktivitet) {
+      const nextElement = aktiviteterRefs.current.get(nextAktivitet.aktivitetId)
+      nextElement?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      attesteringViewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  useEffect(() => {
+    if (utfall !== undefined) {
+      attesteringViewRef.current?.scrollIntoView()
+    }
+  }, [utfall])
+
   // biome-ignore lint/correctness/noNestedComponentDefinitions: Trenger en komponent som sendes til aktivitet komponent
   const AktivitetAttestering = () => {
     return (
-      <Box.New as="div" paddingBlock="space-48 0">
-        <VStack gap="space-48">
-          <Dropdown.Menu.Divider />
-          <Form method="POST">
-            <VStack gap="space-40">
-              <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
-                <Radio size="small" value={AttesteringUtfall.GODKJENN}>
-                  Godkjenn
+      <Box.New background="brand-blue-soft" borderRadius="xlarge" padding="space-28" as="div" ref={attesteringViewRef}>
+        <Form method="POST">
+          <VStack gap="space-40">
+            <Heading level="2" size="medium">
+              Attestering
+            </Heading>
+            <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
+              <Radio size="small" value={AttesteringUtfall.GODKJENN}>
+                Godkjenn
+              </Radio>
+              <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
+                Ikke godkjenn
+              </Radio>
+            </RadioGroup>
+            {utfall === AttesteringUtfall.IKKE_GODKJENN && (
+              <RadioGroup
+                ref={begrunnelseRef}
+                legend="Velg begrunnelse"
+                name="begrunnelse"
+                error={errors?.begrunnelse}
+                defaultValue={data?.begrunnelse}
+              >
+                <Radio size="small" value="Feil i vedtak">
+                  Feil i vedtak
                 </Radio>
-                <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
-                  Ikke godkjenn
+
+                <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
+                  Forvaltningsnotat utilstrekkelig
+                </Radio>
+
+                <Radio size="small" value="Hent inn nytt grunnlag">
+                  Hent inn nytt grunnlag
+                </Radio>
+
+                <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
+                  Saksbehandlerstandard ikke fulgt
                 </Radio>
               </RadioGroup>
-              {utfall === AttesteringUtfall.IKKE_GODKJENN && (
-                <RadioGroup
-                  ref={begrunnelseRef}
-                  legend="Velg begrunnelse"
-                  name="begrunnelse"
-                  error={errors?.begrunnelse}
-                  defaultValue={data?.begrunnelse}
-                >
-                  <Radio size="small" value="Feil i vedtak">
-                    Feil i vedtak
-                  </Radio>
-
-                  <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
-                    Forvaltningsnotat utilstrekkelig
-                  </Radio>
-
-                  <Radio size="small" value="Hent inn nytt grunnlag">
-                    Hent inn nytt grunnlag
-                  </Radio>
-
-                  <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
-                    Saksbehandlerstandard ikke fulgt
-                  </Radio>
-                </RadioGroup>
-              )}
-              {utfall && (
-                <Button size="small" type="submit">
-                  {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
-                </Button>
-              )}
-            </VStack>
-          </Form>
-        </VStack>
+            )}
+            {utfall && (
+              <Button size="small" type="submit" style={{ maxWidth: '18em' }}>
+                {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
+              </Button>
+            )}
+          </VStack>
+        </Form>
       </Box.New>
     )
   }
@@ -198,9 +224,40 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
           const Component = components.get(aktivitet.handlerName)
 
           return Component ? (
-            <div id={aktivitet.handlerName} key={aktivitet.aktivitetId}>
-              <Box.New>
-                <HStack gap="8">
+            <VStack
+              key={aktivitet.aktivitetId}
+              ref={el => {
+                if (el) {
+                  aktiviteterRefs.current.set(aktivitet.aktivitetId, el)
+                }
+              }}
+            >
+              <Box.New
+                borderColor="neutral-subtleA"
+                borderWidth="1"
+                padding="space-28"
+                borderRadius="xlarge xlarge 0 0"
+              >
+                <div className="component-area">
+                  <div className="component">
+                    <Component
+                      readOnly={true}
+                      grunnlag={aktivitet.grunnlag}
+                      vurdering={aktivitet.vurdering}
+                      aktivitet={aktivitet.aktivitet}
+                      behandling={behandling}
+                    />
+                  </div>
+                </div>
+              </Box.New>
+              <Box.New
+                background="neutral-softA"
+                borderWidth="0 1 1 1"
+                borderRadius="0 0 xlarge xlarge"
+                borderColor="neutral-subtleA"
+                padding="space-20"
+              >
+                <HStack gap="8" align="center" justify="space-between">
                   <VStack>
                     <Label>Vurdert av</Label>
                     <div>
@@ -210,23 +267,16 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                       {formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}
                     </BodyShort>
                   </VStack>
+                  {aktiviteter.length > 1 && (
+                    <Checkbox onChange={e => onSjekketClick(aktivitet.aktivitetId, e.target.checked)}>Sjekket</Checkbox>
+                  )}
                 </HStack>
               </Box.New>
-              <div className="component-area">
-                <div className="component">
-                  <Component
-                    readOnly={true}
-                    grunnlag={aktivitet.grunnlag}
-                    vurdering={aktivitet.vurdering}
-                    aktivitet={aktivitet.aktivitet}
-                    behandling={behandling}
-                    AttesteringKomponent={<AktivitetAttestering />}
-                  />
-                </div>
-              </div>
-            </div>
+            </VStack>
           ) : null
         })}
+
+        <AktivitetAttestering />
       </VStack>
     </Page.Block>
   )

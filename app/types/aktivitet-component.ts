@@ -10,5 +10,4 @@ export type AktivitetComponentProps<Grunnlag, Vurdering> = {
   behandling: BehandlingDTO
   avbrytAktivitet?: () => void
   errors?: FormErrors<Vurdering>
-  AttesteringKomponent: React.ReactNode
 }
