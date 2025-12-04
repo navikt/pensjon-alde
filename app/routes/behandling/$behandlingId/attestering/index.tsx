@@ -160,7 +160,6 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
     }
   }, [utfall])
 
-  // biome-ignore lint/correctness/noNestedComponentDefinitions: Trenger en komponent som sendes til aktivitet komponent
   const AktivitetAttestering = () => {
     return (
       <Box.New background="brand-blue-soft" borderRadius="xlarge" padding="space-28" as="div" ref={attesteringViewRef}>
@@ -216,7 +215,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   }
 
   return (
-    <Page.Block gutters>
+    <Page.Block gutters width="xl">
       <VStack gap="space-28">
         <Heading level="1" size="large" style={{ paddingTop: '2rem' }}>
           Oppgaven er til attestering
