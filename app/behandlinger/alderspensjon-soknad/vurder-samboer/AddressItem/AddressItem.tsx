@@ -9,5 +9,9 @@ interface Props {
 export const AddressItem = ({ bold = false, children }: Props) => {
   if (!children) return null
 
-  return <BodyShort weight={bold ? 'semibold' : 'regular'}>{children}</BodyShort>
+  return (
+    <BodyShort weight={bold ? 'semibold' : 'regular'} style={{ wordBreak: 'break-all' }}>
+      {children}
+    </BodyShort>
+  )
 }
