@@ -273,16 +273,13 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                     {aktiviteter.length > 1 && (
                       <div>
                         <Button
-                          variant="secondary"
+                          variant="tertiary"
                           size="small"
                           icon={<ArrowDownIcon aria-hidden />}
                           onClick={() => onSjekketClick(aktivitet.aktivitetId, true)}
                         >
                           Videre
                         </Button>
-                        <Checkbox onChange={e => onSjekketClick(aktivitet.aktivitetId, e.target.checked)}>
-                          Sjekket
-                        </Checkbox>
                       </div>
                     )}
                   </HStack>
