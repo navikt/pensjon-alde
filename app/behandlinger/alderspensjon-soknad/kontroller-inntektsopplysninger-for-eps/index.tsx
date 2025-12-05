@@ -191,39 +191,41 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
           </VStack>
         </Box.New>
 
-        <div>
-          <Box.New
-            borderWidth="1"
-            borderColor="neutral-subtleA"
-            borderRadius="xlarge"
-            padding="space-16"
-            maxWidth="16em"
-          >
-            <Heading level="2" size="small" spacing>
-              Kontakt søker
-            </Heading>
+        {!readOnly && (
+          <div>
+            <Box.New
+              borderWidth="1"
+              borderColor="neutral-subtleA"
+              borderRadius="xlarge"
+              padding="space-16"
+              maxWidth="16em"
+            >
+              <Heading level="2" size="small" spacing>
+                Kontakt søker
+              </Heading>
 
-            <VStack gap="space-12">
-              <div>
-                <Heading level="3" size="xsmall">
-                  Reservert mot digital varsling
-                </Heading>
-                <BodyShort>{grunnlag.sokerKontaktinfo.reservertMotDigitalVarsling ? 'Ja' : 'Nei'}</BodyShort>
-              </div>
-              <div>
-                <Heading level="3" size="xsmall">
-                  Aktiv digital bruker
-                </Heading>
-                <BodyShort>{grunnlag.sokerKontaktinfo.aktivDigitalt ? 'Ja' : 'Nei'}</BodyShort>
-              </div>
-              <div>
-                <Link href={modiaUrl} target="_blank">
-                  Modia <ExternalLinkIcon />
-                </Link>
-              </div>
-            </VStack>
-          </Box.New>
-        </div>
+              <VStack gap="space-12">
+                <div>
+                  <Heading level="3" size="xsmall">
+                    Reservert mot digital varsling
+                  </Heading>
+                  <BodyShort>{grunnlag.sokerKontaktinfo.reservertMotDigitalVarsling ? 'Ja' : 'Nei'}</BodyShort>
+                </div>
+                <div>
+                  <Heading level="3" size="xsmall">
+                    Aktiv digital bruker
+                  </Heading>
+                  <BodyShort>{grunnlag.sokerKontaktinfo.aktivDigitalt ? 'Ja' : 'Nei'}</BodyShort>
+                </div>
+                <div>
+                  <Link href={modiaUrl} target="_blank">
+                    Modia <ExternalLinkIcon />
+                  </Link>
+                </div>
+              </VStack>
+            </Box.New>
+          </div>
+        )}
       </HStack>
     </VStack>
   )
