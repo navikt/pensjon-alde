@@ -151,7 +151,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
       (behandling.aktiviteter.find(a => a.aktivitetId?.toString() === justCompletedId) && justCompletedId),
     isOppsummering,
     isAttestering,
-    showStepper: showStepper && !isOppsummering && !isAttestering,
+    showStepper: showStepper && !isOppsummering,
     showMetadata,
     urls,
   }
