@@ -2,9 +2,11 @@ import { ExternalLinkIcon, PersonIcon } from '@navikt/aksel-icons'
 import {
   BodyLong,
   BodyShort,
+  Box,
   Button,
   CopyButton,
   Heading,
+  HGrid,
   HStack,
   InfoCard,
   Link,
@@ -125,100 +127,106 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   }, [grunnlag.epsType])
 
   const detailsContent = (
-    <VStack gap="8">
-      <InfoCard data-color="info" style={{ maxWidth: '700px' }}>
-        <InfoCard.Header>
-          <InfoCard.Title>Inntektskontroll</InfoCard.Title>
-        </InfoCard.Header>
-        <InfoCard.Content>
-          <BodyLong>
-            Søker har oppgitt at inntekten til {epsType.lowercase} er under 2G. Estimert inntekt til {epsType.lowercase}{' '}
-            er over 2G. {epsType.capitalized} sin inntekt må kontrolleres.
-          </BodyLong>
-        </InfoCard.Content>
-      </InfoCard>
+    <VStack gap="space-40">
+      <BodyLong style={{ maxWidth: '576px' }}>
+        Søker har oppgitt at inntekten til {epsType.lowercase} er under 2G. Estimert inntekt til {epsType.lowercase} er
+        over 2G. {epsType.capitalized} sin inntekt må kontrolleres.
+      </BodyLong>
 
-      <div>
-        <VStack gap="space-40">
-          <div>
-            <Heading level="2" size="small">
-              Søkt om alderspensjon fra
-            </Heading>
-            <BodyShort>{formatDateToNorwegian(grunnlag.onsketVirkningsdato)}</BodyShort>
-          </div>
-          <div>
-            <Heading level="2" size="small">
-              <HStack gap="2" align="center">
-                <PersonIcon aria-hidden />
-                {epsType.capitalized}
-              </HStack>
-            </Heading>
-
-            <HStack gap="2" align="center">
-              <BodyShort>{grunnlag.epsInformasjon.fnr}</BodyShort>
-              <CopyButton copyText={grunnlag.epsInformasjon.fnr} size="small" variant="action" />
-            </HStack>
-
-            <BodyShort>
-              {grunnlag.epsInformasjon.etternavn}, {grunnlag.epsInformasjon.fornavn}
-            </BodyShort>
-          </div>
-          <VStack gap="space-12">
+      <HStack gap="space-40">
+        <Box.New width="300px">
+          <VStack gap="space-40">
             <div>
               <Heading level="2" size="small">
-                {epsType.posessive} årsinntekt
+                Søkt om alderspensjon fra
               </Heading>
-              <BodyShort size="small" textColor="subtle">
-                G per 1. mai 2025 er benyttet.
-              </BodyShort>
+              <BodyShort>{formatDateToNorwegian(grunnlag.onsketVirkningsdato)}</BodyShort>
             </div>
             <div>
-              <Heading level="3" size="xsmall">
-                Brukeroppgitt
+              <Heading level="2" size="small">
+                <HStack gap="2" align="center">
+                  <PersonIcon aria-hidden />
+                  {epsType.capitalized}
+                </HStack>
               </Heading>
+
+              <HStack gap="2" align="center">
+                <BodyShort>{grunnlag.epsInformasjon.fnr}</BodyShort>
+                <CopyButton copyText={grunnlag.epsInformasjon.fnr} size="small" variant="action" />
+              </HStack>
+
               <BodyShort>
-                {formatCurrencyNok(grunnlag.oppgittInntekt)} {Number(grunnlag.oppgittInntekt) === 0 ? '=' : '≈'}{' '}
-                <strong>{oppgittInntektIG}G</strong>
+                {grunnlag.epsInformasjon.etternavn}, {grunnlag.epsInformasjon.fornavn}
               </BodyShort>
             </div>
+            <VStack gap="space-12">
+              <div>
+                <Heading level="2" size="small">
+                  {epsType.posessive} årsinntekt
+                </Heading>
+                <BodyShort size="small" textColor="subtle">
+                  G per 1. mai 2025 er benyttet.
+                </BodyShort>
+              </div>
+              <div>
+                <Heading level="3" size="xsmall">
+                  Brukeroppgitt
+                </Heading>
+                <BodyShort>
+                  {formatCurrencyNok(grunnlag.oppgittInntekt)} {Number(grunnlag.oppgittInntekt) === 0 ? '=' : '≈'}{' '}
+                  <strong>{oppgittInntektIG} G</strong>
+                </BodyShort>
+              </div>
 
-            <div>
-              <Heading level="3" size="xsmall">
-                Estimert
-              </Heading>
-              <BodyShort>{grunnlag.estimertInntektOver2g ? 'Over 2G' : 'Under 2G'}</BodyShort>
-              <ReadMore size="small" header="Slik estimeres årsinntekt">
-                Estimert årsinntekt er basert på de 4 siste tilgjengelige månedene fra A-inntekt.
-              </ReadMore>
-            </div>
+              <div>
+                <Heading level="3" size="xsmall">
+                  Estimert
+                </Heading>
+                <BodyShort>{grunnlag.estimertInntektOver2g ? 'Over 2G' : 'Under 2G'}</BodyShort>
+                <ReadMore size="small" header="Slik estimeres årsinntekt">
+                  Estimert årsinntekt er basert på de 4 siste tilgjengelige månedene fra A-inntekt.
+                </ReadMore>
+              </div>
+            </VStack>
           </VStack>
-        </VStack>
-      </div>
-      <div>
-        <Heading level="2" size="small" spacing>
-          Kontakt søker
-        </Heading>
+        </Box.New>
 
-        <VStack gap="space-12">
+        {!readOnly && (
           <div>
-            <Heading level="3" size="xsmall">
-              Reservert mot digital varsling
-            </Heading>
-            <BodyShort>{grunnlag.sokerKontaktinfo.reservertMotDigitalVarsling ? 'Ja' : 'Nei'}</BodyShort>
+            <Box.New
+              borderWidth="1"
+              borderColor="neutral-subtleA"
+              borderRadius="xlarge"
+              padding="space-16"
+              maxWidth="16em"
+            >
+              <Heading level="2" size="small" spacing>
+                Kontakt søker
+              </Heading>
+
+              <VStack gap="space-12">
+                <div>
+                  <Heading level="3" size="xsmall">
+                    Reservert mot digital varsling
+                  </Heading>
+                  <BodyShort>{grunnlag.sokerKontaktinfo.reservertMotDigitalVarsling ? 'Ja' : 'Nei'}</BodyShort>
+                </div>
+                <div>
+                  <Heading level="3" size="xsmall">
+                    Aktiv digital bruker
+                  </Heading>
+                  <BodyShort>{grunnlag.sokerKontaktinfo.aktivDigitalt ? 'Ja' : 'Nei'}</BodyShort>
+                </div>
+                <div>
+                  <Link href={modiaUrl} target="_blank">
+                    Modia <ExternalLinkIcon />
+                  </Link>
+                </div>
+              </VStack>
+            </Box.New>
           </div>
-          <div>
-            <Heading level="3" size="xsmall">
-              Aktiv digital bruker
-            </Heading>
-            <BodyShort>{grunnlag.sokerKontaktinfo.aktivDigitalt ? 'Ja' : 'Nei'}</BodyShort>
-          </div>
-          <div>
-            <Link href={modiaUrl} target="_blank">
-              Modia <ExternalLinkIcon />
-            </Link>
-          </div>
-        </VStack>
-      </div>
+        )}
+      </HStack>
     </VStack>
   )
 
@@ -247,7 +255,9 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             </Button>
           </VStack>
         ) : (
-          <VStack gap="6">Vurdert til under 2G</VStack>
+          <VStack gap="6">
+            <BodyShort weight="semibold">Vurdert til under 2G</BodyShort>
+          </VStack>
         )}
       </VStack>
     </Form>

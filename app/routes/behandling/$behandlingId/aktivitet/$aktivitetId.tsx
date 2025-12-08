@@ -109,7 +109,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
     return <FeilendeBehandling dato={dato} behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
   } else {
     return (
-      <Page.Block gutters className="aktivitet" style={{ paddingTop: '2em' }}>
+      <Page.Block gutters className="aktivitet" style={{ paddingTop: '2em' }} width="xl">
         <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
 
         {!outlet && (
