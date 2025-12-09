@@ -129,8 +129,8 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   const detailsContent = (
     <VStack gap="space-40">
       <BodyLong style={{ maxWidth: '576px' }}>
-        Søker har oppgitt at inntekten til {epsType.lowercase} er under 2G. Estimert inntekt til {epsType.lowercase} er
-        over 2G. {epsType.capitalized} sin inntekt må kontrolleres.
+        Søkeren har oppgitt at {epsType.posessive.toLocaleLowerCase()} inntekt er under 2G. Estimert inntekt til samboer
+        er over 2G. Kontroller {epsType.posessive.toLocaleLowerCase()} inntekt.
       </BodyLong>
 
       <HStack gap="space-40">
