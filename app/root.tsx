@@ -20,7 +20,6 @@ import {
   useRouteLoaderData,
 } from 'react-router'
 import { isProblemDetails } from '~/api/error.types'
-import commonStyles from '~/common.module.css'
 import ForbiddenPage from '~/components/ForbiddenPage'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
@@ -187,7 +186,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     traceId = (data !== undefined && 'traceId' in data && typeof data.traceId === 'string' && data.traceId) || undefined
 
     if (error.status === 403) {
-      return <ForbiddenPage dato={dato} traceId={traceId} />
+      return (
+        <Theme theme={root?.darkmode ? 'dark' : 'light'}>
+          <ForbiddenPage dato={dato} traceId={traceId} />
+        </Theme>
+      )
     }
 
     const problemDetails =
@@ -211,57 +214,59 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   logError(new Error(details))
 
   return (
-    <Page>
-      <Page.Block gutters className={commonStyles.page} width="md">
-        <VStack gap="8">
-          <Heading
-            size="xlarge"
-            level="1"
-            style={{
-              color: 'var(--ax-text-danger-subtle)',
-            }}
-          >
-            Noe gikk galt
-          </Heading>
-          <BodyLong size="medium">
-            Dette skyldes en teknisk feil. Vennligst kopier feilmeldingen nedenfor og{' '}
-            <Link href="https://teams.microsoft.com/v2/" target="_blank" rel="noopener noreferrer">
-              meld fra i Teams
-            </Link>
-            .
-          </BodyLong>
+    <Theme theme={root?.darkmode ? 'dark' : 'light'}>
+      <Page>
+        <Page.Block gutters width="md">
+          <VStack gap="8">
+            <Heading
+              size="xlarge"
+              level="1"
+              style={{
+                color: 'var(--ax-text-danger-subtle)',
+              }}
+            >
+              Noe gikk galt
+            </Heading>
+            <BodyLong size="medium">
+              Dette skyldes en teknisk feil. Vennligst kopier feilmeldingen nedenfor og{' '}
+              <Link href="https://teams.microsoft.com/v2/" target="_blank" rel="noopener noreferrer">
+                meld fra i Teams
+              </Link>
+              .
+            </BodyLong>
 
-          <VStack gap="4">
-            <VStack>
-              <VStack gap="4">
-                <BodyLong size="medium">
-                  <strong>Feilmelding</strong>
+            <VStack gap="4">
+              <VStack>
+                <VStack gap="4">
+                  <BodyLong size="medium">
+                    <strong>Feilmelding</strong>
+                  </BodyLong>
+
+                  <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
+                    <VStack gap="space-8">
+                      <BodyLong size="small" style={{ wordBreak: 'break-all' }}>
+                        {details}
+                      </BodyLong>
+
+                      {traceId && (
+                        <HStack align="center">
+                          <BodyShort size="small" textColor="subtle">
+                            {traceId}
+                          </BodyShort>
+                          <CopyButton copyText={traceId} size="small" variant="action" />
+                        </HStack>
+                      )}
+                    </VStack>
+                  </Box.New>
+                </VStack>
+                <BodyLong size="small" textColor="subtle">
+                  {formatDateToNorwegian(dato, { showTime: true })}
                 </BodyLong>
-
-                <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
-                  <VStack gap="space-8">
-                    <BodyLong size="small" style={{ wordBreak: 'break-all' }}>
-                      {details}
-                    </BodyLong>
-
-                    {traceId && (
-                      <HStack align="center">
-                        <BodyShort size="small" textColor="subtle">
-                          {traceId}
-                        </BodyShort>
-                        <CopyButton copyText={traceId} size="small" variant="action" />
-                      </HStack>
-                    )}
-                  </VStack>
-                </Box.New>
               </VStack>
-              <BodyLong size="small" textColor="subtle">
-                {formatDateToNorwegian(dato, { showTime: true })}
-              </BodyLong>
             </VStack>
           </VStack>
-        </VStack>
-      </Page.Block>
-    </Page>
+        </Page.Block>
+      </Page>
+    </Theme>
   )
 }
