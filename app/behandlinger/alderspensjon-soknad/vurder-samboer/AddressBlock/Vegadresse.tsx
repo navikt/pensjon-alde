@@ -33,12 +33,11 @@ export const VegadresseBlokk = ({ adresse }: Props) => (
             : 'Mangler dato'}
         </AddressItem>
 
-        <AddressItem>
-          Gyldig t.o.m.{' '}
-          {adresse?.adresseTilleggsdata?.gyldigTilOgMed
-            ? formatDateToNorwegian(adresse.adresseTilleggsdata.gyldigTilOgMed)
-            : 'Mangler dato'}
-        </AddressItem>
+        {adresse?.adresseTilleggsdata?.gyldigTilOgMed && (
+          <AddressItem>
+            {`Gyldig t.o.m. ${formatDateToNorwegian(adresse.adresseTilleggsdata.gyldigTilOgMed)}`}
+          </AddressItem>
+        )}
       </div>
     </VStack>
   </>
