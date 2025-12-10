@@ -261,13 +261,22 @@ function VurdereSamboerComponent({
             <HStack gap="1">
               Felles barn: <BodyShort weight="semibold">{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
             </HStack>
+
+            {grunnlag.sokerSivilstand && (
+              <HStack gap="1">
+                Søkers sivilstand: <BodyShort weight="semibold">{grunnlag.sokerSivilstand}</BodyShort>
+              </HStack>
+            )}
           </VStack>
         </HStack>
       </AktivitetVurderingLayout.Section>
 
       <AktivitetVurderingLayout.Section>
         <HGrid gap="8" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">
-          <AddressWrapper title="Samboers bostedsadresser">
+          <AddressWrapper
+            title="Samboers bostedsadresser"
+            description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
+          >
             {samboer.bostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={samboer.bostedsadresser} />
             ) : (
@@ -275,7 +284,10 @@ function VurdereSamboerComponent({
             )}
           </AddressWrapper>
 
-          <AddressWrapper title="Søkers bostedsadresser">
+          <AddressWrapper
+            title="Søkers bostedsadresser"
+            description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
+          >
             {sokersBostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={sokersBostedsadresser} />
             ) : (

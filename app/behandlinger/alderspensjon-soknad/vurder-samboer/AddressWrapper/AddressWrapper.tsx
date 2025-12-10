@@ -14,7 +14,11 @@ const AddressWrapper = ({ title, children, description }: Props) => (
         {title}
       </Heading>
 
-      {description && <BodyShort size="small">{description}</BodyShort>}
+      {description && (
+        <BodyShort size="small" textColor="subtle">
+          {description}
+        </BodyShort>
+      )}
     </div>
 
     {children}
