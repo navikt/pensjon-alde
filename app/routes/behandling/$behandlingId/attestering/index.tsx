@@ -2,7 +2,7 @@ import {
   BodyShort,
   Box,
   Button,
-  Dropdown,
+  Checkbox,
   Heading,
   HStack,
   Label,
@@ -11,7 +11,7 @@ import {
   RadioGroup,
   VStack,
 } from '@navikt/ds-react'
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
@@ -20,6 +20,7 @@ import { type AktivitetDTO, AldeBehandlingStatus, type BehandlingDTO } from '~/t
 import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 import './attestering.css'
+import { ArrowDownIcon } from '@navikt/aksel-icons'
 import { userContext } from '~/context/user-context'
 import { formatDateToNorwegian } from '~/utils/date'
 
@@ -72,6 +73,9 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
   const parsedData = attesteringData.aktiviter
     .map(enhanceAttesteringAktivitet(behandling))
     .filter(aktivitet => aktivitet.grunnlag || aktivitet.vurdering)
+    .filter(aktivitet => aktivitet.handlerName !== 'send-til-attestering')
+    .filter(aktivitet => aktivitet.handlerName !== 'attestering')
+    .filter(aktivitet => aktivitet.vurdertAvBrukerId)
     .map(aktivitet => ({
       ...aktivitet,
       hasComponent: serverComponents.has(aktivitet.handlerName),
@@ -134,99 +138,157 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
 
   const begrunnelseRef = React.useRef<HTMLFieldSetElement>(null)
 
-  // biome-ignore lint/correctness/noNestedComponentDefinitions: Trenger en komponent som sendes til aktivitet komponent
+  const attesteringViewRef = React.useRef<HTMLDivElement>(null)
+
+  const aktiviteterRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  const onSjekketClick = (aktivitetId: number, checked: boolean) => {
+    if (!checked) return
+
+    const currentIndex = aktiviteter.findIndex(a => a.aktivitetId === aktivitetId)
+    const nextAktivitet = aktiviteter[currentIndex + 1]
+    if (nextAktivitet) {
+      const nextElement = aktiviteterRefs.current.get(nextAktivitet.aktivitetId)
+      nextElement?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      attesteringViewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  useEffect(() => {
+    if (utfall !== undefined) {
+      attesteringViewRef.current?.scrollIntoView()
+    }
+  }, [utfall])
+
   const AktivitetAttestering = () => {
     return (
-      <Box.New as="div" paddingBlock="space-48 0">
-        <VStack gap="space-48">
-          <Dropdown.Menu.Divider />
-          <Form method="POST">
-            <VStack gap="space-40">
-              <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
-                <Radio size="small" value={AttesteringUtfall.GODKJENN}>
-                  Godkjenn
+      <Box.New background="brand-blue-soft" borderRadius="xlarge" padding="space-28" as="div" ref={attesteringViewRef}>
+        <Form method="POST">
+          <VStack gap="space-40">
+            <Heading level="2" size="medium">
+              Attestering
+            </Heading>
+            <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
+              <Radio size="small" value={AttesteringUtfall.GODKJENN}>
+                Godkjenn
+              </Radio>
+              <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
+                Ikke godkjenn
+              </Radio>
+            </RadioGroup>
+            {utfall === AttesteringUtfall.IKKE_GODKJENN && (
+              <RadioGroup
+                ref={begrunnelseRef}
+                legend="Velg begrunnelse"
+                name="begrunnelse"
+                error={errors?.begrunnelse}
+                defaultValue={data?.begrunnelse}
+              >
+                <Radio size="small" value="Feil i vedtak">
+                  Feil i vedtak
                 </Radio>
-                <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
-                  Ikke godkjenn
+
+                <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
+                  Forvaltningsnotat utilstrekkelig
+                </Radio>
+
+                <Radio size="small" value="Hent inn nytt grunnlag">
+                  Hent inn nytt grunnlag
+                </Radio>
+
+                <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
+                  Saksbehandlerstandard ikke fulgt
                 </Radio>
               </RadioGroup>
-              {utfall === AttesteringUtfall.IKKE_GODKJENN && (
-                <RadioGroup
-                  ref={begrunnelseRef}
-                  legend="Velg begrunnelse"
-                  name="begrunnelse"
-                  error={errors?.begrunnelse}
-                  defaultValue={data?.begrunnelse}
-                >
-                  <Radio size="small" value="Feil i vedtak">
-                    Feil i vedtak
-                  </Radio>
-
-                  <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
-                    Forvaltningsnotat utilstrekkelig
-                  </Radio>
-
-                  <Radio size="small" value="Hent inn nytt grunnlag">
-                    Hent inn nytt grunnlag
-                  </Radio>
-
-                  <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
-                    Saksbehandlerstandard ikke fulgt
-                  </Radio>
-                </RadioGroup>
-              )}
-              {utfall && (
+            )}
+            {utfall && (
+              <div>
                 <Button size="small" type="submit">
                   {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
                 </Button>
-              )}
-            </VStack>
-          </Form>
-        </VStack>
+              </div>
+            )}
+          </VStack>
+        </Form>
       </Box.New>
     )
   }
 
   return (
-    <Page.Block gutters>
-      <VStack gap="5">
+    <Page.Block gutters width="xl">
+      <VStack gap="space-28">
         <Heading level="1" size="large" style={{ paddingTop: '2rem' }}>
           Oppgaven er til attestering
         </Heading>
+        <VStack gap="space-56">
+          {aktiviteter.map(aktivitet => {
+            const Component = components.get(aktivitet.handlerName)
 
-        {aktiviteter.map(aktivitet => {
-          const Component = components.get(aktivitet.handlerName)
-
-          return Component ? (
-            <div id={aktivitet.handlerName} key={aktivitet.aktivitetId}>
-              <Box.New>
-                <HStack gap="8">
-                  <VStack>
-                    <Label>Vurdert av</Label>
-                    <div>
-                      {aktivitet.vurdertAvBrukerNavn} ({aktivitet.vurdertAvBrukerId})
+            return Component ? (
+              <VStack
+                key={aktivitet.aktivitetId}
+                ref={el => {
+                  if (el) {
+                    aktiviteterRefs.current.set(aktivitet.aktivitetId, el)
+                  }
+                }}
+              >
+                <Box.New
+                  borderColor="neutral-subtleA"
+                  borderWidth="1 1 0 1"
+                  padding="space-28"
+                  borderRadius="xlarge xlarge 0 0"
+                >
+                  <div className="component-area">
+                    <div className="component">
+                      <Component
+                        readOnly={true}
+                        grunnlag={aktivitet.grunnlag}
+                        vurdering={aktivitet.vurdering}
+                        aktivitet={aktivitet.aktivitet}
+                        behandling={behandling}
+                      />
                     </div>
-                    <BodyShort textColor="subtle" size="small">
-                      {formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}
-                    </BodyShort>
-                  </VStack>
-                </HStack>
-              </Box.New>
-              <div className="component-area">
-                <div className="component">
-                  <Component
-                    readOnly={true}
-                    grunnlag={aktivitet.grunnlag}
-                    vurdering={aktivitet.vurdering}
-                    aktivitet={aktivitet.aktivitet}
-                    behandling={behandling}
-                    AttesteringKomponent={<AktivitetAttestering />}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : null
-        })}
+                  </div>
+                </Box.New>
+                <Box.New
+                  background="neutral-softA"
+                  borderWidth="0 1 1 1"
+                  borderRadius="0 0 xlarge xlarge"
+                  borderColor="neutral-subtleA"
+                  paddingBlock="space-20"
+                  paddingInline="space-28"
+                >
+                  <HStack gap="8" align="center" justify="space-between">
+                    <VStack>
+                      <Label>Saksbehandler</Label>
+                      <div>
+                        {aktivitet.vurdertAvBrukerNavn} ({aktivitet.vurdertAvBrukerId})
+                      </div>
+                      <BodyShort textColor="subtle" size="small">
+                        {formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}
+                      </BodyShort>
+                    </VStack>
+                    {aktiviteter.length > 1 && (
+                      <div>
+                        <Button
+                          variant="tertiary"
+                          size="small"
+                          icon={<ArrowDownIcon aria-hidden />}
+                          onClick={() => onSjekketClick(aktivitet.aktivitetId, true)}
+                        >
+                          Videre
+                        </Button>
+                      </div>
+                    )}
+                  </HStack>
+                </Box.New>
+              </VStack>
+            ) : null
+          })}
+        </VStack>
+        <AktivitetAttestering />
       </VStack>
     </Page.Block>
   )
