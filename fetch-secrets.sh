@@ -92,7 +92,9 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pen
   "AZURE_APP_CLIENT_SECRET" \
   "AZURE_APP_TENANT_ID" \
   "AZURE_OPENID_CONFIG_ISSUER" \
-  "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
+  "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT" \
+  "UNLEASH_SERVER_API_TOKEN" \
+  "UNLEASH_SERVER_API_URL"
 
 {
   echo AZURE_CALLBACK_URL="'http://localhost:3001/auth/callback'"

@@ -2,8 +2,10 @@ app:
   name: 'pensjon-alde'
   namespace: 'pensjon-saksbehandling'
 
-ingresses:
+unleash:
+  env: production
 
+ingresses:
   - "https://pensjon-alde.intern.nav.no"
 
 pen:
