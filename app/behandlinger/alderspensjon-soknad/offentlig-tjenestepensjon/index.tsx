@@ -6,6 +6,7 @@ import commonStyles from '~/common.module.css'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { buildUrl } from '~/utils/build-url'
+import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import type { Route } from './+types'
 
@@ -114,17 +115,26 @@ function VenterPaaSvarTjenestepensjonComponent(props: Props) {
   const pensjonsoversiktUrl = 'pensjonsoversiktUrl' in props ? props.pensjonsoversiktUrl : undefined
   const psakOppgaveoversikt = 'psakOppgaveoversikt' in props ? props.psakOppgaveoversikt : undefined
 
-  if (isSoknad(props.grunnlag.afpOffentligStatus[0])) {
+  function venterSoknad(soknad: {
+    status: 'soknad'
+    tpInfo: AldeTjenestepensjonInformasjon
+    onsketVirkningsdato: string
+  }) {
     return (
       <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`} width="text">
         <VStack gap="space-40">
           <VStack align="center" gap="space-8">
             <Heading size="medium" level="1">
-              Venter på svar fra {props.grunnlag.afpOffentligStatus[0].tpInfo.tpNavn}
+              Venter på svar fra {soknad?.tpInfo.tpNavn}
             </Heading>
             <BodyLong align="center">
-              Det er søkt om livsvarig AFP for offentlig sektor. Maskinen venter på svar. Når maskinen får svar vil
-              delautomatisk saksbehandling fortsette.
+              Det er søkt om livsvarig AFP for offentlig sektor. Vi vil automatisk forsøke igjen{' '}
+              {formatDateToNorwegian(props.aktivitet.utsattTil, {
+                showTime: true,
+                onlyTimeIfSameDate: true,
+              })}{' '}
+              for å sjekke status på søknaden. Delautomatisk saksbehandling vil fortsette ved mottatt svar fra
+              tjenestepensjonsleverandør.
             </BodyLong>
           </VStack>
           <HStack gap="2" justify="center">
@@ -142,6 +152,15 @@ function VenterPaaSvarTjenestepensjonComponent(props: Props) {
         </VStack>
       </Page.Block>
     )
+  }
+
+  if (props.grunnlag.afpOffentligStatus.some(isSoknad)) {
+    // biome-ignore lint/style/noNonNullAssertion: Vil alltid finnes en søknad
+    const soknad = props.grunnlag.afpOffentligStatus.find(isSoknad)!
+    return venterSoknad(soknad)
+  } else if (props.grunnlag.afpOffentligStatus.some(isUkjent)) {
+    const ukjent = props.grunnlag.afpOffentligStatus.find(isUkjent)
+    return <div>Må fylle ut skjema</div>
   }
 }
 
