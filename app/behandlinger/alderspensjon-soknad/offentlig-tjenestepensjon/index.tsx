@@ -17,7 +17,7 @@ export type BelopData = {
 }
 
 export type Innvilget = {
-  type?: 'Innvilget'
+  status: 'innvilget'
   tpNummer: number
   belop: BelopData[]
   startdato: string
@@ -25,17 +25,17 @@ export type Innvilget = {
 }
 
 export type Soknad = {
-  type?: 'Soknad'
+  status: 'soknad'
   tpNummer: number
   onsketVirkningsdato: string
 }
 
 export type Ingen = {
-  type?: 'Ingen'
+  status: 'ingen'
 }
 
 export type Ukjent = {
-  type?: 'Ukjent'
+  status: 'ukjent'
   tpNummer: number
 }
 
@@ -49,13 +49,11 @@ export type OffentligTjenestepensjonVurdering = {
   afpOffentligStatus: AldeAfpOffentligStatus
 } | null
 
-const hasProp = (obj: unknown, prop: string): boolean => typeof obj === 'object' && obj !== null && prop in obj
+const isInnvilget = (s: AldeAfpOffentligStatus): s is Innvilget => s.status === 'innvilget'
 
-const isInnvilget = (s: AldeAfpOffentligStatus): s is Innvilget => hasProp(s, 'belop') && hasProp(s, 'startdato')
+const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => s.status === 'soknad'
 
-const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => hasProp(s, 'onsketVirkningsdato')
-
-const isUkjent = (s: AldeAfpOffentligStatus): s is Ukjent => hasProp(s, 'tpNummer') && !isInnvilget(s) && !isSoknad(s)
+const isUkjent = (s: AldeAfpOffentligStatus): s is Ukjent => s.status === 'ukjent'
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
@@ -92,9 +90,9 @@ export default function OffentligTjenestepensjonRoute({ loaderData }: Route.Comp
 }
 
 function statusKey(s: AldeAfpOffentligStatus) {
-  if (isInnvilget(s)) return `innvilget-${s.tpNummer}-${s.startdato}-${s.sistRegulert}`
-  if (isSoknad(s)) return `soknad-${s.tpNummer}-${s.onsketVirkningsdato}`
-  if (isUkjent(s)) return `ukjent-${s.tpNummer}`
+  if (s.status === 'innvilget') return `innvilget-${s.tpNummer}-${s.startdato}`
+  if (s.status === 'soknad') return `soknad-${s.tpNummer}-${s.onsketVirkningsdato}`
+  if (s.status === 'ukjent') return `ukjent-${s.tpNummer}`
   return 'ingen'
 }
 
@@ -102,15 +100,12 @@ function belopKey(b: BelopData) {
   return `${b.fomDato}-${b.belop}`
 }
 
-const hasStatuses = (g: unknown): g is OffentligTjenestepensjonGrunnlag =>
-  typeof g === 'object' && g !== null && 'afpOffentligStatus' in g
-
 function OffentligTjenestepensjonComponent({
   grunnlag,
   vurdering,
   aktivitet,
 }: AktivitetComponentProps<OffentligTjenestepensjonGrunnlag, OffentligTjenestepensjonVurdering>) {
-  const statuses = hasStatuses(grunnlag) ? grunnlag.afpOffentligStatus : []
+  const statuses = grunnlag.afpOffentligStatus
 
   return (
     <AktivitetVurderingLayout aktivitet={aktivitet} sidebar={null}>
@@ -187,8 +182,12 @@ function OffentligTjenestepensjonComponent({
             <Heading size="xsmall" level="2">
               Vurdering
             </Heading>
-            {isInnvilget(vurdering.afpOffentligStatus) && <BodyShort>Innvilget offentlig tjenestepensjon</BodyShort>}
-            {isSoknad(vurdering.afpOffentligStatus) && <BodyShort>Det foreligger søknad</BodyShort>}
+            {isInnvilget(vurdering.afpOffentligStatus) && (
+              <BodyShort>{vurdering.afpOffentligStatus.startdato}</BodyShort>
+            )}
+            {isSoknad(vurdering.afpOffentligStatus) && (
+              <BodyShort>{vurdering.afpOffentligStatus.onsketVirkningsdato}</BodyShort>
+            )}
             {!isInnvilget(vurdering.afpOffentligStatus) && !isSoknad(vurdering.afpOffentligStatus) && (
               <BodyShort>Ingen eller ukjent status</BodyShort>
             )}
