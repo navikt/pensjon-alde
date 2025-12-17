@@ -1,14 +1,22 @@
-import { BodyLong, BodyShort, Heading, HStack, Label, Table, VStack } from '@navikt/ds-react'
+import { BodyLong, Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
-import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
+import { createBehandlingApi } from '~/api/behandling-api'
+import commonStyles from '~/common.module.css'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { formatDateToNorwegian } from '~/utils/date'
+import { buildUrl } from '~/utils/build-url'
+import { env } from '~/utils/env.server'
 import type { Route } from './+types'
 
 export function meta() {
   return [{ title: 'Offentlig tjenestepensjon' }, { name: 'description', content: 'Offentlig tjenestepensjon' }]
+}
+
+// Updated types to reflect backend schema
+export type AldeTjenestepensjonInformasjon = {
+  tpNummer: number
+  tpNavn: string
 }
 
 export type BelopData = {
@@ -18,7 +26,7 @@ export type BelopData = {
 
 export type Innvilget = {
   status: 'innvilget'
-  tpNummer: number
+  tpInfo: AldeTjenestepensjonInformasjon
   belop: BelopData[]
   startdato: string
   sistRegulert: number
@@ -26,7 +34,7 @@ export type Innvilget = {
 
 export type Soknad = {
   status: 'soknad'
-  tpNummer: number
+  tpInfo: AldeTjenestepensjonInformasjon
   onsketVirkningsdato: string
 }
 
@@ -36,7 +44,7 @@ export type Ingen = {
 
 export type Ukjent = {
   status: 'ukjent'
-  tpNummer: number
+  tpInfo: AldeTjenestepensjonInformasjon
 }
 
 export type AldeAfpOffentligStatus = Innvilget | Soknad | Ingen | Ukjent
@@ -49,16 +57,24 @@ export type OffentligTjenestepensjonVurdering = {
   afpOffentligStatus: AldeAfpOffentligStatus
 } | null
 
-const isInnvilget = (s: AldeAfpOffentligStatus): s is Innvilget => s.status === 'innvilget'
-
 const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => s.status === 'soknad'
 
 const isUkjent = (s: AldeAfpOffentligStatus): s is Ukjent => s.status === 'ukjent'
 
+// Local union type to augment AktivitetComponentProps with optional pensjonsoversiktUrl
+export type Props =
+  | AktivitetComponentProps<OffentligTjenestepensjonGrunnlag, OffentligTjenestepensjonVurdering>
+  | (AktivitetComponentProps<OffentligTjenestepensjonGrunnlag, OffentligTjenestepensjonVurdering> & {
+      pensjonsoversiktUrl: string
+      psakOppgaveoversikt: string
+    })
+
+// biome-ignore lint/correctness/noUnusedVariables: Remix loader export used by framework
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
+  const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
   const grunnlag = await api.hentGrunnlagsdata<OffentligTjenestepensjonGrunnlag>()
   const vurdering = await api.hentVurdering<OffentligTjenestepensjonVurdering>()
@@ -67,135 +83,66 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     readOnly: false,
     grunnlag,
     vurdering,
+    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
+    psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
   }
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: Remix action export used by framework
 export async function action() {
   return null
 }
 
 export default function OffentligTjenestepensjonRoute({ loaderData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, readOnly } = loaderData
+  const { grunnlag, vurdering, readOnly, pensjonsoversiktUrl, psakOppgaveoversikt } = loaderData
   const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
 
   return (
-    <OffentligTjenestepensjonComponent
+    <Component
       readOnly={readOnly}
       grunnlag={grunnlag}
       vurdering={vurdering}
       aktivitet={aktivitet}
       behandling={behandling}
+      pensjonsoversiktUrl={pensjonsoversiktUrl}
+      psakOppgaveoversikt={psakOppgaveoversikt}
     />
   )
 }
 
-function statusKey(s: AldeAfpOffentligStatus) {
-  if (s.status === 'innvilget') return `innvilget-${s.tpNummer}-${s.startdato}`
-  if (s.status === 'soknad') return `soknad-${s.tpNummer}-${s.onsketVirkningsdato}`
-  if (s.status === 'ukjent') return `ukjent-${s.tpNummer}`
-  return 'ingen'
-}
+function VenterPaaSvarTjenestepensjonComponent(props: Props) {
+  const pensjonsoversiktUrl = 'pensjonsoversiktUrl' in props ? props.pensjonsoversiktUrl : undefined
+  const psakOppgaveoversikt = 'psakOppgaveoversikt' in props ? props.psakOppgaveoversikt : undefined
 
-function belopKey(b: BelopData) {
-  return `${b.fomDato}-${b.belop}`
-}
-
-function OffentligTjenestepensjonComponent({
-  grunnlag,
-  vurdering,
-  aktivitet,
-}: AktivitetComponentProps<OffentligTjenestepensjonGrunnlag, OffentligTjenestepensjonVurdering>) {
-  const statuses = grunnlag.afpOffentligStatus
-
-  return (
-    <AktivitetVurderingLayout aktivitet={aktivitet} sidebar={null}>
-      <AktivitetVurderingLayout.Section>
-        <VStack gap="2">
-          <Heading size="xsmall" level="2">
-            Offentlig tjenestepensjon
-          </Heading>
-          {statuses.length > 0 ? (
-            <VStack gap="6">
-              {statuses.map(s => (
-                <VStack key={statusKey(s)} gap="2">
-                  {isInnvilget(s) && (
-                    <VStack gap="2">
-                      <HStack gap="2" align="center">
-                        <Label>Innvilget</Label>
-                        <BodyShort>TP-nummer: {s.tpNummer}</BodyShort>
-                      </HStack>
-                      <BodyShort>Startdato: {formatDateToNorwegian(s.startdato)}</BodyShort>
-                      <BodyShort>Sist regulert: {s.sistRegulert}</BodyShort>
-                      {s.belop?.length ? (
-                        <div>
-                          <Label as="p">Beløp</Label>
-                          <Table size="small">
-                            <Table.Header>
-                              <Table.Row>
-                                <Table.HeaderCell scope="col">Fra og med</Table.HeaderCell>
-                                <Table.HeaderCell scope="col">Beløp</Table.HeaderCell>
-                              </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                              {s.belop.map(b => (
-                                <Table.Row key={belopKey(b)}>
-                                  <Table.DataCell>{formatDateToNorwegian(b.fomDato)}</Table.DataCell>
-                                  <Table.DataCell>{b.belop.toLocaleString('nb-NO')}</Table.DataCell>
-                                </Table.Row>
-                              ))}
-                            </Table.Body>
-                          </Table>
-                        </div>
-                      ) : null}
-                    </VStack>
-                  )}
-                  {isSoknad(s) && (
-                    <VStack gap="2">
-                      <HStack gap="2" align="center">
-                        <Label>Søknad</Label>
-                        <BodyShort>TP-nummer: {s.tpNummer}</BodyShort>
-                      </HStack>
-                      <BodyShort>Ønsket virkningsdato: {formatDateToNorwegian(s.onsketVirkningsdato)}</BodyShort>
-                    </VStack>
-                  )}
-                  {!isInnvilget(s) && !isSoknad(s) && (
-                    <VStack gap="2">
-                      <HStack gap="2" align="center">
-                        <Label>{isUkjent(s) ? 'Ukjent status' : 'Ingen'}</Label>
-                        {isUkjent(s) && <BodyShort>TP-nummer: {s.tpNummer}</BodyShort>}
-                      </HStack>
-                      {!isUkjent(s) && <BodyLong>Ingen offentlig tjenestepensjon registrert.</BodyLong>}
-                    </VStack>
-                  )}
-                </VStack>
-              ))}
-            </VStack>
-          ) : (
-            <BodyLong>Ingen informasjon om offentlig tjenestepensjon.</BodyLong>
-          )}
-        </VStack>
-      </AktivitetVurderingLayout.Section>
-
-      {vurdering && (
-        <AktivitetVurderingLayout.Section>
-          <VStack gap="2">
-            <Heading size="xsmall" level="2">
-              Vurdering
+  if (isSoknad(props.grunnlag.afpOffentligStatus[0])) {
+    return (
+      <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`} width="text">
+        <VStack gap="space-40">
+          <VStack align="center" gap="space-8">
+            <Heading size="medium" level="1">
+              Venter på svar fra {props.grunnlag.afpOffentligStatus[0].tpInfo.tpNavn}
             </Heading>
-            {isInnvilget(vurdering.afpOffentligStatus) && (
-              <BodyShort>{vurdering.afpOffentligStatus.startdato}</BodyShort>
-            )}
-            {isSoknad(vurdering.afpOffentligStatus) && (
-              <BodyShort>{vurdering.afpOffentligStatus.onsketVirkningsdato}</BodyShort>
-            )}
-            {!isInnvilget(vurdering.afpOffentligStatus) && !isSoknad(vurdering.afpOffentligStatus) && (
-              <BodyShort>Ingen eller ukjent status</BodyShort>
-            )}
+            <BodyLong align="center">
+              Det er søkt om livsvarig AFP for offentlig sektor. Maskinen venter på svar. Når maskinen får svar vil
+              delautomatisk saksbehandling fortsette.
+            </BodyLong>
           </VStack>
-        </AktivitetVurderingLayout.Section>
-      )}
-    </AktivitetVurderingLayout>
-  )
+          <HStack gap="2" justify="center">
+            {pensjonsoversiktUrl && (
+              <Button size="small" as="a" href={pensjonsoversiktUrl}>
+                Til Pensjonsoversikt
+              </Button>
+            )}
+            {psakOppgaveoversikt && (
+              <Button as="a" size="small" href={psakOppgaveoversikt} variant="secondary">
+                Til Oppgavelisten
+              </Button>
+            )}
+          </HStack>
+        </VStack>
+      </Page.Block>
+    )
+  }
 }
 
-export const Component = OffentligTjenestepensjonComponent
+export const Component = VenterPaaSvarTjenestepensjonComponent
