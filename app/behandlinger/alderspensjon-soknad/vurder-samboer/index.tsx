@@ -154,7 +154,7 @@ function VurdereSamboerComponent({
             >
               <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
               <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
-              <Radio value="IKKE_SAMBOER">Ikke samboer</Radio>
+              <Radio value="IKKE_SAMBOER">Ikke samboer (§ 3-2 samboer frem i tid)</Radio>
             </RadioGroup>
 
             <DatePicker dropdownCaption {...datepickerProps}>
