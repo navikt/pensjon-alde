@@ -46,7 +46,7 @@ export type BelopData = {
 }
 
 export type GrunnbelopData = {
-  aar: number
+  fomDato: string
   grunnbelop: number
 }
 
@@ -204,13 +204,13 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   if (!parsedForm.sistRegulert) {
-    errors.sistRegulert = 'Du må velge sist regulert år'
+    errors.sistRegulert = 'Du må velge grunnbeløp'
   }
 
   if (parsedForm.sistRegulert) {
-    const sistRegulertNum = parseInt(parsedForm.sistRegulert, 10)
+    const sistRegulertNum = parseFloat(parsedForm.sistRegulert)
     if (Number.isNaN(sistRegulertNum)) {
-      errors.sistRegulert = 'Sist regulert må være et gyldig år'
+      errors.sistRegulert = 'Grunnbeløp må være et gyldig tall'
     }
   }
 
@@ -241,7 +241,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   const tpNummer = parseInt(tpNummerStr, 10)
   const belop = parseInt(parsedForm.belop, 10)
-  const sistRegulert = parseInt(parsedForm.sistRegulert, 10)
+  const sistRegulert = parseFloat(parsedForm.sistRegulert)
 
   const tpLeverandor = grunnlag.afpOffentligStatus.find(
     status => (status.status === 'soknad' || status.status === 'ukjent') && status.tpInfo.tpNummer === tpNummer,
@@ -360,12 +360,14 @@ function AfpLivsvarigVurdering(
     vurdering?.utfall === 'innvilget' ? 'innvilget' : vurdering?.utfall === 'ingen' ? 'ingen' : undefined,
   )
 
-  const sortedGrunnbelop = [...grunnlag.grunnbelop].sort((a, b) => b.aar - a.aar)
+  const sortedGrunnbelop = [...grunnlag.grunnbelop].sort(
+    (a, b) => new Date(b.fomDato).getTime() - new Date(a.fomDato).getTime(),
+  )
   const defaultSistRegulert =
     vurdering?.utfall === 'innvilget'
       ? vurdering.sistRegulert.toString()
       : sortedGrunnbelop.length > 0
-        ? sortedGrunnbelop[0].aar.toString()
+        ? sortedGrunnbelop[0].grunnbelop.toString()
         : ''
 
   const { inputProps, datepickerProps } = useDatepicker({
@@ -411,14 +413,16 @@ function AfpLivsvarigVurdering(
         </HGrid>
       </VStack>
 
-      <VStack gap="space-8">
-        <BodyShort size="small" textColor="subtle">
-          Sist oppdatert {formatDateToNorwegian(aktivitet.sisteAktiveringsdato, { showTime: true })}
-        </BodyShort>
-        <BodyShort size="small" textColor="subtle">
-          Neste oppdatering {formatDateToNorwegian(aktivitet.utsattTil, { showTime: true })}
-        </BodyShort>
-      </VStack>
+      {!readOnly && (
+        <VStack gap="space-8">
+          <BodyShort size="small" textColor="subtle">
+            Sist oppdatert {formatDateToNorwegian(aktivitet.sisteAktiveringsdato, { showTime: true })}
+          </BodyShort>
+          <BodyShort size="small" textColor="subtle">
+            Neste oppdatering {formatDateToNorwegian(aktivitet.utsattTil, { showTime: true })}
+          </BodyShort>
+        </VStack>
+      )}
     </VStack>
   )
 
@@ -492,21 +496,24 @@ function AfpLivsvarigVurdering(
                         size="small"
                         error={errors?.sistRegulert}
                       >
-                        {sortedGrunnbelop.map(gb => (
-                          <option key={gb.aar} value={gb.aar}>
-                            {gb.aar} ({formatCurrencyNok(gb.grunnbelop)})
-                          </option>
-                        ))}
+                        {sortedGrunnbelop.map(gb => {
+                          const year = new Date(gb.fomDato).getFullYear()
+                          return (
+                            <option key={gb.fomDato} value={gb.grunnbelop}>
+                              {year} ({formatCurrencyNok(gb.grunnbelop)})
+                            </option>
+                          )
+                        })}
                       </Select>
                     ) : sortedGrunnbelop.length === 1 ? (
                       <>
                         <TextField
                           label="Sist regulert"
-                          value={sortedGrunnbelop[0].aar.toString()}
+                          value={formatCurrencyNok(sortedGrunnbelop[0].grunnbelop)}
                           size="small"
                           readOnly
                         />
-                        <input type="hidden" name="sistRegulert" value={sortedGrunnbelop[0].aar} />
+                        <input type="hidden" name="sistRegulert" value={sortedGrunnbelop[0].grunnbelop} />
                       </>
                     ) : (
                       <TextField
@@ -552,30 +559,52 @@ function AfpLivsvarigVurdering(
           </VStack>
         ) : (
           <VStack gap="6">
-            {vurdering?.utfall === 'innvilget' ? (
-              <VStack gap="2">
-                <BodyShort weight="semibold">Status: Innvilget</BodyShort>
-                <BodyShort>
-                  TP-nummer: {vurdering.tpNummer} (
-                  {soknadTpLeverandorer.find(tp => tp.tpInfo.tpNummer === vurdering.tpNummer)?.tpInfo.tpNavn ||
-                    'Ukjent'}
-                  )
-                </BodyShort>
-                <BodyShort>Virkning f.o.m: {formatDateToNorwegian(vurdering.virkFom)}</BodyShort>
-                <BodyShort>Sist regulert: {vurdering.sistRegulert}</BodyShort>
-                {vurdering.belop.length > 0 && (
-                  <div>
-                    <BodyShort weight="semibold">Beløp:</BodyShort>
-                    {vurdering.belop.map(b => (
-                      <BodyShort key={`vurdering-${b.fomDato}`} size="small">
-                        {b.belop} kr per måned f.o.m. {formatDateToNorwegian(b.fomDato)}
-                      </BodyShort>
-                    ))}
-                  </div>
+            <RadioGroup legend="Vurdering" value={vurdering?.utfall || ''} size="small" readOnly>
+              <Radio value="innvilget">Innvilget</Radio>
+              <Radio value="ingen">Avslått</Radio>
+            </RadioGroup>
+
+            {vurdering?.utfall === 'innvilget' && (
+              <VStack gap="4">
+                {soknadTpLeverandorer.length > 1 && (
+                  <TextField
+                    label="Valgt søknad"
+                    value={(() => {
+                      const tp = soknadTpLeverandorer.find(tp => tp.tpInfo.tpNummer === vurdering.tpNummer)
+                      return tp ? `${tp.tpInfo.tpNavn} (${tp.tpInfo.tpNummer})` : 'Ukjent'
+                    })()}
+                    size="small"
+                    readOnly
+                  />
                 )}
+
+                <TextField
+                  label="Beløp per måned (kr)"
+                  value={vurdering.belop.length > 0 ? vurdering.belop[0].belop.toString() : ''}
+                  size="small"
+                  readOnly
+                />
+
+                <TextField
+                  label="Sist regulert"
+                  value={(() => {
+                    const gb = sortedGrunnbelop.find(g => Number(g.grunnbelop) === Number(vurdering.sistRegulert))
+                    const year = gb ? new Date(gb.fomDato).getFullYear() : ''
+                    return year
+                      ? `${year} (${formatCurrencyNok(vurdering.sistRegulert)})`
+                      : formatCurrencyNok(vurdering.sistRegulert)
+                  })()}
+                  size="small"
+                  readOnly
+                />
+
+                <TextField
+                  label="Virkningsdato"
+                  value={formatDateToNorwegian(vurdering.virkFom)}
+                  size="small"
+                  readOnly
+                />
               </VStack>
-            ) : (
-              <BodyShort weight="semibold">Status: Avvist/Ingen AFP</BodyShort>
             )}
           </VStack>
         )}

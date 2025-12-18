@@ -75,7 +75,7 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
     .filter(aktivitet => aktivitet.grunnlag || aktivitet.vurdering)
     .filter(aktivitet => aktivitet.handlerName !== 'send-til-attestering')
     .filter(aktivitet => aktivitet.handlerName !== 'attestering')
-    .filter(aktivitet => aktivitet.vurdertAvBrukerId)
+    //.filter(aktivitet => aktivitet.vurdertAvBrukerId)
     .sort((a, b) => a.vurdertTidspunkt!.localeCompare(b.vurdertTidspunkt!))
     .map(aktivitet => ({
       ...aktivitet,
