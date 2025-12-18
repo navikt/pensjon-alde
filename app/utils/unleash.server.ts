@@ -1,4 +1,5 @@
 import { Unleash } from 'unleash-client'
+import type { Features } from '~/features'
 import { env } from './env.server.ts'
 
 console.log('Initializing Unleash...')
@@ -27,11 +28,11 @@ startUnleash().catch((err: Error) => {
   console.error('Failed to start Unleash:', err)
 })
 
-export function isFeatureEnabled(flagName: string): boolean {
+export function isFeatureEnabled(feature: (typeof Features)[keyof typeof Features]): boolean {
   try {
-    return unleash.isEnabled(flagName)
+    return unleash.isEnabled(feature.featureFlag)
   } catch (error) {
-    console.error(`Error checking feature flag ${flagName}:`, error)
+    console.error(`Error checking feature flag ${feature.featureFlag}:`, error)
     return false
   }
 }

@@ -8,6 +8,7 @@ import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
+import { isFeatureEnabled } from '../../../utils/unleash.server'
 import type { Route } from './+types'
 
 export function meta() {
@@ -73,6 +74,8 @@ export type Props =
 // biome-ignore lint/correctness/noUnusedVariables: Remix loader export used by framework
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
+
+  const visMedMulighetForVurdering = isFeatureEnabled('pesys.alde.afp.livsvarig.vurdering')
 
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
