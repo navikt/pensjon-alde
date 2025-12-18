@@ -1,19 +1,35 @@
-import { BodyLong, BodyShort, Button, Heading, HStack, Page, Radio, RadioGroup, VStack } from '@navikt/ds-react'
-import { Form, redirect, useOutletContext } from 'react-router'
+import {
+  Alert,
+  BodyLong,
+  BodyShort,
+  Button,
+  DatePicker,
+  Heading,
+  HGrid,
+  Radio,
+  RadioGroup,
+  Select,
+  TextField,
+  useDatepicker,
+  VStack,
+} from '@navikt/ds-react'
+import React from 'react'
+import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
-import commonStyles from '~/common.module.css'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import { Features } from '~/features'
-import type { AktivitetComponentProps } from '~/types/aktivitet-component'
+import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import type { AktivitetDTO } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
+import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
-
+import { dateInput, parseForm } from '~/utils/parse-form'
 import { isFeatureEnabled } from '../../../utils/unleash.server'
 import type { Route } from './+types'
+import { AfpLivsvarigVenter } from './AfpLivsvarigVenter'
+import { SoknadDisplay } from './SoknadDisplay'
 
 export function meta() {
   return [{ title: 'Offentlig tjenestepensjon' }, { name: 'description', content: 'Offentlig tjenestepensjon' }]
@@ -27,6 +43,11 @@ export type AldeTjenestepensjonInformasjon = {
 export type BelopData = {
   belop: number
   fomDato: string
+}
+
+export type GrunnbelopData = {
+  aar: number
+  grunnbelop: number
 }
 
 export type Innvilget = {
@@ -56,14 +77,22 @@ export type AldeAfpOffentligStatus = Innvilget | Soknad | Ingen | Ukjent
 
 export type OffentligTjenestepensjonGrunnlag = {
   afpOffentligStatus: AldeAfpOffentligStatus[]
+  grunnbelop: GrunnbelopData[]
 }
 
-export type OffentligTjenestepensjonVurdering = {
-  valgtTpLeverandor: {
-    tpNummer: number
-    tpNavn: string
-  }
+export type OffentligTjenestepensjonInnvilget = {
+  utfall: 'innvilget'
+  tpNummer: number
+  belop: BelopData[]
+  virkFom: string
+  sistRegulert: number
 }
+
+export type OffentligTjenestepensjonIngen = {
+  utfall: 'ingen'
+}
+
+export type OffentligTjenestepensjonVurdering = OffentligTjenestepensjonInnvilget | OffentligTjenestepensjonIngen
 
 const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => s.status === 'soknad'
 const isUkjent = (s: AldeAfpOffentligStatus): s is Ukjent => s.status === 'ukjent'
@@ -103,34 +132,176 @@ export async function action({ params, request }: Route.ActionArgs) {
   })
   const formData = await request.formData()
 
-  const tpNummerStr = formData.get('tpLeverandor') as string
-  const tpNummer = parseInt(tpNummerStr, 10)
+  const utfall = formData.get('utfall') as string
+
+  if (utfall === 'ingen') {
+    const vurdering: OffentligTjenestepensjonVurdering = {
+      utfall: 'ingen',
+    }
+    try {
+      await api.lagreVurdering(vurdering)
+      return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+    } catch {
+      return data(
+        {
+          errors: {
+            _form: 'Det oppstod en feil ved lagring av vurderingen',
+          } as FormErrors<{ utfall: string }>,
+        },
+        { status: 500 },
+      )
+    }
+  }
 
   const grunnlag = await api.hentGrunnlagsdata<OffentligTjenestepensjonGrunnlag>()
-  const tpLeverandor = grunnlag.afpOffentligStatus.find(
-    status =>
-      (status.status === 'ukjent' || status.status === 'soknad' || status.status === 'innvilget') &&
-      status.tpInfo.tpNummer === tpNummer,
+  const soknadTpLeverandorer = grunnlag.afpOffentligStatus.filter(
+    status => status.status === 'soknad' || status.status === 'ukjent',
   )
 
-  if (!tpLeverandor || tpLeverandor.status === 'ingen') {
-    throw new Error('Invalid TP leverandør selected')
+  const parsedForm = parseForm<{ tpLeverandor: string; virkFom: string; belop: string; sistRegulert: string }>(
+    formData,
+    {
+      tpLeverandor: (value: FormDataEntryValue | null) => (value ? value.toString() : null),
+      virkFom: dateInput,
+      belop: (value: FormDataEntryValue | null) => (value ? value.toString() : null),
+      sistRegulert: (value: FormDataEntryValue | null) => (value ? value.toString() : null),
+    },
+  )
+
+  const errors: FormErrors<{
+    tpLeverandor: string
+    virkFom: string
+    belop: string
+    utfall: string
+    sistRegulert: string
+  }> = {}
+
+  if (soknadTpLeverandorer.length > 1 && !parsedForm.tpLeverandor) {
+    errors.tpLeverandor = 'Du må velge en TP-leverandør'
+  }
+
+  if (!parsedForm.virkFom) {
+    errors.virkFom = 'Du må oppgi virkningsdato, f.eks. på denne måten: ddmmåååå'
+  }
+
+  if (parsedForm.virkFom) {
+    const today = new Date()
+    const virkFomDate = new Date(parsedForm.virkFom)
+    if (virkFomDate > today) {
+      errors.virkFom = 'Virkningsdato kan ikke være etter dagens dato'
+    }
+  }
+
+  if (!parsedForm.belop) {
+    errors.belop = 'Du må oppgi beløp'
+  }
+
+  if (parsedForm.belop) {
+    const belopNum = parseInt(parsedForm.belop, 10)
+    if (Number.isNaN(belopNum) || belopNum <= 0) {
+      errors.belop = 'Beløp må være et positivt tall'
+    }
+  }
+
+  if (!parsedForm.sistRegulert) {
+    errors.sistRegulert = 'Du må velge sist regulert år'
+  }
+
+  if (parsedForm.sistRegulert) {
+    const sistRegulertNum = parseInt(parsedForm.sistRegulert, 10)
+    if (Number.isNaN(sistRegulertNum)) {
+      errors.sistRegulert = 'Sist regulert må være et gyldig år'
+    }
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return data({ errors }, { status: 400 })
+  }
+
+  const tpNummerStr =
+    parsedForm.tpLeverandor ||
+    (soknadTpLeverandorer.length === 1 ? soknadTpLeverandorer[0].tpInfo.tpNummer.toString() : null)
+
+  if (!tpNummerStr) {
+    return data(
+      {
+        errors: {
+          tpLeverandor: 'Kunne ikke bestemme TP-leverandør',
+        } as FormErrors<{
+          tpLeverandor: string
+          virkFom: string
+          belop: string
+          utfall: string
+          sistRegulert: string
+        }>,
+      },
+      { status: 400 },
+    )
+  }
+
+  const tpNummer = parseInt(tpNummerStr, 10)
+  const belop = parseInt(parsedForm.belop, 10)
+  const sistRegulert = parseInt(parsedForm.sistRegulert, 10)
+
+  const tpLeverandor = grunnlag.afpOffentligStatus.find(
+    status => (status.status === 'soknad' || status.status === 'ukjent') && status.tpInfo.tpNummer === tpNummer,
+  )
+
+  if (!tpLeverandor || (tpLeverandor.status !== 'soknad' && tpLeverandor.status !== 'ukjent')) {
+    return data(
+      {
+        errors: {
+          tpLeverandor: 'Ugyldig TP-leverandør valgt',
+        } as FormErrors<{
+          tpLeverandor: string
+          virkFom: string
+          belop: string
+          utfall: string
+          sistRegulert: string
+        }>,
+      },
+      { status: 400 },
+    )
   }
 
   const vurdering: OffentligTjenestepensjonVurdering = {
-    valgtTpLeverandor: {
-      tpNummer: tpLeverandor.tpInfo.tpNummer,
-      tpNavn: tpLeverandor.tpInfo.tpNavn,
-    },
+    utfall: 'innvilget',
+    tpNummer: tpLeverandor.tpInfo.tpNummer,
+    belop: [
+      {
+        belop,
+        fomDato: parsedForm.virkFom,
+      },
+    ],
+    virkFom: parsedForm.virkFom,
+    sistRegulert,
   }
 
-  await api.lagreVurdering(vurdering)
-  return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+  try {
+    await api.lagreVurdering(vurdering)
+    return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+  } catch {
+    return data(
+      {
+        errors: {
+          _form: 'Det oppstod en feil ved lagring av vurderingen',
+        } as FormErrors<{
+          tpLeverandor: string
+          virkFom: string
+          belop: string
+          utfall: string
+          sistRegulert: string
+        }>,
+      },
+      { status: 500 },
+    )
+  }
 }
 
-export default function OffentligTjenestepensjonRoute({ loaderData }: Route.ComponentProps) {
+export default function OffentligTjenestepensjonRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { grunnlag, vurdering, readOnly, pensjonsoversiktUrl, psakOppgaveoversikt, visMedMulighetForVurdering } =
     loaderData
+  const { errors } = actionData || {}
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
   if (visMedMulighetForVurdering) {
@@ -144,11 +315,12 @@ export default function OffentligTjenestepensjonRoute({ loaderData }: Route.Comp
         pensjonsoversiktUrl={pensjonsoversiktUrl}
         psakOppgaveoversikt={psakOppgaveoversikt}
         avbrytAktivitet={avbrytAktivitet}
+        errors={errors}
       />
     )
   } else {
     return (
-      <AfpLivsvarigVenter
+      <AfpLivsvarigVenterWrapper
         readOnly={readOnly}
         grunnlag={grunnlag}
         vurdering={vurdering}
@@ -157,78 +329,95 @@ export default function OffentligTjenestepensjonRoute({ loaderData }: Route.Comp
         pensjonsoversiktUrl={pensjonsoversiktUrl}
         psakOppgaveoversikt={psakOppgaveoversikt}
         avbrytAktivitet={avbrytAktivitet}
+        errors={errors}
       />
     )
   }
 }
 
-function AfpLivsvarigVurdering(props: Props) {
-  const { grunnlag, vurdering, readOnly, aktivitet, avbrytAktivitet } = props
+function AfpLivsvarigVurdering(
+  props: Props & {
+    errors?: FormErrors<{
+      tpLeverandor: string
+      virkFom: string
+      belop: string
+      utfall: string
+      sistRegulert: string
+    }>
+  },
+) {
+  const { grunnlag, vurdering, readOnly, aktivitet, avbrytAktivitet, errors } = props
 
-  const tpLeverandorer = grunnlag.afpOffentligStatus.filter(
-    status => status.status === 'ukjent' || status.status === 'soknad' || status.status === 'innvilget',
+  const soknadTpLeverandorer = grunnlag.afpOffentligStatus
+    .filter(status => status.status === 'soknad' || status.status === 'ukjent')
+    .sort((a, b) => {
+      if (a.status === 'soknad' && b.status === 'ukjent') return -1
+      if (a.status === 'ukjent' && b.status === 'soknad') return 1
+      return 0
+    })
+
+  const [selectedUtfall, setSelectedUtfall] = React.useState<string | undefined>(
+    vurdering?.utfall === 'innvilget' ? 'innvilget' : vurdering?.utfall === 'ingen' ? 'ingen' : undefined,
   )
+
+  const sortedGrunnbelop = [...grunnlag.grunnbelop].sort((a, b) => b.aar - a.aar)
+  const defaultSistRegulert =
+    vurdering?.utfall === 'innvilget'
+      ? vurdering.sistRegulert.toString()
+      : sortedGrunnbelop.length > 0
+        ? sortedGrunnbelop[0].aar.toString()
+        : ''
+
+  const { inputProps, datepickerProps } = useDatepicker({
+    defaultSelected: vurdering?.utfall === 'innvilget' && vurdering.virkFom ? new Date(vurdering.virkFom) : undefined,
+    required: true,
+  })
 
   const detailsContent = (
     <VStack gap="space-40">
-      <BodyLong style={{ maxWidth: '576px' }}>
-        Bruker har registrerte TP-leverandører. Velg hvilken leverandør som skal brukes for AFP offentlig.
-      </BodyLong>
+      <VStack gap="space-16">
+        <VStack gap="space-40">
+          <BodyLong>
+            Det er søkt om livsvarig AFP for offentlig sektor. Maskinen sender saken til attestering når
+            tjenestepensjonsleverandør har svart.
+          </BodyLong>
+          <VStack>
+            <Heading size="small" level="3" spacing>
+              Hvorfor venter vi på tjenestepensjonsleverandør?
+            </Heading>
+
+            <BodyLong>
+              Søkeren har ikke nok opptjening til å få innvilget alderspensjon alene, men kan ha rett til alderspensjon
+              om den kombineres med livsvarig AFP.
+            </BodyLong>
+          </VStack>
+        </VStack>
+      </VStack>
 
       <VStack gap="space-24">
         <div>
           <Heading level="2" size="small">
-            Registrerte TP-leverandører
+            Søknader om AFP offentlig
           </Heading>
           <BodyShort size="small" textColor="subtle">
             Informasjon fra TP-registeret
           </BodyShort>
         </div>
 
-        {tpLeverandorer.map(leverandor => (
-          <VStack key={leverandor.tpInfo.tpNummer} gap="space-8">
-            <div>
-              <Heading level="3" size="xsmall">
-                {leverandor.tpInfo.tpNavn}
-              </Heading>
-              <BodyShort size="small" textColor="subtle">
-                TP-nummer: {leverandor.tpInfo.tpNummer}
-              </BodyShort>
-            </div>
-            <div>
-              <BodyShort weight="semibold">Status:</BodyShort>
-              <BodyShort>
-                {leverandor.status === 'innvilget' && 'Innvilget'}
-                {leverandor.status === 'soknad' && 'Søknad sendt'}
-                {leverandor.status === 'ukjent' && 'Ukjent status'}
-              </BodyShort>
-            </div>
-            {leverandor.status === 'innvilget' && (
-              <>
-                <div>
-                  <BodyShort weight="semibold">Startdato:</BodyShort>
-                  <BodyShort>{formatDateToNorwegian(leverandor.startdato)}</BodyShort>
-                </div>
-                {leverandor.belop.length > 0 && (
-                  <div>
-                    <BodyShort weight="semibold">Beløp:</BodyShort>
-                    {leverandor.belop.map(b => (
-                      <BodyShort key={`${leverandor.tpInfo.tpNummer}-${b.fomDato}`}>
-                        {b.belop} kr f.o.m. {formatDateToNorwegian(b.fomDato)}
-                      </BodyShort>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-            {leverandor.status === 'soknad' && (
-              <div>
-                <BodyShort weight="semibold">Ønsket virkningsdato:</BodyShort>
-                <BodyShort>{formatDateToNorwegian(leverandor.onsketVirkningsdato)}</BodyShort>
-              </div>
-            )}
-          </VStack>
-        ))}
+        <HGrid columns={{ sm: 1, md: 2 }} gap="4">
+          {soknadTpLeverandorer.map(leverandor => (
+            <SoknadDisplay key={leverandor.tpInfo.tpNummer} soknad={leverandor} />
+          ))}
+        </HGrid>
+      </VStack>
+
+      <VStack gap="space-8">
+        <BodyShort size="small" textColor="subtle">
+          Sist oppdatert {formatDateToNorwegian(aktivitet.sisteAktiveringsdato, { showTime: true })}
+        </BodyShort>
+        <BodyShort size="small" textColor="subtle">
+          Neste oppdatering {formatDateToNorwegian(aktivitet.utsattTil, { showTime: true })}
+        </BodyShort>
       </VStack>
     </VStack>
   )
@@ -238,38 +427,156 @@ function AfpLivsvarigVurdering(props: Props) {
       <VStack gap="6">
         <div>
           <Heading level="2" size="small" spacing>
-            Velg TP-leverandør
+            Vurder AFP offentlig
           </Heading>
-          <BodyLong>Velg hvilken TP-leverandør som skal benyttes for AFP offentlig.</BodyLong>
+          <BodyLong>Velg om AFP offentlig er innvilget eller avslått.</BodyLong>
         </div>
 
         {!readOnly ? (
           <VStack gap="6">
-            <RadioGroup
-              legend="TP-leverandør"
-              name="tpLeverandor"
-              defaultValue={vurdering?.valgtTpLeverandor?.tpNummer?.toString()}
-              size="small"
-            >
-              {tpLeverandorer.map(leverandor => (
-                <Radio key={leverandor.tpInfo.tpNummer} value={leverandor.tpInfo.tpNummer.toString()}>
-                  {leverandor.tpInfo.tpNavn}
-                </Radio>
-              ))}
-            </RadioGroup>
+            {soknadTpLeverandorer.length > 0 ? (
+              <>
+                <RadioGroup
+                  legend="Vurdering"
+                  name="utfall"
+                  defaultValue={selectedUtfall}
+                  onChange={setSelectedUtfall}
+                  size="small"
+                  error={errors?.utfall}
+                >
+                  <Radio value="innvilget">Innvilget</Radio>
+                  <Radio value="ingen">Avslått</Radio>
+                </RadioGroup>
 
-            <VStack gap="2">
-              <Button type="submit" variant="primary" size="small">
-                Fortsett behandling
-              </Button>
-              <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet}>
-                Avbryt behandling i pilot
-              </Button>
-            </VStack>
+                {selectedUtfall === 'innvilget' && (
+                  <VStack gap="4">
+                    {soknadTpLeverandorer.length > 1 && (
+                      <Select
+                        label="Velg søknad"
+                        name="tpLeverandor"
+                        defaultValue={vurdering?.utfall === 'innvilget' ? vurdering.tpNummer.toString() : ''}
+                        size="small"
+                        error={errors?.tpLeverandor}
+                      >
+                        <option value="">Velg TP-leverandør</option>
+                        {soknadTpLeverandorer.map(leverandor => (
+                          <option key={leverandor.tpInfo.tpNummer} value={leverandor.tpInfo.tpNummer}>
+                            {leverandor.tpInfo.tpNavn} ({leverandor.tpInfo.tpNummer})
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+
+                    {soknadTpLeverandorer.length === 1 && (
+                      <input type="hidden" name="tpLeverandor" value={soknadTpLeverandorer[0].tpInfo.tpNummer} />
+                    )}
+
+                    <TextField
+                      label="Beløp per måned (kr)"
+                      name="belop"
+                      type="number"
+                      size="small"
+                      defaultValue={
+                        vurdering?.utfall === 'innvilget' && vurdering.belop.length > 0
+                          ? vurdering.belop[0].belop.toString()
+                          : ''
+                      }
+                      error={errors?.belop}
+                    />
+
+                    {sortedGrunnbelop.length > 1 ? (
+                      <Select
+                        label="Sist regulert"
+                        name="sistRegulert"
+                        defaultValue={defaultSistRegulert}
+                        size="small"
+                        error={errors?.sistRegulert}
+                      >
+                        {sortedGrunnbelop.map(gb => (
+                          <option key={gb.aar} value={gb.aar}>
+                            {gb.aar} ({formatCurrencyNok(gb.grunnbelop)})
+                          </option>
+                        ))}
+                      </Select>
+                    ) : sortedGrunnbelop.length === 1 ? (
+                      <>
+                        <TextField
+                          label="Sist regulert"
+                          value={sortedGrunnbelop[0].aar.toString()}
+                          size="small"
+                          readOnly
+                        />
+                        <input type="hidden" name="sistRegulert" value={sortedGrunnbelop[0].aar} />
+                      </>
+                    ) : (
+                      <TextField
+                        label="Sist regulert"
+                        name="sistRegulert"
+                        type="number"
+                        size="small"
+                        defaultValue={defaultSistRegulert}
+                        error={errors?.sistRegulert}
+                      />
+                    )}
+
+                    <DatePicker dropdownCaption {...datepickerProps}>
+                      <DatePicker.Input
+                        {...inputProps}
+                        size="small"
+                        label="Virkningsdato (f.o.m.)"
+                        name="virkFom"
+                        error={errors?.virkFom}
+                      />
+                    </DatePicker>
+                  </VStack>
+                )}
+
+                {errors?._form && <Alert variant="error">{errors._form}</Alert>}
+
+                <Button type="submit" variant="primary" size="small">
+                  Lagre vurdering
+                </Button>
+              </>
+            ) : (
+              <VStack gap="4">
+                <BodyLong>Det finnes ingen søknader om AFP offentlig.</BodyLong>
+                <Button type="submit" name="utfall" value="ingen" variant="primary" size="small">
+                  Lagre avvist/ingen
+                </Button>
+              </VStack>
+            )}
+
+            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet}>
+              Avbryt behandling i pilot
+            </Button>
           </VStack>
         ) : (
           <VStack gap="6">
-            <BodyShort weight="semibold">Valgt: {vurdering?.valgtTpLeverandor?.tpNavn || 'Ingen valgt'}</BodyShort>
+            {vurdering?.utfall === 'innvilget' ? (
+              <VStack gap="2">
+                <BodyShort weight="semibold">Status: Innvilget</BodyShort>
+                <BodyShort>
+                  TP-nummer: {vurdering.tpNummer} (
+                  {soknadTpLeverandorer.find(tp => tp.tpInfo.tpNummer === vurdering.tpNummer)?.tpInfo.tpNavn ||
+                    'Ukjent'}
+                  )
+                </BodyShort>
+                <BodyShort>Virkning f.o.m: {formatDateToNorwegian(vurdering.virkFom)}</BodyShort>
+                <BodyShort>Sist regulert: {vurdering.sistRegulert}</BodyShort>
+                {vurdering.belop.length > 0 && (
+                  <div>
+                    <BodyShort weight="semibold">Beløp:</BodyShort>
+                    {vurdering.belop.map(b => (
+                      <BodyShort key={`vurdering-${b.fomDato}`} size="small">
+                        {b.belop} kr per måned f.o.m. {formatDateToNorwegian(b.fomDato)}
+                      </BodyShort>
+                    ))}
+                  </div>
+                )}
+              </VStack>
+            ) : (
+              <BodyShort weight="semibold">Status: Avvist/Ingen AFP</BodyShort>
+            )}
           </VStack>
         )}
       </VStack>
@@ -283,79 +590,12 @@ function AfpLivsvarigVurdering(props: Props) {
   )
 }
 
-function AfpLivsvarigVenter(props: Props) {
-  function VenterSoknad({
-    soknad,
-    aktivitet,
-    pensjonsoversiktUrl,
-    psakOppgaveoversikt,
-    avbrytAktivitet,
-  }: {
-    soknad: Soknad
-    aktivitet: AktivitetDTO
-    pensjonsoversiktUrl?: string
-    psakOppgaveoversikt?: string
-    avbrytAktivitet: () => void
-  }) {
-    return (
-      <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`} width="text">
-        <VStack gap="space-40" align="center">
-          <VStack align="center" gap="space-16">
-            <Heading size="medium" level="1">
-              Venter på svar fra {soknad?.tpInfo.tpNavn}
-            </Heading>
-            <VStack gap="space-40">
-              <BodyLong align="center">
-                Det er søkt om livsvarig AFP for offentlig sektor. Maskinen sender saken til attestering når
-                tjenestepensjonsleverandør har svart.{' '}
-              </BodyLong>
-              <VStack align="center">
-                <Heading size="small" level="3" align="center" spacing>
-                  Hvorfor venter vi på tjenestepensjonsleverandør?
-                </Heading>
-
-                <BodyLong align="center">
-                  Søkeren har ikke nok opptjening til å få innvilget alderspensjon alene, men kan ha rett til
-                  alderspensjon om den kombineres med livsvarig AFP.
-                </BodyLong>
-              </VStack>
-            </VStack>
-            <VStack align="center">
-              <BodyShort size="small" color="subtle">
-                Sist oppdatert {formatDateToNorwegian(aktivitet.sisteAktiveringsdato, { showTime: true })}
-              </BodyShort>
-              <BodyShort size="small" color="subtle">
-                Neste oppdatering {formatDateToNorwegian(aktivitet.utsattTil, { showTime: true })}
-              </BodyShort>
-            </VStack>
-          </VStack>
-          <HStack gap="2" justify="center">
-            {pensjonsoversiktUrl && (
-              <Button size="small" as="a" href={pensjonsoversiktUrl}>
-                Til Pensjonsoversikt
-              </Button>
-            )}
-            {psakOppgaveoversikt && (
-              <Button as="a" size="small" href={psakOppgaveoversikt} variant="secondary">
-                Til Oppgavelisten
-              </Button>
-            )}
-          </HStack>
-          <div>
-            <Button as="a" size="small" variant="tertiary" onClick={avbrytAktivitet}>
-              Avbryt behandling i pilot
-            </Button>
-          </div>
-        </VStack>
-      </Page.Block>
-    )
-  }
-
+function AfpLivsvarigVenterWrapper(props: Props) {
   if (props.grunnlag.afpOffentligStatus.some(isSoknad)) {
     const soknad = props.grunnlag.afpOffentligStatus.find(isSoknad)
     if (!soknad) return null
     return (
-      <VenterSoknad
+      <AfpLivsvarigVenter
         soknad={soknad}
         aktivitet={props.aktivitet}
         pensjonsoversiktUrl={props.pensjonsoversiktUrl}
