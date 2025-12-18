@@ -19,6 +19,11 @@ if (isDev) {
 } else {
   app.use(compression())
   app.disable('x-powered-by')
+  app.use(
+    '/assets',
+    express.static('build/client/assets', {immutable: true, maxAge: '1y'}),
+  )
+  app.use(express.static('build/client', {maxAge: '1h'}))
 }
 
 app.get(['/internal/live', '/internal/ready'], (_, res) => res.sendStatus(200))
