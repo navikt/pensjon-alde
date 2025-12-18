@@ -12,6 +12,9 @@ spec:
         - host: "graph.microsoft.com"
         - host: "login.microsoftonline.com"
         - host: "{{{ pen.host }}}"
+        - host: "teampensjon-unleash-api.nav.cloud.nais.io"
+  envFrom:
+    - secret: alde-unleash-api-token
 
   azure:
     application:
