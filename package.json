@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "react-router dev",
+    "dev": "NODE_ENV=development node --experimental-strip-types server.ts",
     "dev:mock": "NODE_ENV=mock react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "lint": "biome lint .",
@@ -36,6 +36,7 @@
     "clsx": "^2.1.1",
     "compression": "^1.8.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "isbot": "^5.1.32",
     "node-cache": "^5.1.2",
@@ -43,13 +44,16 @@
     "react-auth": "^1.0.0",
     "react-dom": "^19.2.0",
     "react-router": "^7.9.5",
-    "remix-auth-oauth2": "^3.4.1"
+    "remix-auth-oauth2": "^3.4.1",
+    "unleash-client": "^6.9.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.3",
     "@playwright/test": "^1.55.1",
     "@react-router/dev": "^7.9.5",
     "@tailwindcss/vite": "^4.1.16",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.6",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.3",

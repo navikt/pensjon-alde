@@ -93,7 +93,6 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pen
   "AZURE_APP_TENANT_ID" \
   "AZURE_OPENID_CONFIG_ISSUER" \
   "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
-
 {
   echo AZURE_CALLBACK_URL="'http://localhost:3001/auth/callback'"
   echo IS_LOCAL_ENV="'true'"
@@ -109,6 +108,14 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pen
   echo TELEMETRY_ENVIRONMENT="local"
 } >> ${envfile}
 
-echo
+
+fetch_kubernetes_secrets "Unleash" "dev-gcp" "pensjon-saksbehandling" "alde-unleash-api-token" "nonstrict" \
+    "UNLEASH_SERVER_API_TOKEN" \
+    "UNLEASH_SERVER_API_URL" \
+    "UNLEASH_SERVER_API_ENV"
+>> ${envfile}
+
+
+
 
 echo "${bold}Hentet hemmeligheter og oppdatert .env fil ${normal}"

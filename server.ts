@@ -1,33 +1,45 @@
-import {createRequestHandler} from '@react-router/express'
 import compression from 'compression'
 import express from 'express'
+import { startUnleash } from './app/utils/unleash.server.ts'
+import {createRequestHandler} from '@react-router/express'
+import type { ViteDevServer } from 'vite'
 
-const remixHandler = createRequestHandler({
-  build: await import('./build/server/index.js'),
-})
+const isDev = process.env.NODE_ENV === 'development'
 
 const app = express()
 
-app.use(compression())
+let viteDevServer: ViteDevServer
 
-// http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
-app.disable('x-powered-by')
-
-// Vite fingerprints its assets so we can cache forever.
-app.use(
-  '/assets',
-  express.static('build/client/assets', {immutable: true, maxAge: '1y'}),
-)
-
-// Everything else (like favicon.ico) is cached for an hour. You may want to be
-// more aggressive with this caching.
-app.use(express.static('build/client', {maxAge: '1h'}))
+if (isDev) {
+  const vite = await import('vite')
+  viteDevServer = await vite.createServer({
+    server: {middlewareMode: true},
+  })
+  app.use(viteDevServer.middlewares)
+} else {
+  app.use(compression())
+  app.disable('x-powered-by')
+  app.use(
+    '/assets',
+    express.static('build/client/assets', {immutable: true, maxAge: '1y'}),
+  )
+  app.use(express.static('build/client', {maxAge: '1h'}))
+}
 
 app.get(['/internal/live', '/internal/ready'], (_, res) => res.sendStatus(200))
 
-// handle SSR requests
-app.all('/{*splat}', remixHandler)
+const remixHandler = createRequestHandler({
+  build: isDev
+    ? () => viteDevServer.ssrLoadModule('virtual:react-router/server-build')
+    : await import('./build/server/index.js'),
+})
 
-app.listen(8080, () => {
-  console.log(`Express server listening at http://localhost:8080`)
+app.use(remixHandler)
+
+const port = isDev ? 3001 : 8080
+
+app.listen(port, async () => {
+  console.log(`Express server listening at http://localhost:${port}`)
+  await startUnleash()
+  console.log('Unleash initialized')
 })
