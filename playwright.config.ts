@@ -80,7 +80,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev:mock',
+    command: 'pnpm dev:mock',
     port: 3001,
     timeout: 60000,
     reuseExistingServer: !process.env.CI,
