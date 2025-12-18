@@ -1,7 +1,7 @@
 apiVersion: unleash.nais.io/v1
 kind: ApiToken
 metadata:
-  name:
+  name: "alde"
   namespace: "{{{ app.namespace }}}"
   labels:
     team: starte-pensjon
