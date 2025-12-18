@@ -1,3 +1,7 @@
+import dotenv from 'dotenv'
+
+dotenv.config()
+
 export function loadEnv<R extends Record<string, string>, O extends Record<string, string>>(
   required: R,
   optional?: O,
@@ -38,6 +42,9 @@ export const env = loadEnv({
   verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
   telemetryUrl: 'TELEMETRY_URL',
   modia: 'MODIA_PERSONOVERSIKT',
+  unleashUrl: 'UNLEASH_SERVER_API_URL',
+  unleashApiToken: 'UNLEASH_SERVER_API_TOKEN',
+  unleashEnvironment: 'UNLEASH_SERVER_API_ENV',
 })
 
 export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'
