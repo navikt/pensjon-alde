@@ -3,8 +3,10 @@ import { useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
+import { Features } from '~/features'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
+import type { AktivitetDTO } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
@@ -63,19 +65,15 @@ const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => s.status === 'sokna
 
 const isUkjent = (s: AldeAfpOffentligStatus): s is Ukjent => s.status === 'ukjent'
 
-// Local union type to augment AktivitetComponentProps with optional pensjonsoversiktUrl
-export type Props =
-  | AktivitetComponentProps<OffentligTjenestepensjonGrunnlag, OffentligTjenestepensjonVurdering>
-  | (AktivitetComponentProps<OffentligTjenestepensjonGrunnlag, OffentligTjenestepensjonVurdering> & {
-      pensjonsoversiktUrl: string
-      psakOppgaveoversikt: string
-    })
+export type Props = AktivitetComponentProps<OffentligTjenestepensjonGrunnlag, OffentligTjenestepensjonVurdering> & {
+  pensjonsoversiktUrl?: string
+  psakOppgaveoversikt?: string
+}
 
-// biome-ignore lint/correctness/noUnusedVariables: Remix loader export used by framework
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 
-  const visMedMulighetForVurdering = isFeatureEnabled('pesys.alde.afp.livsvarig.vurdering')
+  const visMedMulighetForVurdering = isFeatureEnabled(Features.AFP_LIVSVARIG_MED_VURDERING)
 
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
@@ -87,41 +85,71 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     readOnly: false,
     grunnlag,
     vurdering,
+    visMedMulighetForVurdering,
     pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
     psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
   }
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: Remix action export used by framework
 export async function action() {
   return null
 }
 
 export default function OffentligTjenestepensjonRoute({ loaderData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, readOnly, pensjonsoversiktUrl, psakOppgaveoversikt } = loaderData
-  const { aktivitet, behandling } = useOutletContext<AktivitetOutletContext>()
+  const { grunnlag, vurdering, readOnly, pensjonsoversiktUrl, psakOppgaveoversikt, visMedMulighetForVurdering } =
+    loaderData
+  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
+  if (visMedMulighetForVurdering) {
+    return (
+      <Component
+        readOnly={readOnly}
+        grunnlag={grunnlag}
+        vurdering={vurdering}
+        aktivitet={aktivitet}
+        behandling={behandling}
+        pensjonsoversiktUrl={pensjonsoversiktUrl}
+        psakOppgaveoversikt={psakOppgaveoversikt}
+        avbrytAktivitet={avbrytAktivitet}
+      />
+    )
+  } else {
+    return (
+      <AfpLivsvarigVenter
+        readOnly={readOnly}
+        grunnlag={grunnlag}
+        vurdering={vurdering}
+        aktivitet={aktivitet}
+        behandling={behandling}
+        pensjonsoversiktUrl={pensjonsoversiktUrl}
+        psakOppgaveoversikt={psakOppgaveoversikt}
+        avbrytAktivitet={avbrytAktivitet}
+      />
+    )
+  }
+}
+
+const AfpLivsvarigVurdering = (props: Props) => {
   return (
-    <Component
-      readOnly={readOnly}
-      grunnlag={grunnlag}
-      vurdering={vurdering}
-      aktivitet={aktivitet}
-      behandling={behandling}
-      pensjonsoversiktUrl={pensjonsoversiktUrl}
-      psakOppgaveoversikt={psakOppgaveoversikt}
-    />
+    <div>
+      <h1>AfpLivsvarig</h1>
+    </div>
   )
 }
 
-function VenterPaaSvarTjenestepensjonComponent(props: Props) {
-  const pensjonsoversiktUrl = 'pensjonsoversiktUrl' in props ? props.pensjonsoversiktUrl : undefined
-  const psakOppgaveoversikt = 'psakOppgaveoversikt' in props ? props.psakOppgaveoversikt : undefined
-
-  function venterSoknad(soknad: {
-    status: 'soknad'
-    tpInfo: AldeTjenestepensjonInformasjon
-    onsketVirkningsdato: string
+function AfpLivsvarigVenter(props: Props) {
+  function VenterSoknad({
+    soknad,
+    aktivitet,
+    pensjonsoversiktUrl,
+    psakOppgaveoversikt,
+    avbrytAktivitet,
+  }: {
+    soknad: Soknad
+    aktivitet: AktivitetDTO
+    pensjonsoversiktUrl?: string
+    psakOppgaveoversikt?: string
+    avbrytAktivitet: () => void
   }) {
     return (
       <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`} width="text">
@@ -132,7 +160,7 @@ function VenterPaaSvarTjenestepensjonComponent(props: Props) {
             </Heading>
             <BodyLong align="center">
               Det er søkt om livsvarig AFP for offentlig sektor. Vi vil automatisk forsøke igjen{' '}
-              {formatDateToNorwegian(props.aktivitet.utsattTil, {
+              {formatDateToNorwegian(aktivitet.utsattTil, {
                 showTime: true,
                 onlyTimeIfSameDate: true,
               })}{' '}
@@ -140,18 +168,23 @@ function VenterPaaSvarTjenestepensjonComponent(props: Props) {
               tjenestepensjonsleverandør.
             </BodyLong>
           </VStack>
-          <HStack gap="2" justify="center">
-            {pensjonsoversiktUrl && (
-              <Button size="small" as="a" href={pensjonsoversiktUrl}>
-                Til Pensjonsoversikt
-              </Button>
-            )}
-            {psakOppgaveoversikt && (
-              <Button as="a" size="small" href={psakOppgaveoversikt} variant="secondary">
-                Til Oppgavelisten
-              </Button>
-            )}
-          </HStack>
+          <VStack gap="4">
+            <HStack gap="2" justify="center">
+              {pensjonsoversiktUrl && (
+                <Button size="small" as="a" href={pensjonsoversiktUrl}>
+                  Til Pensjonsoversikt
+                </Button>
+              )}
+              {psakOppgaveoversikt && (
+                <Button as="a" size="small" href={psakOppgaveoversikt} variant="secondary">
+                  Til Oppgavelisten
+                </Button>
+              )}
+            </HStack>
+            <Button as="a" size="small" variant="tertiary" onClick={avbrytAktivitet}>
+              Avbryt behandling i pilot
+            </Button>
+          </VStack>
         </VStack>
       </Page.Block>
     )
@@ -160,11 +193,19 @@ function VenterPaaSvarTjenestepensjonComponent(props: Props) {
   if (props.grunnlag.afpOffentligStatus.some(isSoknad)) {
     // biome-ignore lint/style/noNonNullAssertion: Vil alltid finnes en søknad
     const soknad = props.grunnlag.afpOffentligStatus.find(isSoknad)!
-    return venterSoknad(soknad)
+    return (
+      <VenterSoknad
+        soknad={soknad}
+        aktivitet={props.aktivitet}
+        pensjonsoversiktUrl={props.pensjonsoversiktUrl}
+        psakOppgaveoversikt={props.psakOppgaveoversikt}
+        avbrytAktivitet={props.avbrytAktivitet}
+      />
+    )
   } else if (props.grunnlag.afpOffentligStatus.some(isUkjent)) {
     const ukjent = props.grunnlag.afpOffentligStatus.find(isUkjent)
     return <div>Må fylle ut skjema</div>
   }
 }
 
-export const Component = VenterPaaSvarTjenestepensjonComponent
+export const Component = AfpLivsvarigVurdering
