@@ -149,15 +149,15 @@ The system automatically:
 ## Testing Your Implementation
 
 ```sh
-npm test          # Run tests in watch mode
-npm run test:ci   # Run tests once (use this after editing tests or tested files)
-npm run typecheck # Type checking
-npm run dev:mock  # Development with mock API
+pnpm test          # Run tests in watch mode
+pnpm test:ci       # Run tests once (use this after editing tests or tested files)
+pnpm typecheck     # Type checking
+pnpm dev:mock      # Development with mock API
 ```
 
 ### IMPORTANT: Run Tests After Changes
 
-**ALWAYS run `npm run test:ci` after:**
+**ALWAYS run `pnpm test:ci` after:**
 - Creating or modifying test files
 - Editing files that have associated tests
 - Making changes to core functionality
@@ -194,7 +194,7 @@ Mock API responses are located in `app/mocks/data/`. Check existing files like `
 
 ### TypeScript errors
 
-- Run `npm run typecheck` to generate React Router types
+- Run `pnpm typecheck` to generate React Router types
 - Import types from `./+types`
 
 ## API Endpoints

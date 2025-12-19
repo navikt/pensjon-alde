@@ -21,9 +21,14 @@ jobs:
       - uses: "actions/setup-node@v6"
         with:
           node-version: '24'
-          cache: 'npm'
-      - run: |
-          npm ci && npm run build && npm prune --omit=dev
+          cache: 'pnpm'
+      - name: Enable corepack
+        run: corepack enable
+      - name: Install deps and build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          pnpm prune --prod
       - uses: nais/docker-build-push@v0
         id: docker-push
         with:
