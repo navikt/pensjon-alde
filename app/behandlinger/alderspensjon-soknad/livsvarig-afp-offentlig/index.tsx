@@ -624,11 +624,8 @@ function AfpLivsvarigVenterWrapper(props: Props) {
         avbrytAktivitet={props.avbrytAktivitet}
       />
     )
-  } else if (props.grunnlag.afpOffentligStatus.some(isUkjent)) {
-    return <div>Må fylle ut skjema</div>
   }
-
-  return null
+  throw Error('Bare ukjent svar fra TP-ordninger i Livsvarig AFP Offentlig aktivitet')
 }
 
 export const Component = AfpLivsvarigVurdering
