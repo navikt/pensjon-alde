@@ -10,4 +10,4 @@ export const Features = {
     added: '2025-12-18',
     team: 'starte-pensjon',
   },
-}
+} satisfies Record<string, Feature>
