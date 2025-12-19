@@ -95,7 +95,6 @@ export type LivsvarigAfpOffentligIngen = {
 export type LivsvarigAfpOffentligVurdering = LivsvarigAfpOffentligInnvilget | LivsvarigAfpOffentligIngen
 
 const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => s.status === 'soknad'
-const isUkjent = (s: AldeAfpOffentligStatus): s is Ukjent => s.status === 'ukjent'
 
 export type Props = AktivitetComponentProps<LivsvarigOffentligAfpGrunnlag, LivsvarigAfpOffentligVurdering> & {
   pensjonsoversiktUrl?: string
