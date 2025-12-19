@@ -67,6 +67,7 @@ export type SamboerInformasjon = {
   fnr: string
   navn: NavnTilPerson
   bostedsadresser: Bostedsadresse[]
+  fodselsdatoEldsteBarn?: string | null
   harEllerHarHattFellesBarn: boolean
   tidligereEktefelle: boolean
 }
