@@ -9,7 +9,7 @@ interface AfpLivsvarigVenterProps {
   aktivitet: AktivitetDTO
   pensjonsoversiktUrl?: string
   psakOppgaveoversikt?: string
-  avbrytAktivitet: () => void
+  avbrytAktivitet?: () => void
 }
 
 export function AfpLivsvarigVenter({
@@ -63,11 +63,13 @@ export function AfpLivsvarigVenter({
             </Button>
           )}
         </HStack>
-        <div>
-          <Button as="a" size="small" variant="tertiary" onClick={avbrytAktivitet}>
-            Avbryt behandling i pilot
-          </Button>
-        </div>
+        {avbrytAktivitet && (
+          <div>
+            <Button as="a" size="small" variant="tertiary" onClick={avbrytAktivitet}>
+              Avbryt behandling i pilot
+            </Button>
+          </div>
+        )}
       </VStack>
     </Page.Block>
   )
