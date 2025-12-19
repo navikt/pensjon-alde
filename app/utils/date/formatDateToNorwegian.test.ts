@@ -38,8 +38,8 @@ describe('formatDateToNorwegian', () => {
 
   it('displays time when showTime option is true', () => {
     const testDate = new Date(2025, 11, 24, 14, 30)
-    expect(formatDateToNorwegian(testDate, { showTime: true })).toBe('24.12.2025 14:30')
-    expect(formatDateToNorwegian('2025-12-24T16:49:34.37642', { showTime: true })).toBe('24.12.2025 16:49')
+    expect(formatDateToNorwegian(testDate, { showTime: true })).toBe('24.12.2025 - kl. 14:30')
+    expect(formatDateToNorwegian('2025-12-24T16:49:34.37642', { showTime: true })).toBe('24.12.2025 - kl. 16:49')
   })
 
   it('ignores showTime option when it is false', () => {
