@@ -2,6 +2,7 @@ import compression from 'compression'
 import express from 'express'
 import { startUnleash } from './app/utils/unleash.server.ts'
 import {createRequestHandler} from '@react-router/express'
+import type { ServerBuild } from 'react-router'
 import type { ViteDevServer } from 'vite'
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -30,8 +31,9 @@ app.get(['/internal/live', '/internal/ready'], (_, res) => res.sendStatus(200))
 
 const remixHandler = createRequestHandler({
   build: isDev
-    ? () => viteDevServer.ssrLoadModule('virtual:react-router/server-build')
-    : await import('./build/server/index.js'),
+    ? (() => viteDevServer.ssrLoadModule('virtual:react-router/server-build') as Promise<ServerBuild>)
+    // @ts-expect-error - build output doesn't have type declarations
+    : (await import('./build/server/index.js')) as ServerBuild,
 })
 
 app.use(remixHandler)

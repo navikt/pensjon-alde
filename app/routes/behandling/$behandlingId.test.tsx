@@ -21,7 +21,8 @@ const mockBehandling: BehandlingDTO = {
   utsattTil: null,
   aktiviteter: [],
   type: 'FORSTEGANGSBEHANDLING',
-  sisteKjoring: '2024-01-01T10:00:00Z',
+  sisteKjoringDato: '2024-01-01T10:00:00Z',
+  sisteKjoring: null,
   stoppet: null,
 }
 

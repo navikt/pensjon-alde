@@ -1,16 +1,4 @@
-import {
-  BodyShort,
-  Box,
-  Button,
-  Checkbox,
-  Heading,
-  HStack,
-  Label,
-  Page,
-  Radio,
-  RadioGroup,
-  VStack,
-} from '@navikt/ds-react'
+import { BodyShort, Box, Button, Heading, HStack, Label, Page, Radio, RadioGroup, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
