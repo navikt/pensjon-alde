@@ -69,7 +69,13 @@ export const fetcher =
           },
         )
       } else {
-        const errorBody = await response.text()
+        const errorText = await response.text()
+        let errorBody: { error?: string; message?: string; detail?: string; path?: string; timestamp?: string } = {}
+        try {
+          errorBody = JSON.parse(errorText)
+        } catch {
+          errorBody = {}
+        }
 
         throw data(
           {
