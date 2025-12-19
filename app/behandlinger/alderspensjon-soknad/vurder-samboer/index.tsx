@@ -259,7 +259,13 @@ function VurdereSamboerComponent({
               <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
             </HStack>
             <HStack gap="1">
-              Felles barn: <BodyShort weight="semibold">{samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
+              Felles barn:{' '}
+              <BodyShort weight="semibold">
+                {samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}
+                {samboer.harEllerHarHattFellesBarn &&
+                  samboer.fodselsdatoEldsteBarn &&
+                  `, første født ${formatDateToNorwegian(samboer.fodselsdatoEldsteBarn)}`}
+              </BodyShort>
             </HStack>
 
             {grunnlag.sokerSivilstand && (
