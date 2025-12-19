@@ -78,7 +78,8 @@ describe('handler-discovery', () => {
       type: 'FleksibelApSakBehandling',
       handlerName: 'alderspensjon-soknad',
       friendlyName: 'Førstegangsbehandling av alderspensjonssøknad',
-      sisteKjoring: '2025-08-26T16:49:34.37642',
+      sisteKjoringDato: '2025-08-26T16:49:34.37642',
+      sisteKjoring: null,
       utsattTil: '2025-08-27T16:49:34.383125',
       opprettet: '2025-08-26T16:49:29.7398',
       stoppet: null,
@@ -88,6 +89,10 @@ describe('handler-discovery', () => {
       fnr: null,
       sakId: 23077283,
       kravId: 46365419,
+      fornavn: null,
+      mellomnavn: null,
+      etternavn: null,
+      fodselsdato: null,
     }
 
     const mockAktivitet: AktivitetDTO = {
@@ -109,7 +114,11 @@ describe('handler-discovery', () => {
     })
 
     it('should return null when aktivitet has no handlerName', () => {
-      const aktivitetWithoutHandler = { ...mockAktivitet, handlerName: null }
+      const aktivitetWithoutHandler: AktivitetDTO = {
+        ...mockAktivitet,
+        handlerName: null as unknown as string,
+        friendlyName: null as unknown as string,
+      }
       const url = buildAktivitetRedirectUrl('6359437', '6020942', mockBehandling, aktivitetWithoutHandler)
 
       expect(url).toBeNull()
@@ -139,7 +148,8 @@ describe('handler-discovery', () => {
       type: 'FleksibelApSakBehandling',
       handlerName: 'alderspensjon-soknad',
       friendlyName: 'Førstegangsbehandling av alderspensjonssøknad',
-      sisteKjoring: '2025-08-26T16:49:34.37642',
+      sisteKjoring: null,
+      sisteKjoringDato: '2025-08-26T16:49:34.37642',
       utsattTil: null,
       opprettet: '2025-08-26T16:49:29.7398',
       stoppet: null,
@@ -149,6 +159,10 @@ describe('handler-discovery', () => {
       fnr: null,
       sakId: 23077283,
       kravId: 46365419,
+      fornavn: null,
+      mellomnavn: null,
+      etternavn: null,
+      fodselsdato: null,
     }
 
     it('should return true for aktivitet with UI implementation', () => {
@@ -171,8 +185,8 @@ describe('handler-discovery', () => {
       const aktivitet: AktivitetDTO = {
         aktivitetId: 6020941,
         type: 'FleksibelApSakA202FinnSamboerInformasjonAktivitet',
-        handlerName: null,
-        friendlyName: null,
+        handlerName: null as unknown as string,
+        friendlyName: null as unknown as string,
         opprettet: '2025-08-26T16:49:34.297346',
         antallGangerKjort: 1,
         sisteAktiveringsdato: '2025-08-26T16:49:34.312694',
