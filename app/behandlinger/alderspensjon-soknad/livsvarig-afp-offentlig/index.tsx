@@ -32,7 +32,7 @@ import { AfpLivsvarigVenter } from './AfpLivsvarigVenter'
 import { SoknadDisplay } from './SoknadDisplay'
 
 export function meta() {
-  return [{ title: 'Offentlig tjenestepensjon' }, { name: 'description', content: 'Offentlig tjenestepensjon' }]
+  return [{ title: 'Livsvarig AFP Offentlig' }, { name: 'description', content: 'Livsvarig AFP Offentlig' }]
 }
 
 export type AldeTjenestepensjonInformasjon = {
@@ -75,12 +75,12 @@ export type Ukjent = {
 
 export type AldeAfpOffentligStatus = Innvilget | Soknad | Ingen | Ukjent
 
-export type OffentligTjenestepensjonGrunnlag = {
+export type LivsvarigOffentligAfpGrunnlag = {
   afpOffentligStatus: AldeAfpOffentligStatus[]
   grunnbelop: GrunnbelopData[]
 }
 
-export type OffentligTjenestepensjonInnvilget = {
+export type LivsvarigAfpOffentligInnvilget = {
   utfall: 'innvilget'
   tpNummer: number
   belop: BelopData[]
@@ -88,16 +88,16 @@ export type OffentligTjenestepensjonInnvilget = {
   sistRegulert: number
 }
 
-export type OffentligTjenestepensjonIngen = {
+export type LivsvarigAfpOffentligIngen = {
   utfall: 'ingen'
 }
 
-export type OffentligTjenestepensjonVurdering = OffentligTjenestepensjonInnvilget | OffentligTjenestepensjonIngen
+export type LivsvarigAfpOffentligVurdering = LivsvarigAfpOffentligInnvilget | LivsvarigAfpOffentligIngen
 
 const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => s.status === 'soknad'
 const isUkjent = (s: AldeAfpOffentligStatus): s is Ukjent => s.status === 'ukjent'
 
-export type Props = AktivitetComponentProps<OffentligTjenestepensjonGrunnlag, OffentligTjenestepensjonVurdering> & {
+export type Props = AktivitetComponentProps<LivsvarigOffentligAfpGrunnlag, LivsvarigAfpOffentligVurdering> & {
   pensjonsoversiktUrl?: string
   psakOppgaveoversikt?: string
 }
@@ -110,8 +110,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
-  const grunnlag = await api.hentGrunnlagsdata<OffentligTjenestepensjonGrunnlag>()
-  const vurdering = await api.hentVurdering<OffentligTjenestepensjonVurdering>()
+  const grunnlag = await api.hentGrunnlagsdata<LivsvarigOffentligAfpGrunnlag>()
+  const vurdering = await api.hentVurdering<LivsvarigAfpOffentligVurdering>()
 
   return {
     readOnly: false,
@@ -135,7 +135,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   const utfall = formData.get('utfall') as string
 
   if (utfall === 'ingen') {
-    const vurdering: OffentligTjenestepensjonVurdering = {
+    const vurdering: LivsvarigAfpOffentligVurdering = {
       utfall: 'ingen',
     }
     try {
@@ -153,7 +153,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     }
   }
 
-  const grunnlag = await api.hentGrunnlagsdata<OffentligTjenestepensjonGrunnlag>()
+  const grunnlag = await api.hentGrunnlagsdata<LivsvarigOffentligAfpGrunnlag>()
   const soknadTpLeverandorer = grunnlag.afpOffentligStatus.filter(
     status => status.status === 'soknad' || status.status === 'ukjent',
   )
@@ -182,14 +182,6 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   if (!parsedForm.virkFom) {
     errors.virkFom = 'Du må oppgi virkningsdato, f.eks. på denne måten: ddmmåååå'
-  }
-
-  if (parsedForm.virkFom) {
-    const today = new Date()
-    const virkFomDate = new Date(parsedForm.virkFom)
-    if (virkFomDate > today) {
-      errors.virkFom = 'Virkningsdato kan ikke være etter dagens dato'
-    }
   }
 
   if (!parsedForm.belop) {
@@ -264,7 +256,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     )
   }
 
-  const vurdering: OffentligTjenestepensjonVurdering = {
+  const vurdering: LivsvarigAfpOffentligVurdering = {
     utfall: 'innvilget',
     tpNummer: tpLeverandor.tpInfo.tpNummer,
     belop: [
@@ -298,7 +290,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 }
 
-export default function OffentligTjenestepensjonRoute({ loaderData, actionData }: Route.ComponentProps) {
+export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { grunnlag, vurdering, readOnly, pensjonsoversiktUrl, psakOppgaveoversikt, visMedMulighetForVurdering } =
     loaderData
   const { errors } = actionData || {}
