@@ -407,10 +407,10 @@ function AfpLivsvarigVurdering(
       {!readOnly && (
         <VStack gap="space-8">
           <BodyShort size="small" textColor="subtle">
-            Sist oppdatert {formatDateToNorwegian(aktivitet.sisteAktiveringsdato, { showTime: true })}
+            Opplysninger sist innhentet {formatDateToNorwegian(aktivitet.sisteAktiveringsdato, { showTime: true })}
           </BodyShort>
           <BodyShort size="small" textColor="subtle">
-            Neste oppdatering {formatDateToNorwegian(aktivitet.utsattTil, { showTime: true })}
+            Planlagt ny innhenting {formatDateToNorwegian(aktivitet.utsattTil, { showTime: true })}
           </BodyShort>
         </VStack>
       )}
