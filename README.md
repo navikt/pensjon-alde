@@ -5,7 +5,7 @@
 ### Installasjon
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Miljøvariabler
@@ -25,13 +25,13 @@ Kjør `fetch-secrets.sh` for å generere en `.env`-fil med miljøoppsett og hemm
 Start utviklingsserver:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Med mock-data:
 
 ```bash
-npm run dev:mock
+pnpm dev:mock
 ```
 
 Applikasjonen kjører på `http://localhost:5173`
@@ -39,9 +39,9 @@ Applikasjonen kjører på `http://localhost:5173`
 ### Testing
 
 ```bash
-npm test           # Kjør tester
-npm run test:watch # Kjør tester i watch-modus
-npm run typecheck  # TypeScript typesjekking
+pnpm test           # Kjør tester
+pnpm test:watch     # Kjør tester i watch-modus
+pnpm typecheck      # TypeScript typesjekking
 ```
 
 ## Testdata
@@ -85,8 +85,8 @@ npm run typecheck  # TypeScript typesjekking
 ## Bygg for produksjon
 
 ```bash
-npm run build
-npm start
+pnpm build
+pnpm start
 ```
 
 ## Arkitektur
