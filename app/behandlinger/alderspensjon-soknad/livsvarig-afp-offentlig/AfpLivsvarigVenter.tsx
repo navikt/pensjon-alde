@@ -43,10 +43,10 @@ export function AfpLivsvarigVenter({
             </VStack>
           </VStack>
           <VStack align="center">
-            <BodyShort size="small" color="subtle">
+            <BodyShort size="small" textColor="subtle">
               Opplysninger sist innhentet {formatDateToNorwegian(aktivitet.sisteAktiveringsdato, { showTime: true })}
             </BodyShort>
-            <BodyShort size="small" color="subtle">
+            <BodyShort size="small" textColor="subtle">
               Planlagt ny innhenting {formatDateToNorwegian(aktivitet.utsattTil, { showTime: true })}
             </BodyShort>
           </VStack>
