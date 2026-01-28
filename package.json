@@ -45,7 +45,7 @@
     "react-dom": "^19.2.0",
     "react-router": "^7.9.5",
     "remix-auth-oauth2": "^3.4.1",
-    "unleash-client": "^6.9.0"
+    "unleash-client": "^6.9.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.3",
