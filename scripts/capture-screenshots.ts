@@ -104,22 +104,22 @@ async function capturePages(
       if (p.waitMs) {
         await page.waitForTimeout(p.waitMs)
       }
-      // Skjul debug-knapp og Aksel-widget i skjermbildene
-      await page.addStyleTag({
-        content: `
-          button[aria-label="Debug"],
-          #__alde-debug { display: none !important; }
-        `,
-      })
+      // Fjern utviklerverktøy fra DOM-en før skjermbildet tas
       await page.evaluate(() => {
-        for (const btn of document.querySelectorAll('button')) {
-          if (btn.textContent?.trim() === 'Debug') {
-            btn.style.display = 'none'
+        // Fjern React Router DevTools (injisert iframe/div)
+        document.querySelectorAll('[data-rdt], [id^="rdt-"], iframe[src*="react-router"]').forEach(el => el.remove())
+        // Fjern AktivitetDebug-panelet (fixed posisjonert Debug-fane)
+        document.querySelectorAll('[class*="debugPanel"]').forEach(el => el.remove())
+        // Fjern alle fixed-posisjonerte elementer nederst i viewporten (devtools-widgeter)
+        for (const el of document.querySelectorAll('*')) {
+          const style = window.getComputedStyle(el)
+          if (style.position === 'fixed') {
+            const rect = el.getBoundingClientRect()
+            if (rect.bottom > window.innerHeight - 120 && rect.right > window.innerWidth - 120) {
+              el.remove()
+            }
           }
         }
-        // Skjul Aksel feedback-widgeten (sirkulær knapp nederst til høyre)
-        const feedbackWidget = document.querySelector('[id^="rdt-"]') as HTMLElement
-        if (feedbackWidget) feedbackWidget.style.display = 'none'
       })
       await page.screenshot({ path: filepath, fullPage: true })
       captured++
