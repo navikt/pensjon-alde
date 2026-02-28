@@ -23,10 +23,10 @@ const MAPPING_FILE = join(__dirname, 'screenshot-mapping.json')
 
 const VIEWPORT = { width: 1440, height: 900 }
 
-// Cookie som aktiverer stepper og metadata i behandlingsvisningen
+// Cookie som slår av stepper og metadata (utviklerverktøy) i skjermbildene
 const SETTINGS_COOKIE = {
   name: 'alde-settings',
-  value: JSON.stringify({ showStepper: true, showMetadata: true }),
+  value: JSON.stringify({ showStepper: false, showMetadata: false }),
   domain: 'localhost',
   path: '/',
 }
