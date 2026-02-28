@@ -1,0 +1,55 @@
+{
+  "behandlingId": 1000002,
+  "type": "FleksibelApSakBehandling",
+  "handlerName": "alderspensjon-soknad",
+  "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
+  "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
+  "sisteKjoring": null,
+  "sisteKjoringDato": "2025-01-15T16:49:34.37642",
+  "utsattTil": null,
+  "opprettet": "2025-01-15T16:49:29.7398",
+  "stoppet": null,
+  "status": "UNDER_BEHANDLING",
+  "aktiviteter": [
+    {
+      "aktivitetId": 7020942,
+      "type": "FleksibelApSakA203VurderInntektForEpsAktivitet",
+      "handlerName": "kontroller-inntektsopplysninger-for-eps",
+      "friendlyName": "Kontroller inntektsopplysninger for EPS",
+      "opprettet": "2025-01-15T16:49:34.364857",
+      "antallGangerKjort": 0,
+      "sisteAktiveringsdato": null,
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 7020943,
+      "type": "FleksibelApSakA200VurderSamboerAktivitet",
+      "opprettet": "2025-01-15T16:49:34.364857",
+      "handlerName": "vurder-samboer",
+      "friendlyName": "Vurder samboer",
+      "antallGangerKjort": 0,
+      "sisteAktiveringsdato": null,
+      "status": "OPPRETTET",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 7020941,
+      "type": "FleksibelApSakA202FinnSamboerInformasjonAktivitet",
+      "opprettet": "2025-01-15T16:49:34.297346",
+      "handlerName": null,
+      "friendlyName": "Finn samboer informasjon",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-01-15T16:49:34.312694",
+      "status": "FULLFORT",
+      "utsattTil": null
+    }
+  ],
+  "fnr": "12345678901",
+  "sakId": 23077283,
+  "kravId": 46365419,
+  "fornavn": "Ola",
+  "mellomnavn": null,
+  "etternavn": "Nordmann",
+  "fodselsdato": "1962-03-15"
+}

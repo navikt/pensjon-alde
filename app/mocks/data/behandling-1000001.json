@@ -1,21 +1,21 @@
 {
-  "behandlingId": 6359437,
+  "behandlingId": 1000001,
   "type": "FleksibelApSakBehandling",
   "handlerName": "alderspensjon-soknad",
   "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
-  "aldeBehandlingStatus": "VENTER_ATTESTERING",
+  "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
   "sisteKjoring": null,
   "sisteKjoringDato": "2025-01-15T16:49:34.37642",
-  "utsattTil": "2025-01-16T16:49:34.383125",
+  "utsattTil": null,
   "opprettet": "2025-01-15T16:49:29.7398",
   "stoppet": null,
-  "status": "TIL_ATTESTERING",
+  "status": "UNDER_BEHANDLING",
   "aktiviteter": [
     {
       "aktivitetId": 6020942,
       "type": "FleksibelApSakA203VurderInntektForEpsAktivitet",
       "handlerName": "kontroller-inntektsopplysninger-for-eps",
-      "friendlyName": "Kontroller inntektsopplysninger for ektefelle, partner og samboer",
+      "friendlyName": "Kontroller inntektsopplysninger for EPS",
       "opprettet": "2025-01-15T16:49:34.364857",
       "antallGangerKjort": 1,
       "sisteAktiveringsdato": "2025-01-15T16:49:34.380546",
@@ -28,17 +28,6 @@
       "opprettet": "2025-01-15T16:49:34.364857",
       "handlerName": "vurder-samboer",
       "friendlyName": "Vurder samboer",
-      "antallGangerKjort": 1,
-      "sisteAktiveringsdato": "2025-01-15T16:49:34.380546",
-      "status": "FULLFORT",
-      "utsattTil": null
-    },
-    {
-      "aktivitetId": 6020944,
-      "type": "FleksibelApSakA300AttesteringAktivitet",
-      "opprettet": "2025-01-15T16:49:34.364857",
-      "handlerName": "attestering",
-      "friendlyName": "Attestering",
       "antallGangerKjort": 0,
       "sisteAktiveringsdato": null,
       "status": "UNDER_BEHANDLING",
@@ -63,28 +52,6 @@
       "friendlyName": "Sett bruk på rett persongrunnlag",
       "antallGangerKjort": 1,
       "sisteAktiveringsdato": "2025-01-15T16:49:34.271477",
-      "status": "FULLFORT",
-      "utsattTil": null
-    },
-    {
-      "aktivitetId": 6020938,
-      "type": "FleksibelApSakA101SettBehandlingstypeAutoAktivitet",
-      "opprettet": "2025-01-15T16:49:33.325307",
-      "handlerName": null,
-      "friendlyName": "Sett behandlingstype automatisk",
-      "antallGangerKjort": 1,
-      "sisteAktiveringsdato": "2025-01-15T16:49:33.361631",
-      "status": "FULLFORT",
-      "utsattTil": null
-    },
-    {
-      "aktivitetId": 6020939,
-      "type": "FleksibelApSakA102KontrollerInformasjonsgrunnlagAktivitet",
-      "opprettet": "2025-01-15T16:49:33.363559",
-      "handlerName": null,
-      "friendlyName": "Kontroller informasjonsgrunnlag",
-      "antallGangerKjort": 1,
-      "sisteAktiveringsdato": "2025-01-15T16:49:33.378657",
       "status": "FULLFORT",
       "utsattTil": null
     }

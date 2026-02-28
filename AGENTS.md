@@ -214,3 +214,46 @@ This app gradually replaces a legacy system. New aktiviteter are migrated increm
 4. **Folder names ARE handler names** - no configuration needed
 
 The folder structure IS the configuration. Keep it simple, keep it working!
+
+## Automatiske skjermbilder for dokumentasjon
+
+Prosjektet har støtte for automatisk generering av skjermbilder som brukes i dokumentasjonen (pensjon-dokumentasjon).
+
+### Hvordan det fungerer
+
+Skjermbildene tas med Playwright mot mock-serveren (`npm run dev:mock`). Scriptet navigerer til behandlingsruter, setter alde-settings-cookie for å vise stepper og metadata, og tar fullside-skjermbilder.
+
+### Kommandoer
+
+```sh
+npm run dev:mock                    # Start mock-serveren (må kjøre først)
+npm run capture-screenshots         # Ta alle skjermbilder (lagres i screenshots/)
+npm run capture-docs-screenshots    # Ta kun docs-skjermbilder og kopier til pensjon-dokumentasjon
+```
+
+### Legge til nye skjermbilder
+
+1. **Opprett mock-data** i `app/mocks/data/`:
+   - `behandling-{id}.json` — BehandlingDTO med aktiviteter
+   - `aktivitet/{aktivitetId}-grunnlagsdata.json` — Grunnlagsdata for aktiviteten
+   - Legg til MSW-handler i `app/mocks/server.ts` om nødvendig
+
+2. **Legg til side i `scripts/capture-screenshots.ts`** i `pages`-arrayet med mock-behandlingens ID
+
+3. **For docs-skjermbilder**, oppdater `scripts/screenshot-mapping.json` med mapping fra side til filnavn i pensjon-dokumentasjon
+
+### Mock-data-struktur
+
+```
+app/mocks/data/
+├── behandling-6359437.json          # Attestering-tilstand
+├── behandling-1000001.json          # Vurder samboer (aktiv)
+├── behandling-1000002.json          # Kontroller inntekt (aktiv)
+└── aktivitet/
+    ├── 6020943-grunnlagsdata.json   # Samboer-grunnlag
+    └── 7020942-grunnlagsdata.json   # Inntekt-grunnlag
+```
+
+### Mock-modus autentisering
+
+I mock-modus (`NODE_ENV=mock`) bypasses autentisering i `user-middleware.ts` og `api-client.ts`. MSW fanger opp API-kall og returnerer mock-data.

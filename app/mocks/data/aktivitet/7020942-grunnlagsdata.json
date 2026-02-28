@@ -1,0 +1,19 @@
+{
+  "oppgittInntekt": "450000",
+  "grunnbelop": "124028",
+  "sokerKontaktinfo": {
+    "reservertMotDigitalVarsling": false,
+    "aktivDigitalt": true
+  },
+  "epsInformasjon": {
+    "fnr": "98765432100",
+    "fornavn": "Kari",
+    "etternavn": "Hansen",
+    "forkortetNavn": "Hansen Kari"
+  },
+  "estimertInntektOver2gOgOppgittInntektUnder2g": true,
+  "oppgittInntektUnder2g": true,
+  "estimertInntektOver2g": true,
+  "onsketVirkningsdato": "2025-04-01",
+  "epsType": "SAMBOER"
+}
