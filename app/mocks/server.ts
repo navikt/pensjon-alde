@@ -17,6 +17,17 @@ function loadMockData(filename: string) {
 
 // Define handlers for API endpoints
 const handlers = [
+  // GET /api/saksbehandling/alde/me - mock user
+  http.get('*/api/saksbehandling/alde/me', ({ request }) => {
+    console.log(`🎯 MSW intercepted request to: ${request.url}`)
+    return HttpResponse.json({
+      navident: 'Z990000',
+      fornavn: 'Test',
+      etternavn: 'Testesen',
+      enhet: '0001',
+    })
+  }),
+
   // GET /api/behandling/:id - match any host
   http.get('*/api/saksbehandling/alde/behandling/:id', ({ params, request }) => {
     const { id } = params
@@ -93,6 +104,43 @@ const handlers = [
     return HttpResponse.json(attesteringData)
   }),
 
+  // GET /api/saksbehandling/alde/behandling/:id/aktivitet/:aid/grunnlagsdata
+  http.get(
+    '*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/grunnlagsdata',
+    ({ params, request }) => {
+      const { behandlingId, aktivitetId } = params
+      console.log(`🎯 MSW intercepted grunnlagsdata request to: ${request.url}`)
+
+      const mockData = loadMockData(`aktivitet/${aktivitetId}-grunnlagsdata.json`)
+      if (mockData) {
+        console.log(`📄 Returning grunnlagsdata for aktivitet ${aktivitetId}`)
+        return HttpResponse.json(mockData)
+      }
+
+      console.log(`❌ No grunnlagsdata found for aktivitet ${aktivitetId}`)
+      return HttpResponse.text('Not found', { status: 404 })
+    },
+  ),
+
+  // GET /api/saksbehandling/alde/behandling/:id/aktivitet/:aid/vurdering
+  http.get(
+    '*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/vurdering',
+    ({ params, request }) => {
+      const { behandlingId, aktivitetId } = params
+      console.log(`🎯 MSW intercepted vurdering request to: ${request.url}`)
+
+      const mockData = loadMockData(`aktivitet/${aktivitetId}-vurdering.json`)
+      if (mockData) {
+        console.log(`📄 Returning vurdering for aktivitet ${aktivitetId}`)
+        return HttpResponse.json(mockData)
+      }
+
+      // Return null for no existing vurdering (not 404, as the API returns null)
+      console.log(`📄 No vurdering for aktivitet ${aktivitetId}, returning null`)
+      return HttpResponse.json(null)
+    },
+  ),
+
   // You can add more API endpoints here
 ]
 
@@ -101,7 +149,11 @@ export const server = setupServer(...handlers)
 
 // Function to start mocking (call this in your app setup)
 export function startMocking() {
-  if (process.env.NODE_ENV === 'development' || process.env.ENABLE_MOCKING === 'true') {
+  if (
+    process.env.NODE_ENV === 'development' ||
+    process.env.NODE_ENV === 'mock' ||
+    process.env.ENABLE_MOCKING === 'true'
+  ) {
     server.listen({
       onUnhandledRequest: 'bypass', // Allow real network requests for non-mocked endpoints
     })

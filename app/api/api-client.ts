@@ -8,7 +8,7 @@ export type Fetcher = <T>(url: string, options: RequestInit) => Promise<T>
 export const fetcher =
   (BASE_URL: string, request: Request): Fetcher =>
   async <T>(url: string, options: RequestInit = {}): Promise<T> => {
-    const token = await requireAccessToken(request)
+    const token = process.env.NODE_ENV === 'mock' ? 'mock-token' : await requireAccessToken(request)
     const headers = new Headers(options.headers)
     headers.set('Authorization', `Bearer ${token}`)
 

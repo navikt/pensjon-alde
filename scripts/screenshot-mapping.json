@@ -1,0 +1,26 @@
+{
+  "targetDir": "../pensjon-dokumentasjon/pen/docs/modules/Behandlingsloesningen/images",
+  "pages": [
+    {
+      "id": "vurder-samboer",
+      "path": "/behandling/1000001",
+      "filename": "alde-vurder-samboer.png",
+      "description": "Samboervurdering med stepper, personinfo og skjema",
+      "waitMs": 500
+    },
+    {
+      "id": "kontroller-inntekt",
+      "path": "/behandling/1000002",
+      "filename": "alde-kontroller-inntekt.png",
+      "description": "Kontroll av inntektsopplysninger for EPS",
+      "waitMs": 500
+    },
+    {
+      "id": "attestering",
+      "path": "/behandling/6359437",
+      "filename": "alde-attestering.png",
+      "description": "Attesteringsvisning med vurderinger og beslutning",
+      "waitMs": 500
+    }
+  ]
+}
