@@ -51,7 +51,7 @@
     "unleash-client": "^6.10.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.3",
+    "@biomejs/biome": "^2.4.8",
     "@playwright/test": "^1.55.1",
     "@react-router/dev": "^7.12.0",
     "@storybook/addon-vitest": "^10.2.13",
