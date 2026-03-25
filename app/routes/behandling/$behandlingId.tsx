@@ -451,15 +451,12 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
           {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
 
-          <Modal ref={ref} header={{ heading: 'Vil du avbryte behandlingen i piloten?' }}>
+          <Modal ref={ref} header={{ heading: 'Vil du avbryte del-automatisk behandling?' }}>
             <Form method="post">
               <input hidden name="aktivitetId" value={aktivitetId} />
               <Modal.Body>
                 <VStack gap="4">
-                  <BodyLong>
-                    Når du tar dette kravet tilbake til vanlig behandling, vil du ikke lenger kunne saksbehandle det i
-                    piloten. Saksbehandlig vil fortsettes som normal kravbehandling.
-                  </BodyLong>
+                  <BodyLong>Saksbehandlig vil fortsettes som manuell kravbehandling.</BodyLong>
                   <BodyLong>
                     Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
                     bedre. Ikke skriv personopplysninger.
@@ -470,10 +467,10 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               </Modal.Body>
               <Modal.Footer>
                 <Button type="submit" variant="primary" onClick={() => ref.current?.close()}>
-                  Avbryt behandling i piloten{' '}
+                  Avbryt behandling{' '}
                 </Button>
                 <Button type="button" variant="secondary" onClick={() => ref.current?.close()}>
-                  Fortsett i piloten
+                  Fortsett del-auto behandling
                 </Button>
               </Modal.Footer>
             </Form>

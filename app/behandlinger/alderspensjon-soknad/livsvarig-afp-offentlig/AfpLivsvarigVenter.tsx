@@ -66,7 +66,7 @@ export function AfpLivsvarigVenter({
         {avbrytAktivitet && (
           <div>
             <Button as="a" size="small" variant="tertiary" onClick={avbrytAktivitet}>
-              Avbryt behandling i pilot
+              Avbryt del-auto behandling
             </Button>
           </div>
         )}
