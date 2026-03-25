@@ -1,0 +1,22 @@
+.xsmall {
+  :global(.aksel-heading--small) {
+    font-size: var(--ax-font-size-heading-xsmall) !important;
+  }
+}
+
+.pennyVenstremenyBredde {
+  max-width: 305px;
+}
+
+@media (min-width: 1440px) {
+  .resposiveBorder {
+    border-right-width: 1px;
+    border-right-color: var(--ax-border-neutral-subtle);
+    border-right-style: solid;
+
+    padding-block-end: 8px;
+    padding-block-start: 8px;
+    padding-inline-end: 40px;
+    padding-inline-start: 40px;
+  }
+}

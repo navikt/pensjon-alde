@@ -36,6 +36,8 @@ export interface AktivitetDTO {
   sisteAktiveringsdato: string // LocalDateTime as ISO string
   status: AktivitetStatus
   utsattTil: string | null // LocalDateTime as ISO string
+
+  behandletFerdigMaskinelt: boolean
 }
 
 export interface BehandlingDTO {
@@ -45,6 +47,7 @@ export interface BehandlingDTO {
 
   handlerName: string | null
   friendlyName: string | null
+  processName: string | null
 
   sisteKjoring: AldeBehandlingKjoringDTO | null // LocalDateTime as ISO string
 
@@ -59,6 +62,8 @@ export interface BehandlingDTO {
   fnr: string | null
   sakId: number | null
   kravId: number | null
+  sakType: string | null
+
   fornavn: string | null
   mellomnavn: string | null
   etternavn: string | null
