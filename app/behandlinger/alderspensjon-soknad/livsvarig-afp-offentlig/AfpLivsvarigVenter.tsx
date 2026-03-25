@@ -1,4 +1,4 @@
-import { BodyLong, BodyShort, Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
+import { BodyLong, BodyShort, Button, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import commonStyles from '~/common.module.css'
 import type { AktivitetDTO } from '~/types/behandling'
 import { formatDateToNorwegian } from '~/utils/date'
@@ -52,16 +52,8 @@ export function AfpLivsvarigVenter({
           </VStack>
         </VStack>
         <HStack gap="2" justify="center">
-          {pensjonsoversiktUrl && (
-            <Button size="small" as="a" href={pensjonsoversiktUrl}>
-              Til Pensjonsoversikt
-            </Button>
-          )}
-          {psakOppgaveoversikt && (
-            <Button as="a" size="small" href={psakOppgaveoversikt} variant="secondary">
-              Til Oppgavelisten
-            </Button>
-          )}
+          {pensjonsoversiktUrl && <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>}
+          {psakOppgaveoversikt && <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>}
         </HStack>
         {avbrytAktivitet && (
           <div>

@@ -1,4 +1,4 @@
-import { Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
+import { Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
@@ -31,9 +31,7 @@ const AvbruttManuelt = ({ loaderData }: Route.ComponentProps) => {
         </Heading>
 
         <HStack gap="2" justify="center">
-          <Button size="small" as="a" href={pensjonsoversiktUrl}>
-            Til Pensjonsoversikt
-          </Button>
+          <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
         </HStack>
       </VStack>
     </Page.Block>

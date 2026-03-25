@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Detail, Heading, HStack, Page, VStack } from '@navikt/ds-react'
+import { Alert, Box, Detail, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
@@ -105,9 +105,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
           <HStack gap="space-16">
             Behandlingen er fullført. Vi kan ikke behandle denne videre og har samlet en oppsummering på hva som har
             blitt utført.
-            <Button as="a" href={loaderData.pensjonsoversiktUrl} size="small" variant="secondary-neutral">
-              Til Pensjonsoversikt
-            </Button>
+            <Link href={loaderData.pensjonsoversiktUrl}>Pensjonsoversikt</Link>
           </HStack>
         </Alert>
       )}

@@ -1,4 +1,4 @@
-import { BodyLong, Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
+import { BodyLong, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
@@ -33,9 +33,7 @@ const AvbruttAutomatisk = ({ loaderData }: Route.ComponentProps) => {
           <BodyLong>Saksbehandlig må fortsettes som normal kravbehandling.</BodyLong>
         </VStack>
         <HStack gap="2" justify="center">
-          <Button size="small" as="a" href={pensjonsoversiktUrl}>
-            Til Pensjonsoversikt
-          </Button>
+          <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
         </HStack>
       </VStack>
     </Page.Block>
