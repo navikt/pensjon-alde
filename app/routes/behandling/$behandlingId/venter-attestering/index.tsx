@@ -1,5 +1,5 @@
 import { CheckmarkCircleIcon } from '@navikt/aksel-icons'
-import { Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
+import { Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
@@ -29,19 +29,14 @@ const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="space-32" className="content" align="center">
+        <CheckmarkCircleIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
         <Heading size="medium" level="1">
           <HStack align="center">Sendt til attestering</HStack>
         </Heading>
 
-        <CheckmarkCircleIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
-
         <HStack gap="2">
-          <Button as="a" size="small" href={psakPensjonsoversikt}>
-            Til Pensjonsoversikt
-          </Button>
-          <Button as="a" variant="secondary" size="small" href={psakOppgaveoversikt}>
-            Til Oppgavelisten
-          </Button>
+          <Link href={psakPensjonsoversikt}>Pensjonsoversikt</Link>
+          <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>
         </HStack>
       </VStack>
     </Page.Block>

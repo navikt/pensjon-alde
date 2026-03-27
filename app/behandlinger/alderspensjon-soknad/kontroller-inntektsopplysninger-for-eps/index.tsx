@@ -250,7 +250,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
               </Button>
             </VStack>
             <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet}>
-              Avbryt behandling i pilot
+              Avbryt del-auto behandling
             </Button>
           </VStack>
         ) : (
