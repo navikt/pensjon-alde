@@ -50,7 +50,7 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
             <VStack gap="6">
               <CheckboxGroup legend="Visningsinnstillinger">
                 <Checkbox name="showStepper" value="showStepper" defaultChecked={settings.showStepper}>
-                  Vis stegvelger
+                  Vis alle aktivitetene i stegvisningen
                 </Checkbox>
                 <Checkbox name="showMetadata" value="showMetadata" defaultChecked={settings.showMetadata}>
                   Vis metadata
