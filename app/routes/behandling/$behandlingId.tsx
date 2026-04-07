@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, PersonIcon } from '@navikt/aksel-icons'
+import { BugIcon, ExternalLinkIcon, PersonCircleIcon, PersonIcon, RobotSmileIcon } from '@navikt/aksel-icons'
 import {
   BodyLong,
   BodyShort,
@@ -9,8 +9,9 @@ import {
   Label,
   Modal,
   Page,
+  Process,
+  Show,
   Spacer,
-  Stepper,
   Tag,
   Textarea,
   VStack,
@@ -38,6 +39,7 @@ import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import type { Route } from './+types/$behandlingId'
+import behandlingStyles from './$behandlingId.module.css'
 
 export function getRedirectPath({
   pathname,
@@ -179,7 +181,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, isOppsummering, urls } = loaderData
+  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, isAttestering, isOppsummering, urls } =
+    loaderData
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -200,7 +203,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     () =>
       behandling.aktiviteter
         .slice()
-        .sort((a, b) => a.type.localeCompare(b.type))
+        .sort((a, b) => a.opprettet.localeCompare(b.opprettet))
         .filter(aktivitet => aktivitet.friendlyName),
     [behandling.aktiviteter],
   )
@@ -220,11 +223,39 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           friendlyName: 'Jobber...',
           status: null,
           redirectUrl: null,
+          behandletFerdigMaskinelt: undefined,
+          handlerName: undefined,
         },
       ]
     }
     return aktivitetSteps
   }, [visibleAktiviteter, behandlingJobber])
+
+  function finnProcessIcon(step: (typeof allSteps)[0]) {
+    if (!step.handlerName) {
+      return <BugIcon />
+    } else if (step.behandletFerdigMaskinelt) {
+      return <RobotSmileIcon />
+    } else if (step.status === AktivitetStatus.FULLFORT) {
+      return <PersonCircleIcon />
+    }
+  }
+
+  function finnStatus(step: (typeof allSteps)[0]) {
+    console.log('finnStatus', {
+      currentAktivitetId,
+      aktivitetId: step.aktivitetId,
+    })
+    if (isAttestering && step.handlerName === 'attestering') {
+      return 'active'
+    } else if (currentAktivitetId === step.aktivitetId.toString()) {
+      return 'active'
+    } else if (step.status === AktivitetStatus.FULLFORT) {
+      return 'completed'
+    } else {
+      return 'uncompleted'
+    }
+  }
 
   const activeStepIndex = behandlingJobber
     ? allSteps.length - 1
@@ -289,30 +320,32 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       />
       <Box.New asChild background={'default'}>
         <Page>
-          <Box.New
-            paddingInline="10"
-            paddingBlock="2"
-            borderWidth="1 0"
-            background="neutral-soft"
-            borderColor="neutral-subtle"
-          >
-            <HStack align="center" gap="1">
-              <HStack align="center">
-                <PersonIcon fontSize="1.5em" /> <Fnr value={behandling.fnr} />
+          <VStack>
+            <Box.New
+              paddingInline="10"
+              paddingBlock="2"
+              borderWidth="1 0"
+              background="neutral-soft"
+              borderColor="neutral-subtle"
+            >
+              <HStack align="center" gap="1">
+                <HStack align="center">
+                  <PersonIcon fontSize="1.5em" /> <Fnr value={behandling.fnr} />
+                </HStack>
+                <span>/</span>
+                {behandling.etternavn}, {behandling.fornavn} {behandling.mellomnavn}
+                <span>/</span>
+                Født: {formatDateToNorwegian(behandling.fodselsdato)} ({formatDateToAge(behandling.fodselsdato)})
+                <Spacer />
+                {behandling.sakType}
+                <span>/</span>
+                <HStack align="center">
+                  {behandling.sakId}
+                  <CopyButton size="small" variant="action" copyText={behandling.sakId?.toString() ?? ''} />
+                </HStack>
               </HStack>
-              <span>/</span>
-              {behandling.etternavn}, {behandling.fornavn} {behandling.mellomnavn}
-              <span>/</span>
-              Født: {formatDateToNorwegian(behandling.fodselsdato)} ({formatDateToAge(behandling.fodselsdato)})
-              <Spacer />
-              {behandling.friendlyName}
-              <span>/</span>
-              <HStack align="center">
-                {behandling.sakId}
-                <CopyButton size="small" variant="action" copyText={behandling.sakId?.toString() ?? ''} />
-              </HStack>
-            </HStack>
-          </Box.New>
+            </Box.New>
+          </VStack>
           {showMetadata && (
             <Box.New padding="4" borderWidth="1 0">
               <HStack gap="6" align="center">
@@ -417,39 +450,50 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             </Box.New>
           )}
 
-          {allSteps.length > 0 && showStepper && (
-            <Box.New padding="space-12">
-              <div
-                ref={stepperContainerRef}
-                style={{
-                  overflowX: 'auto',
-                  overflowY: 'hidden',
-                  scrollbarWidth: 'thin',
-                  WebkitOverflowScrolling: 'touch',
-                }}
+          <HStack justify="start" wrap={false}>
+            <Show asChild above="2xl">
+              <Box.New
+                borderWidth="0 1 0 0"
+                borderColor="neutral-subtle"
+                className={behandlingStyles.pennyVenstremenyBredde}
               >
-                <Stepper orientation="horizontal" activeStep={activeStepIndex + 1} style={{ minWidth: 'max-content' }}>
-                  {allSteps.map((step, index) => (
-                    <Stepper.Step
-                      key={step.aktivitetId}
-                      completed={step.status === AktivitetStatus.FULLFORT}
-                      onClick={() => {
-                        if (!step.redirectUrl) return
+                <VStack>
+                  <Box.New paddingBlock="space-24" paddingInline="space-44">
+                    <BodyShort as="h2" size="small" weight="semibold">
+                      {behandling.processName}
+                    </BodyShort>
+                  </Box.New>
 
-                        navigate(step.redirectUrl)
-                      }}
-                      style={{ cursor: 'pointer' }}
-                      data-step-index={index}
-                    >
-                      {step.friendlyName ?? ''}
-                    </Stepper.Step>
-                  ))}
-                </Stepper>
-              </div>
-            </Box.New>
-          )}
+                  <Box.New paddingBlock="space-12" paddingInline="space-44">
+                    <Process hideStatusText={true}>
+                      {allSteps
+                        .filter(it => showStepper || it.handlerName)
+                        .map((step, _index) => (
+                          <Process.Event
+                            className={behandlingStyles.xsmall}
+                            key={step.aktivitetId}
+                            status={finnStatus(step)}
+                            title={step.friendlyName}
+                            onClick={() => {
+                              if (!showStepper || !step.redirectUrl) return
 
-          {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
+                              navigate(step.redirectUrl)
+                            }}
+                            bullet={finnProcessIcon(step)}
+                          ></Process.Event>
+                        ))}
+                    </Process>
+                  </Box.New>
+                </VStack>
+              </Box.New>
+            </Show>
+
+            <div className={behandlingStyles.resposiveBorder}>
+              <Page.Block as="main" style={{ maxWidth: 'var(--ax-breakpoint-lg)' }}>
+                {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
+              </Page.Block>
+            </div>
+          </HStack>
 
           <Modal ref={ref} header={{ heading: 'Vil du avbryte del-automatisk behandling?' }}>
             <Form method="post">
