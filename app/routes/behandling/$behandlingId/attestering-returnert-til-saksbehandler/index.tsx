@@ -48,11 +48,10 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
     return (
       <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
         <VStack gap="space-32" className="content" align="center">
+          <Loader size="3xlarge" title="Sender tilbake til saksbehandler" />
           <Heading size="medium" level="1">
             Sender tilbake til saksbehandler
           </Heading>
-
-          <Loader size="3xlarge" title="Sender tilbake til saksbehandler" />
         </VStack>
       </Page.Block>
     )
@@ -61,13 +60,13 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="8">
+        <Box.New style={{ display: 'flex', justifyContent: 'center' }}>
+          <PersonCheckmarkIcon fontSize="6rem" style={{ color: 'var(--ax-text-success-decoration)' }} />
+        </Box.New>
         <Heading size="medium" level="1">
           Kravet er returnert til saksbehandler
         </Heading>
 
-        <Box.New style={{ display: 'flex', justifyContent: 'center' }}>
-          <PersonCheckmarkIcon fontSize="6rem" style={{ color: 'var(--ax-text-success-decoration)' }} />
-        </Box.New>
         <HStack gap="2" justify="center">
           <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
         </HStack>
