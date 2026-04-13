@@ -188,7 +188,7 @@ function VurdereSamboerComponent({
                 </Button>
 
                 <Button type="reset" variant="tertiary" size="small" onClick={avbrytAktivitet}>
-                  Avbryt behandling i pilot
+                  Avbryt del-auto behandling
                 </Button>
               </VStack>
             )}

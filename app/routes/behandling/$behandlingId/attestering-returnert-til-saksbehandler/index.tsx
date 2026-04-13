@@ -1,5 +1,5 @@
 import { PersonCheckmarkIcon } from '@navikt/aksel-icons'
-import { Box, Button, Heading, HStack, Loader, Page, VStack } from '@navikt/ds-react'
+import { Box, Heading, HStack, Link, Loader, Page, VStack } from '@navikt/ds-react'
 import { useEffect } from 'react'
 import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
@@ -69,9 +69,7 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
           <PersonCheckmarkIcon fontSize="6rem" style={{ color: 'var(--ax-text-success-decoration)' }} />
         </Box.New>
         <HStack gap="2" justify="center">
-          <Button size="small" as="a" href={pensjonsoversiktUrl}>
-            Til Pensjonsoversikt
-          </Button>
+          <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
         </HStack>
       </VStack>
     </Page.Block>

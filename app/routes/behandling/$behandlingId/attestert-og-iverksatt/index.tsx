@@ -1,5 +1,5 @@
 import { CheckmarkCircleIcon } from '@navikt/aksel-icons'
-import { Button, Heading, HStack, Loader, Page, VStack } from '@navikt/ds-react'
+import { Heading, HStack, Link, Loader, Page, VStack } from '@navikt/ds-react'
 import { useEffect } from 'react'
 import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
@@ -69,12 +69,8 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
         <CheckmarkCircleIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
 
         <HStack gap="2">
-          <Button as="a" size="small" href={psakPensjonsoversikt}>
-            Til Pensjonsoversikt
-          </Button>
-          <Button as="a" size="small" href={psakOppgaveoversikt} variant="secondary">
-            Til Oppgavelisten
-          </Button>
+          <Link href={psakPensjonsoversikt}>Pensjonsoversikt</Link>
+          <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>
         </HStack>
       </VStack>
     </Page.Block>
