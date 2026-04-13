@@ -1,5 +1,5 @@
 import { PersonCheckmarkIcon } from '@navikt/aksel-icons'
-import { Box, Button, Heading, HStack, Link, Loader, Page, VStack } from '@navikt/ds-react'
+import { Box, Heading, HStack, Link, Loader, Page, VStack } from '@navikt/ds-react'
 import { useEffect } from 'react'
 import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
