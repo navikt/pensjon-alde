@@ -1,9 +1,16 @@
 .loader {
+  > div:has(.robot-smile) {
+    display: grid;
+    place-items: center;
+
+    > * {
+      grid-area: 1 / 1;
+    }
+  }
+
   .robot-smile {
     color: var(--ax-bg-info-strong);
-    position: relative;
-    left: 1.6em;
-    top: -0.58em;
+    margin-top: 0.1em;
     animation: pulse 5s ease-in-out infinite;
   }
 }
