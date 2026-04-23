@@ -1,3 +1,9 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
 .xsmall {
   :global(.aksel-heading--small) {
     font-size: var(--ax-font-size-heading-xsmall) !important;
@@ -8,15 +14,30 @@
   max-width: 305px;
 }
 
+.pageFullHeight :global(.aksel-page__content--grow) {
+  display: flex;
+  flex-direction: column;
+  padding-block-end: 0;
+}
+
+.pageFullHeight {
+  min-height: 0;
+  flex: 1;
+}
+
+.mainContent {
+  flex: 1;
+  min-width: 0;
+  max-width: var(--ax-breakpoint-xl);
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
 @media (min-width: 1440px) {
-  .resposiveBorder {
+  .mainContent {
     border-right-width: 1px;
     border-right-color: var(--ax-border-neutral-subtle);
     border-right-style: solid;
-
-    padding-block-end: 8px;
-    padding-block-start: 8px;
-    padding-inline-end: 40px;
-    padding-inline-start: 40px;
   }
 }
