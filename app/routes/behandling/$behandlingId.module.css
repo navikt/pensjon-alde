@@ -8,6 +8,11 @@
   max-width: 305px;
 }
 
+.processNameBar {
+  border-bottom: 1px solid var(--ax-border-neutral-subtle);
+  padding: 0.5rem 3rem;
+}
+
 @media (min-width: 1440px) {
   .resposiveBorder {
     border-right-width: 1px;

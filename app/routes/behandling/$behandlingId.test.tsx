@@ -4,6 +4,8 @@ import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types
 import { getRedirectPath } from './$behandlingId'
 
 const mockBehandling: BehandlingDTO = {
+  processName: 'Del-automatisk førstegangsbehandling',
+  sakType: 'Alder',
   behandlingId: 123,
   sakId: 456,
   kravId: 789,
@@ -124,6 +126,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
@@ -151,6 +154,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
@@ -178,6 +182,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
@@ -205,6 +210,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
@@ -232,6 +238,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
