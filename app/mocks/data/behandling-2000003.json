@@ -1,0 +1,23 @@
+{
+  "behandlingId": 2000003,
+  "type": "FleksibelApSakBehandling",
+  "handlerName": "alderspensjon-soknad",
+  "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
+  "aldeBehandlingStatus": "AVBRUTT_AV_BRUKER",
+  "sisteKjoring": null,
+  "sisteKjoringDato": "2025-01-15T16:49:34.37642",
+  "utsattTil": null,
+  "opprettet": "2025-01-15T16:49:29.7398",
+  "stoppet": null,
+  "status": "UNDER_BEHANDLING",
+  "processName": "Alderspensjon søknad",
+  "aktiviteter": [],
+  "fnr": "12345678901",
+  "sakId": 23077283,
+  "kravId": 46365419,
+  "fornavn": "Ola",
+  "mellomnavn": null,
+  "etternavn": "Nordmann",
+  "fodselsdato": "1962-03-15",
+  "sakType": "ALDER"
+}

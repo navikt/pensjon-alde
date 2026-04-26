@@ -95,5 +95,7 @@
   "fornavn": "Ola",
   "mellomnavn": null,
   "etternavn": "Nordmann",
-  "fodselsdato": "1962-03-15"
+  "fodselsdato": "1962-03-15",
+  "sakType": "ALDER",
+  "processName": "Alderspensjon søknad"
 }
