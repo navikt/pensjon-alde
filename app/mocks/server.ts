@@ -56,48 +56,87 @@ const handlers = [
     return HttpResponse.text('Behandling not found', { status: 404 })
   }),
 
+  // Dynamic mock: loads behandling by ID and builds attestering data from its actual aktiviteter
   // GET /api/saksbehandling/alde/behandling/:id/attesteringsdata
-  http.get('*/api/saksbehandling/alde/behandling/:id/attesteringsdata', ({ request }) => {
+  http.get('*/api/saksbehandling/alde/behandling/:id/attesteringsdata', ({ params, request }) => {
+    const { id } = params
     console.log(`🎯 MSW intercepted attestering request to: ${request.url}`)
 
-    // Mock attestering data
+    // Load behandling and find relevant aktiviteter by handlerName
+    const behandling = loadMockData(`behandling-${id}.json`)
+    const aktiviteter = behandling?.aktiviteter ?? []
+
+    const epsAktivitet = aktiviteter.find(
+      (a: { handlerName?: string }) => a.handlerName === 'kontroller-inntektsopplysninger-for-eps',
+    )
+    const samboerAktivitet = aktiviteter.find((a: { handlerName?: string }) => a.handlerName === 'vurder-samboer')
+
+    // Build attestering data, only includes aktiviteter present in the behandling
     const attesteringData = {
       aktiviter: [
-        {
-          aktivitetId: 6020942,
-          grunnlag: JSON.stringify({
-            oppgittInntekt: 450000,
-            innhentetInntekt: 475000,
-            grunnbelop: 118620,
-          }),
-          vurdering: JSON.stringify({
-            epsInntektOver2G: true,
-          }),
-        },
-        {
-          aktivitetId: 6020943,
-          grunnlag: JSON.stringify({
-            sokersBostedsadresser: [],
-            samboer: {
-              fnr: '12345678901',
-              navn: {
-                fornavn: 'Test',
-                mellomnavn: null,
-                etternavn: 'Testesen',
+        ...(epsAktivitet
+          ? [
+              {
+                aktivitetId: epsAktivitet.aktivitetId,
+                vurdertTidspunkt: '2025-01-15T16:50:00.000000',
+                vurdertAvBrukerId: 'A123456',
+                vurdertAvBrukerNavn: 'Siri Saksbehandler',
+                grunnlag: JSON.stringify({
+                  oppgittInntekt: '450000',
+                  grunnbelop: '118620',
+                  sokerKontaktinfo: {
+                    reservertMotDigitalVarsling: false,
+                    aktivDigitalt: true,
+                  },
+                  epsInformasjon: {
+                    fnr: '98765432100',
+                    fornavn: 'Kari',
+                    etternavn: 'Nordmann',
+                    forkortetNavn: 'Nordmann, Kari',
+                  },
+                  estimertInntektOver2gOgOppgittInntektUnder2g: true,
+                  oppgittInntektUnder2g: true,
+                  estimertInntektOver2g: true,
+                  onsketVirkningsdato: '2025-06-01',
+                  epsType: 'SAMBOER',
+                }),
+                vurdering: JSON.stringify({
+                  epsInntektOver2G: true,
+                }),
               },
-              bostedsadresser: [],
-            },
-            soknad: {
-              datoForSamboerskap: '2023-01-01',
-              harEllerHarHattFellesBarn: true,
-              tidligereEktefelle: false,
-            },
-          }),
-          vurdering: JSON.stringify({
-            samboerFra: '2023-01-01',
-            vurdering: 'SAMBOER_1_5',
-          }),
-        },
+            ]
+          : []),
+        ...(samboerAktivitet
+          ? [
+              {
+                aktivitetId: samboerAktivitet.aktivitetId,
+                vurdertTidspunkt: '2025-01-15T16:51:00.000000',
+                vurdertAvBrukerId: 'A123456',
+                vurdertAvBrukerNavn: 'Siri Saksbehandler',
+                grunnlag: JSON.stringify({
+                  sokersBostedsadresser: [],
+                  samboer: {
+                    fnr: '12345678901',
+                    navn: {
+                      fornavn: 'Test',
+                      mellomnavn: null,
+                      etternavn: 'Testesen',
+                    },
+                    bostedsadresser: [],
+                  },
+                  soknad: {
+                    datoForSamboerskap: '2023-01-01',
+                    harEllerHarHattFellesBarn: true,
+                    tidligereEktefelle: false,
+                  },
+                }),
+                vurdering: JSON.stringify({
+                  samboerFra: '2023-01-01',
+                  vurdering: 'SAMBOER_1_5',
+                }),
+              },
+            ]
+          : []),
       ],
     }
 
@@ -108,7 +147,7 @@ const handlers = [
   http.get(
     '*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/grunnlagsdata',
     ({ params, request }) => {
-      const { behandlingId, aktivitetId } = params
+      const { aktivitetId } = params
       console.log(`🎯 MSW intercepted grunnlagsdata request to: ${request.url}`)
 
       const mockData = loadMockData(`aktivitet/${aktivitetId}-grunnlagsdata.json`)
@@ -126,7 +165,7 @@ const handlers = [
   http.get(
     '*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/vurdering',
     ({ params, request }) => {
-      const { behandlingId, aktivitetId } = params
+      const { aktivitetId } = params
       console.log(`🎯 MSW intercepted vurdering request to: ${request.url}`)
 
       const mockData = loadMockData(`aktivitet/${aktivitetId}-vurdering.json`)
@@ -141,7 +180,29 @@ const handlers = [
     },
   ),
 
-  // You can add more API endpoints here
+  // POST /api/saksbehandling/alde/behandling/:id/aktivitet/:aid/vurdering
+  http.post('*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/vurdering', ({ params }) => {
+    console.log(`🎯 MSW intercepted POST vurdering for aktivitet ${params.aktivitetId}`)
+    return HttpResponse.json({ ok: true })
+  }),
+
+  // POST /api/saksbehandling/alde/behandling/:id/fortsett
+  http.post('*/api/saksbehandling/alde/behandling/:behandlingId/fortsett', ({ params }) => {
+    console.log(`🎯 MSW intercepted POST fortsett for behandling ${params.behandlingId}`)
+    return HttpResponse.json({ ok: true })
+  }),
+
+  // POST /api/saksbehandling/alde/behandling/:id/attester
+  http.post('*/api/saksbehandling/alde/behandling/:behandlingId/attester', ({ params }) => {
+    console.log(`🎯 MSW intercepted POST attester for behandling ${params.behandlingId}`)
+    return HttpResponse.json({ ok: true })
+  }),
+
+  // POST /api/saksbehandling/alde/behandling/:id/returner
+  http.post('*/api/saksbehandling/alde/behandling/:behandlingId/returner', ({ params }) => {
+    console.log(`🎯 MSW intercepted POST returner for behandling ${params.behandlingId}`)
+    return HttpResponse.json({ ok: true })
+  }),
 ]
 
 // Create and export the server
