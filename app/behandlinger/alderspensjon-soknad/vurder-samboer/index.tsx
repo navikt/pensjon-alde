@@ -175,8 +175,8 @@ function VurdereSamboerComponent({
 
             {selectedVurdering === 'IKKE_SAMBOER' && (
               <InlineMessage status="info" size="small">
-                I vedtaksbrevet blir søker informert om at hen regnes som enslig, men vil få nytt vedtak når hen har
-                vært samboer i 12 måneder.
+                Ved innvilgelse: Vedtaksbrevet opplyser at søker regnes som enslig og får nytt vedtak etter 12 måneder
+                som samboer.
               </InlineMessage>
             )}
 
