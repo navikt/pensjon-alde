@@ -28,9 +28,9 @@ const AvbruttAutomatisk = ({ loaderData }: Route.ComponentProps) => {
       <VStack gap="space-40">
         <VStack align="center" gap="space-8">
           <Heading size="medium" level="1">
-            Kravet kan ikke behandles i pilot
+            Kravet kan ikke behandles her.
           </Heading>
-          <BodyLong>Saksbehandlig må fortsettes som normal kravbehandling.</BodyLong>
+          <BodyLong>Saksbehandlingen må fortsettes som normal kravbehandling.</BodyLong>
         </VStack>
         <HStack gap="2" justify="center">
           <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>

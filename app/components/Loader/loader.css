@@ -1,5 +1,5 @@
 .loader {
-  > div:first-child {
+  > div:has(.robot-smile) {
     display: grid;
     place-items: center;
 

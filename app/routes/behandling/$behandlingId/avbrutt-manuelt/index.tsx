@@ -27,7 +27,7 @@ const AvbruttManuelt = ({ loaderData }: Route.ComponentProps) => {
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="8">
         <Heading size="medium" level="1">
-          Behandlingen i pilot er avbrutt
+          Del-automatisk behandling er avbrutt
         </Heading>
 
         <HStack gap="2" justify="center">

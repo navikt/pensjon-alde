@@ -7,11 +7,13 @@ import {
   Heading,
   HGrid,
   HStack,
+  InlineMessage,
   Radio,
   RadioGroup,
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
+import { useState } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
@@ -130,6 +132,8 @@ function VurdereSamboerComponent({
   avbrytAktivitet,
   errors,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
+  const [selectedVurdering, setSelectedVurdering] = useState(vurdering?.vurdering)
+
   const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
     required: true,
@@ -151,6 +155,7 @@ function VurdereSamboerComponent({
               readOnly={readOnly}
               size="small"
               error={errors?.vurdering}
+              onChange={setSelectedVurdering}
             >
               <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
               <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
@@ -167,6 +172,13 @@ function VurdereSamboerComponent({
                 error={errors?.samboerFra}
               />
             </DatePicker>
+
+            {selectedVurdering === 'IKKE_SAMBOER' && (
+              <InlineMessage status="info" size="small">
+                I vedtaksbrevet blir søker informert om at hen regnes som enslig, men vil få nytt vedtak når hen har
+                vært samboer i 12 måneder.
+              </InlineMessage>
+            )}
 
             {/*<Textarea
             readOnly={readOnly}

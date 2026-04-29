@@ -62,11 +62,10 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
   return (
     <Page.Block gutters className={commonStyles.page}>
       <VStack gap="space-32" className="content" align="center">
+        <CheckmarkCircleIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
         <Heading size="medium" level="1">
           <HStack align="center">Saken er attestert og iverksatt</HStack>
         </Heading>
-
-        <CheckmarkCircleIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
 
         <HStack gap="2">
           <Link href={psakPensjonsoversikt}>Pensjonsoversikt</Link>

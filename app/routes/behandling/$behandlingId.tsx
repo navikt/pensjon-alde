@@ -500,7 +500,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               <input hidden name="aktivitetId" value={aktivitetId} />
               <Modal.Body>
                 <VStack gap="4">
-                  <BodyLong>Saksbehandlig vil fortsettes som manuell kravbehandling.</BodyLong>
+                  <BodyLong>Saksbehandlingen vil fortsettes som manuell kravbehandling.</BodyLong>
                   <BodyLong>
                     Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
                     bedre. Ikke skriv personopplysninger.
