@@ -132,7 +132,8 @@ function VurdereSamboerComponent({
   avbrytAktivitet,
   errors,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
-  const [selectedVurdering, setSelectedVurdering] = useState(vurdering?.vurdering)
+  const defaultVurdering = vurdering?.vurdering
+  const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
 
   const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
@@ -143,7 +144,12 @@ function VurdereSamboerComponent({
 
   const sidebar = (
     <div>
-      <Form method="post" className="decision-form" autoComplete="off">
+      <Form
+        method="post"
+        className="decision-form"
+        autoComplete="off"
+        onReset={() => setSelectedVurdering(defaultVurdering)}
+      >
         <div className="samboer-details"></div>
 
         <div className="samboer-assessment">
@@ -151,7 +157,7 @@ function VurdereSamboerComponent({
             <RadioGroup
               legend="Vurder samboerskap"
               name="vurdering"
-              defaultValue={vurdering?.vurdering}
+              value={selectedVurdering}
               readOnly={readOnly}
               size="small"
               error={errors?.vurdering}
