@@ -7,11 +7,13 @@ import {
   Heading,
   HGrid,
   HStack,
+  InlineMessage,
   Radio,
   RadioGroup,
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
+import { useState } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
@@ -130,6 +132,9 @@ function VurdereSamboerComponent({
   avbrytAktivitet,
   errors,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
+  const defaultVurdering = vurdering?.vurdering
+  const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
+
   const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
     required: true,
@@ -139,7 +144,12 @@ function VurdereSamboerComponent({
 
   const sidebar = (
     <div>
-      <Form method="post" className="decision-form" autoComplete="off">
+      <Form
+        method="post"
+        className="decision-form"
+        autoComplete="off"
+        onReset={() => setSelectedVurdering(defaultVurdering)}
+      >
         <div className="samboer-details"></div>
 
         <div className="samboer-assessment">
@@ -147,10 +157,11 @@ function VurdereSamboerComponent({
             <RadioGroup
               legend="Vurder samboerskap"
               name="vurdering"
-              defaultValue={vurdering?.vurdering}
+              value={selectedVurdering}
               readOnly={readOnly}
               size="small"
               error={errors?.vurdering}
+              onChange={setSelectedVurdering}
             >
               <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
               <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
@@ -167,6 +178,13 @@ function VurdereSamboerComponent({
                 error={errors?.samboerFra}
               />
             </DatePicker>
+
+            {selectedVurdering === 'IKKE_SAMBOER' && (
+              <InlineMessage status="info" size="small">
+                Ved innvilgelse: Vedtaksbrevet opplyser at søker regnes som enslig og får nytt vedtak etter 12 måneder
+                som samboer.
+              </InlineMessage>
+            )}
 
             {/*<Textarea
             readOnly={readOnly}
