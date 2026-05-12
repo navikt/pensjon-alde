@@ -1,9 +1,14 @@
 .aktivitet {
+  --aktivitet-gutter: var(--ax-space-16);
+
   display: flex;
   flex-direction: column;
+  padding-inline-start: var(--aktivitet-gutter);
 }
 
 .aktivitet-vurdering-layout {
+  --aktivitet-gutter: var(--ax-space-16);
+
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -25,12 +30,19 @@
 
   .main {
     border-right: 1px solid var(--ax-border-neutral-subtleA);
-    padding-inline: var(--ax-space-24);
+    padding-inline-end: var(--aktivitet-gutter);
     padding-block: var(--ax-space-32);
   }
 
   .details-divider {
     height: 1px;
     margin: 1em 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .aktivitet,
+  .aktivitet-vurdering-layout {
+    --aktivitet-gutter: var(--ax-space-48);
   }
 }

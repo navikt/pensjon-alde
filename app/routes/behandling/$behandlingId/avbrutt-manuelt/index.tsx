@@ -30,9 +30,9 @@ const AvbruttManuelt = ({ loaderData }: Route.ComponentProps) => {
           Del-automatisk behandling er avbrutt
         </Heading>
 
-        <HStack gap="2" justify="center">
+        <VStack gap="2" align="center">
           <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
-        </HStack>
+        </VStack>
       </VStack>
     </Page.Block>
   )
