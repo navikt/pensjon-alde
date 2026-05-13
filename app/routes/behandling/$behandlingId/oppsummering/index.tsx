@@ -95,7 +95,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <Page.Block gutters className={commonStyles.page}>
+    <Page.Block gutters className={commonStyles.behandlingPage}>
       <Heading level="1" size="large" spacing>
         Oppsummering av behandlingen
       </Heading>

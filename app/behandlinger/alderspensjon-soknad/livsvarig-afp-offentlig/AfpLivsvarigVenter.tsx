@@ -51,10 +51,10 @@ export function AfpLivsvarigVenter({
             </BodyShort>
           </VStack>
         </VStack>
-        <HStack gap="2" justify="center">
+        <VStack gap="2" align="center">
           {pensjonsoversiktUrl && <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>}
           {psakOppgaveoversikt && <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>}
-        </HStack>
+        </VStack>
         {avbrytAktivitet && (
           <div>
             <Button as="a" size="small" variant="tertiary" onClick={avbrytAktivitet}>

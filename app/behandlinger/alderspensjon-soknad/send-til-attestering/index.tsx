@@ -46,7 +46,7 @@ export default function SendTilAttesteringRoute() {
         </Heading>
 
         <Form method="post">
-          <HStack gap="2" justify="center">
+          <VStack gap="2" align="center">
             <Button type="submit" variant="primary" size="small">
               Send til attestering
             </Button>
@@ -54,7 +54,7 @@ export default function SendTilAttesteringRoute() {
             <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet}>
               Avbryt del-auto behandling
             </Button>
-          </HStack>
+          </VStack>
         </Form>
       </VStack>
     </Page.Block>

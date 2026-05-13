@@ -67,10 +67,10 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
           <HStack align="center">Saken er attestert og iverksatt</HStack>
         </Heading>
 
-        <HStack gap="2">
+        <VStack gap="2" align="center">
           <Link href={psakPensjonsoversikt}>Pensjonsoversikt</Link>
           <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>
-        </HStack>
+        </VStack>
       </VStack>
     </Page.Block>
   )

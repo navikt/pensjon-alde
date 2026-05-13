@@ -307,7 +307,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   }, [activeStepIndex])
 
   return (
-    <div>
+    <div className={behandlingStyles.root}>
       <Header
         me={me}
         isDarkmode={isDarkmode}
@@ -319,7 +319,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         verdandeBehandlingUrl={verdandeBehandlingUrl}
       />
       <Box.New asChild background={'default'}>
-        <Page>
+        <Page contentBlockPadding="none" className={behandlingStyles.pageFullHeight}>
           <VStack>
             <Box.New
               paddingInline="10"
@@ -450,7 +450,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             </Box.New>
           )}
 
-          <HStack justify="start" wrap={false}>
+          <HStack justify="start" wrap={false} style={{ flex: 1 }}>
             <Show asChild above="2xl">
               <Box.New
                 borderWidth="0 1 0 0"
@@ -488,11 +488,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               </Box.New>
             </Show>
 
-            <div className={behandlingStyles.resposiveBorder}>
-              <Page.Block as="main" style={{ maxWidth: 'var(--ax-breakpoint-lg)' }}>
-                {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
-              </Page.Block>
-            </div>
+            <main className={behandlingStyles.mainContent}>
+              {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
+            </main>
           </HStack>
 
           <Modal ref={ref} header={{ heading: 'Vil du avbryte del-automatisk behandling?' }}>
