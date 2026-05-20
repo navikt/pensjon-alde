@@ -3,6 +3,7 @@
   "type": "FleksibelApSakBehandling",
   "handlerName": "alderspensjon-soknad",
   "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
+  "processName": "Alderspensjon søknad",
   "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
   "sisteKjoring": null,
   "sisteKjoringDato": "2025-03-10T10:30:00.000000",

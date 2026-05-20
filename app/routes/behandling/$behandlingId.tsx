@@ -458,13 +458,18 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 className={behandlingStyles.pennyVenstremenyBredde}
               >
                 <VStack>
-                  <Box.New paddingBlock="space-24" paddingInline="space-44">
+                  <Box.New
+                    paddingBlock="space-24"
+                    paddingInline="space-44"
+                    borderWidth="0 0 1 0"
+                    borderColor="neutral-subtle"
+                  >
                     <BodyShort as="h2" size="small" weight="semibold">
                       {behandling.processName}
                     </BodyShort>
                   </Box.New>
 
-                  <Box.New paddingBlock="space-12" paddingInline="space-44">
+                  <Box.New paddingBlock="space-24" paddingInline="space-44">
                     <Process hideStatusText={true}>
                       {allSteps
                         .filter(it => showStepper || it.handlerName)
