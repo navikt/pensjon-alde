@@ -450,6 +450,12 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             </Box.New>
           )}
 
+          <div className={behandlingStyles.processNameBar}>
+            <BodyShort as="h2" size="small" weight="semibold">
+              {behandling.processName}
+            </BodyShort>
+          </div>
+
           <HStack justify="start" wrap={false}>
             <Show asChild above="2xl">
               <Box.New
@@ -458,13 +464,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 className={behandlingStyles.pennyVenstremenyBredde}
               >
                 <VStack>
-                  <Box.New paddingBlock="space-24" paddingInline="space-44">
-                    <BodyShort as="h2" size="small" weight="semibold">
-                      {behandling.processName}
-                    </BodyShort>
-                  </Box.New>
-
-                  <Box.New paddingBlock="space-12" paddingInline="space-44">
+                  <Box.New paddingBlock="space-32" paddingInline="space-44">
                     <Process hideStatusText={true}>
                       {allSteps
                         .filter(it => showStepper || it.handlerName)
