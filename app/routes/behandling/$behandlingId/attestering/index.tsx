@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
+import commonStyles from '~/common.module.css'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { type AktivitetDTO, AldeBehandlingStatus, type BehandlingDTO } from '~/types/behandling'
 import { getAllServerComponents } from '~/utils/component-discovery'
@@ -205,9 +206,9 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   }
 
   return (
-    <Page.Block width="xl">
+    <Page.Block width="xl" gutters className={commonStyles.behandlingPage}>
       <VStack gap="space-28">
-        <Heading level="1" size="large" style={{ paddingTop: '2rem' }}>
+        <Heading level="1" size="large">
           Oppgaven er til attestering
         </Heading>
         <VStack gap="space-56">
@@ -226,7 +227,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                 <Box.New
                   borderColor="neutral-subtleA"
                   borderWidth="1 1 0 1"
-                  padding="space-28"
+                  paddingInline="space-28"
                   borderRadius="xlarge xlarge 0 0"
                 >
                   <div className="component-area">

@@ -1,19 +1,19 @@
 {
-  "behandlingId": 1000001,
+  "behandlingId": 2000004,
   "type": "FleksibelApSakBehandling",
   "handlerName": "alderspensjon-soknad",
   "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
-  "processName": "Alderspensjon søknad",
-  "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
+  "aldeBehandlingStatus": "FULLFORT",
   "sisteKjoring": null,
   "sisteKjoringDato": "2025-01-15T16:49:34.37642",
   "utsattTil": null,
   "opprettet": "2025-01-15T16:49:29.7398",
   "stoppet": null,
-  "status": "UNDER_BEHANDLING",
+  "status": "FULLFORT",
+  "processName": "Alderspensjon søknad",
   "aktiviteter": [
     {
-      "aktivitetId": 6020942,
+      "aktivitetId": 9020942,
       "type": "FleksibelApSakA203VurderInntektForEpsAktivitet",
       "handlerName": "kontroller-inntektsopplysninger-for-eps",
       "friendlyName": "Kontroller inntektsopplysninger for EPS",
@@ -24,35 +24,13 @@
       "utsattTil": null
     },
     {
-      "aktivitetId": 6020943,
+      "aktivitetId": 9020943,
       "type": "FleksibelApSakA200VurderSamboerAktivitet",
       "opprettet": "2025-01-15T16:49:34.364857",
       "handlerName": "vurder-samboer",
       "friendlyName": "Vurder samboer",
-      "antallGangerKjort": 0,
-      "sisteAktiveringsdato": null,
-      "status": "UNDER_BEHANDLING",
-      "utsattTil": null
-    },
-    {
-      "aktivitetId": 6020941,
-      "type": "FleksibelApSakA202FinnSamboerInformasjonAktivitet",
-      "opprettet": "2025-01-15T16:49:34.297346",
-      "handlerName": null,
-      "friendlyName": "Finn samboer informasjon",
       "antallGangerKjort": 1,
-      "sisteAktiveringsdato": "2025-01-15T16:49:34.312694",
-      "status": "FULLFORT",
-      "utsattTil": null
-    },
-    {
-      "aktivitetId": 6020940,
-      "type": "FleksibelApSakA201SettBrukPaRettPersongrunnlagAktivitet",
-      "opprettet": "2025-01-15T16:49:34.071661",
-      "handlerName": null,
-      "friendlyName": "Sett bruk på rett persongrunnlag",
-      "antallGangerKjort": 1,
-      "sisteAktiveringsdato": "2025-01-15T16:49:34.271477",
+      "sisteAktiveringsdato": "2025-01-15T16:49:34.380546",
       "status": "FULLFORT",
       "utsattTil": null
     }
@@ -63,5 +41,6 @@
   "fornavn": "Ola",
   "mellomnavn": null,
   "etternavn": "Nordmann",
-  "fodselsdato": "1962-03-15"
+  "fodselsdato": "1962-03-15",
+  "sakType": "ALDER"
 }

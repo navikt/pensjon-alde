@@ -1,0 +1,56 @@
+{
+  "behandlingId": 3000001,
+  "type": "FleksibelApSakBehandling",
+  "handlerName": "alderspensjon-soknad",
+  "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
+  "processName": "Alderspensjon søknad",
+  "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
+  "sisteKjoring": null,
+  "sisteKjoringDato": "2025-03-10T10:30:00.000000",
+  "utsattTil": null,
+  "opprettet": "2025-03-10T10:25:00.000000",
+  "stoppet": null,
+  "status": "UNDER_BEHANDLING",
+  "aktiviteter": [
+    {
+      "aktivitetId": 8010001,
+      "type": "FleksibelApSakA200VurderSamboerAktivitet",
+      "handlerName": "vurder-samboer",
+      "friendlyName": "Vurder samboer",
+      "opprettet": "2025-03-10T10:25:00.000000",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-03-10T10:30:00.000000",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 8010002,
+      "type": "FleksibelApSakA203VurderInntektForEpsAktivitet",
+      "handlerName": "kontroller-inntektsopplysninger-for-eps",
+      "friendlyName": "Kontroller inntektsopplysninger for EPS",
+      "opprettet": "2025-03-10T10:25:00.000000",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-03-10T10:30:00.000000",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 8010003,
+      "type": "FleksibelApSakSendTilAttesteringAktivitet",
+      "handlerName": "send-til-attestering",
+      "friendlyName": "Send til attestering",
+      "opprettet": "2025-03-10T10:25:00.000000",
+      "antallGangerKjort": 0,
+      "sisteAktiveringsdato": "2025-03-10T10:35:00.000000",
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": null
+    }
+  ],
+  "fnr": "12345678901",
+  "sakId": 23077283,
+  "kravId": 46365419,
+  "fornavn": "Ola",
+  "mellomnavn": null,
+  "etternavn": "Nordmann",
+  "fodselsdato": "1962-03-15"
+}

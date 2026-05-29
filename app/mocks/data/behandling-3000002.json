@@ -1,0 +1,45 @@
+{
+  "behandlingId": 3000002,
+  "type": "FleksibelApSakBehandling",
+  "handlerName": "alderspensjon-soknad",
+  "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
+  "processName": "Alderspensjon søknad",
+  "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
+  "sisteKjoring": null,
+  "sisteKjoringDato": "2025-04-01T09:00:00.000000",
+  "utsattTil": null,
+  "opprettet": "2025-04-01T08:50:00.000000",
+  "stoppet": null,
+  "status": "UNDER_BEHANDLING",
+  "aktiviteter": [
+    {
+      "aktivitetId": 8020001,
+      "type": "FleksibelApSakA201SettBrukPaRettPersongrunnlagAktivitet",
+      "handlerName": null,
+      "friendlyName": "Sett bruk på rett persongrunnlag",
+      "opprettet": "2025-04-01T08:50:00.000000",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-04-01T08:55:00.000000",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 8020002,
+      "type": "FleksibelApSakAfpOffentligAktivitet",
+      "handlerName": "livsvarig-afp-offentlig",
+      "friendlyName": "Livsvarig AFP offentlig",
+      "opprettet": "2025-04-01T08:50:00.000000",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-04-01T09:00:00.000000",
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": "2025-04-08T09:00:00.000000"
+    }
+  ],
+  "fnr": "12345678901",
+  "sakId": 23077283,
+  "kravId": 46365420,
+  "fornavn": "Kari",
+  "mellomnavn": null,
+  "etternavn": "Hansen",
+  "fodselsdato": "1963-07-22"
+}

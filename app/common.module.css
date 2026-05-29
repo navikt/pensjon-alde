@@ -1,5 +1,10 @@
 .page {
   padding-top: var(--ax-space-56);
+  padding-bottom: var(--ax-space-56);
+}
+
+.behandlingPage {
+  padding-block: var(--ax-space-32);
 }
 
 .center {

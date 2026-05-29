@@ -1,29 +1,48 @@
-.aktivitet-vurdering-layout {
+.aktivitet {
+  --aktivitet-gutter: var(--ax-space-16);
+
   display: flex;
   flex-direction: column;
-  height: 100%;
+  padding-inline-start: var(--aktivitet-gutter);
+}
+
+.aktivitet-vurdering-layout {
+  --aktivitet-gutter: var(--ax-space-16);
+
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 
   .header {
     padding: 0 2rem 2rem 0rem;
   }
 
   .grid {
-    flex: 1 auto;
+    flex: 1;
     display: grid;
-    grid-template-columns: auto 20em;
+    grid-template-columns: 1fr 24rem;
   }
 
   .sidebar {
-    margin: 0 1em;
+    padding-block: var(--ax-space-32);
+    padding-inline: var(--ax-space-32);
   }
 
   .main {
     border-right: 1px solid var(--ax-border-neutral-subtleA);
-    padding-right: var(--ax-space-20);
+    padding-inline-end: var(--aktivitet-gutter);
+    padding-block: var(--ax-space-32);
   }
 
   .details-divider {
     height: 1px;
     margin: 1em 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .aktivitet,
+  .aktivitet-vurdering-layout {
+    --aktivitet-gutter: var(--ax-space-48);
   }
 }

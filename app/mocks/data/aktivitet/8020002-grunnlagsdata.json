@@ -1,0 +1,22 @@
+{
+  "afpOffentligStatus": [
+    {
+      "status": "soknad",
+      "tpInfo": {
+        "tpNummer": 3100,
+        "tpNavn": "Statens pensjonskasse"
+      },
+      "onsketVirkningsdato": "2025-08-01"
+    }
+  ],
+  "grunnbelop": [
+    {
+      "fomDato": "2025-05-01",
+      "grunnbelop": 130000
+    },
+    {
+      "fomDato": "2024-05-01",
+      "grunnbelop": 124028
+    }
+  ]
+}
