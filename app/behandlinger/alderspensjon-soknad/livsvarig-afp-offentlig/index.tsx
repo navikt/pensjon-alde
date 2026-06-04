@@ -14,7 +14,7 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import React from 'react'
-import { data, Form, redirect, useOutletContext } from 'react-router'
+import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
@@ -338,6 +338,8 @@ function AfpLivsvarigVurdering(
   },
 ) {
   const { grunnlag, vurdering, readOnly, aktivitet, avbrytAktivitet, errors } = props
+  const navigation = useNavigation()
+  const isSubmitting = navigation.state === 'submitting'
 
   const soknadTpLeverandorer = grunnlag.afpOffentligStatus
     .filter(status => status.status === 'soknad' || status.status === 'ukjent')
@@ -531,20 +533,20 @@ function AfpLivsvarigVurdering(
 
                 {errors?._form && <Alert variant="error">{errors._form}</Alert>}
 
-                <Button type="submit" variant="primary" size="small">
+                <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
                   Lagre vurdering
                 </Button>
               </>
             ) : (
               <VStack gap="4">
                 <BodyLong>Det finnes ingen søknader om AFP offentlig.</BodyLong>
-                <Button type="submit" name="utfall" value="ingen" variant="primary" size="small">
+                <Button type="submit" name="utfall" value="ingen" variant="primary" size="small" loading={isSubmitting}>
                   Lagre avvist/ingen
                 </Button>
               </VStack>
             )}
 
-            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet}>
+            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
               Avbryt del-auto behandling
             </Button>
           </VStack>

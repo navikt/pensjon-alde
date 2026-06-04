@@ -1,20 +1,7 @@
 import { ExternalLinkIcon, PersonIcon } from '@navikt/aksel-icons'
-import {
-  BodyLong,
-  BodyShort,
-  Box,
-  Button,
-  CopyButton,
-  Heading,
-  HGrid,
-  HStack,
-  InfoCard,
-  Link,
-  ReadMore,
-  VStack,
-} from '@navikt/ds-react'
+import { BodyLong, BodyShort, Box, Button, CopyButton, Heading, HStack, Link, ReadMore, VStack } from '@navikt/ds-react'
 import { useMemo } from 'react'
-import { Form, redirect, useOutletContext } from 'react-router'
+import { Form, redirect, useNavigation, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
@@ -102,13 +89,17 @@ type KontrollerInntektsopplysningerForEPSInterface = AktivitetComponentProps<
 }
 
 const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysningerForEPSInterface> = ({
-  vurdering,
   modiaUrl,
   grunnlag,
   aktivitet,
   readOnly,
   avbrytAktivitet,
 }) => {
+  const navigation = useNavigation()
+  const isSubmitting = navigation.state === 'submitting'
+  const submittedValue = navigation.formData?.get('epsInntektOver2G')
+  const isSubmittingOver2G = isSubmitting && submittedValue === 'over2G'
+  const isSubmittingUnder2G = isSubmitting && submittedValue === 'under2G'
   const oppgittInntektNum = parseFloat(grunnlag.oppgittInntekt)
   const grunnbelopNum = parseFloat(grunnlag.grunnbelop)
   const oppgittInntektIG = oppgittInntektNum ? Math.round((oppgittInntektNum / grunnbelopNum) * 100) / 100 : 0
@@ -242,14 +233,30 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
         {!readOnly ? (
           <VStack gap="6">
             <VStack gap="2">
-              <Button type="submit" name="epsInntektOver2G" value="over2G" variant="secondary" size="small">
+              <Button
+                type="submit"
+                name="epsInntektOver2G"
+                value="over2G"
+                variant="secondary"
+                size="small"
+                loading={isSubmittingOver2G}
+                disabled={isSubmittingUnder2G}
+              >
                 Over 2G - ta saken til manuell
               </Button>
-              <Button type="submit" name="epsInntektOver2G" value="under2G" variant="secondary" size="small">
+              <Button
+                type="submit"
+                name="epsInntektOver2G"
+                value="under2G"
+                variant="secondary"
+                size="small"
+                loading={isSubmittingUnder2G}
+                disabled={isSubmittingOver2G}
+              >
                 Under 2G - fortsett behandling
               </Button>
             </VStack>
-            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet}>
+            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
               Avbryt del-auto behandling
             </Button>
           </VStack>
