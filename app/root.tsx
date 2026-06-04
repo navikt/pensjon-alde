@@ -20,6 +20,7 @@ import {
   useRouteLoaderData,
 } from 'react-router'
 import { isProblemDetails } from '~/api/error.types'
+import commonStyles from '~/common.module.css'
 import ForbiddenPage from '~/components/ForbiddenPage'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
@@ -216,7 +217,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
     <Theme theme={root?.darkmode ? 'dark' : 'light'}>
       <Page>
-        <Page.Block gutters width="md">
+        <Page.Block gutters width="md" className={commonStyles.page}>
           <VStack gap="8">
             <Heading
               size="xlarge"
