@@ -135,7 +135,7 @@ function VurdereSamboerComponent({
   const defaultVurdering = vurdering?.vurdering
   const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
   const navigation = useNavigation()
-  const isSubmitting = navigation.state === 'submitting'
+  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
 
   const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,

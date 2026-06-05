@@ -339,7 +339,7 @@ function AfpLivsvarigVurdering(
 ) {
   const { grunnlag, vurdering, readOnly, aktivitet, avbrytAktivitet, errors } = props
   const navigation = useNavigation()
-  const isSubmitting = navigation.state === 'submitting'
+  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
 
   const soknadTpLeverandorer = grunnlag.afpOffentligStatus
     .filter(status => status.status === 'soknad' || status.status === 'ukjent')

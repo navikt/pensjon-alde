@@ -96,7 +96,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   avbrytAktivitet,
 }) => {
   const navigation = useNavigation()
-  const isSubmitting = navigation.state === 'submitting'
+  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
   const submittedValue = navigation.formData?.get('epsInntektOver2G')
   const isSubmittingOver2G = isSubmitting && submittedValue === 'over2G'
   const isSubmittingUnder2G = isSubmitting && submittedValue === 'under2G'

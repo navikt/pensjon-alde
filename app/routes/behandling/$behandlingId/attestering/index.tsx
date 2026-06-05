@@ -123,7 +123,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const { errors, data } = actionData || {}
   const navigation = useNavigation()
-  const isSubmitting = navigation.state === 'submitting'
+  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
 
   const components = getAllServerComponents()
   const [utfall, setUtfall] = React.useState<AttesteringUtfall | undefined>(data?.utfall)

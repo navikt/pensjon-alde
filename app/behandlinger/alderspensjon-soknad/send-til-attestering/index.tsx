@@ -38,7 +38,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 export default function SendTilAttesteringRoute() {
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
   const navigation = useNavigation()
-  const isSubmitting = navigation.state === 'submitting'
+  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
 
   return (
     <Page.Block gutters className={`${styles.page} ${styles.center}`}>
