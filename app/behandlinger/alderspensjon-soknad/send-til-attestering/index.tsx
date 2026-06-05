@@ -1,5 +1,5 @@
-import { Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
-import { Form, redirect, useOutletContext } from 'react-router'
+import { Button, Heading, Page, VStack } from '@navikt/ds-react'
+import { Form, redirect, useNavigation, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import styles from '~/common.module.css'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -37,6 +37,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 export default function SendTilAttesteringRoute() {
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
+  const navigation = useNavigation()
+  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
 
   return (
     <Page.Block gutters className={`${styles.page} ${styles.center}`}>
@@ -47,11 +49,11 @@ export default function SendTilAttesteringRoute() {
 
         <Form method="post">
           <VStack gap="2" align="center">
-            <Button type="submit" variant="primary" size="small">
+            <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
               Send til attestering
             </Button>
 
-            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet}>
+            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
               Avbryt del-auto behandling
             </Button>
           </VStack>

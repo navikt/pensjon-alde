@@ -14,7 +14,7 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import { useState } from 'react'
-import { data, Form, redirect, useOutletContext } from 'react-router'
+import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
@@ -134,6 +134,8 @@ function VurdereSamboerComponent({
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const defaultVurdering = vurdering?.vurdering
   const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
+  const navigation = useNavigation()
+  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
 
   const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
@@ -201,11 +203,11 @@ function VurdereSamboerComponent({
 
             {!readOnly && (
               <VStack gap="3">
-                <Button type="submit" variant="primary" size="small">
+                <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
                   Fortsett behandling
                 </Button>
 
-                <Button type="reset" variant="tertiary" size="small" onClick={avbrytAktivitet}>
+                <Button type="reset" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
                   Avbryt del-auto behandling
                 </Button>
               </VStack>

@@ -1,6 +1,6 @@
 import { BodyShort, Box, Button, Heading, HStack, Label, Page, Radio, RadioGroup, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
-import { data, Form, redirect, useOutletContext } from 'react-router'
+import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import commonStyles from '~/common.module.css'
@@ -122,6 +122,8 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   const { aktiviteter } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const { errors, data } = actionData || {}
+  const navigation = useNavigation()
+  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
 
   const components = getAllServerComponents()
   const [utfall, setUtfall] = React.useState<AttesteringUtfall | undefined>(data?.utfall)
@@ -193,11 +195,9 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
               </RadioGroup>
             )}
             {utfall && (
-              <div>
-                <Button size="small" type="submit">
-                  {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
-                </Button>
-              </div>
+              <Button style={{ alignSelf: 'start' }} size="small" type="submit" loading={isSubmitting}>
+                {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
+              </Button>
             )}
           </VStack>
         </Form>
