@@ -195,13 +195,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
               </RadioGroup>
             )}
             {utfall && (
-              <Button
-                style={{ alignSelf: 'start' }}
-                size="small"
-                type="submit"
-                loading={isSubmitting}
-                disabled={isSubmitting}
-              >
+              <Button style={{ alignSelf: 'start' }} size="small" type="submit" loading={isSubmitting}>
                 {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
               </Button>
             )}
