@@ -57,7 +57,7 @@
     "@storybook/addon-vitest": "^10.2.13",
     "@storybook/react": "^10.2.13",
     "@storybook/react-vite": "^10.2.13",
-    "@tailwindcss/vite": "^4.2.1",
+    "@tailwindcss/vite": "^4.2.2",
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.6",
     "@types/node": "^24.10.1",
