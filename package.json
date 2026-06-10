@@ -55,7 +55,7 @@
     "@playwright/test": "^1.55.1",
     "@react-router/dev": "^7.13.1",
     "@storybook/addon-vitest": "^10.2.13",
-    "@storybook/react": "^10.2.13",
+    "@storybook/react": "^10.3.1",
     "@storybook/react-vite": "^10.2.13",
     "@tailwindcss/vite": "^4.2.1",
     "@types/compression": "^1.8.1",
