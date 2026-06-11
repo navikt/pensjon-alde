@@ -22,8 +22,10 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+      - run: npm ci
+      - run: npm run test:ci
       - run: |
-          npm ci && npm run test:ci && npm run build && npm prune --omit=dev
+          npm run build && npm prune --omit=dev
       - uses: nais/docker-build-push@v0
         id: docker-push
         with:
