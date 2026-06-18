@@ -14,7 +14,7 @@ pen:
   url: 'https://pensjon-pen.prod-fss-pub.nais.io'
 
 psak:
-  sak_url_template: 'https://pensjon-psak.nais.adeo.no/psak/sak/sakId={sakId}'
+  sak_url_template: 'https://pensjon-penny.nais.adeo.no/pensjonsoversikt?sakId={sakId}'
   oppgaveoversikt: 'https://pensjon-psak.nais.adeo.no/psak/springapi/redirect/oppgave/oppgaveliste'
 
 verdande:
