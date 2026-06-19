@@ -28,8 +28,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^1.19.0",
-    "@grafana/faro-web-tracing": "^1.19.0",
+    "@grafana/faro-web-sdk": "^2.7.1",
+    "@grafana/faro-web-tracing": "^2.7.1",
     "@navikt/aksel-icons": "^7.35.0",
     "@navikt/ds-css": "^7.35.0",
     "@navikt/ds-react": "^7.35.0",
