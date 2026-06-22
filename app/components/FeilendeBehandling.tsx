@@ -28,7 +28,7 @@ export default function FeilendeBehandling({
   return (
     <Page>
       <Page.Block gutters className={commonStyles.page} width="md">
-        <VStack gap="4">
+        <VStack gap="space-16">
           <Heading
             size="xlarge"
             level="1"
@@ -62,7 +62,7 @@ export default function FeilendeBehandling({
               })}.`}
           </BodyLong>
 
-          <HStack gap="4">
+          <HStack gap="space-16">
             <Button size="small" variant={'primary'} onClick={retry}>
               Prøv igjen nå
             </Button>
@@ -78,14 +78,14 @@ export default function FeilendeBehandling({
             </Link>
           </BodyLong>
 
-          <VStack gap="4">
+          <VStack gap="space-16">
             <VStack>
-              <VStack gap="4">
+              <VStack gap="space-16">
                 <BodyLong size="medium">
                   <strong>Feilmelding</strong>
                 </BodyLong>
 
-                <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
+                <Box borderRadius="8" borderColor="neutral-subtle" borderWidth="1" padding="space-8">
                   <VStack gap="space-8">
                     <BodyLong size="small" style={{ wordBreak: 'break-all' }}>
                       {behandling.sisteKjoring?.feilmelding}
@@ -103,7 +103,7 @@ export default function FeilendeBehandling({
                       </HStack>
                     )}
                   </VStack>
-                </Box.New>
+                </Box>
               </VStack>
               <BodyLong size="small" textColor="subtle">
                 {formatDateToNorwegian(dato, { showTime: true })}

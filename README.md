@@ -4,15 +4,16 @@
 
 ### Installasjon
 
-```bash
-npm install
+```sh
+pnpm install
+pnpm prepare
 ```
 
 ### Miljøvariabler
 
 Kjør `fetch-secrets.sh` for å generere en `.env`-fil med miljøoppsett og hemmeligheter:
 
-```bash
+```sh
 ./fetch-secrets.sh
 ```
 
@@ -24,24 +25,24 @@ Kjør `fetch-secrets.sh` for å generere en `.env`-fil med miljøoppsett og hemm
 
 Start utviklingsserver:
 
-```bash
-npm run dev
+```sh
+pnpm dev
 ```
 
 Med mock-data:
 
-```bash
-npm run dev:mock
+```sh
+pnpm dev:mock
 ```
 
 Applikasjonen kjører på `http://localhost:5173`
 
 ### Testing
 
-```bash
-npm test           # Kjør tester
-npm run test:watch # Kjør tester i watch-modus
-npm run typecheck  # TypeScript typesjekking
+```sh
+pnpm test           # Kjør tester
+pnpm test:watch     # Kjør tester i watch-modus
+pnpm typecheck      # TypeScript typesjekking
 ```
 
 ## Testdata
@@ -61,19 +62,17 @@ npm run typecheck  # TypeScript typesjekking
    - Har alderspensjon (Alderspensjon)
    - SØKNAD , (EPS inntekt 700 000)
 
-
-
-
-
 ## For utviklere
 
 ### Legge til ny aktivitet
 
 1. **Sjekk API-responsen** for handler-navn
 2. **Opprett mappestruktur** som matcher handler-navn eksakt:
-   ```
+
+   ```sh
    app/behandlinger/{behandling-handlerName}/{aktivitet-handlerName}/
    ```
+
 3. **Implementer komponenten** - se eksisterende implementasjoner for eksempler
 
 ### Viktige regler
@@ -84,9 +83,9 @@ npm run typecheck  # TypeScript typesjekking
 
 ## Bygg for produksjon
 
-```bash
-npm run build
-npm start
+```sh
+pnpm build
+pnpm start
 ```
 
 ## Arkitektur
@@ -94,7 +93,8 @@ npm start
 Systemet bruker en "strangler pattern" for å gradvis erstatte noen aktiviteter i PSAK. Nye behandlinger og aktiviteter legges til etter hvert som de migreres.
 
 URL-struktur:
-```
+
+```sh
 /behandling/{behandlingId}/aktivitet/{aktivitetId}/{behandling-mappe}/{aktivitet-mappe}
 ```
 

@@ -59,15 +59,15 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
 
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
-      <VStack gap="8">
-        <Box.New style={{ display: 'flex', justifyContent: 'center' }}>
+      <VStack gap="space-32">
+        <Box style={{ display: 'flex', justifyContent: 'center' }}>
           <PersonCheckmarkIcon fontSize="6rem" style={{ color: 'var(--ax-text-success-decoration)' }} />
-        </Box.New>
+        </Box>
         <Heading size="medium" level="1">
           Kravet er returnert til saksbehandler
         </Heading>
 
-        <HStack gap="2" justify="center">
+        <HStack gap="space-8" justify="center">
           <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
         </HStack>
       </VStack>
