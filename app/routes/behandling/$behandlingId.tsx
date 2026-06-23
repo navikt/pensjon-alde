@@ -318,17 +318,17 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         verdandeAktivitetUrl={verdandeAktivitetUrl}
         verdandeBehandlingUrl={verdandeBehandlingUrl}
       />
-      <Box.New asChild background={'default'}>
+      <Box asChild>
         <Page contentBlockPadding="none" className={behandlingStyles.pageFullHeight}>
           <VStack>
-            <Box.New
-              paddingInline="10"
-              paddingBlock="2"
+            <Box
+              paddingInline="space-40"
+              paddingBlock="space-8"
               borderWidth="1 0"
               background="neutral-soft"
               borderColor="neutral-subtle"
             >
-              <HStack align="center" gap="1">
+              <HStack align="center" gap="space-4">
                 <HStack align="center">
                   <PersonIcon fontSize="1.5em" /> <Fnr value={behandling.fnr} />
                 </HStack>
@@ -344,11 +344,11 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                   <CopyButton size="small" variant="action" copyText={behandling.sakId?.toString() ?? ''} />
                 </HStack>
               </HStack>
-            </Box.New>
+            </Box>
           </VStack>
           {showMetadata && (
-            <Box.New padding="4" borderWidth="1 0">
-              <HStack gap="6" align="center">
+            <Box padding="space-16" borderWidth="1 0">
+              <HStack gap="space-24" align="center">
                 <VStack>
                   <Label size="small">Behandling</Label>
                   <BodyShort>{behandling.friendlyName}</BodyShort>
@@ -442,23 +442,29 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 )}
 
                 {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
-                  <Button type="submit" size="small" variant="danger" onClick={() => ref.current?.showModal()}>
+                  <Button
+                    data-color="danger"
+                    type="submit"
+                    size="small"
+                    variant="primary"
+                    onClick={() => ref.current?.showModal()}
+                  >
                     Ta til manuell
                   </Button>
                 )}
               </HStack>
-            </Box.New>
+            </Box>
           )}
 
           <HStack justify="start" wrap={false} style={{ flex: 1 }}>
             <Show asChild above="2xl">
-              <Box.New
+              <Box
                 borderWidth="0 1 0 0"
                 borderColor="neutral-subtle"
                 className={behandlingStyles.pennyVenstremenyBredde}
               >
                 <VStack>
-                  <Box.New
+                  <Box
                     paddingBlock="space-24"
                     paddingInline="space-44"
                     borderWidth="0 0 1 0"
@@ -467,9 +473,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     <BodyShort as="h2" size="small" weight="semibold">
                       {behandling.processName}
                     </BodyShort>
-                  </Box.New>
+                  </Box>
 
-                  <Box.New paddingBlock="space-24" paddingInline="space-44">
+                  <Box paddingBlock="space-24" paddingInline="space-44">
                     <Process hideStatusText={true}>
                       {allSteps
                         .filter(it => showStepper || it.handlerName)
@@ -488,9 +494,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                           ></Process.Event>
                         ))}
                     </Process>
-                  </Box.New>
+                  </Box>
                 </VStack>
-              </Box.New>
+              </Box>
             </Show>
 
             <main className={behandlingStyles.mainContent}>
@@ -502,7 +508,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             <Form method="post">
               <input hidden name="aktivitetId" value={aktivitetId} />
               <Modal.Body>
-                <VStack gap="4">
+                <VStack gap="space-16">
                   <BodyLong>Saksbehandlingen vil fortsettes som manuell kravbehandling.</BodyLong>
                   <BodyLong>
                     Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
@@ -523,7 +529,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             </Form>
           </Modal>
         </Page>
-      </Box.New>
+      </Box>
     </div>
   )
 }

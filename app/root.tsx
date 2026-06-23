@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/suspicious/noDocumentCookie: TODO: Refactor this */
-import '@navikt/ds-css/darkside'
+import '@navikt/ds-css'
 
 import { BodyLong, BodyShort, Box, CopyButton, Heading, HStack, Link, Page, Theme, VStack } from '@navikt/ds-react'
 import type React from 'react'
@@ -99,13 +99,13 @@ export function links() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { telemetry } = useLoaderData<typeof loader>()
+  const data = useLoaderData<typeof loader>()
   const location = useLocation()
   const params = useParams()
 
   useEffect(() => {
-    initInstrumentation(telemetry)
-  }, [telemetry])
+    if (data?.telemetry) initInstrumentation(data.telemetry)
+  }, [data?.telemetry])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -218,7 +218,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     <Theme theme={root?.darkmode ? 'dark' : 'light'}>
       <Page>
         <Page.Block gutters width="md" className={commonStyles.page}>
-          <VStack gap="8">
+          <VStack gap="space-32">
             <Heading
               size="xlarge"
               level="1"
@@ -236,14 +236,14 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
               .
             </BodyLong>
 
-            <VStack gap="4">
+            <VStack gap="space-16">
               <VStack>
-                <VStack gap="4">
+                <VStack gap="space-16">
                   <BodyLong size="medium">
                     <strong>Feilmelding</strong>
                   </BodyLong>
 
-                  <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
+                  <Box borderRadius="8" borderColor="neutral-subtle" borderWidth="1" padding="space-8">
                     <VStack gap="space-8">
                       <BodyLong size="small" style={{ wordBreak: 'break-all' }}>
                         {details}
@@ -258,7 +258,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
                         </HStack>
                       )}
                     </VStack>
-                  </Box.New>
+                  </Box>
                 </VStack>
                 <BodyLong size="small" textColor="subtle">
                   {formatDateToNorwegian(dato, { showTime: true })}

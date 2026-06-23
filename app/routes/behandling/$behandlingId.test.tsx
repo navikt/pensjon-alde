@@ -24,6 +24,8 @@ const mockBehandling: BehandlingDTO = {
   sisteKjoringDato: '2024-01-01T10:00:00Z',
   sisteKjoring: null,
   stoppet: null,
+  processName: null,
+  sakType: null,
 }
 
 describe('getRedirectPath', () => {
@@ -124,6 +126,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
@@ -151,6 +154,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
@@ -178,6 +182,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
@@ -205,6 +210,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },
@@ -232,6 +238,7 @@ describe('getRedirectPath', () => {
             antallGangerKjort: 0,
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
+            behandletFerdigMaskinelt: false,
           },
         ],
       },

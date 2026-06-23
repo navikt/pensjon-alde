@@ -6,7 +6,7 @@
 
 .xsmall {
   :global(.aksel-heading--small) {
-    font-size: var(--ax-font-size-heading-xsmall) !important;
+    font-size: var(--ax-font-size-heading-xsmall);
   }
 }
 
