@@ -1223,7 +1223,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Inntekt',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})${l.belop != null ? ' – ' + formatCurrencyNok(l.belop) : ''}`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})${l.belop != null ? ` – ${formatCurrencyNok(l.belop)}` : ''}`,
           })),
         ...dagpengerLinjer
           .filter(l => l._status === 'new')
@@ -1247,7 +1247,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Førstegangstjeneste',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ' / ' + typeLabel(opptjeningstyper, l.periodeType) : ''} – ${l.fom || '?'} til ${l.tom || '?'}`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fom || '?'} til ${l.tom || '?'}`,
           })),
       ],
       endrede: [
@@ -1282,7 +1282,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Inntekt',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})${l.belop != null ? ' – ' + formatCurrencyNok(l.belop) : ''}`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})${l.belop != null ? ` – ${formatCurrencyNok(l.belop)}` : ''}`,
           })),
         ...dagpengerLinjer
           .filter(l => l._status === 'deleted')
@@ -1306,14 +1306,14 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Omsorg',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})${l.belop != null ? ' – ' + formatCurrencyNok(l.belop) : ''}`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})${l.belop != null ? ` – ${formatCurrencyNok(l.belop)}` : ''}`,
           })),
         ...forstegangstjenesteLinjer
           .filter(l => l._status === 'deleted')
           .map(l => ({
             id: l._id,
             kategori: 'Førstegangstjeneste',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ' / ' + typeLabel(opptjeningstyper, l.periodeType) : ''} – ${l.fom || '?'} til ${l.tom || '?'}`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fom || '?'} til ${l.tom || '?'}`,
           })),
       ],
     }),
