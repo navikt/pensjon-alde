@@ -1127,9 +1127,11 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         if (l._id !== id) return l
         let updated: InntektLinjeState
         if (felt === 'inntektAr') {
-          updated = { ...l, inntektAr: Number(verdi) || l.inntektAr }
+          const n = Number(verdi.replace(/\D/g, ''))
+          updated = { ...l, inntektAr: n || l.inntektAr }
         } else if (felt === 'belop') {
-          updated = { ...l, belop: verdi ? Number(verdi) : null }
+          const clean = verdi.replace(/\D/g, '')
+          updated = { ...l, belop: clean ? Number(clean) : null }
         } else if (felt === 'inntektType') {
           const requiredKommune = REQUIRED_KOMMUNE[verdi]
           updated = { ...l, inntektType: verdi, ...(requiredKommune !== undefined ? { kommune: requiredKommune } : {}) }
@@ -1161,9 +1163,11 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
             updated = { ...l, inntektType: verdi }
           }
         } else if (felt === 'inntektAr') {
-          updated = { ...l, inntektAr: Number(verdi) || l.inntektAr }
+          const n = Number(verdi.replace(/\D/g, ''))
+          updated = { ...l, inntektAr: n || l.inntektAr }
         } else if (NUMERIC.includes(felt)) {
-          updated = { ...l, [felt]: verdi ? Number(verdi) : null }
+          const clean = verdi.replace(/\D/g, '')
+          updated = { ...l, [felt]: clean ? Number(clean) : null }
         } else {
           updated = { ...l, [felt]: verdi || null }
         }
@@ -1487,6 +1491,15 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
                 </Button>
                 <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
                   Avbryt behandling
+                </Button>
+                {/* DEBUG */}
+                <Button
+                  type="button"
+                  variant="tertiary-neutral"
+                  size="small"
+                  onClick={() => console.log('[DEBUG payload]', JSON.parse(payload))}
+                >
+                  Log payload
                 </Button>
               </HStack>
             </VStack>
