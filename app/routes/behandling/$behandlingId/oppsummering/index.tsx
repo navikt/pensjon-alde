@@ -82,7 +82,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
 
   if (aktiviteter.length === 0) {
     return (
-      <Box.New paddingBlock="8 0" style={{ display: 'flex', justifyContent: 'center' }}>
+      <Box paddingBlock="space-32 space-0" style={{ display: 'flex', justifyContent: 'center' }}>
         <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
           <Heading spacing size="small" level="3">
             Ingen vurdering tatt
@@ -90,7 +90,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
 
           <Detail>Viser bare de aktivitetene som har blitt vurdert</Detail>
         </Alert>
-      </Box.New>
+      </Box>
     )
   }
 
@@ -99,7 +99,6 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
       <Heading level="1" size="large" spacing>
         Oppsummering av behandlingen
       </Heading>
-
       {behandlingErFullført && (
         <Alert variant="info" size="medium">
           <HStack gap="space-16">
@@ -109,12 +108,11 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
           </HStack>
         </Alert>
       )}
-
       {aktiviteter.map(aktivitet => {
         const Component = components.get(aktivitet.handlerName)
 
         return Component ? (
-          <VStack gap="6" key={aktivitet.aktivitetId}>
+          <VStack gap="space-24" key={aktivitet.aktivitetId}>
             <Component
               readOnly={true}
               grunnlag={aktivitet.grunnlag}
@@ -123,10 +121,10 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
               behandling={behandling}
               avbrytAktivitet={() => {}}
             />
-            <Box.New>
+            <Box>
               Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />
               Vurdert tidspunkt: {aktivitet.vurdertTidspunkt}
-            </Box.New>
+            </Box>
           </VStack>
         ) : null
       })}

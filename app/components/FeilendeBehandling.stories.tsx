@@ -38,6 +38,7 @@ const baseBehandling: BehandlingDTO = {
       sisteAktiveringsdato: '2026-01-15T10:00:00',
       status: AktivitetStatus.FEILET,
       utsattTil: null,
+      behandletFerdigMaskinelt: false,
     },
   ],
   fnr: '12345678901',
@@ -47,6 +48,8 @@ const baseBehandling: BehandlingDTO = {
   mellomnavn: null,
   etternavn: 'Nordmann',
   fodselsdato: '1960-05-15',
+  processName: null,
+  sakType: null,
 }
 
 const meta = {

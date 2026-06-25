@@ -34,7 +34,7 @@ const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
           <HStack align="center">Sendt til attestering</HStack>
         </Heading>
 
-        <VStack align="center" gap="2">
+        <VStack align="center" gap="space-8">
           <Link href={psakPensjonsoversikt}>Pensjonsoversikt</Link>
           <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>
         </VStack>

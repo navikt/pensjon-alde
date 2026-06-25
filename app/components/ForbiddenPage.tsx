@@ -6,7 +6,7 @@ export default function ForbiddenPage({ dato, traceId }: { dato: number; traceId
   return (
     <Page>
       <Page.Block gutters className={commonStyles.page} width="md">
-        <VStack gap="8">
+        <VStack gap="space-32">
           <Heading
             size="xlarge"
             level="1"
@@ -29,19 +29,19 @@ export default function ForbiddenPage({ dato, traceId }: { dato: number; traceId
             om du mener dette er feil.
           </BodyLong>
           {traceId && (
-            <VStack gap="1">
+            <VStack gap="space-4">
               <BodyLong size="medium">
                 <strong>Feilsøkingsinformasjon</strong>
               </BodyLong>
 
-              <Box.New borderRadius="medium" borderColor="neutral-subtle" borderWidth="1" padding="2">
+              <Box borderRadius="8" borderColor="neutral-subtle" borderWidth="1" padding="space-8">
                 <HStack align="center">
                   <BodyShort size="small" textColor="subtle">
                     {traceId}
                   </BodyShort>
                   <CopyButton copyText={traceId} size="small" variant="action" />
                 </HStack>
-              </Box.New>
+              </Box>
               <BodyLong size="small" textColor="subtle">
                 {formatDateToNorwegian(dato, { showTime: true })}
               </BodyLong>

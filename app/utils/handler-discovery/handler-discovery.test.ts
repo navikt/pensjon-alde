@@ -93,6 +93,8 @@ describe('handler-discovery', () => {
       mellomnavn: null,
       etternavn: null,
       fodselsdato: null,
+      processName: null,
+      sakType: null,
     }
 
     const mockAktivitet: AktivitetDTO = {
@@ -105,6 +107,7 @@ describe('handler-discovery', () => {
       sisteAktiveringsdato: '2025-08-26T16:49:34.380546',
       status: AktivitetStatus.UNDER_BEHANDLING,
       utsattTil: '2025-08-27T16:49:34.383125',
+      behandletFerdigMaskinelt: false,
     }
 
     it('should build correct redirect URL for valid handlers', () => {
@@ -163,6 +166,8 @@ describe('handler-discovery', () => {
       mellomnavn: null,
       etternavn: null,
       fodselsdato: null,
+      processName: null,
+      sakType: null,
     }
 
     it('should return true for aktivitet with UI implementation', () => {
@@ -176,6 +181,7 @@ describe('handler-discovery', () => {
         sisteAktiveringsdato: '2025-08-26T16:49:34.380546',
         status: AktivitetStatus.UNDER_BEHANDLING,
         utsattTil: null,
+        behandletFerdigMaskinelt: false,
       }
 
       expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(true)
@@ -192,6 +198,7 @@ describe('handler-discovery', () => {
         sisteAktiveringsdato: '2025-08-26T16:49:34.312694',
         status: AktivitetStatus.UNDER_BEHANDLING,
         utsattTil: null,
+        behandletFerdigMaskinelt: false,
       }
 
       expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(false)
@@ -208,6 +215,7 @@ describe('handler-discovery', () => {
         sisteAktiveringsdato: '2025-08-26T16:49:34.312694',
         status: AktivitetStatus.UNDER_BEHANDLING,
         utsattTil: null,
+        behandletFerdigMaskinelt: false,
       }
 
       expect(hasUIImplementation(mockBehandling, aktivitet)).toBe(false)

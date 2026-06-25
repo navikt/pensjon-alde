@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "**/*.{js,jsx,ts,tsx,json,css,scss}"
+      exclude: "public/**"
+      run: pnpm exec biome check --write --files-ignore-unknown=true {staged_files}
+      stage_fixed: true
+
+pre-push:
+  parallel: true
+  commands:
+    typecheck:
+      run: pnpm run typecheck
