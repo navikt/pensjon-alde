@@ -1,0 +1,99 @@
+{
+  "kanOppretteGenerellSak": true,
+  "opptjeningsGrunnlagDto": {
+    "fnr": "10435817810",
+    "inntektListe": [
+      {
+        "inntektId": 602057004,
+        "kilde": "PEN",
+        "kommune": "1337",
+        "inntektAr": 1995,
+        "belop": 41993,
+        "inntektType": "INN_LON"
+      },
+      {
+        "inntektId": 602057005,
+        "kilde": "POPP",
+        "inntektAr": 1995,
+        "belop": 41993,
+        "inntektType": "SUM_PI"
+      },
+      {
+        "inntektId": 602057008,
+        "kilde": "PEN",
+        "kommune": "1337",
+        "inntektAr": 2000,
+        "belop": 67195,
+        "inntektType": "INN_LON"
+      },
+      {
+        "inntektId": 602057009,
+        "kilde": "POPP",
+        "inntektAr": 2000,
+        "belop": 67195,
+        "inntektType": "SUM_PI"
+      },
+      {
+        "inntektId": 602057030,
+        "kilde": "PEN",
+        "kommune": "1337",
+        "inntektAr": 2023,
+        "belop": 160526,
+        "inntektType": "INN_LON"
+      },
+      {
+        "inntektId": 602057031,
+        "kilde": "POPP",
+        "inntektAr": 2023,
+        "belop": 160526,
+        "inntektType": "SUM_PI"
+      },
+      {
+        "inntektId": 602057032,
+        "kilde": "PEN",
+        "kommune": "1337",
+        "inntektAr": 2025,
+        "belop": 170906,
+        "inntektType": "INN_LON"
+      },
+      {
+        "inntektId": 602057033,
+        "kilde": "POPP",
+        "inntektAr": 2025,
+        "belop": 170906,
+        "inntektType": "SUM_PI"
+      }
+    ],
+    "dagpengerListe": [
+      {
+        "opptjeningId": 702057001,
+        "kilde": "PEN",
+        "inntektAr": 2020,
+        "inntektType": "DP",
+        "uavkortetDagpengegrunnlag": 350000,
+        "utbetalteDagpenger": 185000,
+        "ferietillegg": 12000,
+        "barnetillegg": 0
+      }
+    ],
+    "omsorgListe": [
+      {
+        "opptjeningId": 802057001,
+        "kilde": "PEN",
+        "inntektAr": 2010,
+        "inntektType": "OBU6",
+        "belop": 46901
+      }
+    ],
+    "forstegangstjenesteListe": [
+      {
+        "opptjeningId": 902057001,
+        "kilde": "PEN",
+        "inntektType": "MIL",
+        "periodeType": "NORMAL",
+        "fom": "2012-01-15",
+        "tom": "2012-12-31"
+      }
+    ]
+  }
+}

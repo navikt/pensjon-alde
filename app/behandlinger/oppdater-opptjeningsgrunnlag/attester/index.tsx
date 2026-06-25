@@ -23,12 +23,18 @@ export async function action({ params, request, context }: Route.ActionArgs) {
   const utfall = formData.get('utfall') as string
   const returArsak = formData.get('returArsak') as string | null
 
+  const errors: { utfall?: string; returArsak?: string } = {}
+
   if (!utfall) {
-    return data({ errors: { utfall: 'Du må velge et utfall' } }, { status: 400 })
+    errors.utfall = 'Du må velge et utfall'
   }
 
   if (utfall === 'IKKE_GODKJENN' && !returArsak?.trim()) {
-    return data({ errors: { returArsak: 'Du må oppgi begrunnelse for retur' } }, { status: 400 })
+    errors.returArsak = 'Du må oppgi begrunnelse for retur'
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return data({ errors }, { status: 400 })
   }
 
   const attestert = utfall === 'GODKJENN'

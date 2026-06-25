@@ -338,11 +338,15 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 Født: {formatDateToNorwegian(behandling.fodselsdato)} ({formatDateToAge(behandling.fodselsdato)})
                 <Spacer />
                 {behandling.sakType}
-                <span>/</span>
-                <HStack align="center">
-                  {behandling.sakId}
-                  <CopyButton size="small" variant="action" copyText={behandling.sakId?.toString() ?? ''} />
-                </HStack>
+                {behandling.sakId && (
+                  <>
+                    <span>/</span>
+                    <HStack align="center">
+                      {behandling.sakId}
+                      <CopyButton size="small" data-color="accent" copyText={behandling.sakId?.toString() ?? ''} />
+                    </HStack>
+                  </>
+                )}
               </HStack>
             </Box>
           </VStack>
@@ -391,6 +395,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     <CopyButton
                       text={behandling.kravId.toString()}
                       copyText={behandling.kravId.toString()}
+                      data-color="accent"
                       size="small"
                     />
                   </VStack>
@@ -402,6 +407,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     <CopyButton
                       text={behandling.sakId.toString()}
                       copyText={behandling.sakId.toString()}
+                      data-color="accent"
                       size="small"
                     />
                   </VStack>

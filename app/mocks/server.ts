@@ -203,6 +203,16 @@ const handlers = [
     console.log(`🎯 MSW intercepted POST returner for behandling ${params.behandlingId}`)
     return HttpResponse.json({ ok: true })
   }),
+
+  // GET /api/saksbehandling/oppdater-pgi/opptjeningstyper
+  http.get('*/api/saksbehandling/oppdater-pgi/opptjeningstyper', ({ request }) => {
+    console.log(`🎯 MSW intercepted request to: ${request.url}`)
+    const mockData = loadMockData('opptjeningstyper.json')
+    if (mockData) {
+      return HttpResponse.json(mockData)
+    }
+    return HttpResponse.text('Not found', { status: 404 })
+  }),
 ]
 
 // Create and export the server
