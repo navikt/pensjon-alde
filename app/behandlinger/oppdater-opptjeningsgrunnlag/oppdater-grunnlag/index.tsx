@@ -26,9 +26,14 @@ import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
 import type { Route } from './+types'
 import type {
+  DagpengerBackendDTO,
   DagpengerDTO,
-  FørstegangstjenesteDTO,
+  ForstegangstjenesteBackendDTO,
+  ForstegangstjenesteDTO,
+  HentetVurdering,
+  InntektBackendDTO,
   InntektDTO,
+  OmsorgBackendDTO,
   OmsorgDTO,
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
@@ -77,7 +82,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   }
 
   const [vurdering, opptjeningstyper] = await Promise.all([
-    api.hentVurdering<OppdaterOpptjeningVurdering>(),
+    api.hentVurdering<HentetVurdering>(),
     fetchOpptjeningstyper(request),
   ])
 
@@ -96,12 +101,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     return data({ errors: { _form: 'Mangler skjemadata' } }, { status: 400 })
   }
 
-  let payload: {
-    inntektListe: InntektDTO[]
-    dagpengerListe: DagpengerDTO[]
-    omsorgListe: OmsorgDTO[]
-    forstegangstjenesteListe: FørstegangstjenesteDTO[]
-  }
+  let payload: OppdaterOpptjeningVurdering
 
   try {
     payload = JSON.parse(payloadRaw as string)
@@ -111,15 +111,21 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   const validationErrors: string[] = []
 
-  for (const inntekt of payload.inntektListe) {
+  const alleInntekter = (payload.inntektEndringer ?? [])
+    .filter(e => e.endringstype !== 'SLETT')
+    .flatMap(e => e.inntektListe)
+  for (const inntekt of alleInntekter) {
     const required = REQUIRED_KOMMUNE[inntekt.inntektType]
     if (required && inntekt.kommune?.trim() !== required) {
       validationErrors.push(`Skattekommune for ${inntekt.inntektType} må være ${required}`)
     }
   }
 
-  for (const ft of payload.forstegangstjenesteListe) {
-    if (ft.fom && ft.fom < '2010-01-01') {
+  const alleFt = (payload.forstegangstjenesteEndringer ?? [])
+    .filter(e => e.endringstype !== 'SLETT')
+    .map(e => e.forstegangstjeneste)
+  for (const ft of alleFt) {
+    if (ft.tjenestestartDato && ft.tjenestestartDato < '2010-01-01') {
       validationErrors.push('Tjenestestartdato for førstegangstjeneste kan ikke være før 01.01.2010')
     }
   }
@@ -128,9 +134,12 @@ export async function action({ params, request }: Route.ActionArgs) {
     return data({ errors: { _form: validationErrors.join('. ') } }, { status: 400 })
   }
 
-  payload.dagpengerListe = payload.dagpengerListe.map(d =>
-    d.inntektType === 'DP_FF' ? { ...d, uavkortetDagpengegrunnlag: null, ferietillegg: null } : d,
-  )
+  payload.dagpengerEndringer = (payload.dagpengerEndringer ?? []).map(e => ({
+    ...e,
+    dagpengerListe: e.dagpengerListe.map(d =>
+      d.dagpengerType === 'DP_FF' ? { ...d, uavkortetDagpengegrunnlag: null, ferietillegg: null } : d,
+    ),
+  }))
 
   const vurdering: OppdaterOpptjeningVurdering = {
     ...(sakIdRaw ? { sakId: Number(sakIdRaw) } : {}),
@@ -150,10 +159,10 @@ type LinjeStatus = 'original' | 'new' | 'modified' | 'deleted'
 type InntektLinjeState = InntektDTO & { _id: string; _status: LinjeStatus; _original: InntektDTO | null }
 type DagpengerLinjeState = DagpengerDTO & { _id: string; _status: LinjeStatus; _original: DagpengerDTO | null }
 type OmsorgLinjeState = OmsorgDTO & { _id: string; _status: LinjeStatus; _original: OmsorgDTO | null }
-type FørstegangstjenesteLinjeState = FørstegangstjenesteDTO & {
+type ForstegangstjenesteLinjeState = ForstegangstjenesteDTO & {
   _id: string
   _status: LinjeStatus
-  _original: FørstegangstjenesteDTO | null
+  _original: ForstegangstjenesteDTO | null
 }
 
 function tilLinjeState<T extends object>(dto: T): T & { _id: string; _status: LinjeStatus; _original: T } {
@@ -180,7 +189,7 @@ const DAGPENGER_FELTER: (keyof DagpengerDTO)[] = [
   'ferietillegg',
   'barnetillegg',
 ]
-const FORSTEGANGSTJENESTE_FELTER: (keyof FørstegangstjenesteDTO)[] = ['inntektType', 'periodeType', 'fom', 'tom']
+const FORSTEGANGSTJENESTE_FELTER: (keyof ForstegangstjenesteDTO)[] = ['inntektType', 'periodeType', 'fom', 'tom']
 
 function nyInntektLinje(defaultType: string, navident: string): InntektLinjeState {
   return {
@@ -210,7 +219,7 @@ function nyDagpengerLinje(navident: string): DagpengerLinjeState {
   }
 }
 
-function nyFørstegangstjenesteLinje(navident: string): FørstegangstjenesteLinjeState {
+function nyForstegangstjenesteLinje(navident: string): ForstegangstjenesteLinjeState {
   return {
     _id: crypto.randomUUID(),
     _status: 'new',
@@ -303,7 +312,7 @@ function dagpengerEndringer(linje: DagpengerLinjeState, opptjeningstyper: Opptje
 }
 
 function forstegangstjenesteEndringer(
-  linje: FørstegangstjenesteLinjeState,
+  linje: ForstegangstjenesteLinjeState,
   opptjeningstyper: OpptjeningstyperResponse,
 ): string[] {
   if (!linje._original) return []
@@ -326,6 +335,70 @@ function forstegangstjenesteEndringer(
     felter.push(`TOM: ${orig.tom || '–'} → ${linje.tom || '–'}`)
   }
   return felter
+}
+
+function toInntektBackend(l: InntektLinjeState, fnr: string): InntektBackendDTO {
+  return {
+    inntektId: l.inntektId ?? null,
+    fnr,
+    kilde: l.kilde ?? null,
+    kommune: l.kommune ?? null,
+    piMerke: null,
+    inntektAr: Number(l.inntektAr),
+    belop: l.belop != null ? Number(l.belop) : null,
+    inntektType: l.inntektType,
+  }
+}
+
+function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBackendDTO {
+  const isFF = l.inntektType === 'DP_FF'
+  return {
+    dagpengerId: l.opptjeningId ?? null,
+    fnr,
+    dagpengerType: l.inntektType,
+    rapportType: null,
+    kilde: l.kilde ?? null,
+    ar: Number(l.inntektAr),
+    utbetalteDagpenger: l.utbetalteDagpenger != null ? Number(l.utbetalteDagpenger) : null,
+    uavkortetDagpengegrunnlag: isFF
+      ? null
+      : l.uavkortetDagpengegrunnlag != null
+        ? Number(l.uavkortetDagpengegrunnlag)
+        : null,
+    ferietillegg: isFF ? null : l.ferietillegg != null ? Number(l.ferietillegg) : null,
+    barnetillegg: l.barnetillegg != null ? Number(l.barnetillegg) : null,
+  }
+}
+
+function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
+  return {
+    omsorgId: l.opptjeningId ?? null,
+    fnr,
+    fnrOmsorgFor: null,
+    omsorgType: l.inntektType,
+    kilde: l.kilde ?? null,
+    ar: Number(l.inntektAr),
+  }
+}
+
+function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: string): ForstegangstjenesteBackendDTO {
+  return {
+    forstegangstjenesteId: l.opptjeningId ?? null,
+    fnr,
+    kilde: l.kilde ?? null,
+    rapportType: null,
+    tjenestestartDato: l.fom || null,
+    dimitteringDato: l.tom || null,
+    forstegangstjenestePeriodeListe: [
+      {
+        forstegangstjenestePeriodeId: null,
+        periodeType: l.periodeType ?? null,
+        tjenesteType: l.inntektType,
+        fomDato: l.fom,
+        tomDato: l.tom,
+      },
+    ],
+  }
 }
 
 function StatusTag({ status }: { status: LinjeStatus }) {
@@ -866,14 +939,14 @@ function ForstegangstjenesteSeksjon({
   onGjenopprett,
   onOppdater,
 }: {
-  linjer: FørstegangstjenesteLinjeState[]
+  linjer: ForstegangstjenesteLinjeState[]
   opptjeningstyper: OpptjeningstyperResponse
   readOnly: boolean
   fomFeil: Record<string, string>
   onLeggTil: () => void
   onSlett: (id: string) => void
   onGjenopprett: (id: string) => void
-  onOppdater: (id: string, felt: keyof FørstegangstjenesteDTO, verdi: string) => void
+  onOppdater: (id: string, felt: keyof ForstegangstjenesteDTO, verdi: string) => void
 }) {
   return (
     <Box>
@@ -1047,7 +1120,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     return (grunnlagDto?.omsorgListe ?? []).map(tilLinjeState)
   })
 
-  const [forstegangstjenesteLinjer, setForstegangstjenesteLinjer] = useState<FørstegangstjenesteLinjeState[]>(() => {
+  const [forstegangstjenesteLinjer, setForstegangstjenesteLinjer] = useState<ForstegangstjenesteLinjeState[]>(() => {
     const fraVurdering = vurdering?.forstegangstjenesteListe ?? []
     if (fraVurdering.length > 0) return fraVurdering.map(tilLinjeState)
     return (grunnlagDto?.forstegangstjenesteListe ?? []).map(tilLinjeState)
@@ -1104,7 +1177,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       }),
     )
 
-  const slettFørstegangstjenesteLinje = (id: string) =>
+  const slettForstegangstjenesteLinje = (id: string) =>
     setForstegangstjenesteLinjer(prev => {
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
@@ -1112,7 +1185,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
     })
 
-  const gjenopprettFørstegangstjenesteLinje = (id: string) =>
+  const gjenopprettForstegangstjenesteLinje = (id: string) =>
     setForstegangstjenesteLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
@@ -1178,11 +1251,11 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     )
   }
 
-  const oppdaterFørstegangstjenesteLinje = (id: string, felt: keyof FørstegangstjenesteDTO, verdi: string) => {
+  const oppdaterForstegangstjenesteLinje = (id: string, felt: keyof ForstegangstjenesteDTO, verdi: string) => {
     setForstegangstjenesteLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const updated: FørstegangstjenesteLinjeState = { ...l, [felt]: verdi || null }
+        const updated: ForstegangstjenesteLinjeState = { ...l, [felt]: verdi || null }
         const status = beregnStatus({ ...updated, kilde: navident }, FORSTEGANGSTJENESTE_FELTER)
         const kilde = status === 'original' ? (l._original?.kilde ?? navident) : navident
         return { ...updated, kilde, _status: status }
@@ -1326,28 +1399,59 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
 
   const harEndringer = endringSummary.nye.length + endringSummary.endrede.length + endringSummary.slettede.length > 0
 
-  const payload = useMemo(
-    () =>
-      JSON.stringify({
-        inntektListe: inntektLinjer
-          .filter(l => l._status !== 'deleted')
-          .map(({ _id: _, _status: __, _original: ___, ...dto }) => dto as InntektDTO),
-        dagpengerListe: dagpengerLinjer
-          .filter(l => l._status !== 'deleted')
-          .map(({ _id: _, _status: __, _original: ___, ...dto }) => {
-            const d = dto as DagpengerDTO
-            if (d.inntektType === 'DP_FF') return { ...d, uavkortetDagpengegrunnlag: null, ferietillegg: null }
-            return d
-          }),
-        omsorgListe: omsorgLinjer
-          .filter(l => l._status !== 'deleted')
-          .map(({ _id: _, _status: __, _original: ___, ...dto }) => dto as OmsorgDTO),
-        forstegangstjenesteListe: forstegangstjenesteLinjer
-          .filter(l => l._status !== 'deleted')
-          .map(({ _id: _, _status: __, _original: ___, ...dto }) => dto as FørstegangstjenesteDTO),
-      }),
-    [inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer],
-  )
+  const payload = useMemo(() => {
+    const fnr = grunnlag.opptjeningsGrunnlagDto?.fnr ?? ''
+
+    const byStatus = <T extends { _status: LinjeStatus }>(linjer: T[]) => ({
+      nye: linjer.filter(l => l._status === 'new'),
+      endrede: linjer.filter(l => l._status === 'modified'),
+      slettede: linjer.filter(l => l._status === 'deleted'),
+    })
+
+    const inntekt = byStatus(inntektLinjer)
+    const dagpenger = byStatus(dagpengerLinjer)
+    const omsorg = byStatus(omsorgLinjer)
+    const ft = byStatus(forstegangstjenesteLinjer)
+
+    return JSON.stringify({
+      fnr,
+      inntektEndringer: [
+        ...(inntekt.nye.length > 0
+          ? [{ endringstype: 'OPPRETT', inntektListe: inntekt.nye.map(l => toInntektBackend(l, fnr)) }]
+          : []),
+        ...(inntekt.endrede.length > 0
+          ? [{ endringstype: 'OPPDATER', inntektListe: inntekt.endrede.map(l => toInntektBackend(l, fnr)) }]
+          : []),
+        ...(inntekt.slettede.length > 0
+          ? [{ endringstype: 'SLETT', inntektListe: inntekt.slettede.map(l => toInntektBackend(l, fnr)) }]
+          : []),
+      ],
+      dagpengerEndringer: [
+        ...(dagpenger.nye.length > 0
+          ? [{ endringstype: 'OPPRETT', dagpengerListe: dagpenger.nye.map(l => toDagpengerBackend(l, fnr)) }]
+          : []),
+        ...(dagpenger.endrede.length > 0
+          ? [{ endringstype: 'OPPDATER', dagpengerListe: dagpenger.endrede.map(l => toDagpengerBackend(l, fnr)) }]
+          : []),
+        ...(dagpenger.slettede.length > 0
+          ? [{ endringstype: 'SLETT', dagpengerListe: dagpenger.slettede.map(l => toDagpengerBackend(l, fnr)) }]
+          : []),
+      ],
+      omsorgEndringer: [
+        ...(omsorg.slettede.length > 0
+          ? [{ endringstype: 'SLETT', omsorgListe: omsorg.slettede.map(l => toOmsorgBackend(l, fnr)) }]
+          : []),
+      ],
+      forstegangstjenesteEndringer: [
+        ...ft.nye.map(l => ({ endringstype: 'OPPRETT', forstegangstjeneste: toForstegangstjenesteBackend(l, fnr) })),
+        ...ft.endrede.map(l => ({
+          endringstype: 'OPPDATER',
+          forstegangstjeneste: toForstegangstjenesteBackend(l, fnr),
+        })),
+        ...ft.slettede.map(l => ({ endringstype: 'SLETT', forstegangstjeneste: toForstegangstjenesteBackend(l, fnr) })),
+      ],
+    })
+  }, [grunnlag, inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer])
 
   const seksjoner = (
     <VStack gap="space-24">
@@ -1382,10 +1486,10 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         opptjeningstyper={opptjeningstyper}
         readOnly={readOnly}
         fomFeil={forstegangstjenesteFomFeil}
-        onLeggTil={() => setForstegangstjenesteLinjer(prev => [...prev, nyFørstegangstjenesteLinje(navident)])}
-        onSlett={slettFørstegangstjenesteLinje}
-        onGjenopprett={gjenopprettFørstegangstjenesteLinje}
-        onOppdater={oppdaterFørstegangstjenesteLinje}
+        onLeggTil={() => setForstegangstjenesteLinjer(prev => [...prev, nyForstegangstjenesteLinje(navident)])}
+        onSlett={slettForstegangstjenesteLinje}
+        onGjenopprett={gjenopprettForstegangstjenesteLinje}
+        onOppdater={oppdaterForstegangstjenesteLinje}
       />
     </VStack>
   )
