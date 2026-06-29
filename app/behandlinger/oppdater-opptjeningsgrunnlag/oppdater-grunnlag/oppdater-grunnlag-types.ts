@@ -96,7 +96,7 @@ export type InntektBackendDTO = {
   kommune?: string | null
   piMerke?: string | null
   inntektAr: number
-  belop?: number | null
+  belop?: string | null
   inntektType: string
 }
 
@@ -107,10 +107,10 @@ export type DagpengerBackendDTO = {
   rapportType?: string | null
   kilde?: string | null
   ar: number
-  utbetalteDagpenger?: number | null
-  uavkortetDagpengegrunnlag?: number | null
-  ferietillegg?: number | null
-  barnetillegg?: number | null
+  utbetalteDagpenger?: string | null
+  uavkortetDagpengegrunnlag?: string | null
+  ferietillegg?: string | null
+  barnetillegg?: string | null
 }
 
 export type OmsorgBackendDTO = {

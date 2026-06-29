@@ -345,7 +345,7 @@ function toInntektBackend(l: InntektLinjeState, fnr: string): InntektBackendDTO 
     kommune: l.kommune ?? null,
     piMerke: null,
     inntektAr: Number(l.inntektAr),
-    belop: l.belop != null ? Number(l.belop) : null,
+    belop: l.belop != null ? String(Number(l.belop)) : null,
     inntektType: l.inntektType,
   }
 }
@@ -359,14 +359,14 @@ function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBacke
     rapportType: null,
     kilde: l.kilde ?? null,
     ar: Number(l.inntektAr),
-    utbetalteDagpenger: l.utbetalteDagpenger != null ? Number(l.utbetalteDagpenger) : null,
+    utbetalteDagpenger: l.utbetalteDagpenger != null ? String(Number(l.utbetalteDagpenger)) : null,
     uavkortetDagpengegrunnlag: isFF
       ? null
       : l.uavkortetDagpengegrunnlag != null
-        ? Number(l.uavkortetDagpengegrunnlag)
+        ? String(Number(l.uavkortetDagpengegrunnlag))
         : null,
-    ferietillegg: isFF ? null : l.ferietillegg != null ? Number(l.ferietillegg) : null,
-    barnetillegg: l.barnetillegg != null ? Number(l.barnetillegg) : null,
+    ferietillegg: isFF ? null : l.ferietillegg != null ? String(Number(l.ferietillegg)) : null,
+    barnetillegg: l.barnetillegg != null ? String(Number(l.barnetillegg)) : null,
   }
 }
 
@@ -1096,6 +1096,11 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
   const navigation = useNavigation()
   const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
 
+  const saker = grunnlag.saker ?? []
+  const [selectedSakId, setSelectedSakId] = useState('')
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+  const sakIdFeil = saker.length > 0 && !selectedSakId ? 'Du må velge en sak før du kan lagre' : undefined
+
   const defaultInntektType = opptjeningstyper.inntekt.typer[0]?.code ?? ''
 
   const grunnlagDto = grunnlag.opptjeningsGrunnlagDto
@@ -1131,7 +1136,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
       if (linje._status === 'new') return prev.filter(l => l._id !== id)
-      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
+      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const, kilde: navident } : l))
     })
 
   const gjenopprettInntektLinje = (id: string) =>
@@ -1148,7 +1153,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
       if (linje._status === 'new') return prev.filter(l => l._id !== id)
-      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
+      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const, kilde: navident } : l))
     })
 
   const gjenopprettDagpengerLinje = (id: string) =>
@@ -1165,7 +1170,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
       if (linje._status === 'new') return prev.filter(l => l._id !== id)
-      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
+      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const, kilde: navident } : l))
     })
 
   const gjenopprettOmsorgLinje = (id: string) =>
@@ -1182,7 +1187,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
       if (linje._status === 'new') return prev.filter(l => l._id !== id)
-      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
+      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const, kilde: navident } : l))
     })
 
   const gjenopprettForstegangstjenesteLinje = (id: string) =>
@@ -1512,16 +1517,28 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         {readOnly ? (
           seksjoner
         ) : (
-          <Form method="post">
+          <Form
+            method="post"
+            onSubmit={e => {
+              setHasAttemptedSubmit(true)
+              if (!harEndringer) e.preventDefault()
+            }}
+          >
             <VStack gap="space-24">
-              {(grunnlag.saker ?? []).length > 0 && (
+              {saker.length > 0 && (
                 <Box>
                   <Heading size="small" level="3" spacing>
                     Velg sak
                   </Heading>
-                  <Select label="Sak" name="sakId" size="small">
+                  <Select
+                    label="Sak"
+                    name="sakId"
+                    size="small"
+                    value={selectedSakId}
+                    onChange={e => setSelectedSakId(e.target.value)}
+                  >
                     <option value="">Velg sak</option>
-                    {(grunnlag.saker ?? []).map(sak => (
+                    {saker.map(sak => (
                       <option key={sak.sakId} value={sak.sakId}>
                         {sak.sakId}
                         {sak.sakType ? ` – ${sak.sakType}` : ''}
@@ -1589,8 +1606,20 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
 
               <input type="hidden" name="payload" value={payload} />
 
+              {sakIdFeil && <Alert variant="error">{sakIdFeil}</Alert>}
+
+              {hasAttemptedSubmit && !harEndringer && (
+                <Alert variant="warning">Ingen endringer er registrert. Gjør minst én endring før du lagrer.</Alert>
+              )}
+
               <HStack gap="space-8">
-                <Button type="submit" variant="primary" size="small" loading={isSubmitting} disabled={harKlientFeil}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="small"
+                  loading={isSubmitting}
+                  disabled={harKlientFeil || !!sakIdFeil}
+                >
                   Lagre og gå videre
                 </Button>
                 <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
