@@ -4,7 +4,8 @@ allowBuilds:
   msw: true
   protobufjs: false
 minimumReleaseAgeExclude:
-  - '@navikt/aksel-icons@8.13.1'
-  - '@navikt/ds-css@8.13.1'
-  - '@navikt/ds-react@8.13.1'
-  - '@navikt/ds-tokens@8.13.1'
+  - '@react-router/dev@8.1.0'
+  - '@react-router/express@8.1.0'
+  - '@react-router/node@8.1.0'
+  - '@react-router/serve@8.1.0'
+  - react-router@8.1.0

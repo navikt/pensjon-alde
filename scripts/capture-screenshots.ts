@@ -90,7 +90,7 @@ function loadMapping(): ScreenshotMapping {
 }
 
 async function capturePages(
-  page: import('playwright').Page,
+  page: import('@playwright/test').Page,
   pages: ScreenshotPage[],
   baseUrl: string,
 ): Promise<number> {
