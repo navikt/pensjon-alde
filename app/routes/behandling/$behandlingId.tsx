@@ -512,7 +512,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
           <Modal ref={ref} header={{ heading: 'Vil du avbryte del-automatisk behandling?' }}>
             <Form method="post">
-              <input hidden name="aktivitetId" value={aktivitetId} />
+              <input type="hidden" name="aktivitetId" value={aktivitetId} />
               <Modal.Body>
                 <VStack gap="space-16">
                   <BodyLong>Saksbehandlingen vil fortsettes som manuell kravbehandling.</BodyLong>
