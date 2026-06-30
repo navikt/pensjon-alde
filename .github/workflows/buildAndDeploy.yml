@@ -28,7 +28,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run test:ci
       - run: pnpm run build
-      - run: pnpm prune --prod
+      - run: pnpm prune --prod --ignore-scripts
       - uses: nais/docker-build-push@05dbb6091b30bd84279c6d64a45ef8782fd410a5 # v0 
         id: docker-push
         with:
