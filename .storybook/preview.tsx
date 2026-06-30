@@ -1,6 +1,6 @@
 import { Theme } from '@navikt/ds-react'
 import type { Decorator, Preview } from '@storybook/react'
-import '@navikt/ds-css/darkside'
+import '@navikt/ds-css'
 
 const withTheme: Decorator = (Story, context) => {
   const theme = context.globals.theme || 'light'

@@ -8,14 +8,14 @@
 .information-section {
   padding: 1rem;
   background-color: var(--ax-bg-sunken);
-  border-radius: var(--ax-border-radius-medium);
+  border-radius: var(--ax-radius-8);
 }
 
 .aktivitet-info {
   margin-bottom: 1.5rem;
   padding: 1rem;
   background-color: var(--ax-bg-raised);
-  border-radius: var(--ax-border-radius-medium);
+  border-radius: var(--ax-radius-8);
   border: 1px solid var(--ax-border-neutral-subtleA);
 }
 
@@ -33,7 +33,7 @@
   margin-bottom: 1.5rem;
   padding: 1rem;
   background-color: var(--ax-bg-raised);
-  border-radius: var(--ax-border-radius-medium);
+  border-radius: var(--ax-radius-8);
   border: 1px solid var(--ax-border-neutral-subtleA);
 }
 
@@ -44,14 +44,14 @@
 
 .utfall {
   padding: 1rem;
-  border-radius: var(--ax-border-radius-medium);
+  border-radius: var(--ax-radius-8);
 }
 
 .success-message {
   padding: 1rem;
   background-color: var(--ax-bg-success-soft);
   color: var(--ax-text-success);
-  border-radius: var(--ax-border-radius-medium);
+  border-radius: var(--ax-radius-8);
   border: 1px solid var(--ax-border-success);
 }
 
@@ -59,14 +59,14 @@
   padding: 1rem;
   background-color: var(--ax-bg-info-soft);
   color: var(--ax-text-info);
-  border-radius: var(--ax-border-radius-medium);
+  border-radius: var(--ax-radius-8);
   border: 1px solid var(--ax-border-info);
 }
 
 .decision-sidebar {
   padding: 1.5rem;
   background-color: var(--ax-bg-raised);
-  border-radius: var(--ax-border-radius-medium);
+  border-radius: var(--ax-radius-8);
   border: 1px solid var(--ax-border-neutral-subtleA);
   height: fit-content;
   position: sticky;

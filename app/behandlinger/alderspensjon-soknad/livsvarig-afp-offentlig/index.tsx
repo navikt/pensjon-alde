@@ -399,7 +399,7 @@ function AfpLivsvarigVurdering(
           </BodyShort>
         </div>
 
-        <HGrid columns={{ sm: 1, md: 2 }} gap="4">
+        <HGrid columns={{ sm: 1, md: 2 }} gap="space-16">
           {soknadTpLeverandorer.map(leverandor => (
             <SoknadDisplay key={leverandor.tpInfo.tpNummer} soknad={leverandor} />
           ))}
@@ -421,7 +421,7 @@ function AfpLivsvarigVurdering(
 
   const sidebar = (
     <Form method="post" className="decision-form">
-      <VStack gap="6">
+      <VStack gap="space-24">
         <div>
           <Heading level="2" size="small" spacing>
             Vurder AFP offentlig
@@ -430,7 +430,7 @@ function AfpLivsvarigVurdering(
         </div>
 
         {!readOnly ? (
-          <VStack gap="6">
+          <VStack gap="space-24">
             {soknadTpLeverandorer.length > 0 ? (
               <>
                 <RadioGroup
@@ -446,7 +446,7 @@ function AfpLivsvarigVurdering(
                 </RadioGroup>
 
                 {selectedUtfall === 'innvilget' && (
-                  <VStack gap="4">
+                  <VStack gap="space-16">
                     {soknadTpLeverandorer.length > 1 && (
                       <Select
                         label="Velg søknad"
@@ -538,7 +538,7 @@ function AfpLivsvarigVurdering(
                 </Button>
               </>
             ) : (
-              <VStack gap="4">
+              <VStack gap="space-16">
                 <BodyLong>Det finnes ingen søknader om AFP offentlig.</BodyLong>
                 <Button type="submit" name="utfall" value="ingen" variant="primary" size="small" loading={isSubmitting}>
                   Lagre avvist/ingen
@@ -551,14 +551,14 @@ function AfpLivsvarigVurdering(
             </Button>
           </VStack>
         ) : (
-          <VStack gap="6">
+          <VStack gap="space-24">
             <RadioGroup legend="Vurdering" value={vurdering?.utfall || ''} size="small" readOnly>
               <Radio value="innvilget">Innvilget</Radio>
               <Radio value="ingen">Avslått</Radio>
             </RadioGroup>
 
             {vurdering?.utfall === 'innvilget' && (
-              <VStack gap="4">
+              <VStack gap="space-16">
                 {soknadTpLeverandorer.length > 1 && (
                   <TextField
                     label="Valgt søknad"

@@ -8,7 +8,7 @@ interface Props {
 }
 
 const AddressWrapper = ({ title, children, description }: Props) => (
-  <VStack gap="4">
+  <VStack gap="space-16">
     <div>
       <Heading level="2" size="small" style={{ display: 'flex', alignItems: 'center' }}>
         {title}

@@ -12,8 +12,8 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { chromium } from '@playwright/test'
 import { glob } from 'glob'
+import { chromium } from 'playwright'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const PROJECT_ROOT = resolve(__dirname, '..')

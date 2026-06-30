@@ -125,7 +125,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
       </BodyLong>
 
       <HStack gap="space-40">
-        <Box.New width="300px">
+        <Box width="300px">
           <VStack gap="space-40">
             <div>
               <Heading level="2" size="small">
@@ -135,13 +135,13 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             </div>
             <div>
               <Heading level="2" size="small">
-                <HStack gap="2" align="center">
+                <HStack gap="space-8" align="center">
                   <PersonIcon aria-hidden />
                   {epsType.capitalized}
                 </HStack>
               </Heading>
 
-              <HStack gap="2" align="center">
+              <HStack gap="space-8" align="center">
                 <BodyShort>{grunnlag.epsInformasjon.fnr}</BodyShort>
                 <CopyButton copyText={grunnlag.epsInformasjon.fnr} size="small" variant="action" />
               </HStack>
@@ -179,17 +179,11 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
               </div>
             </VStack>
           </VStack>
-        </Box.New>
+        </Box>
 
         {!readOnly && (
           <div>
-            <Box.New
-              borderWidth="1"
-              borderColor="neutral-subtleA"
-              borderRadius="xlarge"
-              padding="space-16"
-              maxWidth="16em"
-            >
+            <Box borderWidth="1" borderColor="neutral-subtleA" borderRadius="16" padding="space-16" maxWidth="16em">
               <Heading level="2" size="small" spacing>
                 Kontakt søker
               </Heading>
@@ -213,7 +207,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
                   </Link>
                 </div>
               </VStack>
-            </Box.New>
+            </Box>
           </div>
         )}
       </HStack>
@@ -222,7 +216,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
 
   const sidebar = (
     <Form method="post" className="decision-form">
-      <VStack gap="6">
+      <VStack gap="space-24">
         <div>
           <Heading level="2" size="small" spacing>
             Vurder inntekt
@@ -231,8 +225,8 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
         </div>
 
         {!readOnly ? (
-          <VStack gap="6">
-            <VStack gap="2">
+          <VStack gap="space-24">
+            <VStack gap="space-8">
               <Button
                 type="submit"
                 name="epsInntektOver2G"
@@ -261,7 +255,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             </Button>
           </VStack>
         ) : (
-          <VStack gap="6">
+          <VStack gap="space-24">
             <BodyShort weight="semibold">Vurdert til under 2G</BodyShort>
           </VStack>
         )}

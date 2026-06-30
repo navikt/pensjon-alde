@@ -25,12 +25,12 @@ const AvbruttManuelt = ({ loaderData }: Route.ComponentProps) => {
   const { pensjonsoversiktUrl } = loaderData
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
-      <VStack gap="8">
+      <VStack gap="space-32">
         <Heading size="medium" level="1">
           Del-automatisk behandling er avbrutt
         </Heading>
 
-        <VStack gap="2" align="center">
+        <VStack gap="space-8" align="center">
           <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
         </VStack>
       </VStack>

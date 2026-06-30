@@ -32,7 +32,7 @@ const AvbruttAutomatisk = ({ loaderData }: Route.ComponentProps) => {
           </Heading>
           <BodyLong>Saksbehandlingen må fortsettes som normal kravbehandling.</BodyLong>
         </VStack>
-        <VStack gap="2" align="center">
+        <VStack gap="space-8" align="center">
           <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
         </VStack>
       </VStack>
