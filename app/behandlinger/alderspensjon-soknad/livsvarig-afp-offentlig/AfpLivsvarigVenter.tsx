@@ -1,4 +1,4 @@
-import { BodyLong, BodyShort, Button, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
+import { BodyLong, BodyShort, Button, Heading, Link, Page, VStack } from '@navikt/ds-react'
 import commonStyles from '~/common.module.css'
 import type { AktivitetDTO } from '~/types/behandling'
 import { formatDateToNorwegian } from '~/utils/date'

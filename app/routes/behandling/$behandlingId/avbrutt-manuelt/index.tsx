@@ -1,4 +1,4 @@
-import { Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
+import { Heading, Link, Page, VStack } from '@navikt/ds-react'
 import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'

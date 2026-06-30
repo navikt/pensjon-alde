@@ -2,6 +2,10 @@
   "name": "alde",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24.15.0"
+  },
   "scripts": {
     "build": "react-router build",
     "dev": "NODE_ENV=development node --experimental-strip-types server.ts",
@@ -22,10 +26,10 @@
     "e2e:ui": "playwright test --ui",
     "storybook": "STORYBOOK=true storybook dev -p 6006",
     "build-storybook": "STORYBOOK=true storybook build",
-    "capture-screenshots": "npx tsx scripts/capture-screenshots.ts",
-    "capture-docs-screenshots": "npx tsx scripts/capture-screenshots.ts --docs",
+    "capture-screenshots": "pnpm tsx scripts/capture-screenshots.ts",
+    "capture-docs-screenshots": "pnpm tsx scripts/capture-screenshots.ts --docs",
     "typecheck": "react-router typegen && tsc",
-    "prepare": "husky"
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "@grafana/faro-web-sdk": "^1.19.0",
@@ -47,11 +51,12 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router": "^7.13.1",
+    "remix-auth": "^4.2.0",
     "remix-auth-oauth2": "^3.4.1",
     "unleash-client": "^6.10.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.8",
+    "@biomejs/biome": "^2.5.1",
     "@playwright/test": "^1.55.1",
     "@react-router/dev": "^7.13.1",
     "@storybook/addon-vitest": "^10.2.13",
@@ -63,22 +68,15 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.3",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.6",
+    "glob": "^13.0.6",
+    "lefthook": "^2.1.9",
     "msw": "^2.11.3",
     "react-router-devtools": "^6.2.0",
     "storybook": "^10.2.13",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.7"
-  },
-  "lint-staged": {
-    "!(public)/**/*.{js,jsx,ts,tsx,json,css,scss}": [
-      "biome check --write --files-ignore-unknown=true"
-    ]
-  },
-  "engines": {
-    "node": ">=24.11.0"
   }
 }
