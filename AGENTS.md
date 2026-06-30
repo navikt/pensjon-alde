@@ -149,15 +149,16 @@ The system automatically:
 ## Testing Your Implementation
 
 ```sh
-npm test          # Run tests in watch mode
-npm run test:ci   # Run tests once (use this after editing tests or tested files)
-npm run typecheck # Type checking
-npm run dev:mock  # Development with mock API
+pnpm test          # Run tests in watch mode
+pnpm test:ci       # Run tests once (use this after editing tests or tested files)
+pnpm typecheck     # Type checking
+pnpm dev:mock      # Development with mock API
 ```
 
 ### IMPORTANT: Run Tests After Changes
 
-**ALWAYS run `npm run test:ci` after:**
+**ALWAYS run `pnpm test:ci` after:**
+
 - Creating or modifying test files
 - Editing files that have associated tests
 - Making changes to core functionality
@@ -167,6 +168,7 @@ This ensures your changes don't break existing tests and that new tests actually
 ### IMPORTANT: Check Diagnostics Before Finishing
 
 **ALWAYS check for TypeScript/linting errors before declaring work complete:**
+
 - Use the diagnostics tool to check files you've edited
 - Fix all red lines and type errors
 - Even if tests pass, diagnostics might reveal issues
@@ -194,7 +196,7 @@ Mock API responses are located in `app/mocks/data/`. Check existing files like `
 
 ### TypeScript errors
 
-- Run `npm run typecheck` to generate React Router types
+- Run `pnpm typecheck` to generate React Router types
 - Import types from `./+types`
 
 ## API Endpoints
@@ -221,14 +223,14 @@ Prosjektet har støtte for automatisk generering av skjermbilder som brukes i do
 
 ### Hvordan det fungerer
 
-Skjermbildene tas med Playwright mot mock-serveren (`npm run dev:mock`). Scriptet navigerer til behandlingsruter, setter alde-settings-cookie for å vise stepper og metadata, og tar fullside-skjermbilder.
+Skjermbildene tas med Playwright mot mock-serveren (`pnpm dev:mock`). Scriptet navigerer til behandlingsruter, setter alde-settings-cookie for å vise stepper og metadata, og tar fullside-skjermbilder.
 
 ### Kommandoer
 
 ```sh
-npm run dev:mock                    # Start mock-serveren (må kjøre først)
-npm run capture-screenshots         # Ta alle skjermbilder (lagres i screenshots/)
-npm run capture-docs-screenshots    # Ta kun docs-skjermbilder og kopier til pensjon-dokumentasjon
+pnpm dev:mock                    # Start mock-serveren (må kjøre først)
+pnpm capture-screenshots         # Ta alle skjermbilder (lagres i screenshots/)
+pnpm capture-docs-screenshots    # Ta kun docs-skjermbilder og kopier til pensjon-dokumentasjon
 ```
 
 ### Legge til nye skjermbilder
@@ -244,7 +246,7 @@ npm run capture-docs-screenshots    # Ta kun docs-skjermbilder og kopier til pen
 
 ### Mock-data-struktur
 
-```
+```sh
 app/mocks/data/
 ├── behandling-6359437.json          # Attestering-tilstand
 ├── behandling-1000001.json          # Vurder samboer (aktiv)

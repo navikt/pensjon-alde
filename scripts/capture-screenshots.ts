@@ -7,12 +7,12 @@
  * Bruk:
  *   npx tsx scripts/capture-screenshots.ts [--docs] [--url URL] [--clean]
  *
- * Forutsetter at mock-serveren kjører: npm run dev:mock
+ * Forutsetter at mock-serveren kjører: pnpm dev:mock
  */
-import { existsSync, copyFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { chromium } from 'playwright'
+import { chromium } from '@playwright/test'
 import { glob } from 'glob'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -54,7 +54,7 @@ function parseArgs() {
   return {
     docs: args.includes('--docs'),
     clean: args.includes('--clean'),
-    url: args.find((a, i) => args[i - 1] === '--url') ?? 'http://localhost:3001',
+    url: args.find((_a, i) => args[i - 1] === '--url') ?? 'http://localhost:3001',
   }
 }
 
@@ -90,7 +90,7 @@ function loadMapping(): ScreenshotMapping {
 }
 
 async function capturePages(
-  page: import('playwright').Page,
+  page: import('@playwright/test').Page,
   pages: ScreenshotPage[],
   baseUrl: string,
 ): Promise<number> {
@@ -107,9 +107,13 @@ async function capturePages(
       // Fjern utviklerverktøy fra DOM-en før skjermbildet tas
       await page.evaluate(() => {
         // Fjern React Router DevTools (injisert iframe/div)
-        document.querySelectorAll('[data-rdt], [id^="rdt-"], iframe[src*="react-router"]').forEach(el => el.remove())
+        document.querySelectorAll('[data-rdt], [id^="rdt-"], iframe[src*="react-router"]').forEach(el => {
+          el.remove()
+        })
         // Fjern AktivitetDebug-panelet (fixed posisjonert Debug-fane)
-        document.querySelectorAll('[class*="debugPanel"]').forEach(el => el.remove())
+        document.querySelectorAll('[class*="debugPanel"]').forEach(el => {
+          el.remove()
+        })
         // Fjern alle fixed-posisjonerte elementer nederst i viewporten (devtools-widgeter)
         for (const el of document.querySelectorAll('*')) {
           const style = window.getComputedStyle(el)

@@ -9,8 +9,5 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-  plugins: [
-    ...(!isStorybook ? [reactRouterDevTools(), reactRouter()] : []),
-    tsconfigPaths(),
-  ],
+  plugins: [...(!isStorybook ? [reactRouterDevTools(), reactRouter()] : []), tsconfigPaths()],
 })

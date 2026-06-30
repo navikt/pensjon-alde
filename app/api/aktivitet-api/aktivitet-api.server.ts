@@ -24,7 +24,7 @@ export function aktivitetApi(fetch: Fetcher) {
     }
   }
 
-  const lagreVurdering = (vurdering: Record<string, any>) =>
+  const lagreVurdering = (vurdering: unknown) =>
     fetch(`/vurdering`, { method: 'POST', body: JSON.stringify({ data: vurdering }) })
 
   const hentOutput = <T>() => fetch<T>(`/output`, { method: 'GET' })
