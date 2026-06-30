@@ -188,12 +188,14 @@ function VurdereSamboerComponent({
               </InlineMessage>
             )}
 
-            {/*<Textarea
-            readOnly={readOnly}
-            label="Kommentar samboervurdering"
-            description="Kun ved behov for tilleggsopplysninger"
-            rows={4}
-          />*/}
+            {/*
+            <Textarea
+                readOnly={readOnly}
+                label="Kommentar samboervurdering"
+                description="Kun ved behov for tilleggsopplysninger"
+                rows={4}
+            />
+            */}
 
             {errors?._form && (
               <Alert variant="error" className="mb-4">
