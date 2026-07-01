@@ -2,7 +2,9 @@ import { InformationSquareIcon } from '@navikt/aksel-icons'
 import {
   BodyShort,
   Button,
+  CopyButton,
   Heading,
+  HStack,
   InfoCard,
   Page,
   Radio,
@@ -142,17 +144,23 @@ export default function AttesterRoute({ loaderData, actionData }: Route.Componen
 
   return (
     <Page.Block gutters className={styles.page}>
+      <Heading size="medium" level="2">
+        Attester oppdatering av pensjonsgivende inntekt
+      </Heading>
+
       <VStack gap="space-32">
-        <Heading size="medium" level="2">
-          Attester oppdatering av pensjonsgivende inntekt
-        </Heading>
-
         {vurdering?.sakId != null && (
-          <BodyShort>
-            <strong>Sak:</strong> {vurdering.sakId}
-          </BodyShort>
+          <HStack gap="space-4" align="center">
+            <BodyShort weight="semibold">Saksnummer:</BodyShort>
+            <CopyButton
+              size="small"
+              copyText={String(vurdering.sakId)}
+              text={String(vurdering.sakId)}
+              activeText="Kopiert!"
+              iconPosition="right"
+            />
+          </HStack>
         )}
-
         {harData ? (
           <>
             <InfoCard data-color="info">

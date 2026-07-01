@@ -530,7 +530,7 @@ function InntekterSeksjon({
                         <TextField
                           label="År"
                           hideLabel
-                          value={linje.inntektAr.toString()}
+                          value={linje.inntektAr.toString() ?? ''}
                           onChange={e => onOppdater(linje._id, 'inntektAr', e.target.value)}
                           inputMode="numeric"
                           size="small"
@@ -695,7 +695,7 @@ function DagpengerSeksjon({
                         <TextField
                           label="År"
                           hideLabel
-                          value={linje.inntektAr.toString()}
+                          value={linje.inntektAr.toString() ?? ''}
                           onChange={e => onOppdater(linje._id, 'inntektAr', e.target.value)}
                           inputMode="numeric"
                           size="small"
