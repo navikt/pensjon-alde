@@ -4,7 +4,6 @@ import {
   Button,
   Heading,
   InfoCard,
-  InlineMessage,
   Page,
   Radio,
   RadioGroup,
@@ -147,6 +146,12 @@ export default function AttesterRoute({ loaderData, actionData }: Route.Componen
         <Heading size="medium" level="2">
           Attester oppdatering av pensjonsgivende inntekt
         </Heading>
+
+        {vurdering?.sakId != null && (
+          <BodyShort>
+            <strong>Sak:</strong> {vurdering.sakId}
+          </BodyShort>
+        )}
 
         {harData ? (
           <>
