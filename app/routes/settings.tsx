@@ -41,13 +41,13 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
   return (
     <Page>
       <Page.Block width="xl" gutters>
-        <VStack gap="8">
+        <VStack gap="space-32">
           <Heading level="1" size="large">
             Innstillinger
           </Heading>
 
           <Form method="post">
-            <VStack gap="6">
+            <VStack gap="space-24">
               <CheckboxGroup legend="Visningsinnstillinger">
                 <Checkbox name="showStepper" value="showStepper" defaultChecked={settings.showStepper}>
                   Vis alle aktivitetene i stegvisningen

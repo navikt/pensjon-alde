@@ -9,7 +9,7 @@ interface Props {
 
 export const MatrikkeladresserBlokk = ({ adresse }: Props) => (
   <>
-    <VStack gap="4">
+    <VStack gap="space-16">
       <div>
         {adresse.adresselinjer.map((linje, index) => (
           <AddressItem key={linje} bold={index === 0}>

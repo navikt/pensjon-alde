@@ -51,24 +51,24 @@ export const AktivitetDebug: React.FC<IAktivitetDebugProps> = ({ input, vurderin
         </button>
 
         {isOpen && (
-          <Box.New background="danger-soft" borderWidth="4 0" borderColor="danger" className={style.tabsContainer}>
+          <Box background="danger-soft" borderWidth="4 0" borderColor="danger" className={style.tabsContainer}>
             <Tabs defaultValue="grunnlag">
               <Tabs.List>
                 <Tabs.Tab value="grunnlag" label="Aktivitet grunnlag" icon={<ClockDashedIcon aria-hidden />} />
                 <Tabs.Tab value="vurdering" label="Aktivitet vurdering" icon={<InboxDownIcon aria-hidden />} />
               </Tabs.List>
               <Tabs.Panel value="grunnlag" className={style.tabPanel}>
-                <Box.New padding="4">
+                <Box padding="space-16">
                   <pre>{formatData(input)}</pre>
-                </Box.New>
+                </Box>
               </Tabs.Panel>
               <Tabs.Panel value="vurdering" className={style.tabPanel}>
-                <Box.New padding="4">
+                <Box padding="space-16">
                   <pre>{formatData(vurdering)}</pre>
-                </Box.New>
+                </Box>
               </Tabs.Panel>
             </Tabs>
-          </Box.New>
+          </Box>
         )}
       </div>
     </div>

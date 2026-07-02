@@ -51,7 +51,7 @@ export function AfpLivsvarigVenter({
             </BodyShort>
           </VStack>
         </VStack>
-        <VStack gap="2" align="center">
+        <VStack gap="space-8" align="center">
           {pensjonsoversiktUrl && <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>}
           {psakOppgaveoversikt && <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>}
         </VStack>

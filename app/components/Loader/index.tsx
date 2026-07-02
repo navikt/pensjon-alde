@@ -5,7 +5,7 @@ import commonStyles from '~/common.module.css'
 
 export const AldeLoader = () => {
   return (
-    <VStack gap="4" align="center" className={`loader ${commonStyles.page}`}>
+    <VStack gap="space-16" align="center" className={`loader ${commonStyles.page}`}>
       <div>
         <RobotSmileIcon className="robot-smile" fontSize="2.2em" />
         <Loader size="3xlarge" />

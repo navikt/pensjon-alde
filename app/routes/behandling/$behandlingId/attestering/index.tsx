@@ -155,7 +155,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
 
   const AktivitetAttestering = () => {
     return (
-      <Box.New background="brand-blue-soft" borderRadius="xlarge" padding="space-28" as="div" ref={attesteringViewRef}>
+      <Box background="brand-blue-soft" borderRadius="16" padding="space-28" as="div" ref={attesteringViewRef}>
         <Form method="POST">
           <VStack gap="space-40">
             <Heading level="2" size="medium">
@@ -201,7 +201,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
             )}
           </VStack>
         </Form>
-      </Box.New>
+      </Box>
     )
   }
 
@@ -224,11 +224,11 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                   }
                 }}
               >
-                <Box.New
+                <Box
                   borderColor="neutral-subtleA"
                   borderWidth="1 1 0 1"
                   paddingInline="space-28"
-                  borderRadius="xlarge xlarge 0 0"
+                  borderRadius="16 16 0 0"
                 >
                   <div className="component-area">
                     <div className="component">
@@ -241,16 +241,16 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                       />
                     </div>
                   </div>
-                </Box.New>
-                <Box.New
+                </Box>
+                <Box
                   background="neutral-softA"
                   borderWidth="0 1 1 1"
-                  borderRadius="0 0 xlarge xlarge"
+                  borderRadius="0 0 16 16"
                   borderColor="neutral-subtleA"
                   paddingBlock="space-20"
                   paddingInline="space-28"
                 >
-                  <HStack gap="8" align="center" justify="space-between">
+                  <HStack gap="space-32" align="center" justify="space-between">
                     <VStack>
                       <Label>Saksbehandler</Label>
                       <div>
@@ -273,7 +273,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                       </div>
                     )}
                   </HStack>
-                </Box.New>
+                </Box>
               </VStack>
             ) : null
           })}

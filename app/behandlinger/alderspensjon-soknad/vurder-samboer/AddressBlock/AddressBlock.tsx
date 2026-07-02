@@ -34,19 +34,19 @@ const AddressBlock = ({ bostedadresser }: Props) => {
     }
 
     return (
-      <Box.New
+      <Box
         key={`${adresse.type}-${index}`}
         borderWidth="1"
-        borderRadius={{ xs: 'large' }}
+        borderRadius={{ xs: '12' }}
         borderColor={'neutral-subtleA'}
-        padding="4"
+        padding="space-16"
       >
         {content}
-      </Box.New>
+      </Box>
     )
   }
 
-  return <VStack gap="4">{sortedAddresses.map(renderAddress)}</VStack>
+  return <VStack gap="space-16">{sortedAddresses.map(renderAddress)}</VStack>
 }
 
 export default AddressBlock

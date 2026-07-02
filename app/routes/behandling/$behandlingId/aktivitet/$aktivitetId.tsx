@@ -111,9 +111,8 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
     return (
       <Page.Block className="aktivitet">
         <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
-
         {!outlet && (
-          <Box.New paddingBlock="8 0" style={{ display: 'flex', justifyContent: 'center' }}>
+          <Box paddingBlock="space-32 space-0" style={{ display: 'flex', justifyContent: 'center' }}>
             <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
               <Heading spacing size="small" level="3">
                 Aktivitet ikke implementert enda
@@ -129,7 +128,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
                 <strong>Behandling:</strong> {behandling.friendlyName}
               </Detail>
             </Alert>
-          </Box.New>
+          </Box>
         )}
         {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
       </Page.Block>

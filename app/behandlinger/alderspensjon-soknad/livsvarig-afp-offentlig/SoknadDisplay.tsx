@@ -4,7 +4,7 @@ import type { Soknad, Ukjent } from './index'
 
 export function SoknadDisplay({ soknad }: { soknad: Soknad | Ukjent }) {
   return (
-    <Box.New padding="4" borderWidth="1" borderRadius="medium" borderColor="neutral-subtle">
+    <Box padding="space-16" borderWidth="1" borderRadius="8" borderColor="neutral-subtle">
       <VStack gap="space-8">
         <div>
           <Heading level="3" size="xsmall">
@@ -28,6 +28,6 @@ export function SoknadDisplay({ soknad }: { soknad: Soknad | Ukjent }) {
           </div>
         )}
       </VStack>
-    </Box.New>
+    </Box>
   )
 }

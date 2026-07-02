@@ -155,7 +155,7 @@ function VurdereSamboerComponent({
         <div className="samboer-details"></div>
 
         <div className="samboer-assessment">
-          <VStack gap="6">
+          <VStack gap="space-24">
             <RadioGroup
               legend="Vurder samboerskap"
               name="vurdering"
@@ -202,7 +202,7 @@ function VurdereSamboerComponent({
             )}
 
             {!readOnly && (
-              <VStack gap="3">
+              <VStack gap="space-12">
                 <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
                   Fortsett behandling
                 </Button>
@@ -228,7 +228,6 @@ function VurdereSamboerComponent({
           {formatDateToNorwegian(kravOnsketVirkningsdato)}
         </VStack>
       </AktivitetVurderingLayout.Section>
-
       <AktivitetVurderingLayout.Section>
         <VStack>
           <Heading size="xsmall" level="2">
@@ -240,27 +239,26 @@ function VurdereSamboerComponent({
           {samboer.navn.etternavn.toUpperCase()}, {samboer.navn.fornavn} {samboer.navn.mellomnavn}
         </VStack>
       </AktivitetVurderingLayout.Section>
-
       <AktivitetVurderingLayout.Section>
-        <HStack gap="8">
-          <VStack gap="1">
+        <HStack gap="space-32">
+          <VStack gap="space-4">
             <Heading level="2" size="xsmall">
               Brukeroppgitte opplysninger
             </Heading>
 
             {soknad ? (
               <>
-                <HStack gap="1">
+                <HStack gap="space-4">
                   Tidligere gift med hverandre:{' '}
                   <BodyShort weight="semibold">{soknad.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
                 </HStack>
 
-                <HStack gap="1">
+                <HStack gap="space-4">
                   Felles barn:{' '}
                   <BodyShort weight="semibold">{soknad.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}</BodyShort>
                 </HStack>
 
-                <HStack gap="1">
+                <HStack gap="space-4">
                   Dato for samboerskap:{' '}
                   <BodyShort weight="semibold">{formatDateToNorwegian(soknad.datoForSamboerskap)}</BodyShort>
                 </HStack>
@@ -270,15 +268,15 @@ function VurdereSamboerComponent({
             )}
           </VStack>
 
-          <VStack gap="1">
+          <VStack gap="space-4">
             <Heading size="xsmall" level="2">
               Opplysninger fra vårt register
             </Heading>
-            <HStack gap="1">
+            <HStack gap="space-4">
               Tidligere gift med hverandre:{' '}
               <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
             </HStack>
-            <HStack gap="1">
+            <HStack gap="space-4">
               Felles barn:{' '}
               <BodyShort weight="semibold">
                 {samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}
@@ -289,16 +287,15 @@ function VurdereSamboerComponent({
             </HStack>
 
             {grunnlag.sokerSivilstand && (
-              <HStack gap="1">
+              <HStack gap="space-4">
                 Søkers sivilstand: <BodyShort weight="semibold">{grunnlag.sokerSivilstand}</BodyShort>
               </HStack>
             )}
           </VStack>
         </HStack>
       </AktivitetVurderingLayout.Section>
-
       <AktivitetVurderingLayout.Section>
-        <HGrid gap="8" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">
+        <HGrid gap="space-32" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">
           <AddressWrapper
             title="Samboers bostedsadresser"
             description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
