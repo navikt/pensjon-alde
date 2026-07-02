@@ -1508,7 +1508,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     <Page.Block gutters className={styles.page}>
       <VStack gap="space-32">
         <Heading size="medium" level="2">
-          Oppdater pensjonsgivende inntekt
+          Oppdater opptjeningsgrunnlag
         </Heading>
 
         {readOnly && (
