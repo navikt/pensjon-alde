@@ -183,13 +183,18 @@ function beregnStatus<T extends object>(
 const INNTEKT_FELTER: (keyof InntektDTO)[] = ['inntektType', 'inntektAr', 'belop', 'kommune']
 const DAGPENGER_FELTER: (keyof DagpengerDTO)[] = [
   'inntektType',
-  'inntektAr',
+  'ar',
   'uavkortetDagpengegrunnlag',
   'utbetalteDagpenger',
   'ferietillegg',
   'barnetillegg',
 ]
-const FORSTEGANGSTJENESTE_FELTER: (keyof ForstegangstjenesteDTO)[] = ['inntektType', 'periodeType', 'fom', 'tom']
+const FORSTEGANGSTJENESTE_FELTER: (keyof ForstegangstjenesteDTO)[] = [
+  'inntektType',
+  'periodeType',
+  'fomDato',
+  'tomDato',
+]
 
 function nyInntektLinje(defaultType: string, navident: string): InntektLinjeState {
   return {
@@ -210,7 +215,7 @@ function nyDagpengerLinje(navident: string): DagpengerLinjeState {
     _status: 'new',
     _original: null,
     inntektType: 'DP',
-    inntektAr: new Date().getFullYear(),
+    ar: new Date().getFullYear(),
     uavkortetDagpengegrunnlag: null,
     utbetalteDagpenger: null,
     ferietillegg: null,
@@ -226,8 +231,8 @@ function nyForstegangstjenesteLinje(navident: string): ForstegangstjenesteLinjeS
     _original: null,
     inntektType: 'MIL',
     periodeType: null,
-    fom: '',
-    tom: '',
+    fomDato: '',
+    tomDato: '',
     kilde: navident,
   }
 }
@@ -282,8 +287,8 @@ function dagpengerEndringer(linje: DagpengerLinjeState, opptjeningstyper: Opptje
       `Type: ${typeLabel(opptjeningstyper, orig.inntektType)} → ${typeLabel(opptjeningstyper, linje.inntektType)}`,
     )
   }
-  if (linje.inntektAr !== orig.inntektAr) {
-    felter.push(`År: ${orig.inntektAr} → ${linje.inntektAr}`)
+  if (linje.ar !== orig.ar) {
+    felter.push(`År: ${orig.ar} → ${linje.ar}`)
   }
   if (
     (linje.uavkortetDagpengegrunnlag ?? null) !== (orig.uavkortetDagpengegrunnlag ?? null) &&
@@ -328,11 +333,11 @@ function forstegangstjenesteEndringer(
     const til = linje.periodeType ? typeLabel(opptjeningstyper, linje.periodeType) : '–'
     felter.push(`Periodetype: ${fra} → ${til}`)
   }
-  if (linje.fom !== orig.fom) {
-    felter.push(`FOM: ${orig.fom || '–'} → ${linje.fom || '–'}`)
+  if (linje.fomDato !== orig.fomDato) {
+    felter.push(`FOM: ${orig.fomDato || '–'} → ${linje.fomDato || '–'}`)
   }
-  if (linje.tom !== orig.tom) {
-    felter.push(`TOM: ${orig.tom || '–'} → ${linje.tom || '–'}`)
+  if (linje.tomDato !== orig.tomDato) {
+    felter.push(`TOM: ${orig.tomDato || '–'} → ${linje.tomDato || '–'}`)
   }
   return felter
 }
@@ -358,7 +363,7 @@ function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBacke
     dagpengerType: l.inntektType,
     rapportType: null,
     kilde: l.kilde ?? null,
-    ar: Number(l.inntektAr),
+    ar: Number(l.ar),
     utbetalteDagpenger: l.utbetalteDagpenger != null ? String(Number(l.utbetalteDagpenger)) : null,
     uavkortetDagpengegrunnlag: isFF
       ? null
@@ -377,7 +382,7 @@ function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
     fnrOmsorgFor: null,
     omsorgType: l.inntektType,
     kilde: l.kilde ?? null,
-    ar: Number(l.inntektAr),
+    ar: Number(l.ar),
   }
 }
 
@@ -387,15 +392,15 @@ function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: str
     fnr,
     kilde: l.kilde ?? null,
     rapportType: null,
-    tjenestestartDato: l.fom || null,
-    dimitteringDato: l.tom || null,
+    tjenestestartDato: l.fomDato || null,
+    dimitteringDato: l.tomDato || null,
     forstegangstjenestePeriodeListe: [
       {
         forstegangstjenestePeriodeId: null,
         periodeType: l.periodeType ?? null,
         tjenesteType: l.inntektType,
-        fomDato: l.fom,
-        tomDato: l.tom,
+        fomDato: l.fomDato,
+        tomDato: l.tomDato,
       },
     ],
   }
@@ -530,7 +535,7 @@ function InntekterSeksjon({
                         <TextField
                           label="År"
                           hideLabel
-                          value={linje.inntektAr.toString() ?? ''}
+                          value={linje.inntektAr?.toString() ?? ''}
                           onChange={e => onOppdater(linje._id, 'inntektAr', e.target.value)}
                           inputMode="numeric"
                           size="small"
@@ -634,7 +639,7 @@ function DagpengerSeksjon({
   onGjenopprett: (id: string) => void
   onOppdater: (id: string, felt: keyof DagpengerDTO, verdi: string) => void
 }) {
-  const sortert = useMemo(() => [...linjer].sort((a, b) => a.inntektAr - b.inntektAr), [linjer])
+  const sortert = useMemo(() => [...linjer].sort((a, b) => a.ar - b.ar), [linjer])
   const erFF = (inntektType: string) => inntektType === 'DP_FF'
 
   return (
@@ -690,13 +695,13 @@ function DagpengerSeksjon({
                     </Table.DataCell>
                     <Table.DataCell>
                       {readOnly ? (
-                        linje.inntektAr
+                        linje.ar
                       ) : (
                         <TextField
                           label="År"
                           hideLabel
-                          value={linje.inntektAr.toString() ?? ''}
-                          onChange={e => onOppdater(linje._id, 'inntektAr', e.target.value)}
+                          value={linje.ar?.toString() ?? ''}
+                          onChange={e => onOppdater(linje._id, 'ar', e.target.value)}
                           inputMode="numeric"
                           size="small"
                           disabled={erSlettet}
@@ -839,7 +844,7 @@ function OmsorgSeksjon({
   onSlett: (id: string) => void
   onGjenopprett: (id: string) => void
 }) {
-  const sortert = useMemo(() => [...linjer].sort((a, b) => a.inntektAr - b.inntektAr), [linjer])
+  const sortert = useMemo(() => [...linjer].sort((a, b) => a.ar - b.ar), [linjer])
 
   if (linjer.length === 0) return null
 
@@ -869,7 +874,7 @@ function OmsorgSeksjon({
                     {opptjeningstyper.omsorg.typer.find(t => t.code === linje.inntektType)?.description ??
                       linje.inntektType}
                   </Table.DataCell>
-                  <Table.DataCell>{linje.inntektAr}</Table.DataCell>
+                  <Table.DataCell>{linje.ar}</Table.DataCell>
                   <Table.DataCell>{linje.belop != null ? formatCurrencyNok(linje.belop) : '–'}</Table.DataCell>
                   <Table.DataCell>{linje.kilde ?? '–'}</Table.DataCell>
                   {!readOnly && (
@@ -1023,27 +1028,27 @@ function ForstegangstjenesteSeksjon({
                     </Table.DataCell>
                     <Table.DataCell>
                       {readOnly ? (
-                        linje.fom || '–'
+                        linje.fomDato || '–'
                       ) : (
                         <DatoVelgerCell
-                          value={linje.fom}
+                          value={linje.fomDato}
                           label="FOM"
                           disabled={erSlettet}
                           error={!erSlettet ? fomFeil[linje._id] : undefined}
                           fromDate={new Date(2010, 0, 1)}
-                          onChange={val => onOppdater(linje._id, 'fom', val)}
+                          onChange={val => onOppdater(linje._id, 'fomDato', val)}
                         />
                       )}
                     </Table.DataCell>
                     <Table.DataCell>
                       {readOnly ? (
-                        linje.tom || '–'
+                        linje.tomDato || '–'
                       ) : (
                         <DatoVelgerCell
-                          value={linje.tom}
+                          value={linje.tomDato}
                           label="TOM"
                           disabled={erSlettet}
-                          onChange={val => onOppdater(linje._id, 'tom', val)}
+                          onChange={val => onOppdater(linje._id, 'tomDato', val)}
                         />
                       )}
                     </Table.DataCell>
@@ -1178,7 +1183,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       prev.map(l => {
         if (l._id !== id) return l
         const restored = { ...l, _status: 'original' as const }
-        return { ...restored, _status: beregnStatus(restored, ['inntektType', 'inntektAr', 'belop', 'kilde']) }
+        return { ...restored, _status: beregnStatus(restored, ['inntektType', 'ar', 'belop', 'kilde']) }
       }),
     )
 
@@ -1240,9 +1245,9 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           } else {
             updated = { ...l, inntektType: verdi }
           }
-        } else if (felt === 'inntektAr') {
+        } else if (felt === 'ar') {
           const n = Number(verdi.replace(/\D/g, ''))
-          updated = { ...l, inntektAr: n || l.inntektAr }
+          updated = { ...l, ar: n || l.ar }
         } else if (NUMERIC.includes(felt)) {
           const clean = verdi.replace(/\D/g, '')
           updated = { ...l, [felt]: clean ? Number(clean) : null }
@@ -1284,7 +1289,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     const feil: Record<string, string> = {}
     for (const linje of forstegangstjenesteLinjer) {
       if (linje._status === 'deleted') continue
-      if (linje.fom && linje.fom < '2010-01-01') {
+      if (linje.fomDato && linje.fomDato < '2010-01-01') {
         feil[linje._id] = 'Tjenestestartdato kan ikke være før 01.01.2010'
       }
     }
@@ -1313,7 +1318,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
             id: l._id,
             kategori: 'Dagpenger',
             label: [
-              `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})`,
+              `${typeLabel(opptjeningstyper, l.inntektType)} (${l.ar})`,
               l.inntektType !== 'DP_FF' &&
                 l.uavkortetDagpengegrunnlag != null &&
                 `grunnlag: ${formatCurrencyNok(l.uavkortetDagpengegrunnlag)}`,
@@ -1329,7 +1334,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Førstegangstjeneste',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fom || '?'} til ${l.tom || '?'}`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fomDato || '?'} til ${l.tomDato || '?'}`,
           })),
       ],
       endrede: [
@@ -1346,7 +1351,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Dagpenger',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.ar})`,
             endringer: dagpengerEndringer(l, opptjeningstyper),
           })),
         ...forstegangstjenesteLinjer
@@ -1354,7 +1359,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Førstegangstjeneste',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.fom?.slice(0, 4) ?? '?'})`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.fomDato?.slice(0, 4) ?? '?'})`,
             endringer: forstegangstjenesteEndringer(l, opptjeningstyper),
           })),
       ],
@@ -1372,7 +1377,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
             id: l._id,
             kategori: 'Dagpenger',
             label: [
-              `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})`,
+              `${typeLabel(opptjeningstyper, l.inntektType)} (${l.ar})`,
               l.inntektType !== 'DP_FF' &&
                 l.uavkortetDagpengegrunnlag != null &&
                 `grunnlag: ${formatCurrencyNok(l.uavkortetDagpengegrunnlag)}`,
@@ -1388,14 +1393,14 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Omsorg',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.inntektAr})${l.belop != null ? ` – ${formatCurrencyNok(l.belop)}` : ''}`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.ar})${l.belop != null ? ` – ${formatCurrencyNok(l.belop)}` : ''}`,
           })),
         ...forstegangstjenesteLinjer
           .filter(l => l._status === 'deleted')
           .map(l => ({
             id: l._id,
             kategori: 'Førstegangstjeneste',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fom || '?'} til ${l.tom || '?'}`,
+            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fomDato || '?'} til ${l.tomDato || '?'}`,
           })),
       ],
     }),
