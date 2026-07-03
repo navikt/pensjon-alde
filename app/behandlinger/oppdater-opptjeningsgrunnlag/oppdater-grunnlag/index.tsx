@@ -1,12 +1,14 @@
-import { PlusIcon, TrashIcon } from '@navikt/aksel-icons'
+import { InformationSquareIcon, PlusIcon, TrashIcon } from '@navikt/aksel-icons'
 import {
-  Alert,
   BodyShort,
   Box,
   Button,
   DatePicker,
   Heading,
   HStack,
+  InfoCard,
+  InlineMessage,
+  LocalAlert,
   Page,
   Select,
   Table,
@@ -30,7 +32,6 @@ import type {
   DagpengerDTO,
   ForstegangstjenesteBackendDTO,
   ForstegangstjenesteDTO,
-  HentetVurdering,
   InntektBackendDTO,
   InntektDTO,
   OmsorgBackendDTO,
@@ -38,10 +39,11 @@ import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
+  VurderingResponse,
 } from './oppdater-grunnlag-types'
 
 export function meta() {
-  return [{ title: 'Oppdater pensjonsgivende inntekt' }]
+  return [{ title: 'Oppdater opptjeningsgrunnlag' }]
 }
 
 const REQUIRED_KOMMUNE: Partial<Record<string, string>> = {
@@ -81,12 +83,16 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     }
   }
 
-  const [vurdering, opptjeningstyper] = await Promise.all([
-    api.hentVurdering<HentetVurdering>(),
+  const [vurderingResponse, opptjeningstyper] = await Promise.all([
+    api.hentVurdering<VurderingResponse>(),
     fetchOpptjeningstyper(request),
   ])
 
-  return { grunnlag, vurdering, opptjeningstyper, navident, readOnly }
+  const savedVurdering: OppdaterOpptjeningVurdering | null = vurderingResponse?.vurdering
+    ? (JSON.parse(vurderingResponse.vurdering) as OppdaterOpptjeningVurdering)
+    : null
+
+  return { grunnlag, savedVurdering, opptjeningstyper, navident, readOnly }
 }
 
 export async function action({ params, request }: Route.ActionArgs) {
@@ -182,7 +188,7 @@ function beregnStatus<T extends object>(
 
 const INNTEKT_FELTER: (keyof InntektDTO)[] = ['inntektType', 'inntektAr', 'belop', 'kommune']
 const DAGPENGER_FELTER: (keyof DagpengerDTO)[] = [
-  'inntektType',
+  'dagpengerType',
   'ar',
   'uavkortetDagpengegrunnlag',
   'utbetalteDagpenger',
@@ -190,7 +196,7 @@ const DAGPENGER_FELTER: (keyof DagpengerDTO)[] = [
   'barnetillegg',
 ]
 const FORSTEGANGSTJENESTE_FELTER: (keyof ForstegangstjenesteDTO)[] = [
-  'inntektType',
+  'tjenesteType',
   'periodeType',
   'fomDato',
   'tomDato',
@@ -214,7 +220,7 @@ function nyDagpengerLinje(navident: string): DagpengerLinjeState {
     _id: crypto.randomUUID(),
     _status: 'new',
     _original: null,
-    inntektType: 'DP',
+    dagpengerType: 'DP',
     ar: new Date().getFullYear(),
     uavkortetDagpengegrunnlag: null,
     utbetalteDagpenger: null,
@@ -229,7 +235,7 @@ function nyForstegangstjenesteLinje(navident: string): ForstegangstjenesteLinjeS
     _id: crypto.randomUUID(),
     _status: 'new',
     _original: null,
-    inntektType: 'MIL',
+    tjenesteType: 'MIL',
     periodeType: null,
     fomDato: '',
     tomDato: '',
@@ -282,9 +288,9 @@ function dagpengerEndringer(linje: DagpengerLinjeState, opptjeningstyper: Opptje
   if (!linje._original) return []
   const orig = linje._original
   const felter: string[] = []
-  if (linje.inntektType !== orig.inntektType) {
+  if (linje.dagpengerType !== orig.dagpengerType) {
     felter.push(
-      `Type: ${typeLabel(opptjeningstyper, orig.inntektType)} → ${typeLabel(opptjeningstyper, linje.inntektType)}`,
+      `Type: ${typeLabel(opptjeningstyper, orig.dagpengerType)} → ${typeLabel(opptjeningstyper, linje.dagpengerType)}`,
     )
   }
   if (linje.ar !== orig.ar) {
@@ -292,7 +298,7 @@ function dagpengerEndringer(linje: DagpengerLinjeState, opptjeningstyper: Opptje
   }
   if (
     (linje.uavkortetDagpengegrunnlag ?? null) !== (orig.uavkortetDagpengegrunnlag ?? null) &&
-    linje.inntektType !== 'DP_FF'
+    linje.dagpengerType !== 'DP_FF'
   ) {
     const fra = orig.uavkortetDagpengegrunnlag != null ? formatCurrencyNok(orig.uavkortetDagpengegrunnlag) : '–'
     const til = linje.uavkortetDagpengegrunnlag != null ? formatCurrencyNok(linje.uavkortetDagpengegrunnlag) : '–'
@@ -303,7 +309,7 @@ function dagpengerEndringer(linje: DagpengerLinjeState, opptjeningstyper: Opptje
     const til = linje.utbetalteDagpenger != null ? formatCurrencyNok(linje.utbetalteDagpenger) : '–'
     felter.push(`Utbetalte dagpenger: ${fra} → ${til}`)
   }
-  if ((linje.ferietillegg ?? null) !== (orig.ferietillegg ?? null) && linje.inntektType !== 'DP_FF') {
+  if ((linje.ferietillegg ?? null) !== (orig.ferietillegg ?? null) && linje.dagpengerType !== 'DP_FF') {
     const fra = orig.ferietillegg != null ? formatCurrencyNok(orig.ferietillegg) : '–'
     const til = linje.ferietillegg != null ? formatCurrencyNok(linje.ferietillegg) : '–'
     felter.push(`Ferietillegg: ${fra} → ${til}`)
@@ -323,9 +329,9 @@ function forstegangstjenesteEndringer(
   if (!linje._original) return []
   const orig = linje._original
   const felter: string[] = []
-  if (linje.inntektType !== orig.inntektType) {
+  if (linje.tjenesteType !== orig.tjenesteType) {
     felter.push(
-      `Type: ${typeLabel(opptjeningstyper, orig.inntektType)} → ${typeLabel(opptjeningstyper, linje.inntektType)}`,
+      `Type: ${typeLabel(opptjeningstyper, orig.tjenesteType)} → ${typeLabel(opptjeningstyper, linje.tjenesteType)}`,
     )
   }
   if ((linje.periodeType ?? null) !== (orig.periodeType ?? null)) {
@@ -356,31 +362,31 @@ function toInntektBackend(l: InntektLinjeState, fnr: string): InntektBackendDTO 
 }
 
 function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBackendDTO {
-  const isFF = l.inntektType === 'DP_FF'
+  const isFF = l.dagpengerType === 'DP_FF'
   return {
-    dagpengerId: l.opptjeningId ?? null,
+    dagpengerId: l.dagpengerId ?? null,
     fnr,
-    dagpengerType: l.inntektType,
+    dagpengerType: l.dagpengerType,
     rapportType: null,
     kilde: l.kilde ?? null,
     ar: Number(l.ar),
-    utbetalteDagpenger: l.utbetalteDagpenger != null ? String(Number(l.utbetalteDagpenger)) : null,
+    utbetalteDagpenger: l.utbetalteDagpenger != null ? Number(l.utbetalteDagpenger) : null,
     uavkortetDagpengegrunnlag: isFF
       ? null
       : l.uavkortetDagpengegrunnlag != null
-        ? String(Number(l.uavkortetDagpengegrunnlag))
+        ? Number(l.uavkortetDagpengegrunnlag)
         : null,
-    ferietillegg: isFF ? null : l.ferietillegg != null ? String(Number(l.ferietillegg)) : null,
-    barnetillegg: l.barnetillegg != null ? String(Number(l.barnetillegg)) : null,
+    ferietillegg: isFF ? null : l.ferietillegg != null ? Number(l.ferietillegg) : null,
+    barnetillegg: l.barnetillegg != null ? Number(l.barnetillegg) : null,
   }
 }
 
 function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
   return {
-    omsorgId: l.opptjeningId ?? null,
+    omsorgId: l.omsorgId ?? null,
     fnr,
     fnrOmsorgFor: null,
-    omsorgType: l.inntektType,
+    omsorgType: l.omsorgType,
     kilde: l.kilde ?? null,
     ar: Number(l.ar),
   }
@@ -388,7 +394,7 @@ function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
 
 function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: string): ForstegangstjenesteBackendDTO {
   return {
-    forstegangstjenesteId: l.opptjeningId ?? null,
+    forstegangstjenesteId: l.forstegangstjenesteId ?? null,
     fnr,
     kilde: l.kilde ?? null,
     rapportType: null,
@@ -398,12 +404,60 @@ function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: str
       {
         forstegangstjenestePeriodeId: null,
         periodeType: l.periodeType ?? null,
-        tjenesteType: l.inntektType,
-        fomDato: l.fomDato,
-        tomDato: l.tomDato,
+        tjenesteType: l.tjenesteType,
+        fomDato: l.fomDato || null,
+        tomDato: l.tomDato || null,
       },
     ],
   }
+}
+
+function inntektGrunnlagTilViewModel(dto: InntektBackendDTO): InntektDTO {
+  return {
+    inntektId: dto.inntektId ?? null,
+    kilde: dto.kilde ?? null,
+    kommune: dto.kommune ?? null,
+    inntektAr: dto.inntektAr ?? 0,
+    belop: dto.belop != null ? Number(dto.belop) : null,
+    inntektType: dto.inntektType ?? '',
+  }
+}
+
+function dagpengerGrunnlagTilViewModel(dto: DagpengerBackendDTO): DagpengerDTO {
+  return {
+    dagpengerId: dto.dagpengerId ?? null,
+    kilde: dto.kilde ?? null,
+    ar: dto.ar ?? 0,
+    dagpengerType: dto.dagpengerType ?? '',
+    uavkortetDagpengegrunnlag: dto.uavkortetDagpengegrunnlag ?? null,
+    utbetalteDagpenger: dto.utbetalteDagpenger ?? null,
+    ferietillegg: dto.ferietillegg ?? null,
+    barnetillegg: dto.barnetillegg ?? null,
+  }
+}
+
+function omsorgGrunnlagTilViewModel(dto: OmsorgBackendDTO): OmsorgDTO {
+  return {
+    omsorgId: dto.omsorgId ?? null,
+    kilde: dto.kilde ?? null,
+    ar: dto.ar ?? 0,
+    omsorgType: dto.omsorgType ?? '',
+    belop: null,
+  }
+}
+
+function forstegangstjenesteGrunnlagTilViewModel(
+  dto: ForstegangstjenesteBackendDTO | null | undefined,
+): ForstegangstjenesteDTO[] {
+  if (!dto) return []
+  return (dto.forstegangstjenestePeriodeListe ?? []).map(periode => ({
+    forstegangstjenesteId: dto.forstegangstjenesteId ?? null,
+    kilde: dto.kilde ?? null,
+    tjenesteType: periode.tjenesteType ?? '',
+    periodeType: periode.periodeType ?? null,
+    fomDato: periode.fomDato ?? '',
+    tomDato: periode.tomDato ?? '',
+  }))
 }
 
 function StatusTag({ status }: { status: LinjeStatus }) {
@@ -640,7 +694,7 @@ function DagpengerSeksjon({
   onOppdater: (id: string, felt: keyof DagpengerDTO, verdi: string) => void
 }) {
   const sortert = useMemo(() => [...linjer].sort((a, b) => a.ar - b.ar), [linjer])
-  const erFF = (inntektType: string) => inntektType === 'DP_FF'
+  const erFF = (dagpengerType: string) => dagpengerType === 'DP_FF'
 
   return (
     <Box>
@@ -668,20 +722,20 @@ function DagpengerSeksjon({
             <Table.Body>
               {sortert.map(linje => {
                 const erSlettet = linje._status === 'deleted'
-                const ff = erFF(linje.inntektType)
+                const ff = erFF(linje.dagpengerType)
                 return (
                   <Table.Row key={linje._id} style={erSlettet ? { opacity: 0.45 } : undefined}>
                     <Table.DataCell>
                       {readOnly ? (
-                        (opptjeningstyper.dagpenger.typer.find(t => t.code === linje.inntektType)?.description ??
-                        linje.inntektType)
+                        (opptjeningstyper.dagpenger.typer.find(t => t.code === linje.dagpengerType)?.description ??
+                        linje.dagpengerType)
                       ) : (
                         <Select
                           label="Type"
                           size="small"
                           hideLabel
-                          value={linje.inntektType}
-                          onChange={e => onOppdater(linje._id, 'inntektType', e.target.value)}
+                          value={linje.dagpengerType}
+                          onChange={e => onOppdater(linje._id, 'dagpengerType', e.target.value)}
                           disabled={erSlettet}
                           style={{ minWidth: '14rem' }}
                         >
@@ -871,8 +925,8 @@ function OmsorgSeksjon({
               return (
                 <Table.Row key={linje._id} style={erSlettet ? { opacity: 0.45 } : undefined}>
                   <Table.DataCell>
-                    {opptjeningstyper.omsorg.typer.find(t => t.code === linje.inntektType)?.description ??
-                      linje.inntektType}
+                    {opptjeningstyper.omsorg.typer.find(t => t.code === linje.omsorgType)?.description ??
+                      linje.omsorgType}
                   </Table.DataCell>
                   <Table.DataCell>{linje.ar}</Table.DataCell>
                   <Table.DataCell>{linje.belop != null ? formatCurrencyNok(linje.belop) : '–'}</Table.DataCell>
@@ -981,15 +1035,15 @@ function ForstegangstjenesteSeksjon({
                   <Table.Row key={linje._id} style={erSlettet ? { opacity: 0.45 } : undefined}>
                     <Table.DataCell>
                       {readOnly ? (
-                        (opptjeningstyper.forstegangstjeneste.typer.find(t => t.code === linje.inntektType)
-                          ?.description ?? linje.inntektType)
+                        (opptjeningstyper.forstegangstjeneste.typer.find(t => t.code === linje.tjenesteType)
+                          ?.description ?? linje.tjenesteType)
                       ) : (
                         <Select
                           label="Type"
                           size="small"
                           hideLabel
-                          value={linje.inntektType}
-                          onChange={e => onOppdater(linje._id, 'inntektType', e.target.value)}
+                          value={linje.tjenesteType}
+                          onChange={e => onOppdater(linje._id, 'tjenesteType', e.target.value)}
                           disabled={erSlettet}
                           style={{ minWidth: '12rem' }}
                         >
@@ -1095,7 +1149,7 @@ function ForstegangstjenesteSeksjon({
 }
 
 export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, opptjeningstyper, navident, readOnly } = loaderData
+  const { grunnlag, opptjeningstyper, navident, readOnly } = loaderData
   const { errors } = actionData || {}
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
   const navigation = useNavigation()
@@ -1111,30 +1165,22 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
   const grunnlagDto = grunnlag.opptjeningsGrunnlagDto
 
   const [inntektLinjer, setInntektLinjer] = useState<InntektLinjeState[]>(() => {
-    const fraVurdering = vurdering?.inntektListe ?? []
-    if (fraVurdering.length > 0) return fraVurdering.map(tilLinjeState)
-    const fraGrunnlag = grunnlagDto?.inntektListe ?? []
+    const fraGrunnlag = (grunnlagDto?.inntektListe ?? []).map(inntektGrunnlagTilViewModel)
     if (fraGrunnlag.length > 0) return fraGrunnlag.map(tilLinjeState)
     return [nyInntektLinje(defaultInntektType, navident)]
   })
 
-  const [dagpengerLinjer, setDagpengerLinjer] = useState<DagpengerLinjeState[]>(() => {
-    const fraVurdering = vurdering?.dagpengerListe ?? []
-    if (fraVurdering.length > 0) return fraVurdering.map(tilLinjeState)
-    return (grunnlagDto?.dagpengerListe ?? []).map(tilLinjeState)
-  })
+  const [dagpengerLinjer, setDagpengerLinjer] = useState<DagpengerLinjeState[]>(() =>
+    (grunnlagDto?.dagpengerListe ?? []).map(dagpengerGrunnlagTilViewModel).map(tilLinjeState),
+  )
 
-  const [omsorgLinjer, setOmsorgLinjer] = useState<OmsorgLinjeState[]>(() => {
-    const fraVurdering = vurdering?.omsorgListe ?? []
-    if (fraVurdering.length > 0) return fraVurdering.map(tilLinjeState)
-    return (grunnlagDto?.omsorgListe ?? []).map(tilLinjeState)
-  })
+  const [omsorgLinjer, setOmsorgLinjer] = useState<OmsorgLinjeState[]>(() =>
+    (grunnlagDto?.omsorgListe ?? []).map(omsorgGrunnlagTilViewModel).map(tilLinjeState),
+  )
 
-  const [forstegangstjenesteLinjer, setForstegangstjenesteLinjer] = useState<ForstegangstjenesteLinjeState[]>(() => {
-    const fraVurdering = vurdering?.forstegangstjenesteListe ?? []
-    if (fraVurdering.length > 0) return fraVurdering.map(tilLinjeState)
-    return (grunnlagDto?.forstegangstjenesteListe ?? []).map(tilLinjeState)
-  })
+  const [forstegangstjenesteLinjer, setForstegangstjenesteLinjer] = useState<ForstegangstjenesteLinjeState[]>(() =>
+    forstegangstjenesteGrunnlagTilViewModel(grunnlagDto?.forstegangstjeneste).map(tilLinjeState),
+  )
 
   const slettInntektLinje = (id: string) =>
     setInntektLinjer(prev => {
@@ -1183,7 +1229,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       prev.map(l => {
         if (l._id !== id) return l
         const restored = { ...l, _status: 'original' as const }
-        return { ...restored, _status: beregnStatus(restored, ['inntektType', 'ar', 'belop', 'kilde']) }
+        return { ...restored, _status: beregnStatus(restored, ['omsorgType', 'ar', 'belop', 'kilde']) }
       }),
     )
 
@@ -1239,11 +1285,11 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           'barnetillegg',
         ]
         let updated: DagpengerLinjeState
-        if (felt === 'inntektType') {
-          if (l._original && verdi === l._original.inntektType) {
+        if (felt === 'dagpengerType') {
+          if (l._original && verdi === l._original.dagpengerType) {
             updated = { ...l, ...l._original, _id: l._id, _status: l._status, _original: l._original }
           } else {
-            updated = { ...l, inntektType: verdi }
+            updated = { ...l, dagpengerType: verdi }
           }
         } else if (felt === 'ar') {
           const n = Number(verdi.replace(/\D/g, ''))
@@ -1318,12 +1364,12 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
             id: l._id,
             kategori: 'Dagpenger',
             label: [
-              `${typeLabel(opptjeningstyper, l.inntektType)} (${l.ar})`,
-              l.inntektType !== 'DP_FF' &&
+              `${typeLabel(opptjeningstyper, l.dagpengerType)} (${l.ar})`,
+              l.dagpengerType !== 'DP_FF' &&
                 l.uavkortetDagpengegrunnlag != null &&
                 `grunnlag: ${formatCurrencyNok(l.uavkortetDagpengegrunnlag)}`,
               l.utbetalteDagpenger != null && `utbetalt: ${formatCurrencyNok(l.utbetalteDagpenger)}`,
-              l.inntektType !== 'DP_FF' && l.ferietillegg != null && `ferie: ${formatCurrencyNok(l.ferietillegg)}`,
+              l.dagpengerType !== 'DP_FF' && l.ferietillegg != null && `ferie: ${formatCurrencyNok(l.ferietillegg)}`,
               l.barnetillegg != null && `barn: ${formatCurrencyNok(l.barnetillegg)}`,
             ]
               .filter(Boolean)
@@ -1334,7 +1380,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Førstegangstjeneste',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fomDato || '?'} til ${l.tomDato || '?'}`,
+            label: `${typeLabel(opptjeningstyper, l.tjenesteType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fomDato || '?'} til ${l.tomDato || '?'}`,
           })),
       ],
       endrede: [
@@ -1351,7 +1397,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Dagpenger',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.ar})`,
+            label: `${typeLabel(opptjeningstyper, l.dagpengerType)} (${l.ar})`,
             endringer: dagpengerEndringer(l, opptjeningstyper),
           })),
         ...forstegangstjenesteLinjer
@@ -1359,7 +1405,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Førstegangstjeneste',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.fomDato?.slice(0, 4) ?? '?'})`,
+            label: `${typeLabel(opptjeningstyper, l.tjenesteType)} (${l.fomDato?.slice(0, 4) ?? '?'})`,
             endringer: forstegangstjenesteEndringer(l, opptjeningstyper),
           })),
       ],
@@ -1377,12 +1423,12 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
             id: l._id,
             kategori: 'Dagpenger',
             label: [
-              `${typeLabel(opptjeningstyper, l.inntektType)} (${l.ar})`,
-              l.inntektType !== 'DP_FF' &&
+              `${typeLabel(opptjeningstyper, l.dagpengerType)} (${l.ar})`,
+              l.dagpengerType !== 'DP_FF' &&
                 l.uavkortetDagpengegrunnlag != null &&
                 `grunnlag: ${formatCurrencyNok(l.uavkortetDagpengegrunnlag)}`,
               l.utbetalteDagpenger != null && `utbetalt: ${formatCurrencyNok(l.utbetalteDagpenger)}`,
-              l.inntektType !== 'DP_FF' && l.ferietillegg != null && `ferie: ${formatCurrencyNok(l.ferietillegg)}`,
+              l.dagpengerType !== 'DP_FF' && l.ferietillegg != null && `ferie: ${formatCurrencyNok(l.ferietillegg)}`,
               l.barnetillegg != null && `barn: ${formatCurrencyNok(l.barnetillegg)}`,
             ]
               .filter(Boolean)
@@ -1393,14 +1439,14 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Omsorg',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)} (${l.ar})${l.belop != null ? ` – ${formatCurrencyNok(l.belop)}` : ''}`,
+            label: `${typeLabel(opptjeningstyper, l.omsorgType)} (${l.ar})${l.belop != null ? ` – ${formatCurrencyNok(l.belop)}` : ''}`,
           })),
         ...forstegangstjenesteLinjer
           .filter(l => l._status === 'deleted')
           .map(l => ({
             id: l._id,
             kategori: 'Førstegangstjeneste',
-            label: `${typeLabel(opptjeningstyper, l.inntektType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fomDato || '?'} til ${l.tomDato || '?'}`,
+            label: `${typeLabel(opptjeningstyper, l.tjenesteType)}${l.periodeType ? ` / ${typeLabel(opptjeningstyper, l.periodeType)}` : ''} – ${l.fomDato || '?'} til ${l.tomDato || '?'}`,
           })),
       ],
     }),
@@ -1512,12 +1558,24 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         </Heading>
 
         {readOnly && (
-          <Alert variant="info">
-            Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan gjøre endringer i Opptjeningsregisteret.
-          </Alert>
+          <LocalAlert status="warning">
+            <LocalAlert.Header>
+              <LocalAlert.Title>Mangler rolle tilgang</LocalAlert.Title>
+            </LocalAlert.Header>
+            <LocalAlert.Content>
+              Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan gjøre endringer i Opptjeningsregisteret.
+            </LocalAlert.Content>
+          </LocalAlert>
         )}
 
-        {errors?._form && <Alert variant="error">{errors._form}</Alert>}
+        {errors?._form && (
+          <LocalAlert status="error">
+            <LocalAlert.Header>
+              <LocalAlert.Title>Feilmelding</LocalAlert.Title>
+            </LocalAlert.Header>
+            <LocalAlert.Content>{errors._form}</LocalAlert.Content>
+          </LocalAlert>
+        )}
 
         {readOnly ? (
           seksjoner
@@ -1557,64 +1615,68 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
               {seksjoner}
 
               {harEndringer && (
-                <Alert variant="info">
-                  <Heading size="xsmall" level="3" spacing>
-                    Endringer som vil bli lagret
-                  </Heading>
-                  <VStack gap="space-12">
-                    {endringSummary.nye.length > 0 && (
-                      <div>
-                        <strong>Nye linjer ({endringSummary.nye.length})</strong>
-                        <ul>
-                          {endringSummary.nye.map(item => (
-                            <li key={item.id}>
-                              {item.kategori}: {item.label}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {endringSummary.endrede.length > 0 && (
-                      <div>
-                        <strong>Endrede linjer ({endringSummary.endrede.length})</strong>
-                        <ul>
-                          {endringSummary.endrede.map(item => (
-                            <li key={item.id}>
-                              {item.kategori}: {item.label}
-                              {item.endringer && item.endringer.length > 0 && (
-                                <ul>
-                                  {item.endringer.map(e => (
-                                    <li key={e}>{e}</li>
-                                  ))}
-                                </ul>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {endringSummary.slettede.length > 0 && (
-                      <div>
-                        <strong>Slettede linjer ({endringSummary.slettede.length})</strong>
-                        <ul>
-                          {endringSummary.slettede.map(item => (
-                            <li key={item.id}>
-                              {item.kategori}: {item.label}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </VStack>
-                </Alert>
+                <InfoCard data-color="info">
+                  <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+                    <InfoCard.Title>Endringer som vil bli lagret</InfoCard.Title>
+                  </InfoCard.Header>
+                  <InfoCard.Content>
+                    <VStack gap="space-12">
+                      {endringSummary.nye.length > 0 && (
+                        <div>
+                          <strong>Nye linjer ({endringSummary.nye.length})</strong>
+                          <ul>
+                            {endringSummary.nye.map(item => (
+                              <li key={item.id}>
+                                {item.kategori}: {item.label}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {endringSummary.endrede.length > 0 && (
+                        <div>
+                          <strong>Endrede linjer ({endringSummary.endrede.length})</strong>
+                          <ul>
+                            {endringSummary.endrede.map(item => (
+                              <li key={item.id}>
+                                {item.kategori}: {item.label}
+                                {item.endringer && item.endringer.length > 0 && (
+                                  <ul>
+                                    {item.endringer.map(e => (
+                                      <li key={e}>{e}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {endringSummary.slettede.length > 0 && (
+                        <div>
+                          <strong>Slettede linjer ({endringSummary.slettede.length})</strong>
+                          <ul>
+                            {endringSummary.slettede.map(item => (
+                              <li key={item.id}>
+                                {item.kategori}: {item.label}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </VStack>
+                  </InfoCard.Content>
+                </InfoCard>
               )}
 
               <input type="hidden" name="payload" value={payload} />
 
-              {sakIdFeil && <Alert variant="error">{sakIdFeil}</Alert>}
+              {sakIdFeil && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
 
               {hasAttemptedSubmit && !harEndringer && (
-                <Alert variant="warning">Ingen endringer er registrert. Gjør minst én endring før du lagrer.</Alert>
+                <InlineMessage status="error">
+                  Ingen endringer er registrert. Gjør minst én endring før du lagrer.
+                </InlineMessage>
               )}
 
               <HStack gap="space-8">

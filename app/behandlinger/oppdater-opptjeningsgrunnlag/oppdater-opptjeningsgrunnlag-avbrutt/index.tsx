@@ -17,9 +17,7 @@ export default function OppdaterOpptjeningsgrunnlagAvbruttRoute() {
           Behandlingen er avbrutt
         </Heading>
         <Alert variant="warning">
-          <BodyShort>
-            Oppdatering av pensjonsgivende inntekt for behandling {behandling.behandlingId} er avbrutt.
-          </BodyShort>
+          <BodyShort>Oppdatering av opptjeningsgrunnlag for behandling {behandling.behandlingId} er avbrutt.</BodyShort>
         </Alert>
       </VStack>
     </Page.Block>

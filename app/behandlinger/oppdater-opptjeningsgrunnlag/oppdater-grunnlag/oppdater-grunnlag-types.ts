@@ -25,10 +25,10 @@ export type InntektDTO = {
 }
 
 export type DagpengerDTO = {
-  opptjeningId?: number | null
+  dagpengerId?: number | null
   kilde?: string | null
   ar: number
-  inntektType: string
+  dagpengerType: string
   uavkortetDagpengegrunnlag?: number | null
   utbetalteDagpenger?: number | null
   ferietillegg?: number | null
@@ -36,17 +36,17 @@ export type DagpengerDTO = {
 }
 
 export type OmsorgDTO = {
-  opptjeningId?: number | null
+  omsorgId?: number | null
   kilde?: string | null
   ar: number
-  inntektType: string
+  omsorgType: string
   belop?: number | null
 }
 
 export type ForstegangstjenesteDTO = {
-  opptjeningId?: number | null
+  forstegangstjenesteId?: number | null
   kilde?: string | null
-  inntektType: string
+  tjenesteType: string
   periodeType?: string | null
   fomDato: string
   tomDato: string
@@ -62,11 +62,11 @@ export type OppdaterOpptjeningGrunnlag = {
   saker?: OppdaterPgiSakValg[]
   kanOppretteGenerellSak?: boolean
   opptjeningsGrunnlagDto?: {
-    fnr: string
-    inntektListe?: InntektDTO[]
-    dagpengerListe?: DagpengerDTO[]
-    omsorgListe?: OmsorgDTO[]
-    forstegangstjenesteListe?: ForstegangstjenesteDTO[]
+    fnr: string | null
+    inntektListe: InntektBackendDTO[]
+    omsorgListe: OmsorgBackendDTO[]
+    dagpengerListe: DagpengerBackendDTO[]
+    forstegangstjeneste?: ForstegangstjenesteBackendDTO | null
   }
 }
 
@@ -79,12 +79,11 @@ export type OppdaterOpptjeningVurdering = {
   forstegangstjenesteEndringer?: { endringstype: Endringstype; forstegangstjeneste: ForstegangstjenesteBackendDTO }[]
 }
 
-export type HentetVurdering = {
-  sakId?: number
-  inntektListe?: InntektDTO[]
-  dagpengerListe?: DagpengerDTO[]
-  omsorgListe?: OmsorgDTO[]
-  forstegangstjenesteListe?: ForstegangstjenesteDTO[]
+export type VurderingResponse = {
+  vurdering: string | null
+  vurdertTidspunkt?: string | null
+  vurdertAvBrukerId?: string | null
+  vurdertAvBrukerNavn?: string | null
 }
 
 export type Endringstype = 'OPPRETT' | 'OPPDATER' | 'SLETT'
@@ -107,10 +106,10 @@ export type DagpengerBackendDTO = {
   rapportType?: string | null
   kilde?: string | null
   ar: number
-  utbetalteDagpenger?: string | null
-  uavkortetDagpengegrunnlag?: string | null
-  ferietillegg?: string | null
-  barnetillegg?: string | null
+  utbetalteDagpenger?: number | null
+  uavkortetDagpengegrunnlag?: number | null
+  ferietillegg?: number | null
+  barnetillegg?: number | null
 }
 
 export type OmsorgBackendDTO = {
@@ -133,7 +132,7 @@ export type ForstegangstjenesteBackendDTO = {
     forstegangstjenestePeriodeId?: number | null
     periodeType?: string | null
     tjenesteType: string
-    fomDato: string
-    tomDato: string
+    fomDato?: string | null
+    tomDato?: string | null
   }[]
 }

@@ -145,7 +145,7 @@ export default function AttesterRoute({ loaderData, actionData }: Route.Componen
   return (
     <Page.Block gutters className={styles.page}>
       <Heading size="medium" level="2">
-        Attester oppdatering av pensjonsgivende inntekt
+        Attester oppdatering av opptjeningsgrunnlag
       </Heading>
 
       <VStack gap="space-32">
