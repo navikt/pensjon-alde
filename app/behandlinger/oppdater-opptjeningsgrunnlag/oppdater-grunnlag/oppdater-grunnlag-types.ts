@@ -40,7 +40,7 @@ export type OmsorgDTO = {
   kilde?: string | null
   ar: number
   omsorgType: string
-  belop?: number | null
+  fnrOmsorgFor?: string | null
 }
 
 export type ForstegangstjenesteDTO = {

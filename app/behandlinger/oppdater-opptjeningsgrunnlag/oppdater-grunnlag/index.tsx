@@ -23,6 +23,7 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import { isApiError } from '~/api/error.types'
 import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import styles from '~/common.module.css'
+import { Fnr } from '~/components/Fnr'
 import { userContext } from '~/context/user-context'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
@@ -385,7 +386,7 @@ function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
   return {
     omsorgId: l.omsorgId ?? null,
     fnr,
-    fnrOmsorgFor: null,
+    fnrOmsorgFor: l.fnrOmsorgFor ?? null,
     omsorgType: l.omsorgType,
     kilde: l.kilde ?? null,
     ar: Number(l.ar),
@@ -442,7 +443,7 @@ function omsorgGrunnlagTilViewModel(dto: OmsorgBackendDTO): OmsorgDTO {
     kilde: dto.kilde ?? null,
     ar: dto.ar ?? 0,
     omsorgType: dto.omsorgType ?? '',
-    belop: null,
+    fnrOmsorgFor: dto.fnrOmsorgFor ?? null,
   }
 }
 
@@ -913,7 +914,7 @@ function OmsorgSeksjon({
             <Table.Row>
               <Table.HeaderCell>Type</Table.HeaderCell>
               <Table.HeaderCell>År</Table.HeaderCell>
-              <Table.HeaderCell>Beløp</Table.HeaderCell>
+              <Table.HeaderCell>Omsorg for (fnr)</Table.HeaderCell>
               <Table.HeaderCell>Kilde</Table.HeaderCell>
               {!readOnly && <Table.HeaderCell>Status</Table.HeaderCell>}
               {!readOnly && <Table.HeaderCell />}
@@ -929,7 +930,7 @@ function OmsorgSeksjon({
                       linje.omsorgType}
                   </Table.DataCell>
                   <Table.DataCell>{linje.ar}</Table.DataCell>
-                  <Table.DataCell>{linje.belop != null ? formatCurrencyNok(linje.belop) : '–'}</Table.DataCell>
+                  <Table.DataCell>{linje.fnrOmsorgFor ? <Fnr value={linje.fnrOmsorgFor} /> : '–'}</Table.DataCell>
                   <Table.DataCell>{linje.kilde ?? '–'}</Table.DataCell>
                   {!readOnly && (
                     <Table.DataCell>
@@ -1229,7 +1230,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       prev.map(l => {
         if (l._id !== id) return l
         const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
-        return { ...restored, _status: beregnStatus(restored, ['omsorgType', 'ar', 'belop']) }
+        return { ...restored, _status: beregnStatus(restored, ['omsorgType', 'ar', 'fnrOmsorgFor']) }
       }),
     )
 
@@ -1439,7 +1440,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           .map(l => ({
             id: l._id,
             kategori: 'Omsorg',
-            label: `${typeLabel(opptjeningstyper, l.omsorgType)} (${l.ar})${l.belop != null ? ` – ${formatCurrencyNok(l.belop)}` : ''}`,
+            label: `${typeLabel(opptjeningstyper, l.omsorgType)} (${l.ar})${l.fnrOmsorgFor ? ` – omsorg for ${l.fnrOmsorgFor}` : ''}`,
           })),
         ...forstegangstjenesteLinjer
           .filter(l => l._status === 'deleted')
