@@ -1194,7 +1194,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     setInntektLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const restored = { ...l, _status: 'original' as const }
+        const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
         return { ...restored, _status: beregnStatus(restored, INNTEKT_FELTER) }
       }),
     )
@@ -1211,7 +1211,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     setDagpengerLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const restored = { ...l, _status: 'original' as const }
+        const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
         return { ...restored, _status: beregnStatus(restored, DAGPENGER_FELTER) }
       }),
     )
@@ -1228,8 +1228,8 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     setOmsorgLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const restored = { ...l, _status: 'original' as const }
-        return { ...restored, _status: beregnStatus(restored, ['omsorgType', 'ar', 'belop', 'kilde']) }
+        const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
+        return { ...restored, _status: beregnStatus(restored, ['omsorgType', 'ar', 'belop']) }
       }),
     )
 
@@ -1245,7 +1245,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     setForstegangstjenesteLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const restored = { ...l, _status: 'original' as const }
+        const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
         return { ...restored, _status: beregnStatus(restored, FORSTEGANGSTJENESTE_FELTER) }
       }),
     )
