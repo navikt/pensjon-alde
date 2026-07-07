@@ -204,8 +204,8 @@ const handlers = [
     return HttpResponse.json({ ok: true })
   }),
 
-  // GET /api/saksbehandling/oppdater-pgi/opptjeningstyper
-  http.get('*/api/saksbehandling/oppdater-pgi/opptjeningstyper', ({ request }) => {
+  // GET /api/saksbehandling/oppdater-opptjeningsgrunnlag/opptjeningstyper
+  http.get('*/api/saksbehandling/oppdater-opptjeningsgrunnlag/opptjeningstyper', ({ request }) => {
     console.log(`🎯 MSW intercepted request to: ${request.url}`)
     const mockData = loadMockData('opptjeningstyper.json')
     if (mockData) {
