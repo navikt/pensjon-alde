@@ -1,11 +1,11 @@
 import {
-  Alert,
   BodyLong,
   BodyShort,
   Button,
   DatePicker,
   Heading,
   HGrid,
+  InlineMessage,
   Radio,
   RadioGroup,
   Select,
@@ -531,7 +531,7 @@ function AfpLivsvarigVurdering(
                   </VStack>
                 )}
 
-                {errors?._form && <Alert variant="error">{errors._form}</Alert>}
+                {errors?._form && <InlineMessage status="error">{errors._form}</InlineMessage>}
 
                 <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
                   Lagre vurdering

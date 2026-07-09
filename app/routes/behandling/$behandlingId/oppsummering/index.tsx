@@ -1,4 +1,5 @@
-import { Alert, Box, Detail, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
+import { InformationSquareIcon } from '@navikt/aksel-icons'
+import { Box, Heading, InfoCard, Link, Page, VStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
@@ -82,15 +83,18 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
 
   if (aktiviteter.length === 0) {
     return (
-      <Box paddingBlock="space-32 space-0" style={{ display: 'flex', justifyContent: 'center' }}>
-        <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
-          <Heading spacing size="small" level="3">
-            Ingen vurdering tatt
-          </Heading>
+      <Page.Block gutters className={commonStyles.behandlingPage}>
+        <Heading level="1" size="large" spacing>
+          Oppsummering av behandlingen
+        </Heading>
 
-          <Detail>Viser bare de aktivitetene som har blitt vurdert</Detail>
-        </Alert>
-      </Box>
+        <InfoCard data-color="info" as="section" aria-label="Ingen vurdering tatt">
+          <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+            <InfoCard.Title>Ingen vurdering tatt</InfoCard.Title>
+          </InfoCard.Header>
+          <InfoCard.Content>Viser bare de aktivitetene som har blitt vurdert</InfoCard.Content>
+        </InfoCard>
+      </Page.Block>
     )
   }
 
@@ -99,15 +103,19 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
       <Heading level="1" size="large" spacing>
         Oppsummering av behandlingen
       </Heading>
+
       {behandlingErFullført && (
-        <Alert variant="info" size="medium">
-          <HStack gap="space-16">
-            Behandlingen er fullført. Vi kan ikke behandle denne videre og har samlet en oppsummering på hva som har
-            blitt utført.
+        <InfoCard data-color="info" as="section" aria-label="Behandlingen er fullført">
+          <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+            <InfoCard.Title>Behandlingen er fullført</InfoCard.Title>
+          </InfoCard.Header>
+          <InfoCard.Content>
+            Vi kan ikke behandle denne videre og har samlet en oppsummering på hva som har blitt utført.{' '}
             <Link href={loaderData.pensjonsoversiktUrl}>Pensjonsoversikt</Link>
-          </HStack>
-        </Alert>
+          </InfoCard.Content>
+        </InfoCard>
       )}
+
       {aktiviteter.map(aktivitet => {
         const Component = components.get(aktivitet.handlerName)
 

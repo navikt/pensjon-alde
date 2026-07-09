@@ -1,6 +1,5 @@
 import { PersonIcon } from '@navikt/aksel-icons'
 import {
-  Alert,
   BodyShort,
   Button,
   DatePicker,
@@ -41,7 +40,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   })
 
   const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
-
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
   return {
@@ -198,9 +196,9 @@ function VurdereSamboerComponent({
             */}
 
             {errors?._form && (
-              <Alert variant="error" className="mb-4">
+              <InlineMessage status="error" className="mb-4">
                 {errors._form}
-              </Alert>
+              </InlineMessage>
             )}
 
             {!readOnly && (
@@ -230,6 +228,7 @@ function VurdereSamboerComponent({
           {formatDateToNorwegian(kravOnsketVirkningsdato)}
         </VStack>
       </AktivitetVurderingLayout.Section>
+
       <AktivitetVurderingLayout.Section>
         <VStack>
           <Heading size="xsmall" level="2">
@@ -241,6 +240,7 @@ function VurdereSamboerComponent({
           {samboer.navn.etternavn.toUpperCase()}, {samboer.navn.fornavn} {samboer.navn.mellomnavn}
         </VStack>
       </AktivitetVurderingLayout.Section>
+
       <AktivitetVurderingLayout.Section>
         <HStack gap="space-32">
           <VStack gap="space-4">
@@ -296,6 +296,7 @@ function VurdereSamboerComponent({
           </VStack>
         </HStack>
       </AktivitetVurderingLayout.Section>
+
       <AktivitetVurderingLayout.Section>
         <HGrid gap="space-32" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">
           <AddressWrapper
@@ -305,7 +306,7 @@ function VurdereSamboerComponent({
             {samboer.bostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={samboer.bostedsadresser} />
             ) : (
-              <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+              <InlineMessage status="info">Ingen bostedsadresser funnet.</InlineMessage>
             )}
           </AddressWrapper>
 
@@ -316,7 +317,7 @@ function VurdereSamboerComponent({
             {sokersBostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={sokersBostedsadresser} />
             ) : (
-              <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+              <InlineMessage status="info">Ingen bostedsadresser funnet.</InlineMessage>
             )}
           </AddressWrapper>
         </HGrid>

@@ -187,7 +187,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
   const stepperContainerRef = useRef<HTMLDivElement>(null)
-  const revalidator = useRevalidator()
+  const { revalidate } = useRevalidator()
   const ref = useRef<HTMLDialogElement>(null)
 
   const root = useRouteLoaderData<typeof rootLoader>('root')
@@ -268,7 +268,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       let pollCount = 0
       const intervalId = setInterval(() => {
         pollCount++
-        revalidator.revalidate()
+        revalidate()
 
         if (pollCount >= 10) {
           clearInterval(intervalId)
@@ -277,7 +277,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
       return () => clearInterval(intervalId)
     }
-  }, [behandlingJobber, revalidator])
+  }, [behandlingJobber, revalidate])
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {

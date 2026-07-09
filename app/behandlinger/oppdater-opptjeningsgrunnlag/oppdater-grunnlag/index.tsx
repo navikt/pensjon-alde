@@ -24,7 +24,6 @@ import { isApiError } from '~/api/error.types'
 import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import styles from '~/common.module.css'
 import { Fnr } from '~/components/Fnr'
-import { userContext } from '~/context/user-context'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
 import type { Route } from './+types'
@@ -47,6 +46,8 @@ export function meta() {
   return [{ title: 'Oppdater opptjeningsgrunnlag' }]
 }
 
+const KILDE = 'PEN'
+
 const REQUIRED_KOMMUNE: Partial<Record<string, string>> = {
   DIP_JSF: '0301',
   DIP_LON: '0301',
@@ -66,10 +67,9 @@ const REQUIRED_KOMMUNE: Partial<Record<string, string>> = {
   UTE_SEL: '2101',
 }
 
-export async function loader({ params, request, context }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
-  const { navident } = context.get(userContext)
 
   let grunnlag: OppdaterOpptjeningGrunnlag = {}
   let readOnly = false
@@ -93,7 +93,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     ? (JSON.parse(vurderingResponse.vurdering) as OppdaterOpptjeningVurdering)
     : null
 
-  return { grunnlag, savedVurdering, opptjeningstyper, navident, readOnly }
+  return { grunnlag, savedVurdering, opptjeningstyper, readOnly }
 }
 
 export async function action({ params, request }: Route.ActionArgs) {
@@ -203,7 +203,7 @@ const FORSTEGANGSTJENESTE_FELTER: (keyof ForstegangstjenesteDTO)[] = [
   'tomDato',
 ]
 
-function nyInntektLinje(defaultType: string, navident: string): InntektLinjeState {
+function nyInntektLinje(defaultType: string): InntektLinjeState {
   return {
     _id: crypto.randomUUID(),
     _status: 'new',
@@ -211,12 +211,11 @@ function nyInntektLinje(defaultType: string, navident: string): InntektLinjeStat
     inntektType: defaultType,
     inntektAr: new Date().getFullYear(),
     belop: null,
-    kilde: navident,
     kommune: REQUIRED_KOMMUNE[defaultType] ?? null,
   }
 }
 
-function nyDagpengerLinje(navident: string): DagpengerLinjeState {
+function nyDagpengerLinje(): DagpengerLinjeState {
   return {
     _id: crypto.randomUUID(),
     _status: 'new',
@@ -227,11 +226,10 @@ function nyDagpengerLinje(navident: string): DagpengerLinjeState {
     utbetalteDagpenger: null,
     ferietillegg: null,
     barnetillegg: null,
-    kilde: navident,
   }
 }
 
-function nyForstegangstjenesteLinje(navident: string): ForstegangstjenesteLinjeState {
+function nyForstegangstjenesteLinje(): ForstegangstjenesteLinjeState {
   return {
     _id: crypto.randomUUID(),
     _status: 'new',
@@ -240,7 +238,6 @@ function nyForstegangstjenesteLinje(navident: string): ForstegangstjenesteLinjeS
     periodeType: null,
     fomDato: '',
     tomDato: '',
-    kilde: navident,
   }
 }
 
@@ -353,7 +350,7 @@ function toInntektBackend(l: InntektLinjeState, fnr: string): InntektBackendDTO 
   return {
     inntektId: l.inntektId ?? null,
     fnr,
-    kilde: l.kilde ?? null,
+    kilde: KILDE,
     kommune: l.kommune ?? null,
     piMerke: null,
     inntektAr: Number(l.inntektAr),
@@ -369,7 +366,7 @@ function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBacke
     fnr,
     dagpengerType: l.dagpengerType,
     rapportType: null,
-    kilde: l.kilde ?? null,
+    kilde: KILDE,
     ar: Number(l.ar),
     utbetalteDagpenger: l.utbetalteDagpenger != null ? Number(l.utbetalteDagpenger) : null,
     uavkortetDagpengegrunnlag: isFF
@@ -388,7 +385,7 @@ function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
     fnr,
     fnrOmsorgFor: l.fnrOmsorgFor ?? null,
     omsorgType: l.omsorgType,
-    kilde: l.kilde ?? null,
+    kilde: KILDE,
     ar: Number(l.ar),
   }
 }
@@ -397,7 +394,7 @@ function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: str
   return {
     forstegangstjenesteId: l.forstegangstjenesteId ?? null,
     fnr,
-    kilde: l.kilde ?? null,
+    kilde: KILDE,
     rapportType: null,
     tjenestestartDato: l.fomDato || null,
     dimitteringDato: l.tomDato || null,
@@ -416,7 +413,6 @@ function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: str
 function inntektGrunnlagTilViewModel(dto: InntektBackendDTO): InntektDTO {
   return {
     inntektId: dto.inntektId ?? null,
-    kilde: dto.kilde ?? null,
     kommune: dto.kommune ?? null,
     inntektAr: dto.inntektAr ?? 0,
     belop: dto.belop != null ? Number(dto.belop) : null,
@@ -427,7 +423,6 @@ function inntektGrunnlagTilViewModel(dto: InntektBackendDTO): InntektDTO {
 function dagpengerGrunnlagTilViewModel(dto: DagpengerBackendDTO): DagpengerDTO {
   return {
     dagpengerId: dto.dagpengerId ?? null,
-    kilde: dto.kilde ?? null,
     ar: dto.ar ?? 0,
     dagpengerType: dto.dagpengerType ?? '',
     uavkortetDagpengegrunnlag: dto.uavkortetDagpengegrunnlag ?? null,
@@ -440,7 +435,6 @@ function dagpengerGrunnlagTilViewModel(dto: DagpengerBackendDTO): DagpengerDTO {
 function omsorgGrunnlagTilViewModel(dto: OmsorgBackendDTO): OmsorgDTO {
   return {
     omsorgId: dto.omsorgId ?? null,
-    kilde: dto.kilde ?? null,
     ar: dto.ar ?? 0,
     omsorgType: dto.omsorgType ?? '',
     fnrOmsorgFor: dto.fnrOmsorgFor ?? null,
@@ -453,7 +447,6 @@ function forstegangstjenesteGrunnlagTilViewModel(
   if (!dto) return []
   return (dto.forstegangstjenestePeriodeListe ?? []).map(periode => ({
     forstegangstjenesteId: dto.forstegangstjenesteId ?? null,
-    kilde: dto.kilde ?? null,
     tjenesteType: periode.tjenesteType ?? '',
     periodeType: periode.periodeType ?? null,
     fomDato: periode.fomDato ?? '',
@@ -549,7 +542,6 @@ function InntekterSeksjon({
                 <Table.HeaderCell>År</Table.HeaderCell>
                 <Table.HeaderCell>Beløp</Table.HeaderCell>
                 <Table.HeaderCell>Skattekommune</Table.HeaderCell>
-                <Table.HeaderCell>Kilde</Table.HeaderCell>
                 {!readOnly && <Table.HeaderCell>Status</Table.HeaderCell>}
                 {!readOnly && <Table.HeaderCell />}
               </Table.Row>
@@ -635,20 +627,6 @@ function InntekterSeksjon({
                         />
                       )}
                     </Table.DataCell>
-                    <Table.DataCell>
-                      {readOnly ? (
-                        (linje.kilde ?? '–')
-                      ) : (
-                        <TextField
-                          label="Kilde"
-                          hideLabel
-                          value={linje.kilde ?? ''}
-                          size="small"
-                          disabled
-                          style={{ width: '5.5rem' }}
-                        />
-                      )}
-                    </Table.DataCell>
                     {!readOnly && (
                       <Table.DataCell>
                         <StatusTag status={linje._status} />
@@ -715,7 +693,6 @@ function DagpengerSeksjon({
                 <Table.HeaderCell>Utbetalte dagpenger</Table.HeaderCell>
                 <Table.HeaderCell>Ferietillegg</Table.HeaderCell>
                 <Table.HeaderCell>Barnetillegg</Table.HeaderCell>
-                <Table.HeaderCell>Kilde</Table.HeaderCell>
                 {!readOnly && <Table.HeaderCell>Status</Table.HeaderCell>}
                 {!readOnly && <Table.HeaderCell />}
               </Table.Row>
@@ -844,20 +821,6 @@ function DagpengerSeksjon({
                         />
                       )}
                     </Table.DataCell>
-                    <Table.DataCell>
-                      {readOnly ? (
-                        (linje.kilde ?? '–')
-                      ) : (
-                        <TextField
-                          label="Kilde"
-                          hideLabel
-                          value={linje.kilde ?? ''}
-                          size="small"
-                          disabled
-                          style={{ width: '5.5rem' }}
-                        />
-                      )}
-                    </Table.DataCell>
                     {!readOnly && (
                       <Table.DataCell>
                         <StatusTag status={linje._status} />
@@ -915,7 +878,6 @@ function OmsorgSeksjon({
               <Table.HeaderCell>Type</Table.HeaderCell>
               <Table.HeaderCell>År</Table.HeaderCell>
               <Table.HeaderCell>Omsorg for (fnr)</Table.HeaderCell>
-              <Table.HeaderCell>Kilde</Table.HeaderCell>
               {!readOnly && <Table.HeaderCell>Status</Table.HeaderCell>}
               {!readOnly && <Table.HeaderCell />}
             </Table.Row>
@@ -931,7 +893,6 @@ function OmsorgSeksjon({
                   </Table.DataCell>
                   <Table.DataCell>{linje.ar}</Table.DataCell>
                   <Table.DataCell>{linje.fnrOmsorgFor ? <Fnr value={linje.fnrOmsorgFor} /> : '–'}</Table.DataCell>
-                  <Table.DataCell>{linje.kilde ?? '–'}</Table.DataCell>
                   {!readOnly && (
                     <Table.DataCell>
                       <StatusTag status={linje._status} />
@@ -1024,7 +985,6 @@ function ForstegangstjenesteSeksjon({
                 <Table.HeaderCell>Periodetype</Table.HeaderCell>
                 <Table.HeaderCell>FOM</Table.HeaderCell>
                 <Table.HeaderCell>TOM</Table.HeaderCell>
-                <Table.HeaderCell>Kilde</Table.HeaderCell>
                 {!readOnly && <Table.HeaderCell>Status</Table.HeaderCell>}
                 {!readOnly && <Table.HeaderCell />}
               </Table.Row>
@@ -1107,20 +1067,6 @@ function ForstegangstjenesteSeksjon({
                         />
                       )}
                     </Table.DataCell>
-                    <Table.DataCell>
-                      {readOnly ? (
-                        (linje.kilde ?? '–')
-                      ) : (
-                        <TextField
-                          label="Kilde"
-                          hideLabel
-                          value={linje.kilde ?? ''}
-                          size="small"
-                          disabled
-                          style={{ width: '5.5rem' }}
-                        />
-                      )}
-                    </Table.DataCell>
                     {!readOnly && (
                       <Table.DataCell>
                         <StatusTag status={linje._status} />
@@ -1150,7 +1096,7 @@ function ForstegangstjenesteSeksjon({
 }
 
 export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, opptjeningstyper, navident, readOnly } = loaderData
+  const { grunnlag, opptjeningstyper, readOnly } = loaderData
   const { errors } = actionData || {}
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
   const navigation = useNavigation()
@@ -1168,7 +1114,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
   const [inntektLinjer, setInntektLinjer] = useState<InntektLinjeState[]>(() => {
     const fraGrunnlag = (grunnlagDto?.inntektListe ?? []).map(inntektGrunnlagTilViewModel)
     if (fraGrunnlag.length > 0) return fraGrunnlag.map(tilLinjeState)
-    return [nyInntektLinje(defaultInntektType, navident)]
+    return [nyInntektLinje(defaultInntektType)]
   })
 
   const [dagpengerLinjer, setDagpengerLinjer] = useState<DagpengerLinjeState[]>(() =>
@@ -1188,14 +1134,14 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
       if (linje._status === 'new') return prev.filter(l => l._id !== id)
-      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const, kilde: navident } : l))
+      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
     })
 
   const gjenopprettInntektLinje = (id: string) =>
     setInntektLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
+        const restored = { ...l, _status: 'original' as const }
         return { ...restored, _status: beregnStatus(restored, INNTEKT_FELTER) }
       }),
     )
@@ -1205,14 +1151,14 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
       if (linje._status === 'new') return prev.filter(l => l._id !== id)
-      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const, kilde: navident } : l))
+      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
     })
 
   const gjenopprettDagpengerLinje = (id: string) =>
     setDagpengerLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
+        const restored = { ...l, _status: 'original' as const }
         return { ...restored, _status: beregnStatus(restored, DAGPENGER_FELTER) }
       }),
     )
@@ -1222,14 +1168,14 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
       if (linje._status === 'new') return prev.filter(l => l._id !== id)
-      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const, kilde: navident } : l))
+      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
     })
 
   const gjenopprettOmsorgLinje = (id: string) =>
     setOmsorgLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
+        const restored = { ...l, _status: 'original' as const }
         return { ...restored, _status: beregnStatus(restored, ['omsorgType', 'ar', 'fnrOmsorgFor']) }
       }),
     )
@@ -1239,14 +1185,14 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       const linje = prev.find(l => l._id === id)
       if (!linje) return prev
       if (linje._status === 'new') return prev.filter(l => l._id !== id)
-      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const, kilde: navident } : l))
+      return prev.map(l => (l._id === id ? { ...l, _status: 'deleted' as const } : l))
     })
 
   const gjenopprettForstegangstjenesteLinje = (id: string) =>
     setForstegangstjenesteLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const restored = { ...l, kilde: l._original?.kilde ?? l.kilde, _status: 'original' as const }
+        const restored = { ...l, _status: 'original' as const }
         return { ...restored, _status: beregnStatus(restored, FORSTEGANGSTJENESTE_FELTER) }
       }),
     )
@@ -1268,9 +1214,8 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         } else {
           updated = { ...l, [felt]: verdi || null }
         }
-        const status = beregnStatus({ ...updated, kilde: navident }, INNTEKT_FELTER)
-        const kilde = status === 'original' ? (l._original?.kilde ?? navident) : navident
-        return { ...updated, kilde, _status: status }
+        const status = beregnStatus(updated, INNTEKT_FELTER)
+        return { ...updated, _status: status }
       }),
     )
   }
@@ -1301,9 +1246,8 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         } else {
           updated = { ...l, [felt]: verdi || null }
         }
-        const status = beregnStatus({ ...updated, kilde: navident }, DAGPENGER_FELTER)
-        const kilde = status === 'original' ? (l._original?.kilde ?? navident) : navident
-        return { ...updated, kilde, _status: status }
+        const status = beregnStatus(updated, DAGPENGER_FELTER)
+        return { ...updated, _status: status }
       }),
     )
   }
@@ -1313,9 +1257,8 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       prev.map(l => {
         if (l._id !== id) return l
         const updated: ForstegangstjenesteLinjeState = { ...l, [felt]: verdi || null }
-        const status = beregnStatus({ ...updated, kilde: navident }, FORSTEGANGSTJENESTE_FELTER)
-        const kilde = status === 'original' ? (l._original?.kilde ?? navident) : navident
-        return { ...updated, kilde, _status: status }
+        const status = beregnStatus(updated, FORSTEGANGSTJENESTE_FELTER)
+        return { ...updated, _status: status }
       }),
     )
   }
@@ -1517,7 +1460,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         opptjeningstyper={opptjeningstyper}
         readOnly={readOnly}
         kommuneFeil={inntektKommuneFeil}
-        onLeggTil={() => setInntektLinjer(prev => [...prev, nyInntektLinje(defaultInntektType, navident)])}
+        onLeggTil={() => setInntektLinjer(prev => [...prev, nyInntektLinje(defaultInntektType)])}
         onSlett={slettInntektLinje}
         onGjenopprett={gjenopprettInntektLinje}
         onOppdater={oppdaterInntektLinje}
@@ -1526,7 +1469,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         linjer={dagpengerLinjer}
         opptjeningstyper={opptjeningstyper}
         readOnly={readOnly}
-        onLeggTil={() => setDagpengerLinjer(prev => [...prev, nyDagpengerLinje(navident)])}
+        onLeggTil={() => setDagpengerLinjer(prev => [...prev, nyDagpengerLinje()])}
         onSlett={slettDagpengerLinje}
         onGjenopprett={gjenopprettDagpengerLinje}
         onOppdater={oppdaterDagpengerLinje}
@@ -1543,7 +1486,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         opptjeningstyper={opptjeningstyper}
         readOnly={readOnly}
         fomFeil={forstegangstjenesteFomFeil}
-        onLeggTil={() => setForstegangstjenesteLinjer(prev => [...prev, nyForstegangstjenesteLinje(navident)])}
+        onLeggTil={() => setForstegangstjenesteLinjer(prev => [...prev, nyForstegangstjenesteLinje()])}
         onSlett={slettForstegangstjenesteLinje}
         onGjenopprett={gjenopprettForstegangstjenesteLinje}
         onOppdater={oppdaterForstegangstjenesteLinje}

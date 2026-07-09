@@ -32,17 +32,17 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentProps) => {
   const { pensjonsoversiktUrl, status } = loaderData
 
-  const revalidator = useRevalidator()
+  const { revalidate } = useRevalidator()
 
   useEffect(() => {
     if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
       const intervalId = setInterval(() => {
-        revalidator.revalidate()
+        revalidate()
       }, 1000)
 
       return () => clearInterval(intervalId)
     }
-  }, [status, revalidator])
+  }, [status, revalidate])
 
   if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
     return (

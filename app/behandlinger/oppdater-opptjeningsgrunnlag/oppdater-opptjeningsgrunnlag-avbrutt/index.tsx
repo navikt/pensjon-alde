@@ -1,4 +1,4 @@
-import { Alert, BodyShort, Heading, Page, VStack } from '@navikt/ds-react'
+import { LocalAlert, Page } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import styles from '~/common.module.css'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -12,14 +12,14 @@ export default function OppdaterOpptjeningsgrunnlagAvbruttRoute() {
 
   return (
     <Page.Block gutters className={`${styles.page} ${styles.center}`}>
-      <VStack gap="space-16">
-        <Heading size="medium" level="2">
-          Behandlingen er avbrutt
-        </Heading>
-        <Alert variant="warning">
-          <BodyShort>Oppdatering av opptjeningsgrunnlag for behandling {behandling.behandlingId} er avbrutt.</BodyShort>
-        </Alert>
-      </VStack>
+      <LocalAlert status="warning">
+        <LocalAlert.Header>
+          <LocalAlert.Title>Behandlingen er avbrutt</LocalAlert.Title>
+        </LocalAlert.Header>
+        <LocalAlert.Content>
+          Oppdatering av opptjeningsgrunnlag for behandling {behandling.behandlingId} er avbrutt.
+        </LocalAlert.Content>
+      </LocalAlert>
     </Page.Block>
   )
 }

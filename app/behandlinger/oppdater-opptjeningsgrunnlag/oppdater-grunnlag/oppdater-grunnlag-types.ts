@@ -17,7 +17,6 @@ export type OpptjeningstyperResponse = {
 
 export type InntektDTO = {
   inntektId?: number | null
-  kilde?: string | null
   kommune?: string | null
   inntektAr: number
   belop?: number | null
@@ -26,7 +25,6 @@ export type InntektDTO = {
 
 export type DagpengerDTO = {
   dagpengerId?: number | null
-  kilde?: string | null
   ar: number
   dagpengerType: string
   uavkortetDagpengegrunnlag?: number | null
@@ -37,7 +35,6 @@ export type DagpengerDTO = {
 
 export type OmsorgDTO = {
   omsorgId?: number | null
-  kilde?: string | null
   ar: number
   omsorgType: string
   fnrOmsorgFor?: string | null
@@ -45,7 +42,6 @@ export type OmsorgDTO = {
 
 export type ForstegangstjenesteDTO = {
   forstegangstjenesteId?: number | null
-  kilde?: string | null
   tjenesteType: string
   periodeType?: string | null
   fomDato: string
