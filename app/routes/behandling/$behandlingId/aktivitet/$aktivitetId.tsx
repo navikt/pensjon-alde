@@ -4,7 +4,7 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
-import { type AktivitetDTO, BehandlingStatus } from '~/types/behandling'
+import { type AktivitetDTO, AktivitetStatus, BehandlingStatus } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 
@@ -105,7 +105,10 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
     )
   }
 
-  if (behandling.status === BehandlingStatus.FEILENDE) {
+  if (
+    behandling.status === BehandlingStatus.FEILENDE ||
+    (behandling.status === BehandlingStatus.DEBUG && aktivitet.status === AktivitetStatus.FEILET)
+  ) {
     return <FeilendeBehandling dato={dato} behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
   } else {
     return (
