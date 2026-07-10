@@ -11,12 +11,12 @@ import {
   RadioGroup,
   Table,
   Tag,
-  Textarea,
   VStack,
 } from '@navikt/ds-react'
 import { useState } from 'react'
 import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
+import { createBehandlingApi } from '~/api/behandling-api'
 import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import styles from '~/common.module.css'
 import { userContext } from '~/context/user-context'
@@ -80,42 +80,44 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   return { navident, grunnlag, opptjeningstyper }
 }
 
-export async function action({ params, request, context }: Route.ActionArgs) {
-  const { behandlingId, aktivitetId } = params
-  const { navident } = context.get(userContext)
-  const api = createAktivitetApi({ request, behandlingId, aktivitetId })
+enum AttesteringUtfall {
+  GODKJENN = 'GODKJENN',
+  IKKE_GODKJENN = 'IKKE_GODKJENN',
+}
+
+export async function action({ params, request }: Route.ActionArgs) {
+  const { behandlingId } = params
+  const behandlingApi = createBehandlingApi({ request, behandlingId })
 
   const formData = await request.formData()
-  const utfall = formData.get('utfall') as string
-  const returArsak = formData.get('returArsak') as string | null
+  const utfall = formData.get('utfall') as AttesteringUtfall
 
-  const errors: { utfall?: string; returArsak?: string } = {}
+  if (utfall === AttesteringUtfall.GODKJENN) {
+    await behandlingApi.attester()
+    return redirect(`/behandling/${behandlingId}/attestert-og-iverksatt`)
+  } else if (utfall === AttesteringUtfall.IKKE_GODKJENN) {
+    const begrunnelse = formData.get('begrunnelse') as string
 
-  if (!utfall) {
-    errors.utfall = 'Du må velge et utfall'
+    if (begrunnelse) {
+      await behandlingApi.returnerTilSaksbehandler(begrunnelse)
+      return redirect(`/behandling/${behandlingId}/attestering-returnert-til-saksbehandler`)
+    } else {
+      return data(
+        {
+          errors: { begrunnelse: 'Begrunnelse må fylles ut' },
+          data: {
+            utfall,
+            begrunnelse,
+          },
+        },
+        { status: 400 },
+      )
+    }
   }
-
-  if (utfall === 'IKKE_GODKJENN' && !returArsak?.trim()) {
-    errors.returArsak = 'Du må oppgi begrunnelse for retur'
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return data({ errors }, { status: 400 })
-  }
-
-  const attestert = utfall === 'GODKJENN'
-
-  await api.lagreVurdering({
-    attestert,
-    returArsak: attestert ? null : returArsak,
-    attestant: navident,
-  })
-
-  return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
 }
 
 export default function AttesterRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { errors } = actionData || {}
+  const { errors, data: actionResultData } = actionData || {}
   const { grunnlag, opptjeningstyper } = loaderData
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
   const navigation = useNavigation()
@@ -301,13 +303,34 @@ export default function AttesterRoute({ loaderData, actionData }: Route.Componen
 
         <Form method="post">
           <VStack gap="space-24">
-            <RadioGroup legend="Utfall" name="utfall" value={utfall} onChange={setUtfall} error={errors?.utfall}>
+            <RadioGroup legend="Utfall" name="utfall" value={utfall} onChange={setUtfall}>
               <Radio value="GODKJENN">Godkjenn</Radio>
               <Radio value="IKKE_GODKJENN">Returner til saksbehandler</Radio>
             </RadioGroup>
 
             {utfall === 'IKKE_GODKJENN' && (
-              <Textarea label="Begrunnelse for retur" name="returArsak" rows={4} error={errors?.returArsak} />
+              <RadioGroup
+                legend="Velg begrunnelse"
+                name="begrunnelse"
+                error={errors?.begrunnelse}
+                defaultValue={actionResultData?.begrunnelse}
+              >
+                <Radio size="small" value="Feil i vedtak">
+                  Feil i vedtak
+                </Radio>
+
+                <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
+                  Forvaltningsnotat utilstrekkelig
+                </Radio>
+
+                <Radio size="small" value="Hent inn nytt grunnlag">
+                  Hent inn nytt grunnlag
+                </Radio>
+
+                <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
+                  Saksbehandlerstandard ikke fulgt
+                </Radio>
+              </RadioGroup>
             )}
 
             <VStack gap="space-8" align="start">
