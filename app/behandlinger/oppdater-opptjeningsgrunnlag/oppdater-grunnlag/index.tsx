@@ -1063,6 +1063,7 @@ function ForstegangstjenesteSeksjon({
                           value={linje.tomDato}
                           label="TOM"
                           disabled={erSlettet}
+                          fromDate={new Date(2010, 0, 1)}
                           onChange={val => onOppdater(linje._id, 'tomDato', val)}
                         />
                       )}
