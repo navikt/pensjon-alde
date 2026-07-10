@@ -3,8 +3,7 @@ import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
 import { AldeBehandlingStatus } from '~/types/behandling'
-import { buildUrl } from '~/utils/build-url'
-import { env } from '~/utils/env.server'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -16,7 +15,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     return redirect(`/behandling/${behandlingId}`)
   } else {
     return {
-      pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
+      pensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
     }
   }
 }
