@@ -373,7 +373,6 @@ function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBacke
     dagpengerId: l.dagpengerId ?? null,
     fnr,
     dagpengerType: l.dagpengerType,
-    rapportType: null,
     kilde: KILDE,
     ar: Number(l.ar),
     utbetalteDagpenger: l.utbetalteDagpenger != null ? Number(l.utbetalteDagpenger) : null,
@@ -403,7 +402,6 @@ function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: str
     forstegangstjenesteId: l.forstegangstjenesteId ?? null,
     fnr,
     kilde: KILDE,
-    rapportType: null,
     tjenestestartDato: l.fomDato || null,
     dimitteringDato: l.tomDato || null,
     forstegangstjenestePeriodeListe: [
