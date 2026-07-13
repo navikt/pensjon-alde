@@ -1,10 +1,11 @@
 import { CheckmarkCircleIcon } from '@navikt/aksel-icons'
 import { Heading, HStack, Link, Loader, Page, VStack } from '@navikt/ds-react'
 import { useEffect } from 'react'
-import { redirect, useRevalidator } from 'react-router'
+import { redirect, useFetcher, useOutletContext, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
-import { AldeBehandlingStatus } from '~/types/behandling'
+import FeilendeBehandling from '~/components/FeilendeBehandling'
+import { AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { env } from '~/utils/env.server'
 import type { Route } from './+types'
@@ -22,6 +23,8 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   ) {
     return {
       behandlingId,
+      behandling,
+      dato: Date.now(),
       psakOppgaveoversikt: buildUrl(psakOppgaveoversikt, request, {}),
       psakPensjonsoversikt: buildUrl(psakSakUrlTemplate, request, { sakId: behandling.sakId }),
       status: behandling.aldeBehandlingStatus,
@@ -31,9 +34,21 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   }
 }
 
+export async function action({ params, request }: Route.ActionArgs) {
+  const { behandlingId } = params
+  await createBehandlingApi({ request, behandlingId }).fortsett()
+  return redirect(`/behandling/${behandlingId}/attestert-og-iverksatt`)
+}
+
 const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
-  const { psakOppgaveoversikt, psakPensjonsoversikt, status } = loaderData
+  const { behandling, dato, psakOppgaveoversikt, psakPensjonsoversikt, status } = loaderData
   const { revalidate } = useRevalidator()
+  const { avbrytAktivitet } = useOutletContext<{ behandling: BehandlingDTO; avbrytAktivitet: () => void }>()
+  const fetcher = useFetcher()
+
+  function retry() {
+    fetcher.submit({}, { method: 'POST' })
+  }
 
   useEffect(() => {
     if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
@@ -44,6 +59,10 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
       return () => clearInterval(intervalId)
     }
   }, [status, revalidate])
+
+  if (behandling.status === BehandlingStatus.FEILENDE) {
+    return <FeilendeBehandling dato={dato} behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
+  }
 
   if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
     return (
