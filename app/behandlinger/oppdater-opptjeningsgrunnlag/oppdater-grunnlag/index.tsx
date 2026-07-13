@@ -96,6 +96,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return { grunnlag, savedVurdering, opptjeningstyper, readOnly }
 }
 
+type ActionErrors = { _form?: string; _server?: string }
+
 export async function action({ params, request }: Route.ActionArgs) {
   const { behandlingId, aktivitetId } = params
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
@@ -105,7 +107,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   const payloadRaw = formData.get('payload')
 
   if (!payloadRaw) {
-    return data({ errors: { _form: 'Mangler skjemadata' } }, { status: 400 })
+    return data({ errors: { _form: 'Mangler skjemadata' } as ActionErrors }, { status: 400 })
   }
 
   let payload: OppdaterOpptjeningVurdering
@@ -113,7 +115,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   try {
     payload = JSON.parse(payloadRaw as string)
   } catch {
-    return data({ errors: { _form: 'Ugyldig skjemadata' } }, { status: 400 })
+    return data({ errors: { _form: 'Ugyldig skjemadata' } as ActionErrors }, { status: 400 })
   }
 
   const validationErrors: string[] = []
@@ -138,7 +140,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   if (validationErrors.length > 0) {
-    return data({ errors: { _form: validationErrors.join('. ') } }, { status: 400 })
+    return data({ errors: { _form: validationErrors.join('. ') } as ActionErrors }, { status: 400 })
   }
 
   payload.dagpengerEndringer = (payload.dagpengerEndringer ?? []).map(e => ({
@@ -161,9 +163,9 @@ export async function action({ params, request }: Route.ActionArgs) {
       const melding = error.data.violations?.length
         ? error.data.violations.join('. ')
         : (error.data.message ?? 'POPP-validering feilet')
-      return data({ errors: { _form: melding } }, { status: 400 })
+      return data({ errors: { _server: melding } as ActionErrors }, { status: 400 })
     }
-    return data({ errors: { _form: 'Det oppstod en feil ved lagring' } }, { status: 500 })
+    return data({ errors: { _server: 'Det oppstod en feil ved lagring' } as ActionErrors }, { status: 500 })
   }
 }
 
@@ -1519,6 +1521,15 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           </LocalAlert>
         )}
 
+        {errors?._form && (
+          <LocalAlert status="error">
+            <LocalAlert.Header>
+              <LocalAlert.Title>Feilmelding</LocalAlert.Title>
+            </LocalAlert.Header>
+            <LocalAlert.Content>{errors._form}</LocalAlert.Content>
+          </LocalAlert>
+        )}
+
         {readOnly ? (
           seksjoner
         ) : (
@@ -1621,7 +1632,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
                 </InlineMessage>
               )}
 
-              {errors?._form && <InlineMessage status="error">{errors._form}</InlineMessage>}
+              {errors?._server && <InlineMessage status="error">{errors._server}</InlineMessage>}
 
               <HStack gap="space-8">
                 <Button
