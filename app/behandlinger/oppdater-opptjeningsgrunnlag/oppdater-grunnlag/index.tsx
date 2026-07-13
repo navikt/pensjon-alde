@@ -156,7 +156,13 @@ export async function action({ params, request }: Route.ActionArgs) {
   try {
     await api.lagreVurdering(vurdering)
     return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
-  } catch {
+  } catch (error) {
+    if (isApiError(error) && error.data.status === 400) {
+      const melding = error.data.violations?.length
+        ? error.data.violations.join('. ')
+        : (error.data.message ?? 'POPP-validering feilet')
+      return data({ errors: { _form: melding } }, { status: 400 })
+    }
     return data({ errors: { _form: 'Det oppstod en feil ved lagring' } }, { status: 500 })
   }
 }
@@ -1513,15 +1519,6 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
           </LocalAlert>
         )}
 
-        {errors?._form && (
-          <LocalAlert status="error">
-            <LocalAlert.Header>
-              <LocalAlert.Title>Feilmelding</LocalAlert.Title>
-            </LocalAlert.Header>
-            <LocalAlert.Content>{errors._form}</LocalAlert.Content>
-          </LocalAlert>
-        )}
-
         {readOnly ? (
           seksjoner
         ) : (
@@ -1623,6 +1620,8 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
                   Ingen endringer er registrert. Gjør minst én endring før du lagrer.
                 </InlineMessage>
               )}
+
+              {errors?._form && <InlineMessage status="error">{errors._form}</InlineMessage>}
 
               <HStack gap="space-8">
                 <Button

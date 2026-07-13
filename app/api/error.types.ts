@@ -5,6 +5,7 @@ export interface ApiErrorData {
   detail?: string
   path?: string
   timestamp?: string
+  violations?: string[]
 }
 
 export function isApiError(error: unknown): error is { data: ApiErrorData } {
