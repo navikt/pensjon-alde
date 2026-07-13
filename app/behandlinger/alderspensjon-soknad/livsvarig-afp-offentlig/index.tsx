@@ -26,6 +26,7 @@ import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import { dateInput, parseForm } from '~/utils/parse-form'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import { isFeatureEnabled } from '../../../utils/unleash.server'
 import type { Route } from './+types'
 import { AfpLivsvarigVenter } from './AfpLivsvarigVenter'
@@ -97,8 +98,8 @@ export type LivsvarigAfpOffentligVurdering = LivsvarigAfpOffentligInnvilget | Li
 const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => s.status === 'soknad'
 
 export type Props = AktivitetComponentProps<LivsvarigOffentligAfpGrunnlag, LivsvarigAfpOffentligVurdering> & {
-  pensjonsoversiktUrl?: string
-  psakOppgaveoversikt?: string
+  psakPensjonsoversiktUrl?: string
+  psakOppgaveoversiktUrl?: string
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -117,8 +118,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     grunnlag,
     vurdering,
     visMedMulighetForVurdering,
-    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
-    psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
+    psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
+    psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
   }
 }
 
@@ -290,7 +291,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, readOnly, pensjonsoversiktUrl, psakOppgaveoversikt, visMedMulighetForVurdering } =
+  const { grunnlag, vurdering, readOnly, psakPensjonsoversiktUrl, psakOppgaveoversiktUrl, visMedMulighetForVurdering } =
     loaderData
   const { errors } = actionData || {}
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
@@ -303,8 +304,8 @@ export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: R
         vurdering={vurdering}
         aktivitet={aktivitet}
         behandling={behandling}
-        pensjonsoversiktUrl={pensjonsoversiktUrl}
-        psakOppgaveoversikt={psakOppgaveoversikt}
+        psakPensjonsoversiktUrl={psakPensjonsoversiktUrl}
+        psakOppgaveoversiktUrl={psakOppgaveoversiktUrl}
         avbrytAktivitet={avbrytAktivitet}
         errors={errors}
       />
@@ -317,8 +318,8 @@ export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: R
         vurdering={vurdering}
         aktivitet={aktivitet}
         behandling={behandling}
-        pensjonsoversiktUrl={pensjonsoversiktUrl}
-        psakOppgaveoversikt={psakOppgaveoversikt}
+        psakPensjonsoversiktUrl={psakPensjonsoversiktUrl}
+        psakOppgaveoversiktUrl={psakOppgaveoversiktUrl}
         avbrytAktivitet={avbrytAktivitet}
         errors={errors}
       />
@@ -612,17 +613,23 @@ function AfpLivsvarigVurdering(
   )
 }
 
-function AfpLivsvarigVenterWrapper(props: Props) {
-  if (props.grunnlag.afpOffentligStatus.some(isSoknad)) {
-    const soknad = props.grunnlag.afpOffentligStatus.find(isSoknad)
+function AfpLivsvarigVenterWrapper({
+  grunnlag,
+  aktivitet,
+  psakPensjonsoversiktUrl,
+  psakOppgaveoversiktUrl,
+  avbrytAktivitet,
+}: Props) {
+  if (grunnlag.afpOffentligStatus.some(isSoknad)) {
+    const soknad = grunnlag.afpOffentligStatus.find(isSoknad)
     if (!soknad) return null
     return (
       <AfpLivsvarigVenter
         soknad={soknad}
-        aktivitet={props.aktivitet}
-        pensjonsoversiktUrl={props.pensjonsoversiktUrl}
-        psakOppgaveoversikt={props.psakOppgaveoversikt}
-        avbrytAktivitet={props.avbrytAktivitet}
+        aktivitet={aktivitet}
+        psakPensjonsoversiktUrl={psakPensjonsoversiktUrl}
+        psakOppgaveoversiktUrl={psakOppgaveoversiktUrl}
+        avbrytAktivitet={avbrytAktivitet}
       />
     )
   }

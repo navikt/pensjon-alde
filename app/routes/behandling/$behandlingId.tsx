@@ -38,6 +38,7 @@ import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingSt
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
@@ -120,10 +121,8 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   const behandling = await api.hentBehandling()
 
   const urls = {
-    oppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
-    pensjonsoversikt: behandling.sakId
-      ? buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId })
-      : undefined,
+    psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
+    psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
   }
 
   const isOppsummering = url.pathname.includes('/oppsummering')
@@ -312,8 +311,8 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         me={me}
         isDarkmode={isDarkmode}
         setDarkmode={setDarkmode}
-        pensjonsoversiktUrl={urls.pensjonsoversikt}
-        oppgaveoversiktUrl={urls.oppgaveoversikt}
+        psakPensjonsoversiktUrl={urls.psakPensjonsoversiktUrl}
+        psakOppgaveoversiktUrl={urls.psakOppgaveoversiktUrl}
         environment={telemetry.environment}
         verdandeAktivitetUrl={verdandeAktivitetUrl}
         verdandeBehandlingUrl={verdandeBehandlingUrl}
@@ -439,7 +438,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                   <Button
                     type="submit"
                     size="small"
-                    onClick={() => window.open(urls.pensjonsoversikt, '_blank')}
+                    onClick={() => window.open(urls.psakOppgaveoversiktUrl, '_blank')}
                     icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
                     iconPosition="right"
                   >

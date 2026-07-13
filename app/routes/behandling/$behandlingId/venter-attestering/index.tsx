@@ -6,6 +6,7 @@ import commonStyles from '~/common.module.css'
 import { AldeBehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { env } from '~/utils/env.server'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
@@ -17,14 +18,14 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
     return redirect(`/behandling/${behandlingId}`)
   } else {
     return {
-      psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
-      psakPensjonsoversikt: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
+      psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
+      psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
     }
   }
 }
 
 const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
-  const { psakOppgaveoversikt, psakPensjonsoversikt } = loaderData
+  const { psakOppgaveoversiktUrl, psakPensjonsoversiktUrl } = loaderData
 
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
@@ -35,8 +36,8 @@ const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
         </Heading>
 
         <VStack align="center" gap="space-8">
-          <Link href={psakPensjonsoversikt}>Pensjonsoversikt</Link>
-          <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>
+          <Link href={psakPensjonsoversiktUrl}>Pensjonsoversikt</Link>
+          <Link href={psakOppgaveoversiktUrl}>Oppgavelisten</Link>
         </VStack>
       </VStack>
     </Page.Block>

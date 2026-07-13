@@ -6,9 +6,8 @@ import type { AktivitetAtt } from '~/api/behandling-api/types'
 import commonStyles from '~/common.module.css'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { type AktivitetDTO, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
-import { buildUrl } from '~/utils/build-url'
 import { getAllServerComponents } from '~/utils/component-discovery'
-import { env } from '~/utils/env.server'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 interface AktivitetTilAttestering {
@@ -66,7 +65,7 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 
   return {
     aktiviteter: parsedData,
-    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
+    psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
     behandlingErFullført: behandling.status === BehandlingStatus.FULLFORT,
     behandlingFeilende: behandling.status === BehandlingStatus.FEILENDE,
   }
@@ -77,7 +76,7 @@ export const action = async () => {
 }
 
 export default function Attestering({ loaderData }: Route.ComponentProps) {
-  const { aktiviteter, behandlingErFullført } = loaderData
+  const { aktiviteter, behandlingErFullført, psakPensjonsoversiktUrl } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const components = getAllServerComponents()
 
@@ -111,7 +110,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
           </InfoCard.Header>
           <InfoCard.Content>
             Vi kan ikke behandle denne videre og har samlet en oppsummering på hva som har blitt utført.{' '}
-            <Link href={loaderData.pensjonsoversiktUrl}>Pensjonsoversikt</Link>
+            <Link href={psakPensjonsoversiktUrl}>Pensjonsoversikt</Link>
           </InfoCard.Content>
         </InfoCard>
       )}
