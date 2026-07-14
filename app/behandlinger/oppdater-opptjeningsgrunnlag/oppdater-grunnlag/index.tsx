@@ -96,7 +96,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return { grunnlag, savedVurdering, opptjeningstyper, readOnly }
 }
 
-type ActionErrors = { _form?: string; _server?: string }
+type ActionErrors = { _form?: string; _server?: string[] }
 
 export async function action({ params, request }: Route.ActionArgs) {
   const { behandlingId, aktivitetId } = params
@@ -160,12 +160,12 @@ export async function action({ params, request }: Route.ActionArgs) {
     return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
   } catch (error) {
     if (isApiError(error) && error.data.status === 400) {
-      const melding = error.data.violations?.length
-        ? error.data.violations.join('. ')
-        : (error.data.message ?? 'POPP-validering feilet')
-      return data({ errors: { _server: melding } as ActionErrors }, { status: 400 })
+      const meldinger = error.data.violations?.length
+        ? error.data.violations
+        : [error.data.message ?? 'POPP-validering feilet']
+      return data({ errors: { _server: meldinger } as ActionErrors }, { status: 400 })
     }
-    return data({ errors: { _server: 'Det oppstod en feil ved lagring' } as ActionErrors }, { status: 500 })
+    return data({ errors: { _server: ['Det oppstod en feil ved lagring'] } as ActionErrors }, { status: 500 })
   }
 }
 
@@ -265,6 +265,21 @@ function typeLabel(opptjeningstyper: OpptjeningstyperResponse, code: string): st
     ...opptjeningstyper.forstegangstjeneste.subTyper,
   ]
   return alle.find(t => t.code === code)?.description ?? code
+}
+
+function oversettKoderIMelding(melding: string, opptjeningstyper: OpptjeningstyperResponse): string {
+  const alle = [
+    ...opptjeningstyper.inntekt.typer,
+    ...opptjeningstyper.omsorg.typer,
+    ...opptjeningstyper.dagpenger.typer,
+    ...opptjeningstyper.forstegangstjeneste.typer,
+    ...opptjeningstyper.forstegangstjeneste.subTyper,
+  ].sort((a, b) => b.code.length - a.code.length)
+
+  return alle.reduce((tekst, type) => {
+    const regex = new RegExp(`\\b${type.code}\\b`, 'g')
+    return tekst.replace(regex, `${type.description} (${type.code})`)
+  }, melding)
 }
 
 function inntektEndringer(linje: InntektLinjeState, opptjeningstyper: OpptjeningstyperResponse): string[] {
@@ -1630,7 +1645,22 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
                 </InlineMessage>
               )}
 
-              {errors?._server && <InlineMessage status="error">{errors._server}</InlineMessage>}
+              {errors?._server && errors._server.length > 0 && (
+                <LocalAlert status="error">
+                  <LocalAlert.Header>
+                    <LocalAlert.Title>Vennligst sjekk følgende feil</LocalAlert.Title>
+                  </LocalAlert.Header>
+                  <LocalAlert.Content>
+                    <VStack gap="space-4">
+                      <ul>
+                        {errors._server.map(melding => (
+                          <li key={melding}>{oversettKoderIMelding(melding, opptjeningstyper)}</li>
+                        ))}
+                      </ul>
+                    </VStack>
+                  </LocalAlert.Content>
+                </LocalAlert>
+              )}
 
               <HStack gap="space-8">
                 <Button
