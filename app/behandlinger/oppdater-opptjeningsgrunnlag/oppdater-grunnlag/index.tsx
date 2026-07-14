@@ -48,7 +48,7 @@ export function meta() {
 
 const KILDE = 'PEN'
 
-const REQUIRED_KOMMUNE: Partial<Record<string, string>> = {
+export const REQUIRED_KOMMUNE: Partial<Record<string, string>> = {
   DIP_JSF: '0301',
   DIP_LON: '0301',
   DIP_SEL: '0301',
@@ -96,7 +96,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return { grunnlag, savedVurdering, opptjeningstyper, readOnly }
 }
 
-type ActionErrors = { _form?: string; _server?: string[] }
+export type ActionErrors = { _form?: string; _server?: string[] }
 
 export async function action({ params, request }: Route.ActionArgs) {
   const { behandlingId, aktivitetId } = params
@@ -180,11 +180,11 @@ type ForstegangstjenesteLinjeState = ForstegangstjenesteDTO & {
   _original: ForstegangstjenesteDTO | null
 }
 
-function tilLinjeState<T extends object>(dto: T): T & { _id: string; _status: LinjeStatus; _original: T } {
+export function tilLinjeState<T extends object>(dto: T): T & { _id: string; _status: LinjeStatus; _original: T } {
   return { ...dto, _id: crypto.randomUUID(), _status: 'original' as LinjeStatus, _original: { ...dto } as T }
 }
 
-function beregnStatus<T extends object>(
+export function beregnStatus<T extends object>(
   linje: T & { _status: LinjeStatus; _original: T | null },
   felter: (keyof T)[],
 ): LinjeStatus {
@@ -211,7 +211,7 @@ const FORSTEGANGSTJENESTE_FELTER: (keyof ForstegangstjenesteDTO)[] = [
   'tomDato',
 ]
 
-function nyInntektLinje(defaultType: string): InntektLinjeState {
+export function nyInntektLinje(defaultType: string): InntektLinjeState {
   return {
     _id: crypto.randomUUID(),
     _status: 'new',
@@ -223,7 +223,7 @@ function nyInntektLinje(defaultType: string): InntektLinjeState {
   }
 }
 
-function nyDagpengerLinje(): DagpengerLinjeState {
+export function nyDagpengerLinje(): DagpengerLinjeState {
   return {
     _id: crypto.randomUUID(),
     _status: 'new',
@@ -237,7 +237,7 @@ function nyDagpengerLinje(): DagpengerLinjeState {
   }
 }
 
-function nyForstegangstjenesteLinje(): ForstegangstjenesteLinjeState {
+export function nyForstegangstjenesteLinje(): ForstegangstjenesteLinjeState {
   return {
     _id: crypto.randomUUID(),
     _status: 'new',
@@ -256,7 +256,7 @@ type EndringSummaryItem = {
   endringer?: string[]
 }
 
-function typeLabel(opptjeningstyper: OpptjeningstyperResponse, code: string): string {
+export function typeLabel(opptjeningstyper: OpptjeningstyperResponse, code: string): string {
   const alle = [
     ...opptjeningstyper.inntekt.typer,
     ...opptjeningstyper.omsorg.typer,
@@ -267,7 +267,7 @@ function typeLabel(opptjeningstyper: OpptjeningstyperResponse, code: string): st
   return alle.find(t => t.code === code)?.description ?? code
 }
 
-function oversettKoderIMelding(melding: string, opptjeningstyper: OpptjeningstyperResponse): string {
+export function oversettKoderIMelding(melding: string, opptjeningstyper: OpptjeningstyperResponse): string {
   const alle = [
     ...opptjeningstyper.inntekt.typer,
     ...opptjeningstyper.omsorg.typer,
@@ -282,7 +282,7 @@ function oversettKoderIMelding(melding: string, opptjeningstyper: Opptjeningstyp
   }, melding)
 }
 
-function inntektEndringer(linje: InntektLinjeState, opptjeningstyper: OpptjeningstyperResponse): string[] {
+export function inntektEndringer(linje: InntektLinjeState, opptjeningstyper: OpptjeningstyperResponse): string[] {
   if (!linje._original) return []
   const orig = linje._original
   const felter: string[] = []
@@ -305,7 +305,7 @@ function inntektEndringer(linje: InntektLinjeState, opptjeningstyper: Opptjening
   return felter
 }
 
-function dagpengerEndringer(linje: DagpengerLinjeState, opptjeningstyper: OpptjeningstyperResponse): string[] {
+export function dagpengerEndringer(linje: DagpengerLinjeState, opptjeningstyper: OpptjeningstyperResponse): string[] {
   if (!linje._original) return []
   const orig = linje._original
   const felter: string[] = []
@@ -343,7 +343,7 @@ function dagpengerEndringer(linje: DagpengerLinjeState, opptjeningstyper: Opptje
   return felter
 }
 
-function forstegangstjenesteEndringer(
+export function forstegangstjenesteEndringer(
   linje: ForstegangstjenesteLinjeState,
   opptjeningstyper: OpptjeningstyperResponse,
 ): string[] {
@@ -369,7 +369,7 @@ function forstegangstjenesteEndringer(
   return felter
 }
 
-function toInntektBackend(l: InntektLinjeState, fnr: string): InntektBackendDTO {
+export function toInntektBackend(l: InntektLinjeState, fnr: string): InntektBackendDTO {
   return {
     inntektId: l.inntektId ?? null,
     fnr,
@@ -382,7 +382,7 @@ function toInntektBackend(l: InntektLinjeState, fnr: string): InntektBackendDTO 
   }
 }
 
-function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBackendDTO {
+export function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBackendDTO {
   const isFF = l.dagpengerType === 'DP_FF'
   return {
     dagpengerId: l.dagpengerId ?? null,
@@ -401,7 +401,7 @@ function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): DagpengerBacke
   }
 }
 
-function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
+export function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
   return {
     omsorgId: l.omsorgId ?? null,
     fnr,
@@ -412,7 +412,10 @@ function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
   }
 }
 
-function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: string): ForstegangstjenesteBackendDTO {
+export function toForstegangstjenesteBackend(
+  l: ForstegangstjenesteLinjeState,
+  fnr: string,
+): ForstegangstjenesteBackendDTO {
   return {
     forstegangstjenesteId: l.forstegangstjenesteId ?? null,
     fnr,
@@ -431,7 +434,7 @@ function toForstegangstjenesteBackend(l: ForstegangstjenesteLinjeState, fnr: str
   }
 }
 
-function inntektGrunnlagTilViewModel(dto: InntektBackendDTO): InntektDTO {
+export function inntektGrunnlagTilViewModel(dto: InntektBackendDTO): InntektDTO {
   return {
     inntektId: dto.inntektId ?? null,
     kommune: dto.kommune ?? null,
@@ -441,7 +444,7 @@ function inntektGrunnlagTilViewModel(dto: InntektBackendDTO): InntektDTO {
   }
 }
 
-function dagpengerGrunnlagTilViewModel(dto: DagpengerBackendDTO): DagpengerDTO {
+export function dagpengerGrunnlagTilViewModel(dto: DagpengerBackendDTO): DagpengerDTO {
   return {
     dagpengerId: dto.dagpengerId ?? null,
     ar: dto.ar ?? 0,
@@ -453,7 +456,7 @@ function dagpengerGrunnlagTilViewModel(dto: DagpengerBackendDTO): DagpengerDTO {
   }
 }
 
-function omsorgGrunnlagTilViewModel(dto: OmsorgBackendDTO): OmsorgDTO {
+export function omsorgGrunnlagTilViewModel(dto: OmsorgBackendDTO): OmsorgDTO {
   return {
     omsorgId: dto.omsorgId ?? null,
     ar: dto.ar ?? 0,
@@ -462,7 +465,7 @@ function omsorgGrunnlagTilViewModel(dto: OmsorgBackendDTO): OmsorgDTO {
   }
 }
 
-function forstegangstjenesteGrunnlagTilViewModel(
+export function forstegangstjenesteGrunnlagTilViewModel(
   dto: ForstegangstjenesteBackendDTO | null | undefined,
 ): ForstegangstjenesteDTO[] {
   if (!dto) return []
@@ -934,13 +937,13 @@ function OmsorgSeksjon({
   )
 }
 
-function parseIsoDate(iso: string): Date | undefined {
+export function parseIsoDate(iso: string): Date | undefined {
   const [y, m, d] = iso.split('-').map(Number)
   if (!y || !m || !d) return undefined
   return new Date(y, m - 1, d)
 }
 
-function toIsoDate(date: Date): string {
+export function toIsoDate(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
