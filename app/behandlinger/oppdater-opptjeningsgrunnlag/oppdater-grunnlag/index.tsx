@@ -1653,7 +1653,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
                   <LocalAlert.Content>
                     <VStack gap="space-4">
                       <ul>
-                        {errors._server.map(melding => (
+                        {Array.from(new Set(errors._server)).map(melding => (
                           <li key={melding}>{oversettKoderIMelding(melding, opptjeningstyper)}</li>
                         ))}
                       </ul>
