@@ -14,11 +14,12 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import React from 'react'
-import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
+import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import { Features } from '~/features'
+import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { buildUrl } from '~/utils/build-url'
@@ -339,8 +340,7 @@ function AfpLivsvarigVurdering(
   },
 ) {
   const { grunnlag, vurdering, readOnly, aktivitet, avbrytAktivitet, errors } = props
-  const navigation = useNavigation()
-  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
+  const isSubmitting = useIsSubmitting()
 
   const soknadTpLeverandorer = grunnlag.afpOffentligStatus
     .filter(status => status.status === 'soknad' || status.status === 'ukjent')

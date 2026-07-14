@@ -10,7 +10,12 @@ function getPidEncryptionKey(): Buffer {
     throw new Error('Miljøvariabel PSAK_PID_ENCRYPTION_KEY er ikke satt')
   }
 
-  return Buffer.from(env.pidEncryptionKey, 'base64url')
+  const key = Buffer.from(env.pidEncryptionKey, 'base64url')
+  if (key.length !== 32) {
+    throw new Error(`PSAK_PID_ENCRYPTION_KEY må dekode til 32 byte (aes-256-gcm), men var ${key.length} byte`)
+  }
+
+  return key
 }
 
 export function encryptPid(pid: string): string {

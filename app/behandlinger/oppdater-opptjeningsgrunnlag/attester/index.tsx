@@ -14,12 +14,13 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import { useState } from 'react'
-import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
+import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import styles from '~/common.module.css'
 import { userContext } from '~/context/user-context'
+import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
 import type {
@@ -120,8 +121,7 @@ export default function AttesterRoute({ loaderData, actionData }: Route.Componen
   const { errors, data: actionResultData } = actionData || {}
   const { grunnlag, opptjeningstyper } = loaderData
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
-  const navigation = useNavigation()
-  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
+  const isSubmitting = useIsSubmitting()
   const [utfall, setUtfall] = useState<string>('')
 
   const vurdering = grunnlag.vurdering

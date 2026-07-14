@@ -1,7 +1,7 @@
 import type { MiddlewareFunction } from 'react-router'
 import { requireAccessToken } from '~/auth/auth.server'
 import { type UserContext, userContext } from '~/context/user-context'
-import { env } from '~/utils/env.server'
+import { env, isMockEnv } from '~/utils/env.server'
 
 export const userMiddleware: MiddlewareFunction = async ({ request, context }) => {
   const url = new URL(request.url)
@@ -10,7 +10,7 @@ export const userMiddleware: MiddlewareFunction = async ({ request, context }) =
   }
 
   // I mock-modus bruker vi mock-data uten autentisering
-  if (process.env.NODE_ENV === 'mock') {
+  if (isMockEnv) {
     context.set(userContext, {
       navident: 'Z990000',
       fornavn: 'Mock',
@@ -30,6 +30,10 @@ export const userMiddleware: MiddlewareFunction = async ({ request, context }) =
       'Content-Type': 'application/json',
     },
   })
+
+  if (!meResponse.ok) {
+    throw new Error(`Kunne ikke hente brukerinfo fra /me (${meResponse.status})`)
+  }
 
   const me: UserContext = await meResponse.json()
   context.set(userContext, me)

@@ -39,6 +39,9 @@
       "preset": "recommended",
       "a11y": {
         "preset": "recommended"
+      },
+      "correctness": {
+        "noUnusedImports": "error"
       }
     }
   },

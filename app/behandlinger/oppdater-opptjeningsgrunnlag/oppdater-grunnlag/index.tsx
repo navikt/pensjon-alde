@@ -18,12 +18,13 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import { useMemo, useState } from 'react'
-import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
+import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { isApiError } from '~/api/error.types'
 import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import styles from '~/common.module.css'
 import { Fnr } from '~/components/Fnr'
+import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
 import type { Route } from './+types'
@@ -75,7 +76,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   let readOnly = false
 
   try {
-    grunnlag = await api.hentGrunnlagsdata<OppdaterOpptjeningGrunnlag>()
+    grunnlag = (await api.hentGrunnlagsdata<OppdaterOpptjeningGrunnlag>()) ?? {}
   } catch (error) {
     if (isApiError(error) && error.data.status === 403) {
       readOnly = true
@@ -1124,8 +1125,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
   const { grunnlag, opptjeningstyper, readOnly } = loaderData
   const { errors } = actionData || {}
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
-  const navigation = useNavigation()
-  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
+  const isSubmitting = useIsSubmitting()
 
   const saker = grunnlag.saker ?? []
   const [selectedSakId, setSelectedSakId] = useState('')
