@@ -56,10 +56,18 @@ export const fetcher =
           },
         )
       } else if (contentType?.includes('application/problem+json')) {
-        const problemDetails: ProblemDetails = (await response.json()) as ProblemDetails
+        const problemDetails = (await response.json()) as ProblemDetails & { violations?: string[] }
 
         throw data(
           {
+            // Flat felter i tillegg til problemDetails, slik at isApiError() og kallere som
+            // leser error.data.status/violations (f.eks. validering fra pen) fungerer.
+            // problemDetails beholdes for ErrorBoundary (root.tsx).
+            status: problemDetails.status ?? response.status,
+            title: problemDetails.title || response.statusText || 'API Error',
+            message: problemDetails.detail,
+            detail: problemDetails.detail,
+            violations: problemDetails.violations,
             problemDetails: problemDetails,
             traceId: traceId(),
           },
