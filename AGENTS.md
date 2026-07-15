@@ -59,13 +59,13 @@ app/behandlinger/alderspensjon-soknad/vurder-samboer/
 
 If a folder matching the handler name already exists, inspect its contents before creating any files. If an implementation already exists, report this to the user and ask whether to overwrite, extend, or skip.
 
-### Step 3: Create PascalCase component file
+### Step 3: Create index.tsx with loader, action, and component
 
-Create a PascalCase filename from the handler name (e.g., handler name `vurder-samboer` becomes `VurderSamboer.tsx`). The file should contain a loader, action, and default-exported component following React Router 7 patterns. Unless otherwise specified, implement empty boilerplate for the loader and action.
+Create `index.tsx` directly in the aktivitet folder. This file contains the `loader`, `action`, and default-exported component following React Router 7 patterns — it is the route module itself, not a re-export wrapper. Unless otherwise specified, implement empty boilerplate for the loader and action.
 
-### Step 4: Create index.tsx
+### Step 4: Extract sub-components when useful
 
-Export your component, loader, and action from index.tsx, this will be the import path.
+If the component grows large or has clearly separable parts (e.g. a status-specific view, an address display block), extract them into their own PascalCase files alongside `index.tsx` (e.g. `AfpLivsvarigVenter.tsx`, `AddressBlock/`) and import them into `index.tsx`. This is optional — small aktiviteter can keep everything in `index.tsx`.
 
 ### Step 5: Implement Component
 
@@ -77,7 +77,7 @@ For structural reference (import patterns and component layout), check `app/beha
 
 - ✅ **Use Aksel components** (`@navikt/ds-react`) - This is IMPORTANT
 - ✅ Use exact handler names from API as folder names
-- ✅ Export from index.tsx
+- ✅ Define loader, action, and default component in `index.tsx`
 - ✅ Use React Router 7 patterns (loader, action, default export)
 - ✅ Keep behandling context when fetching data
 
@@ -208,7 +208,7 @@ Before declaring work complete, follow this checklist in order:
 2. Run `pnpm typecheck` to check for TypeScript errors. If it fails to run, report the exact error output to the user.
 3. Check diagnostics for all files you have edited — both implementation files and test files. Fix all type errors and linting issues.
 4. Verify that no plain HTML elements replace available Aksel components.
-5. Confirm all new files are exported from `index.tsx`.
+5. Confirm the loader, action, and default component live in `index.tsx` (any extracted sub-components should be imported there).
 
 ## Automatiske skjermbilder for dokumentasjon
 
