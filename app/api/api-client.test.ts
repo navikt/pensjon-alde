@@ -153,6 +153,58 @@ describe('fetcher error-håndtering', () => {
     expect(error.data.message).toBe('"Uventet strengrespons"')
   })
 
+  it('faller tilbake til rå tekst når problemDetails.detail ikke er en streng (f.eks. en array)', async () => {
+    const { fetcher } = await import('./api-client')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          type: 'about:blank',
+          title: 'Valideringsfeil',
+          status: 400,
+          detail: ['Feil A', 'Feil B'],
+        }),
+        { status: 400, headers: { 'content-type': 'application/problem+json' } },
+      ),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'POST' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.message).not.toBeUndefined()
+    expect(error.data.detail).not.toBeUndefined()
+    expect(error.data.problemDetails?.detail).not.toBeUndefined()
+  })
+
+  it('faller tilbake til rå tekst når message/detail i application/json-feil ikke er strenger', async () => {
+    const { fetcher } = await import('./api-client')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ error: 'Feil', message: { code: 'X' }, detail: { code: 'Y' } }), {
+        status: 500,
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'GET' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.message).not.toBeUndefined()
+    expect(error.data.detail).not.toBeUndefined()
+  })
+
   it('mapper application/json-feil til flate felter med traceId fra traceparent', async () => {
     const { fetcher } = await import('./api-client')
 
@@ -271,7 +323,7 @@ describe('fetcher error-håndtering', () => {
     expect(error.data.message).toBe('not json')
   })
 
-  it('kaster ikke hvis feilfelter i responsen ikke er strenger (f.eks. objekt/array) til tross for at type-signaturen sier string', async () => {
+  it('kaster ikke hvis feilfelter i responsen ikke er strenger (f.eks. objekt/array), og faller tilbake til rå tekst for detail', async () => {
     const { fetcher } = await import('./api-client')
 
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
@@ -296,7 +348,7 @@ describe('fetcher error-håndtering', () => {
 
     if (!isApiError(error)) throw new Error('forventet ApiError')
     expect(error.data.status).toBe(400)
-    expect(error.data.detail).toBeUndefined()
+    expect(error.data.detail).toContain('unexpected')
   })
 })
 
