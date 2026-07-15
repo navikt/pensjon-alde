@@ -45,6 +45,58 @@ describe('fetcher error-håndtering', () => {
     expect(error.data.violations).toEqual(['Feil A', 'Feil B'])
   })
 
+  it('redakterer også title i det nøstede problemDetails-objektet, ikke bare de flate feltene', async () => {
+    const { fetcher } = await import('./api-client')
+
+    const jwt = ['eyJhbGciOiJSUzI1NiJ9', 'eyJzdWIiOiIxMjM0NTY3ODkwIn0', 'signaturedel'].join('.')
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          type: 'about:blank',
+          title: `Uautorisert: ${jwt}`,
+          status: 401,
+          detail: `Token: ${jwt}`,
+        }),
+        { status: 401, headers: { 'content-type': 'application/problem+json' } },
+      ),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'GET' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.title).not.toContain(jwt)
+    expect(error.data.problemDetails?.title).not.toContain(jwt)
+    expect(error.data.problemDetails?.detail).not.toContain(jwt)
+  })
+
+  it('faller tilbake til rå tekst når responsen er gyldig JSON men ikke et objekt (f.eks. en ren streng)', async () => {
+    const { fetcher } = await import('./api-client')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify('Uventet strengrespons'), {
+        status: 500,
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'GET' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.message).toBe('"Uventet strengrespons"')
+  })
+
   it('mapper application/json-feil til flate felter med traceId fra traceparent', async () => {
     const { fetcher } = await import('./api-client')
 

@@ -25,7 +25,13 @@ function extractTraceId(response: Response): string | null {
 async function parseBodySafely(response: Response): Promise<{ json?: Record<string, unknown>; text?: string }> {
   const rawText = await response.text()
   try {
-    return { json: JSON.parse(rawText) }
+    const parsed: unknown = JSON.parse(rawText)
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      return { json: parsed as Record<string, unknown> }
+    }
+    // Gyldig JSON, men ikke et objekt (f.eks. en ren streng/tall/array) – behandle som rå tekst
+    // slik at vi ikke mister innholdet og fallback-verdiene i buildApiError() fortsatt fungerer.
+    return { text: rawText }
   } catch {
     return { text: rawText }
   }
@@ -48,7 +54,11 @@ async function buildApiError(response: Response) {
       message: redactTokens(problemDetails.detail ?? unparsedText),
       detail: redactTokens(problemDetails.detail ?? unparsedText),
       violations: problemDetails.violations,
-      problemDetails: { ...problemDetails, detail: redactTokens(problemDetails.detail) },
+      problemDetails: {
+        ...problemDetails,
+        title: redactTokens(problemDetails.title),
+        detail: redactTokens(problemDetails.detail),
+      },
       traceId,
     }
   }
