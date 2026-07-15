@@ -11,8 +11,8 @@ export function buildPsakOversiktUrl(
   }
 
   if (!behandling.fnr) {
-    return buildUrl(env.psakOversiktUrlTemplate, request, {})
+    return buildUrl(env.psakOversiktUrlTemplate.replace('/{pid}', ''), request, {})
   }
 
-  return buildUrl(`${env.psakOversiktUrlTemplate}/${encryptPid(behandling.fnr)}`, request, {})
+  return buildUrl(env.psakOversiktUrlTemplate, request, { pid: encryptPid(behandling.fnr) })
 }
