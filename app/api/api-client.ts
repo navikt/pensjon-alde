@@ -6,8 +6,9 @@ import { parseTraceparent } from '~/utils/traceparent'
 
 const JWT_PATTERN = /eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g
 
-function redactTokens(value: string | undefined): string | undefined {
-  return value?.replace(JWT_PATTERN, '[REDACTED]')
+function redactTokens(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  return value.replace(JWT_PATTERN, '[REDACTED]')
 }
 
 function extractTraceId(response: Response): string | null {

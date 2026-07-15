@@ -162,6 +162,34 @@ describe('fetcher error-håndtering', () => {
     if (!isApiError(error)) throw new Error('forventet ApiError')
     expect(error.data.message).toBe('not json')
   })
+
+  it('kaster ikke hvis feilfelter i responsen ikke er strenger (f.eks. objekt/array) til tross for at type-signaturen sier string', async () => {
+    const { fetcher } = await import('./api-client')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          type: 'about:blank',
+          title: { unexpected: 'object-i-stedet-for-streng' },
+          status: 400,
+          detail: ['unexpected', 'array'],
+        }),
+        { status: 400, headers: { 'content-type': 'application/problem+json' } },
+      ),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'GET' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.status).toBe(400)
+    expect(error.data.detail).toBeUndefined()
+  })
 })
 
 describe('fetcher suksess-håndtering', () => {
