@@ -149,10 +149,10 @@ The system automatically:
 ## Testing Your Implementation
 
 ```sh
-npm test          # Run tests in watch mode
-npm run test:ci   # Run tests once (use this after editing tests or tested files)
-npm run typecheck # Type checking
-npm run dev:mock  # Development with mock API
+pnpm test          # Run tests in watch mode
+pnpm test:ci       # Run tests once (use this after editing tests or tested files)
+pnpm typecheck     # Type checking
+pnpm dev:mock      # Development with mock API
 ```
 
 
@@ -177,7 +177,7 @@ Mock API responses are located in `app/mocks/data/`. Check existing files like `
 
 ### TypeScript errors
 
-- Run `npm run typecheck` to generate React Router types
+- Run `pnpm typecheck` to generate React Router types
 - Import types from `./+types`
 
 ## API Endpoints
@@ -204,8 +204,8 @@ The folder structure IS the configuration. Keep it simple, keep it working!
 
 Before declaring work complete, follow this checklist in order:
 
-1. Run `npm run test:ci` after creating or modifying test files, editing files with associated tests, or making changes to core functionality. If `npm run test:ci` fails to run (e.g., missing dependencies, script not found), do not attempt to fix the toolchain — report the exact error output to the user and ask them to resolve the environment issue before proceeding.
-2. Run `npm run typecheck` to check for TypeScript errors. If it fails to run, report the exact error output to the user.
+1. Run `pnpm test:ci` after creating or modifying test files, editing files with associated tests, or making changes to core functionality. If `pnpm test:ci` fails to run (e.g., missing dependencies, script not found), do not attempt to fix the toolchain — report the exact error output to the user and ask them to resolve the environment issue before proceeding.
+2. Run `pnpm typecheck` to check for TypeScript errors. If it fails to run, report the exact error output to the user.
 3. Check diagnostics for all files you have edited — both implementation files and test files. Fix all type errors and linting issues.
 4. Verify that no plain HTML elements replace available Aksel components.
 5. Confirm all new files are exported from `index.tsx`.
@@ -216,14 +216,14 @@ Prosjektet har støtte for automatisk generering av skjermbilder som brukes i do
 
 ### Hvordan det fungerer
 
-Skjermbildene tas med Playwright mot mock-serveren (`npm run dev:mock`). Scriptet navigerer til behandlingsruter, setter alde-settings-cookie for å vise stepper og metadata, og tar fullside-skjermbilder.
+Skjermbildene tas med Playwright mot mock-serveren (`pnpm dev:mock`). Scriptet navigerer til behandlingsruter, setter alde-settings-cookie for å vise stepper og metadata, og tar fullside-skjermbilder.
 
 ### Kommandoer
 
 ```sh
-npm run dev:mock                 # Start mock-serveren (må kjøre først)
-npm run capture-screenshots      # Ta alle skjermbilder (lagres i screenshots/)
-npm run capture-docs-screenshots # Ta kun docs-skjermbilder og kopier til pensjon-dokumentasjon
+pnpm dev:mock                    # Start mock-serveren (må kjøre først)
+pnpm capture-screenshots         # Ta alle skjermbilder (lagres i screenshots/)
+pnpm capture-docs-screenshots    # Ta kun docs-skjermbilder og kopier til pensjon-dokumentasjon
 ```
 
 ### Legge til nye skjermbilder
