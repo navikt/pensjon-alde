@@ -41,6 +41,8 @@ spec:
       value: "{{{ pen.url }}}"
     - name: PSAK_SAK_URL_TEMPLATE
       value: "{{ psak.sak_url_template }}"
+    - name: PSAK_OVERSIKT_URL_TEMPLATE
+      value: "{{ psak.oversikt_url_template }}"
     - name: "PSAK_OPPGAVEOVERSIKT"
       value: "{{ psak.oppgaveoversikt }}"
     - name: "VERDANDE_AKTIVITET_URL"

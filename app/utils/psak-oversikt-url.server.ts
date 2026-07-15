@@ -6,7 +6,7 @@ export function buildPsakOversiktUrl(
   request: Request,
   behandling: { sakId: number | null; fnr: string | null },
 ): string {
-  if (behandling.sakId) {
+  if (behandling.sakId !== null) {
     return buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId })
   }
 

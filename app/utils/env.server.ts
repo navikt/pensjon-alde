@@ -36,6 +36,7 @@ export const env = loadEnv({
   penUrl: 'PEN_URL',
 
   psakSakUrlTemplate: 'PSAK_SAK_URL_TEMPLATE',
+  psakOversiktUrlTemplate: 'PSAK_OVERSIKT_URL_TEMPLATE',
   psakOppgaveoversikt: 'PSAK_OPPGAVEOVERSIKT',
 
   verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
@@ -45,7 +46,10 @@ export const env = loadEnv({
   unleashUrl: 'UNLEASH_SERVER_API_URL',
   unleashApiToken: 'UNLEASH_SERVER_API_TOKEN',
   unleashEnvironment: 'UNLEASH_SERVER_API_ENV',
+}, {
+  pidEncryptionKey: 'PSAK_PID_ENCRYPTION_KEY',
 })
 
 export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'
+export const isMockEnv = process.env.NODE_ENV === 'mock' && !process.env.NAIS_CLUSTER_NAME
 export const isVerdandeLinksEnabled = process.env.VERDANDE_LINKS_ENABLED === 'true'
