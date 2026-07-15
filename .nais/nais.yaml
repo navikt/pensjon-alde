@@ -15,6 +15,7 @@ spec:
         - host: "teampensjon-unleash-api.nav.cloud.nais.io"
   envFrom:
     - secret: alde-unleash-api-token
+    - secret: psak-pid-encryption-key
 
   azure:
     application:
