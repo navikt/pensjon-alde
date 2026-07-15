@@ -45,6 +45,61 @@ describe('fetcher error-håndtering', () => {
     expect(error.data.violations).toEqual(['Feil A', 'Feil B'])
   })
 
+  it('bruker samme (beregnede) status i data()-responsen som i error.data.status', async () => {
+    const { fetcher } = await import('./api-client')
+
+    // HTTP-responsen er 400, men backend sender et avvikende status i problemDetails
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          type: 'about:blank',
+          title: 'Valideringsfeil',
+          status: 422,
+          detail: 'Validering feilet',
+        }),
+        { status: 400, headers: { 'content-type': 'application/problem+json' } },
+      ),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = (await doFetch('/vurdering', { method: 'POST' }).then(
+      () => null,
+      (e: unknown) => e,
+    )) as { init: ResponseInit | null; data: { status: number } }
+
+    expect(error.data.status).toBe(422)
+    expect(error.init?.status).toBe(422)
+  })
+
+  it('filtrerer bort ugyldige (ikke-streng) elementer i violations', async () => {
+    const { fetcher } = await import('./api-client')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          type: 'about:blank',
+          title: 'Valideringsfeil',
+          status: 400,
+          violations: ['Feil A', 42, null, 'Feil B'],
+        }),
+        { status: 400, headers: { 'content-type': 'application/problem+json' } },
+      ),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'POST' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.violations).toEqual(['Feil A', 'Feil B'])
+  })
+
   it('redakterer også title i det nøstede problemDetails-objektet, ikke bare de flate feltene', async () => {
     const { fetcher } = await import('./api-client')
 

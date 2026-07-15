@@ -43,19 +43,24 @@ async function buildApiError(response: Response) {
   const { json, text: unparsedText } = await parseBodySafely(response)
 
   if (contentType?.includes('application/problem+json')) {
-    const problemDetails = (json ?? {}) as ProblemDetails & { violations?: string[] }
+    const problemDetails = (json ?? {}) as ProblemDetails & { violations?: unknown }
+    const status = problemDetails.status ?? response.status
+    const violations = Array.isArray(problemDetails.violations)
+      ? problemDetails.violations.filter((v): v is string => typeof v === 'string')
+      : undefined
 
     return {
       // Flat felter i tillegg til problemDetails, slik at isApiError() og kallere som
       // leser error.data.status/violations (f.eks. validering fra pen) fungerer.
       // problemDetails beholdes for ErrorBoundary (root.tsx).
-      status: problemDetails.status ?? response.status,
+      status,
       title: redactTokens(problemDetails.title) || response.statusText || 'API Error',
       message: redactTokens(problemDetails.detail ?? unparsedText),
       detail: redactTokens(problemDetails.detail ?? unparsedText),
-      violations: problemDetails.violations,
+      violations,
       problemDetails: {
         ...problemDetails,
+        status,
         title: redactTokens(problemDetails.title),
         detail: redactTokens(problemDetails.detail),
       },
@@ -103,8 +108,9 @@ export const fetcher =
     const response = await fetch(`${BASE_URL}${url}`, mergedOptions)
 
     if (!response.ok) {
-      throw data(await buildApiError(response), {
-        status: response.status,
+      const apiError = await buildApiError(response)
+      throw data(apiError, {
+        status: apiError.status,
         statusText: response.statusText,
       })
     }
