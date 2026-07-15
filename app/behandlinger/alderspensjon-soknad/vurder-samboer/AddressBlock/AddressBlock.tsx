@@ -1,4 +1,4 @@
-import { Box, VStack } from '@navikt/ds-react'
+import { BodyShort, Box, VStack } from '@navikt/ds-react'
 import { useMemo } from 'react'
 import type { Bostedsadresse, MatrikkelAdresse, Vegadresse } from '../samboer-types'
 import { MatrikkeladresserBlokk } from './Matrikkeladresse'
@@ -30,7 +30,7 @@ const AddressBlock = ({ bostedadresser }: Props) => {
         content = <MatrikkeladresserBlokk adresse={adresse as MatrikkelAdresse} />
         break
       default:
-        content = <div>Ingen støtte for {(adresse as Bostedsadresse).type}</div>
+        content = <BodyShort>Ingen støtte for {(adresse as Bostedsadresse).type}</BodyShort>
     }
 
     return (

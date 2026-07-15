@@ -38,6 +38,7 @@ import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingSt
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
@@ -120,10 +121,8 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   const behandling = await api.hentBehandling()
 
   const urls = {
-    oppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
-    pensjonsoversikt: behandling.sakId
-      ? buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId })
-      : undefined,
+    psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
+    psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
   }
 
   const isOppsummering = url.pathname.includes('/oppsummering')
@@ -187,7 +186,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
   const stepperContainerRef = useRef<HTMLDivElement>(null)
-  const revalidator = useRevalidator()
+  const { revalidate } = useRevalidator()
   const ref = useRef<HTMLDialogElement>(null)
 
   const root = useRouteLoaderData<typeof rootLoader>('root')
@@ -268,7 +267,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       let pollCount = 0
       const intervalId = setInterval(() => {
         pollCount++
-        revalidator.revalidate()
+        revalidate()
 
         if (pollCount >= 10) {
           clearInterval(intervalId)
@@ -277,7 +276,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
       return () => clearInterval(intervalId)
     }
-  }, [behandlingJobber, revalidator])
+  }, [behandlingJobber, revalidate])
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {
@@ -312,8 +311,8 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         me={me}
         isDarkmode={isDarkmode}
         setDarkmode={setDarkmode}
-        pensjonsoversiktUrl={urls.pensjonsoversikt}
-        oppgaveoversiktUrl={urls.oppgaveoversikt}
+        psakPensjonsoversiktUrl={urls.psakPensjonsoversiktUrl}
+        psakOppgaveoversiktUrl={urls.psakOppgaveoversiktUrl}
         environment={telemetry.environment}
         verdandeAktivitetUrl={verdandeAktivitetUrl}
         verdandeBehandlingUrl={verdandeBehandlingUrl}
@@ -338,11 +337,15 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 Født: {formatDateToNorwegian(behandling.fodselsdato)} ({formatDateToAge(behandling.fodselsdato)})
                 <Spacer />
                 {behandling.sakType}
-                <span>/</span>
-                <HStack align="center">
-                  {behandling.sakId}
-                  <CopyButton size="small" variant="action" copyText={behandling.sakId?.toString() ?? ''} />
-                </HStack>
+                {behandling.sakId && (
+                  <>
+                    <span>/</span>
+                    <HStack align="center">
+                      {behandling.sakId}
+                      <CopyButton size="small" data-color="accent" copyText={behandling.sakId?.toString() ?? ''} />
+                    </HStack>
+                  </>
+                )}
               </HStack>
             </Box>
           </VStack>
@@ -391,6 +394,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     <CopyButton
                       text={behandling.kravId.toString()}
                       copyText={behandling.kravId.toString()}
+                      data-color="accent"
                       size="small"
                     />
                   </VStack>
@@ -402,6 +406,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                     <CopyButton
                       text={behandling.sakId.toString()}
                       copyText={behandling.sakId.toString()}
+                      data-color="accent"
                       size="small"
                     />
                   </VStack>
@@ -433,7 +438,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                   <Button
                     type="submit"
                     size="small"
-                    onClick={() => window.open(urls.pensjonsoversikt, '_blank')}
+                    onClick={() => window.open(urls.psakOppgaveoversiktUrl, '_blank')}
                     icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
                     iconPosition="right"
                   >
@@ -506,7 +511,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
           <Modal ref={ref} header={{ heading: 'Vil du avbryte del-automatisk behandling?' }}>
             <Form method="post">
-              <input hidden name="aktivitetId" value={aktivitetId} />
+              <input type="hidden" name="aktivitetId" value={aktivitetId} />
               <Modal.Body>
                 <VStack gap="space-16">
                   <BodyLong>Saksbehandlingen vil fortsettes som manuell kravbehandling.</BodyLong>

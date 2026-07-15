@@ -1,6 +1,5 @@
 import { PersonIcon } from '@navikt/aksel-icons'
 import {
-  Alert,
   BodyShort,
   Button,
   DatePicker,
@@ -13,14 +12,16 @@ import {
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
+import { isAfter, startOfDay } from 'date-fns'
 import { useState } from 'react'
-import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
+import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
+import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { formatDateToNorwegian } from '~/utils/date'
+import { formatDateToNorwegian, parseDate } from '~/utils/date'
 import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
@@ -41,7 +42,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   })
 
   const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
-
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
   return {
@@ -80,8 +80,8 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   if (parsedForm.samboerFra) {
-    const today = new Date()
-    if (new Date(parsedForm.samboerFra) > today) {
+    const samboerFraDate = parseDate(parsedForm.samboerFra)
+    if (samboerFraDate && isAfter(startOfDay(samboerFraDate), startOfDay(new Date()))) {
       errors.samboerFra = 'Dato kan ikke være etter dagens dato'
     }
   }
@@ -134,8 +134,7 @@ function VurdereSamboerComponent({
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const defaultVurdering = vurdering?.vurdering
   const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
-  const navigation = useNavigation()
-  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
+  const isSubmitting = useIsSubmitting()
 
   const { inputProps, datepickerProps } = useDatepicker({
     defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
@@ -188,17 +187,19 @@ function VurdereSamboerComponent({
               </InlineMessage>
             )}
 
-            {/*<Textarea
-            readOnly={readOnly}
-            label="Kommentar samboervurdering"
-            description="Kun ved behov for tilleggsopplysninger"
-            rows={4}
-          />*/}
+            {/*
+            <Textarea
+                readOnly={readOnly}
+                label="Kommentar samboervurdering"
+                description="Kun ved behov for tilleggsopplysninger"
+                rows={4}
+            />
+            */}
 
             {errors?._form && (
-              <Alert variant="error" className="mb-4">
+              <InlineMessage status="error" className="mb-4">
                 {errors._form}
-              </Alert>
+              </InlineMessage>
             )}
 
             {!readOnly && (
@@ -233,9 +234,9 @@ function VurdereSamboerComponent({
           <Heading size="xsmall" level="2">
             <PersonIcon /> Samboer
           </Heading>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <HStack align="center">
             <Fnr value={samboer.fnr} />
-          </div>
+          </HStack>
           {samboer.navn.etternavn.toUpperCase()}, {samboer.navn.fornavn} {samboer.navn.mellomnavn}
         </VStack>
       </AktivitetVurderingLayout.Section>
@@ -303,7 +304,7 @@ function VurdereSamboerComponent({
             {samboer.bostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={samboer.bostedsadresser} />
             ) : (
-              <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+              <InlineMessage status="info">Ingen bostedsadresser funnet.</InlineMessage>
             )}
           </AddressWrapper>
 
@@ -314,7 +315,7 @@ function VurdereSamboerComponent({
             {sokersBostedsadresser.length > 0 ? (
               <AddressBlock bostedadresser={sokersBostedsadresser} />
             ) : (
-              <Alert variant="info">Ingen bostedsadresser funnet.</Alert>
+              <InlineMessage status="info">Ingen bostedsadresser funnet.</InlineMessage>
             )}
           </AddressWrapper>
         </HGrid>

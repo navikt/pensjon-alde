@@ -133,7 +133,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [location.pathname, location.search, params.behandlingId, params.aktivitetId])
 
   return (
-    <html lang="en">
+    <html lang="nb" className={data?.darkmode ? 'dark' : 'light'}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -165,8 +165,12 @@ export default function App({ loaderData }: Route.ComponentProps) {
 
   const outletContext: RootOutletContext = { setDarkmode, isDarkmode }
 
+  useEffect(() => {
+    document.documentElement.className = isDarkmode ? 'dark' : 'light'
+  }, [isDarkmode])
+
   return (
-    <Theme theme={isDarkmode ? 'dark' : 'light'} className={sketchmode ? styles.sketchMode : ''}>
+    <Theme className={sketchmode ? styles.sketchMode : ''}>
       <Outlet context={outletContext} />
     </Theme>
   )
@@ -179,7 +183,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const dato = new Date(iso).getTime()
 
   let details: string | undefined
-
   let traceId: string | undefined
 
   if (isRouteErrorResponse(error) || (typeof error === 'object' && error !== null && 'status' in error)) {
@@ -188,7 +191,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
     if (error.status === 403) {
       return (
-        <Theme theme={root?.darkmode ? 'dark' : 'light'}>
+        <Theme>
           <ForbiddenPage dato={dato} traceId={traceId} />
         </Theme>
       )
@@ -215,7 +218,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   logError(new Error(details))
 
   return (
-    <Theme theme={root?.darkmode ? 'dark' : 'light'}>
+    <Theme>
       <Page>
         <Page.Block gutters width="md" className={commonStyles.page}>
           <VStack gap="space-32">

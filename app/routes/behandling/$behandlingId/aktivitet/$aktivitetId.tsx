@@ -1,10 +1,11 @@
-import { Alert, Box, Detail, Heading, Page } from '@navikt/ds-react'
+import { InformationSquareIcon } from '@navikt/aksel-icons'
+import { BodyShort, InfoCard, Page } from '@navikt/ds-react'
 import { Outlet, redirect, useFetcher, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
-import { type AktivitetDTO, BehandlingStatus } from '~/types/behandling'
+import { type AktivitetDTO, AktivitetStatus, BehandlingStatus } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 
@@ -105,30 +106,34 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
     )
   }
 
-  if (behandling.status === BehandlingStatus.FEILENDE) {
+  if (
+    behandling.status === BehandlingStatus.FEILENDE ||
+    (behandling.status === BehandlingStatus.DEBUG && aktivitet.status === AktivitetStatus.FEILET)
+  ) {
     return <FeilendeBehandling dato={dato} behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
   } else {
     return (
       <Page.Block className="aktivitet">
         <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
         {!outlet && (
-          <Box paddingBlock="space-32 space-0" style={{ display: 'flex', justifyContent: 'center' }}>
-            <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
-              <Heading spacing size="small" level="3">
-                Aktivitet ikke implementert enda
-              </Heading>
-
-              <Detail>
-                <strong>Aktivitet:</strong> {aktivitet.friendlyName}
-              </Detail>
-              <Detail>
-                <strong>Type:</strong> {aktivitet.type}
-              </Detail>
-              <Detail>
-                <strong>Behandling:</strong> {behandling.friendlyName}
-              </Detail>
-            </Alert>
-          </Box>
+          <Page.Block gutters>
+            <InfoCard data-color="info" as="section" aria-label="Aktivitet ikke implementert enda">
+              <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+                <InfoCard.Title>Aktivitet ikke implementert enda</InfoCard.Title>
+              </InfoCard.Header>
+              <InfoCard.Content>
+                <BodyShort>
+                  <strong>Aktivitet:</strong> {aktivitet.friendlyName}
+                </BodyShort>
+                <BodyShort>
+                  <strong>Type:</strong> {aktivitet.type}
+                </BodyShort>
+                <BodyShort>
+                  <strong>Behandling:</strong> {behandling.friendlyName}
+                </BodyShort>
+              </InfoCard.Content>
+            </InfoCard>
+          </Page.Block>
         )}
         {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
       </Page.Block>

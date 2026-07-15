@@ -43,6 +43,12 @@ describe('buildUrl', () => {
     expect(buildUrl(template, request, params)).toBe('https://ansatt.example.com/api')
   })
 
+  it('leaves placeholder untouched when parameter value is null', () => {
+    const template = 'https://example.com/api/{id}'
+    const params = { id: null }
+    expect(buildUrl(template, request, params)).toBe('https://example.com/api/{id}')
+  })
+
   it('uses "intern" subdomain when request hostname does not include "ansatt"', () => {
     const template = 'https://{subdomain}.example.com/api'
     const params = {}

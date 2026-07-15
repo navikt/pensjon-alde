@@ -7,16 +7,16 @@ import type { Soknad } from './index'
 interface AfpLivsvarigVenterProps {
   soknad: Soknad
   aktivitet: AktivitetDTO
-  pensjonsoversiktUrl?: string
-  psakOppgaveoversikt?: string
+  psakPensjonsoversiktUrl?: string
+  psakOppgaveoversiktUrl?: string
   avbrytAktivitet?: () => void
 }
 
 export function AfpLivsvarigVenter({
   soknad,
   aktivitet,
-  pensjonsoversiktUrl,
-  psakOppgaveoversikt,
+  psakPensjonsoversiktUrl,
+  psakOppgaveoversiktUrl,
   avbrytAktivitet,
 }: AfpLivsvarigVenterProps) {
   return (
@@ -52,8 +52,8 @@ export function AfpLivsvarigVenter({
           </VStack>
         </VStack>
         <VStack gap="space-8" align="center">
-          {pensjonsoversiktUrl && <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>}
-          {psakOppgaveoversikt && <Link href={psakOppgaveoversikt}>Oppgavelisten</Link>}
+          {psakPensjonsoversiktUrl && <Link href={psakPensjonsoversiktUrl}>Pensjonsoversikt</Link>}
+          {psakOppgaveoversiktUrl && <Link href={psakOppgaveoversiktUrl}>Oppgavelisten</Link>}
         </VStack>
         {avbrytAktivitet && (
           <div>
