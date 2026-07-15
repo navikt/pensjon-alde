@@ -1,7 +1,7 @@
 import { isValid, parseISO } from 'date-fns'
 
 export function parseDate(date: string | Date | number | null | undefined): Date | null {
-  if (!date) return null
+  if (date === null || date === undefined || date === '') return null
 
   let dateObj: Date
 

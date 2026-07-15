@@ -29,6 +29,11 @@ describe('parseDate', () => {
     expect(parseDate(ts)?.getTime()).toBe(ts)
   })
 
+  it('parser epoch (0) som gyldig timestamp, ikke som tom verdi', () => {
+    expect(parseDate(0)?.getTime()).toBe(0)
+    expect(parseDate('0')?.getTime()).toBe(0)
+  })
+
   it('returnerer det samme Date-objektet for en gyldig Date', () => {
     const date = new Date('2026-07-14T00:00:00Z')
     expect(parseDate(date)).toBe(date)
