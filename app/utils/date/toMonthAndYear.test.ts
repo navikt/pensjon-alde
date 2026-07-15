@@ -17,4 +17,9 @@ describe('toMonthAndYear', () => {
   it('returns empty string for undefined input', () => {
     expect(toMonthAndYear(undefined)).toBe('')
   })
+
+  it('treats 0 as a valid epoch date (1970-01-01), not as a missing value', () => {
+    expect(toMonthAndYear(0)).toBe('Januar 1970')
+    expect(toMonthAndYear('0')).toBe('Januar 1970')
+  })
 })
