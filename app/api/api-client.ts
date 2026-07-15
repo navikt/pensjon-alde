@@ -21,50 +21,53 @@ function extractTraceId(response: Response): string | null {
   return navTraceId
 }
 
+async function parseBodySafely(response: Response): Promise<{ json?: Record<string, unknown>; text?: string }> {
+  const rawText = await response.text()
+  try {
+    return { json: JSON.parse(rawText) }
+  } catch {
+    return { text: rawText }
+  }
+}
+
 async function buildApiError(response: Response) {
   const traceId = extractTraceId(response)
   const contentType = response.headers.get('content-type')
+  const { json, text: unparsedText } = await parseBodySafely(response)
 
   if (contentType?.includes('application/problem+json')) {
-    const problemDetails = (await response.json()) as ProblemDetails & { violations?: string[] }
+    const problemDetails = (json ?? {}) as ProblemDetails & { violations?: string[] }
 
     return {
       // Flat felter i tillegg til problemDetails, slik at isApiError() og kallere som
       // leser error.data.status/violations (f.eks. validering fra pen) fungerer.
       // problemDetails beholdes for ErrorBoundary (root.tsx).
       status: problemDetails.status ?? response.status,
-      title: problemDetails.title || response.statusText || 'API Error',
-      message: redactTokens(problemDetails.detail),
-      detail: redactTokens(problemDetails.detail),
+      title: redactTokens(problemDetails.title) || response.statusText || 'API Error',
+      message: redactTokens(problemDetails.detail ?? unparsedText),
+      detail: redactTokens(problemDetails.detail ?? unparsedText),
       violations: problemDetails.violations,
       problemDetails: { ...problemDetails, detail: redactTokens(problemDetails.detail) },
       traceId,
     }
   }
 
-  let errorBody: { error?: string; message?: string; detail?: string; path?: string; timestamp?: string } = {}
-  let unparsedText: string | undefined
-
-  if (contentType?.includes('application/json')) {
-    errorBody = await response.json()
-  } else {
-    const errorText = await response.text()
-    try {
-      errorBody = JSON.parse(errorText)
-    } catch {
-      errorBody = {}
-      unparsedText = errorText
-    }
+  const errorBody = (json ?? {}) as {
+    error?: string
+    message?: string
+    detail?: string
+    path?: string
+    timestamp?: string
   }
 
   return {
     status: response.status,
-    title: errorBody?.error || response.statusText || 'API Error',
-    message: redactTokens(errorBody?.message ?? unparsedText),
+    title: redactTokens(errorBody.error) || response.statusText || 'API Error',
+    message: redactTokens(errorBody.message ?? unparsedText),
     traceId,
-    detail: redactTokens(errorBody?.detail ?? unparsedText),
-    path: errorBody?.path,
-    timestamp: errorBody?.timestamp,
+    detail: redactTokens(errorBody.detail ?? unparsedText),
+    path: errorBody.path,
+    timestamp: errorBody.timestamp,
   }
 }
 

@@ -74,6 +74,8 @@ export function isProblemDetails(value: unknown): value is ProblemDetails {
     (obj.title === undefined || typeof obj.title === 'string') &&
     (obj.status === undefined || typeof obj.status === 'number') &&
     (obj.detail === undefined || typeof obj.detail === 'string') &&
-    (obj.instance === undefined || typeof obj.instance === 'string')
+    (obj.instance === undefined || typeof obj.instance === 'string') &&
+    (obj.violations === undefined ||
+      (Array.isArray(obj.violations) && obj.violations.every(v => typeof v === 'string')))
   )
 }

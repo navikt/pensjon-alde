@@ -118,6 +118,50 @@ describe('fetcher error-håndtering', () => {
     if (!isApiError(error)) throw new Error('forventet ApiError')
     expect(error.data.message).toBe('Internal Server Error: database connection failed')
   })
+
+  it('kaster ikke, men faller tilbake til rå tekst når content-type sier application/json men kroppen er ugyldig JSON', async () => {
+    const { fetcher } = await import('./api-client')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('<html>Gateway Timeout</html>', {
+        status: 504,
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'GET' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.message).toBe('<html>Gateway Timeout</html>')
+  })
+
+  it('kaster ikke, men faller tilbake til rå tekst når content-type sier problem+json men kroppen er ugyldig JSON', async () => {
+    const { fetcher } = await import('./api-client')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('not json', {
+        status: 500,
+        headers: { 'content-type': 'application/problem+json' },
+      }),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'GET' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.message).toBe('not json')
+  })
 })
 
 describe('fetcher suksess-håndtering', () => {
