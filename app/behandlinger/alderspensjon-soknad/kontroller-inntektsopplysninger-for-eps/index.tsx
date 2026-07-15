@@ -144,7 +144,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
 
               <HStack gap="space-8" align="center">
                 <BodyShort>{grunnlag.epsInformasjon.fnr}</BodyShort>
-                <CopyButton copyText={grunnlag.epsInformasjon.fnr} size="small" variant="action" />
+                <CopyButton copyText={grunnlag.epsInformasjon.fnr} size="small" data-color="accent" />
               </HStack>
 
               <BodyShort>

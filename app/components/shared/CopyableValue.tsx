@@ -6,7 +6,7 @@ export function CopyableValue({ value }: { value: string }) {
       <BodyShort size="small" textColor="subtle">
         {value}
       </BodyShort>
-      <CopyButton copyText={value} size="small" variant="action" />
+      <CopyButton copyText={value} size="small" data-color="accent" />
     </HStack>
   )
 }

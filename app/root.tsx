@@ -257,7 +257,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
                           <BodyShort size="small" textColor="subtle">
                             {traceId}
                           </BodyShort>
-                          <CopyButton copyText={traceId} size="small" variant="action" />
+                          <CopyButton copyText={traceId} size="small" data-color="accent" />
                         </HStack>
                       )}
                     </VStack>

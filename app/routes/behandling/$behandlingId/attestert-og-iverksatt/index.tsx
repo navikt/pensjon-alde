@@ -8,11 +8,12 @@ import FeilendeBehandling from '~/components/FeilendeBehandling'
 import { AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { env } from '~/utils/env.server'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
   const { behandlingId } = params
-  const { psakOppgaveoversikt, psakSakUrlTemplate } = env
+  const { psakOppgaveoversikt } = env
 
   const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
@@ -26,7 +27,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
       behandling,
       dato: Date.now(),
       psakOppgaveoversikt: buildUrl(psakOppgaveoversikt, request, {}),
-      psakPensjonsoversikt: buildUrl(psakSakUrlTemplate, request, { sakId: behandling.sakId }),
+      psakPensjonsoversikt: buildPsakOversiktUrl(request, behandling),
       status: behandling.aldeBehandlingStatus,
     }
   } else {
