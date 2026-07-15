@@ -98,6 +98,7 @@ describe('fetcher error-håndtering', () => {
 
     if (!isApiError(error)) throw new Error('forventet ApiError')
     expect(error.data.violations).toEqual(['Feil A', 'Feil B'])
+    expect(error.data.problemDetails?.violations).toEqual(['Feil A', 'Feil B'])
   })
 
   it('redakterer også title i det nøstede problemDetails-objektet, ikke bare de flate feltene', async () => {

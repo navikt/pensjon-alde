@@ -63,6 +63,7 @@ async function buildApiError(response: Response) {
         status,
         title: redactTokens(problemDetails.title),
         detail: redactTokens(problemDetails.detail),
+        violations,
       },
       traceId,
     }
