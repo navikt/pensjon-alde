@@ -26,8 +26,8 @@
     "e2e:ui": "playwright test --ui",
     "storybook": "STORYBOOK=true storybook dev -p 6006",
     "build-storybook": "STORYBOOK=true storybook build",
-    "capture-screenshots": "pnpm tsx scripts/capture-screenshots.ts",
-    "capture-docs-screenshots": "pnpm tsx scripts/capture-screenshots.ts --docs",
+    "capture-screenshots": "tsx scripts/capture-screenshots.ts",
+    "capture-docs-screenshots": "tsx scripts/capture-screenshots.ts --docs",
     "typecheck": "react-router typegen && tsc",
     "prepare": "lefthook install"
   },

@@ -438,7 +438,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                   <Button
                     type="submit"
                     size="small"
-                    onClick={() => window.open(urls.psakOppgaveoversiktUrl, '_blank')}
+                    onClick={() => window.open(urls.psakPensjonsoversiktUrl, '_blank')}
                     icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
                     iconPosition="right"
                   >
