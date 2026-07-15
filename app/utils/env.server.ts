@@ -26,26 +26,33 @@ export function loadEnv<R extends Record<string, string>, O extends Record<strin
   return { ...req, ...opt }
 }
 
-export const env = loadEnv({
-  clientId: 'AZURE_APP_CLIENT_ID',
-  clientSecret: 'AZURE_APP_CLIENT_SECRET',
-  issuer: 'AZURE_OPENID_CONFIG_ISSUER',
-  tokenEndpoint: 'AZURE_OPENID_CONFIG_TOKEN_ENDPOINT',
+export const env = loadEnv(
+  {
+    clientId: 'AZURE_APP_CLIENT_ID',
+    clientSecret: 'AZURE_APP_CLIENT_SECRET',
+    issuer: 'AZURE_OPENID_CONFIG_ISSUER',
+    tokenEndpoint: 'AZURE_OPENID_CONFIG_TOKEN_ENDPOINT',
 
-  penScope: 'PEN_SCOPE',
-  penUrl: 'PEN_URL',
+    penScope: 'PEN_SCOPE',
+    penUrl: 'PEN_URL',
 
-  psakSakUrlTemplate: 'PSAK_SAK_URL_TEMPLATE',
-  psakOppgaveoversikt: 'PSAK_OPPGAVEOVERSIKT',
+    psakSakUrlTemplate: 'PSAK_SAK_URL_TEMPLATE',
+    psakOversiktUrlTemplate: 'PSAK_OVERSIKT_URL_TEMPLATE',
+    psakOppgaveoversikt: 'PSAK_OPPGAVEOVERSIKT',
 
-  verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
-  verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
-  telemetryUrl: 'TELEMETRY_URL',
-  modia: 'MODIA_PERSONOVERSIKT',
-  unleashUrl: 'UNLEASH_SERVER_API_URL',
-  unleashApiToken: 'UNLEASH_SERVER_API_TOKEN',
-  unleashEnvironment: 'UNLEASH_SERVER_API_ENV',
-})
+    verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
+    verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
+    telemetryUrl: 'TELEMETRY_URL',
+    modia: 'MODIA_PERSONOVERSIKT',
+    unleashUrl: 'UNLEASH_SERVER_API_URL',
+    unleashApiToken: 'UNLEASH_SERVER_API_TOKEN',
+    unleashEnvironment: 'UNLEASH_SERVER_API_ENV',
+  },
+  {
+    pidEncryptionKey: 'PSAK_PID_ENCRYPTION_KEY',
+  },
+)
 
 export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'
+export const isMockEnv = process.env.NODE_ENV === 'mock' && !process.env.NAIS_CLUSTER_NAME
 export const isVerdandeLinksEnabled = process.env.VERDANDE_LINKS_ENABLED === 'true'

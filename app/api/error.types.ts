@@ -5,6 +5,9 @@ export interface ApiErrorData {
   detail?: string
   path?: string
   timestamp?: string
+  violations?: string[]
+  traceId?: string | null
+  problemDetails?: ProblemDetails
 }
 
 export function isApiError(error: unknown): error is { data: ApiErrorData } {
@@ -51,6 +54,12 @@ export interface ProblemDetails {
    * It may or may not yield further information if dereferenced.
    */
   instance?: string
+
+  /**
+   * Ekstra medlem (RFC 9457 extension) brukt av pen sin valideringsrespons:
+   * liste med valideringsfeil som kan vises til saksbehandler.
+   */
+  violations?: string[]
 }
 
 export function isProblemDetails(value: unknown): value is ProblemDetails {
