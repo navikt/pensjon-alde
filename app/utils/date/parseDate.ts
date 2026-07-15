@@ -1,14 +1,15 @@
 import { isValid, parseISO } from 'date-fns'
 
 export function parseDate(date: string | Date | number | null | undefined): Date | null {
-  if (date === null || date === undefined || date === '') return null
+  if (date === null || date === undefined) return null
+  if (typeof date === 'string' && date.trim() === '') return null
 
   let dateObj: Date
 
   if (typeof date === 'string') {
     dateObj = parseISO(date)
     if (!isValid(dateObj)) {
-      const timestamp = Number(date)
+      const timestamp = Number(date.trim())
       if (!Number.isNaN(timestamp)) {
         dateObj = new Date(timestamp)
       }
