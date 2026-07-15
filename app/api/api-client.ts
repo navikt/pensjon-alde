@@ -43,6 +43,7 @@ async function buildApiError(response: Response) {
   }
 
   let errorBody: { error?: string; message?: string; detail?: string; path?: string; timestamp?: string } = {}
+  let unparsedText: string | undefined
 
   if (contentType?.includes('application/json')) {
     errorBody = await response.json()
@@ -52,15 +53,16 @@ async function buildApiError(response: Response) {
       errorBody = JSON.parse(errorText)
     } catch {
       errorBody = {}
+      unparsedText = errorText
     }
   }
 
   return {
     status: response.status,
     title: errorBody?.error || response.statusText || 'API Error',
-    message: redactTokens(errorBody?.message),
+    message: redactTokens(errorBody?.message ?? unparsedText),
     traceId,
-    detail: redactTokens(errorBody?.detail),
+    detail: redactTokens(errorBody?.detail ?? unparsedText),
     path: errorBody?.path,
     timestamp: errorBody?.timestamp,
   }

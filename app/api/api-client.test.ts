@@ -96,6 +96,28 @@ describe('fetcher error-håndtering', () => {
     expect(error.data.message).toBe('Ugyldig token: [REDACTED]')
     expect(error.data.message).not.toContain(jwt)
   })
+
+  it('bevarer rå tekst som melding når feilrespons ikke er gyldig JSON', async () => {
+    const { fetcher } = await import('./api-client')
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('Internal Server Error: database connection failed', {
+        status: 502,
+        headers: { 'content-type': 'text/plain' },
+      }),
+    )
+
+    const request = new Request('https://app.intern.nav.no/path')
+    const doFetch = fetcher('https://pen', request)
+
+    const error = await doFetch('/vurdering', { method: 'GET' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+
+    if (!isApiError(error)) throw new Error('forventet ApiError')
+    expect(error.data.message).toBe('Internal Server Error: database connection failed')
+  })
 })
 
 describe('fetcher suksess-håndtering', () => {
