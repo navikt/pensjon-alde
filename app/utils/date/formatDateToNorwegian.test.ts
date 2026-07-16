@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { describe, expect, it } from 'vitest'
 import { formatDateToNorwegian } from './formatDateToNorwegian'
 
@@ -24,6 +25,14 @@ describe('formatDateToNorwegian', () => {
     expect(formatDateToNorwegian(null)).toBe('')
     expect(formatDateToNorwegian(undefined)).toBe('')
     expect(formatDateToNorwegian(NaN)).toBe('')
+  })
+
+  it('formaterer epoch (0) som en gyldig dato, ikke som tom verdi', () => {
+    // parseDate() behandler 0 som gyldig (Unix epoch), så formatDateToNorwegian(0)
+    // skal returnere en formatert dato og ikke ''. Dokumenterer bevisst
+    // atferdsendring fra tidligere `if (!date) return ''`-sjekk.
+    expect(formatDateToNorwegian(0)).not.toBe('')
+    expect(formatDateToNorwegian(0)).toBe(format(new Date(0), 'dd.MM.yyyy'))
   })
 
   it('handles timestamp string', () => {

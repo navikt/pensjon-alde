@@ -41,6 +41,11 @@ describe('formatDateToAge', () => {
     expect(formatDateToAge(new Date('2023-09-15T12:00:00Z'))).toBe('0 dager')
   })
 
+  it('treats 0 as a valid epoch date (1970-01-01), not as a missing value', () => {
+    expect(formatDateToAge(0)).toBe('53 år')
+    expect(formatDateToAge('0')).toBe('53 år')
+  })
+
   it('returns empty string for invalid date', () => {
     expect(formatDateToAge('not-a-date')).toBe('')
     expect(formatDateToAge('')).toBe('')
