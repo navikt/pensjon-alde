@@ -15,7 +15,6 @@ export enum BehandlingStatus {
   STOPPET = 'STOPPET',
   UTSATT = 'UTSATT',
   UNDER_BEHANDLING = 'UNDER_BEHANDLING',
-  DEBUG = 'DEBUG',
 }
 
 export enum AktivitetStatus {

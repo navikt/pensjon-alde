@@ -7,7 +7,6 @@ import type {
   OmsorgBackendDTO,
   OppdaterOpptjeningGrunnlag,
   OpptjeningstyperResponse,
-  VurderingResponse,
 } from './oppdater-grunnlag-types'
 
 vi.mock('~/api/aktivitet-api', () => ({
@@ -73,10 +72,9 @@ const opptjeningstyper: OpptjeningstyperResponse = {
   },
 }
 
-function fakeApi(overrides: Partial<Record<'hentGrunnlagsdata' | 'hentVurdering' | 'lagreVurdering', unknown>> = {}) {
+function fakeApi(overrides: Partial<Record<'hentGrunnlagsdata' | 'lagreVurdering', unknown>> = {}) {
   return {
     hentGrunnlagsdata: vi.fn().mockResolvedValue({}),
-    hentVurdering: vi.fn().mockResolvedValue(null),
     lagreVurdering: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   }
@@ -507,15 +505,13 @@ describe('parseIsoDate / toIsoDate', () => {
 })
 
 describe('loader', () => {
-  it('henter grunnlag, vurdering og opptjeningstyper (happy path)', async () => {
+  it('henter grunnlag og opptjeningstyper (happy path)', async () => {
     const grunnlag: OppdaterOpptjeningGrunnlag = {
       saker: [],
       opptjeningsGrunnlagDto: { fnr: '123', inntektListe: [], omsorgListe: [], dagpengerListe: [] },
     }
-    const vurderingResponse: VurderingResponse = { vurdering: JSON.stringify({ fnr: '123' }) }
     const api = fakeApi({
       hentGrunnlagsdata: vi.fn().mockResolvedValue(grunnlag),
-      hentVurdering: vi.fn().mockResolvedValue(vurderingResponse),
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
@@ -525,7 +521,6 @@ describe('loader', () => {
     } as never)
 
     expect(result.grunnlag).toBe(grunnlag)
-    expect(result.savedVurdering).toEqual({ fnr: '123' })
     expect(result.opptjeningstyper).toBe(opptjeningstyper)
     expect(result.readOnly).toBe(false)
   })
@@ -560,7 +555,7 @@ describe('loader', () => {
   })
 
   it('returnerer savedVurdering null når det ikke finnes en lagret vurdering', async () => {
-    const api = fakeApi({ hentVurdering: vi.fn().mockResolvedValue(null) })
+    const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
     const result = await loader({
@@ -568,7 +563,7 @@ describe('loader', () => {
       request: new Request('http://localhost/aktivitet'),
     } as never)
 
-    expect(result.savedVurdering).toBeNull()
+    expect(result.opptjeningstyper).toBe(opptjeningstyper)
   })
 })
 

@@ -40,7 +40,6 @@ import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
-  VurderingResponse,
 } from './oppdater-grunnlag-types'
 
 export function meta() {
@@ -85,16 +84,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     }
   }
 
-  const [vurderingResponse, opptjeningstyper] = await Promise.all([
-    api.hentVurdering<VurderingResponse>(),
-    fetchOpptjeningstyper(request),
-  ])
+  const opptjeningstyper = await fetchOpptjeningstyper(request)
 
-  const savedVurdering: OppdaterOpptjeningVurdering | null = vurderingResponse?.vurdering
-    ? (JSON.parse(vurderingResponse.vurdering) as OppdaterOpptjeningVurdering)
-    : null
-
-  return { grunnlag, savedVurdering, opptjeningstyper, readOnly }
+  return { grunnlag, opptjeningstyper, readOnly }
 }
 
 export type ActionErrors = { _form?: string; _server?: string[] }
@@ -1677,15 +1669,6 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
                 </Button>
                 <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
                   Avbryt behandling
-                </Button>
-                {/* DEBUG */}
-                <Button
-                  type="button"
-                  variant="tertiary-neutral"
-                  size="small"
-                  onClick={() => console.log('[DEBUG payload]', JSON.parse(payload))}
-                >
-                  Log payload
                 </Button>
               </HStack>
             </VStack>

@@ -115,6 +115,8 @@ export async function action({ params, request }: Route.ActionArgs) {
       )
     }
   }
+
+  return data({ errors: { utfall: 'Velg et utfall' } }, { status: 400 })
 }
 
 export default function AttesterRoute({ loaderData, actionData }: Route.ComponentProps) {
@@ -303,7 +305,7 @@ export default function AttesterRoute({ loaderData, actionData }: Route.Componen
 
         <Form method="post">
           <VStack gap="space-24">
-            <RadioGroup legend="Utfall" name="utfall" value={utfall} onChange={setUtfall}>
+            <RadioGroup legend="Utfall" name="utfall" value={utfall} onChange={setUtfall} error={errors?.utfall}>
               <Radio value="GODKJENN">Godkjenn</Radio>
               <Radio value="IKKE_GODKJENN">Returner til saksbehandler</Radio>
             </RadioGroup>

@@ -1,4 +1,4 @@
-import type { OpptjeningstyperResponse } from '~/behandlinger/oppdater-opptjeningsgrunnlag/oppdater-grunnlag/oppdater-grunnlag-types'
+import type { OpptjeningstyperResponse } from '~/types/opptjeningstyper'
 import { env } from '~/utils/env.server'
 import { fetcher } from './api-client'
 
