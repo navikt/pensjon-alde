@@ -117,7 +117,10 @@ export const fetcher =
       const apiError = await buildApiError(response)
       throw data(apiError, {
         status: apiError.status,
-        statusText: response.statusText,
+        // Bruk apiError.title (utledet fra problemDetails.status/title) i stedet for
+        // response.statusText, slik at status og statusText ikke kan divergere når
+        // f.eks. problemDetails.status (422) avviker fra HTTP-statusen (400).
+        statusText: apiError.title,
       })
     }
 

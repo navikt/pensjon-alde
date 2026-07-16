@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { isApiError } from '~/api/error.types'
+import { requireAccessToken } from '~/auth/auth.server'
 
 vi.mock('~/auth/auth.server', () => ({
   requireAccessToken: vi.fn().mockResolvedValue('test-token'),
@@ -12,6 +13,10 @@ vi.mock('~/utils/env.server', () => ({
 describe('fetcher error-håndtering', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    // vi.restoreAllMocks() nullstiller også module-mocken over til en tom mock uten
+    // implementasjon, siden det ikke finnes en "original" å restore til for vi.fn().
+    // Re-etabler default-implementasjonen slik at fetcher() fortsatt får et token.
+    vi.mocked(requireAccessToken).mockResolvedValue('test-token')
   })
 
   it('mapper application/problem+json til en ApiErrorData-kompatibel feil med violations', async () => {
@@ -67,10 +72,13 @@ describe('fetcher error-håndtering', () => {
     const error = (await doFetch('/vurdering', { method: 'POST' }).then(
       () => null,
       (e: unknown) => e,
-    )) as { init: ResponseInit | null; data: { status: number } }
+    )) as { init: ResponseInit | null; data: { status: number; title: string } }
 
     expect(error.data.status).toBe(422)
     expect(error.init?.status).toBe(422)
+    // statusText skal være utledet av den samme feilen som status (title), ikke den
+    // opprinnelige HTTP-responsens statusText, slik at de to ikke kan divergere.
+    expect(error.init?.statusText).toBe(error.data.title)
   })
 
   it('filtrerer bort ugyldige (ikke-streng) elementer i violations', async () => {
@@ -355,6 +363,7 @@ describe('fetcher error-håndtering', () => {
 describe('fetcher suksess-håndtering', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    vi.mocked(requireAccessToken).mockResolvedValue('test-token')
   })
 
   it('parser application/json-svar', async () => {
