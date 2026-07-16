@@ -53,6 +53,4 @@ jobs:
       packages: write
       security-events: write
     uses: ./.github/workflows/buildAndDeploySandbox.yml
-    with:
-      force_deploy: true
     secrets: inherit
