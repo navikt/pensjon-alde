@@ -1,14 +1,104 @@
 import { data } from 'react-router'
 import type { ProblemDetails } from '~/api/error.types'
 import { requireAccessToken } from '~/auth/auth.server'
+import { isMockEnv } from '~/utils/env.server'
 import { parseTraceparent } from '~/utils/traceparent'
+
+const JWT_PATTERN = /eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g
+
+function redactTokens(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  return value.replace(JWT_PATTERN, '[REDACTED]')
+}
+
+function extractTraceId(response: Response): string | null {
+  const traceparent = response.headers.get('traceparent')
+  const navTraceId = response.headers.get('nav-call-id')
+
+  if (traceparent !== null) {
+    return parseTraceparent(traceparent)?.traceId || navTraceId
+  }
+
+  return navTraceId
+}
+
+async function parseBodySafely(response: Response): Promise<{ json?: Record<string, unknown>; text: string }> {
+  const rawText = await response.text()
+  try {
+    const parsed: unknown = JSON.parse(rawText)
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      // rawText følger med selv når JSON parses til et objekt, slik at buildApiError()
+      // kan falle tilbake til den når et enkeltfelt (f.eks. detail/message) har uventet form.
+      return { json: parsed as Record<string, unknown>, text: rawText }
+    }
+    // Gyldig JSON, men ikke et objekt (f.eks. en ren streng/tall/array) – behandle som rå tekst
+    // slik at vi ikke mister innholdet og fallback-verdiene i buildApiError() fortsatt fungerer.
+    return { text: rawText }
+  } catch {
+    return { text: rawText }
+  }
+}
+
+async function buildApiError(response: Response) {
+  const traceId = extractTraceId(response)
+  const contentType = response.headers.get('content-type')
+  const { json, text: unparsedText } = await parseBodySafely(response)
+
+  if (contentType?.includes('application/problem+json')) {
+    const problemDetails = (json ?? {}) as ProblemDetails & { violations?: unknown }
+    const status = problemDetails.status ?? response.status
+    const violations = Array.isArray(problemDetails.violations)
+      ? problemDetails.violations.filter((v): v is string => typeof v === 'string')
+      : undefined
+    const detailText = typeof problemDetails.detail === 'string' ? problemDetails.detail : unparsedText
+
+    return {
+      // Flat felter i tillegg til problemDetails, slik at isApiError() og kallere som
+      // leser error.data.status/violations (f.eks. validering fra pen) fungerer.
+      // problemDetails beholdes for ErrorBoundary (root.tsx).
+      status,
+      title: redactTokens(problemDetails.title) || response.statusText || 'API Error',
+      message: redactTokens(detailText),
+      detail: redactTokens(detailText),
+      violations,
+      problemDetails: {
+        ...problemDetails,
+        status,
+        title: redactTokens(problemDetails.title),
+        detail: redactTokens(detailText),
+        violations,
+      },
+      traceId,
+    }
+  }
+
+  const errorBody = (json ?? {}) as {
+    error?: string
+    message?: string
+    detail?: string
+    path?: string
+    timestamp?: string
+  }
+  const messageText = typeof errorBody.message === 'string' ? errorBody.message : unparsedText
+  const detailText = typeof errorBody.detail === 'string' ? errorBody.detail : unparsedText
+
+  return {
+    status: response.status,
+    title: redactTokens(errorBody.error) || response.statusText || 'API Error',
+    message: redactTokens(messageText),
+    traceId,
+    detail: redactTokens(detailText),
+    path: errorBody.path,
+    timestamp: errorBody.timestamp,
+  }
+}
 
 export type Fetcher = <T>(url: string, options: RequestInit) => Promise<T>
 
 export const fetcher =
   (BASE_URL: string, request: Request): Fetcher =>
   async <T>(url: string, options: RequestInit = {}): Promise<T> => {
-    const token = process.env.NODE_ENV === 'mock' ? 'mock-token' : await requireAccessToken(request)
+    const token = isMockEnv ? 'mock-token' : await requireAccessToken(request)
     const headers = new Headers(options.headers)
     headers.set('Authorization', `Bearer ${token}`)
 
@@ -24,75 +114,14 @@ export const fetcher =
     const response = await fetch(`${BASE_URL}${url}`, mergedOptions)
 
     if (!response.ok) {
-      function traceId() {
-        const traceparent = response.headers.get('traceparent')
-        const navTraceId = response.headers.get('nav-call-id')
-
-        if (traceparent !== null) {
-          return parseTraceparent(traceparent)?.traceId || navTraceId
-        } else {
-          return navTraceId
-        }
-      }
-
-      const contentType = response.headers.get('content-type')
-
-      if (contentType?.includes('application/json')) {
-        const errorBody = await response.json()
-
-        throw data(
-          {
-            status: response.status,
-            title: errorBody?.error || response.statusText || 'API Error',
-            message: errorBody?.message,
-            traceId: traceId(),
-            detail: errorBody?.detail,
-            path: errorBody?.path,
-            timestamp: errorBody?.timestamp,
-          },
-          {
-            status: response.status,
-            statusText: response.statusText,
-          },
-        )
-      } else if (contentType?.includes('application/problem+json')) {
-        const problemDetails: ProblemDetails = (await response.json()) as ProblemDetails
-
-        throw data(
-          {
-            problemDetails: problemDetails,
-            traceId: traceId(),
-          },
-          {
-            status: response.status,
-            statusText: response.statusText,
-          },
-        )
-      } else {
-        const errorText = await response.text()
-        let errorBody: { error?: string; message?: string; detail?: string; path?: string; timestamp?: string } = {}
-        try {
-          errorBody = JSON.parse(errorText)
-        } catch {
-          errorBody = {}
-        }
-
-        throw data(
-          {
-            status: response.status,
-            title: errorBody?.error || response.statusText || 'API Error',
-            message: errorBody?.message,
-            traceId: traceId(),
-            detail: errorBody?.detail,
-            path: errorBody?.path,
-            timestamp: errorBody?.timestamp,
-          },
-          {
-            status: response.status,
-            statusText: response.statusText,
-          },
-        )
-      }
+      const apiError = await buildApiError(response)
+      throw data(apiError, {
+        status: apiError.status,
+        // Bruk apiError.title (utledet fra problemDetails.status/title) i stedet for
+        // response.statusText, slik at status og statusText ikke kan divergere når
+        // f.eks. problemDetails.status (422) avviker fra HTTP-statusen (400).
+        statusText: apiError.title,
+      })
     }
 
     const contentType = response.headers.get('content-type')
@@ -100,5 +129,7 @@ export const fetcher =
       return await response.json()
     }
 
-    return response as unknown as T
+    // Tomme svar (void POST, eller grunnlagsdata uten data der pen svarer 200 uten
+    // content-type og uten kropp) gir undefined – ikke selve Response-objektet.
+    return undefined as T
   }

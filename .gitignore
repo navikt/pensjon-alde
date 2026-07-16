@@ -7,6 +7,9 @@ package-lock.json
 # Environment variables
 .env
 
+# Husky (generated locally by `pnpm prepare`)
+.husky/_/
+
 # React Router
 /.react-router/
 /build/
