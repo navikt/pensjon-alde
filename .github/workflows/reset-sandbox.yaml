@@ -11,6 +11,7 @@ concurrency:
 
 jobs:
   reset-sandbox:
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
     runs-on: ubuntu-latest
