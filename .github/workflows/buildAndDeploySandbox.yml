@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - "sandbox"
+  workflow_call:
+    inputs:
+      force_deploy:
+        description: "Deploy even when not triggered by a push to sandbox (used by the reset-sandbox workflow)."
+        type: boolean
+        default: false
+  workflow_dispatch:
 
 jobs:
   build:
@@ -38,7 +45,7 @@ jobs:
     permissions:
       contents: "read"
       id-token: "write"
-    if: github.ref == 'refs/heads/sandbox'
+    if: github.ref == 'refs/heads/sandbox' || inputs.force_deploy
     needs: [build]
     runs-on: 'ubuntu-latest'
 
