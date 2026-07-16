@@ -1,11 +1,10 @@
+# Pakker må være minst 7 dager gamle før de lastes ned
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - "@navikt/*"
+
 allowBuilds:
   esbuild: true
   lefthook: true
   msw: true
   protobufjs: false
-minimumReleaseAgeExclude:
-  - '@react-router/dev@8.1.0'
-  - '@react-router/express@8.1.0'
-  - '@react-router/node@8.1.0'
-  - '@react-router/serve@8.1.0'
-  - react-router@8.1.0
