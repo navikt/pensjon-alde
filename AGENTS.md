@@ -23,7 +23,7 @@ An `aktivitet` is a specific task within a behandling. Each aktivitet has:
 
 - `aktivitetId`: Unique identifier
 - `handlerName`: Maps to folder name (e.g., "vurder-samboer")
-- Some aktiviteter are backend-only (no `handlerName`)
+- Some aktiviteter are backend-only (no `handlerName`) — do not create a folder for these; inform the user that this aktivitet is backend-only and requires no UI implementation
 - Some need UI implementation for manual processing
 
 ## YOUR PRIMARY WORK AREA: app/behandlinger/
@@ -49,27 +49,27 @@ Look for handler names in the API response:
 
 ### Step 2: Create Folder Structure
 
+If the behandling-level `handlerName` is absent from the API response, do not create any folders. Inform the user that a behandling `handlerName` is required to determine the correct folder path.
+
 Create folders matching EXACTLY the handler names:
 
 ```sh
 app/behandlinger/alderspensjon-soknad/vurder-samboer/
 ```
 
-### Step 3: Create NameOfActivity.tsx
+If a folder matching the handler name already exists, inspect its contents before creating any files. If an implementation already exists, report this to the user and ask whether to overwrite, extend, or skip.
 
-Create capitalized name of activity and containing loader, action and component (as react-router 7). Just empty boilerplate action and loader if nothing else is specified.
+### Step 3: Create index.tsx with loader, action, and component
 
-### Step 4: Create index.tsx
+Create `index.tsx` directly in the aktivitet folder. This file contains the `loader`, `action`, and default-exported component following React Router 7 patterns — it is the route module itself, not a re-export wrapper. Unless otherwise specified, implement empty boilerplate for the loader and action.
 
-Export your component, loader, and action from index.tsx, this will be the import path.
+### Step 4: Extract sub-components when useful
+
+If the component grows large or has clearly separable parts (e.g. a status-specific view, an address display block), extract them into their own PascalCase files alongside `index.tsx` (e.g. `AfpLivsvarigVenter.tsx`, `AddressBlock/`) and import them into `index.tsx`. This is optional — small aktiviteter can keep everything in `index.tsx`.
 
 ### Step 5: Implement Component
 
-Check existing implementations in `app/behandlinger/alderspensjon-soknad/vurder-samboer/` for reference on:
-
-- How to structure a component with loader and action
-- How to use React Router 7 patterns
-- How to fetch data with the behandlingsId parameter
+For structural reference (import patterns and component layout), check `app/behandlinger/alderspensjon-soknad/vurder-samboer/`. Do not infer a full data-fetching implementation from that reference unless the user has asked for it — keep the loader and action as boilerplate unless otherwise specified. If the reference path does not exist in the workspace, fall back to the boilerplate described in Step 3 and notify the user that the reference could not be found.
 
 ## Critical Rules
 
@@ -77,7 +77,7 @@ Check existing implementations in `app/behandlinger/alderspensjon-soknad/vurder-
 
 - ✅ **Use Aksel components** (`@navikt/ds-react`) - This is IMPORTANT
 - ✅ Use exact handler names from API as folder names
-- ✅ Export from index.tsx
+- ✅ Define loader, action, and default component in `index.tsx`
 - ✅ Use React Router 7 patterns (loader, action, default export)
 - ✅ Keep behandling context when fetching data
 
@@ -155,25 +155,6 @@ pnpm typecheck     # Type checking
 pnpm dev:mock      # Development with mock API
 ```
 
-### IMPORTANT: Run Tests After Changes
-
-**ALWAYS run `pnpm test:ci` after:**
-
-- Creating or modifying test files
-- Editing files that have associated tests
-- Making changes to core functionality
-
-This ensures your changes don't break existing tests and that new tests actually run and pass.
-
-### IMPORTANT: Check Diagnostics Before Finishing
-
-**ALWAYS check for TypeScript/linting errors before declaring work complete:**
-
-- Use the diagnostics tool to check files you've edited
-- Fix all red lines and type errors
-- Even if tests pass, diagnostics might reveal issues
-- Don't assume - verify!
-- Check BOTH the implementation file AND test file
 
 ### TypeScript Best Practices
 
@@ -202,7 +183,9 @@ Mock API responses are located in `app/mocks/data/`. Check existing files like `
 ## API Endpoints
 
 - `GET /api/saksbehandling/alde/behandling/{behandlingId}` - Get behandling with aktiviteter
-- `POST /api/saksbehandling/alder/forstegangsbehandling/{behandlingId}/{endpoint}` - Submit aktivitet decisions
+- `POST /api/saksbehandling/alde/behandling/{behandlingId}/aktivitet/{aktivitetId}/vurdering` - Submit aktivitet decisions
+
+Note: Both GET and POST base paths use `/alde/` — this is intentional.
 
 ## Strangler Pattern Context
 
@@ -216,6 +199,16 @@ This app gradually replaces a legacy system. New aktiviteter are migrated increm
 4. **Folder names ARE handler names** - no configuration needed
 
 The folder structure IS the configuration. Keep it simple, keep it working!
+
+## Definition of Done
+
+Before declaring work complete, follow this checklist in order:
+
+1. Run `pnpm test:ci` after creating or modifying test files, editing files with associated tests, or making changes to core functionality. If `pnpm test:ci` fails to run (e.g., missing dependencies, script not found), do not attempt to fix the toolchain — report the exact error output to the user and ask them to resolve the environment issue before proceeding.
+2. Run `pnpm typecheck` to check for TypeScript errors. If it fails to run, report the exact error output to the user.
+3. Check diagnostics for all files you have edited — both implementation files and test files. Fix all type errors and linting issues.
+4. Verify that no plain HTML elements replace available Aksel components.
+5. Confirm the loader, action, and default component live in `index.tsx` (any extracted sub-components should be imported there).
 
 ## Automatiske skjermbilder for dokumentasjon
 
