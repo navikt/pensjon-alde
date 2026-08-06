@@ -29,7 +29,7 @@ jobs:
       - run: pnpm run test:ci
       - run: pnpm run build
       - run: pnpm prune --prod --ignore-scripts
-      - uses: nais/docker-build-push@31c3a7321909bcb20799fdf46153fec721fd9512 # v0 
+      - uses: nais/docker-build-push@2d2b0a7193e65422b7f0355d4afb445e0a8b2cc3 # v0 
         id: docker-push
         with:
           team: pensjon-saksbehandling
