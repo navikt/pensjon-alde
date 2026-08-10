@@ -7,6 +7,9 @@ package-lock.json
 # Environment variables
 .env
 
+# Husky (generated locally by `pnpm prepare`)
+.husky/_/
+
 # React Router
 /.react-router/
 /build/
@@ -28,3 +31,6 @@ node_modules/
 
 # Storybook
 /storybook-static/
+
+# Vitest coverage
+/coverage/

@@ -1,4 +1,5 @@
-import { differenceInDays, differenceInMonths, differenceInYears, isValid, parseISO } from 'date-fns'
+import { differenceInDays, differenceInMonths, differenceInYears } from 'date-fns'
+import { parseDate } from './parseDate'
 
 /**
  * Formats a date string or Date object to a human-readable age string (time since).
@@ -8,27 +9,8 @@ import { differenceInDays, differenceInMonths, differenceInYears, isValid, parse
  * @returns A string representation of the age (e.g. "2 years", "3 months", "5 days") or empty string if invalid
  */
 export function formatDateToAge(date: string | Date | number | null | undefined): string {
-  if (!date) return ''
-
-  let dateObj: Date
-
-  if (typeof date === 'string') {
-    // Try to parse as ISO string
-    dateObj = parseISO(date)
-    if (!isValid(dateObj)) {
-      // Fallback: try to parse as timestamp string
-      const timestamp = Number(date)
-      if (!Number.isNaN(timestamp)) {
-        dateObj = new Date(timestamp)
-      }
-    }
-  } else if (typeof date === 'number') {
-    dateObj = new Date(date)
-  } else {
-    dateObj = date
-  }
-
-  if (!isValid(dateObj)) return ''
+  const dateObj = parseDate(date)
+  if (!dateObj) return ''
 
   const now = new Date()
   const years = differenceInYears(now, dateObj)

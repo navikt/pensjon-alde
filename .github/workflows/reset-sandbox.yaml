@@ -1,0 +1,48 @@
+name: Reset sandbox branch to main
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: sandbox-branch
+  cancel-in-progress: false
+
+jobs:
+  reset-sandbox:
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - name: Create sandbox branch with SANDBOX.md
+        run: |
+          git checkout -b sandbox
+          cat > .github/SANDBOX.md << 'EOF'
+          # This "dummy" file belongs to the "sandbox" git branch.
+
+          Do not move or delete this file! It is here to detect whether changes
+          have been included from the "sandbox" git branch or not.
+
+          This is to prevent changes from the sandbox branch to end up
+          in the main branch.
+          EOF
+          git add .github/SANDBOX.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Created SANDBOX.md"
+          git push --force origin sandbox
+
+  deploy:
+    needs: reset-sandbox
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/buildAndDeploySandbox.yml
+    secrets: inherit
