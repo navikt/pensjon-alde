@@ -23,29 +23,18 @@ import { userContext } from '~/context/user-context'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
+import { typeLabel } from '../oppdater-grunnlag'
 import type {
   DagpengerBackendDTO,
   Endringstype,
   ForstegangstjenesteBackendDTO,
   InntektBackendDTO,
   OppdaterOpptjeningVurdering,
-  OpptjeningstyperResponse,
 } from '../oppdater-grunnlag/oppdater-grunnlag-types'
 import type { Route } from './+types'
 
 type AttesterGrunnlag = {
   vurdering: OppdaterOpptjeningVurdering
-}
-
-function typeLabel(opptjeningstyper: OpptjeningstyperResponse, code: string): string {
-  const alle = [
-    ...opptjeningstyper.inntekt.typer,
-    ...opptjeningstyper.omsorg.typer,
-    ...opptjeningstyper.dagpenger.typer,
-    ...opptjeningstyper.forstegangstjeneste.typer,
-    ...opptjeningstyper.forstegangstjeneste.subTyper,
-  ]
-  return alle.find(t => t.code === code)?.description ?? code
 }
 
 function EndringstypeTag({ endringstype }: { endringstype: Endringstype }) {
