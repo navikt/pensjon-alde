@@ -99,14 +99,14 @@ export async function action({ params, request }: Route.ActionArgs) {
   const sakIdRaw = formData.get('sakId')
   const payloadRaw = formData.get('payload')
 
-  if (!payloadRaw) {
+  if (typeof payloadRaw !== 'string' || payloadRaw.length === 0) {
     return data({ errors: { _form: 'Mangler skjemadata' } as ActionErrors }, { status: 400 })
   }
 
   let payload: OppdaterOpptjeningVurdering
 
   try {
-    payload = JSON.parse(payloadRaw as string)
+    payload = JSON.parse(payloadRaw)
   } catch {
     return data({ errors: { _form: 'Ugyldig skjemadata' } as ActionErrors }, { status: 400 })
   }
