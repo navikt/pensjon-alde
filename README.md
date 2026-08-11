@@ -35,7 +35,7 @@ Med mock-data:
 pnpm dev:mock
 ```
 
-Applikasjonen kjører på `http://localhost:5173`
+Applikasjonen kjører på `http://localhost:3001`
 
 ### Testing
 

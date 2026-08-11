@@ -3,34 +3,62 @@ updates:
   - package-ecosystem: docker
     directory: "/"
     schedule:
-      interval: daily
-    open-pull-requests-limit: 10
+      interval: weekly
+      day: monday
+      time: '08:00'
+      timezone: 'Europe/Oslo'
     cooldown:
       default-days: 7
+    open-pull-requests-limit: 10
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: daily
-    open-pull-requests-limit: 10
+      interval: weekly
+      day: monday
+      time: '08:00'
+      timezone: 'Europe/Oslo'
     cooldown:
       default-days: 7
+    open-pull-requests-limit: 10
+    groups:
+      nais:
+        patterns:
+          - 'nais/*'
 
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 20
+      interval: weekly
+      day: monday
+      time: '08:00'
+      timezone: 'Europe/Oslo'
+    open-pull-requests-limit: 30
     cooldown:
       default-days: 7
+      exclude:
+        - '@navikt/*'
     groups:
-      aksel:
-        applies-to: version-updates
+      designsystemet:
         patterns:
-          - "@navikt/aksel*"
-          - "@navikt/ds*"
+          - '@navikt/ds*'
+          - '@navikt/aksel*'
+      grafana:
+        patterns:
+          - '@grafana/*'
+      storybook:
+        patterns:
+          - 'storybook'
+          - '@storybook/*'
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
       react-router:
-        applies-to: version-updates
         patterns:
-          - "@react-router*"
-          - "react-router*"
+          - 'react-router'
+          - '@react-router/*'
+    ignore:
+      # Major versjon av @types/node skal følge Node.js versjonen i psak-frontend (v24).
+      - dependency-name: '@types/node'
+        versions: ['>= 25']

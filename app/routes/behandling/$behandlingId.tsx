@@ -241,10 +241,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   }
 
   function finnStatus(step: (typeof allSteps)[0]) {
-    console.log('finnStatus', {
-      currentAktivitetId,
-      aktivitetId: step.aktivitetId,
-    })
     if (isAttestering && step.handlerName === 'attestering') {
       return 'active'
     } else if (currentAktivitetId === step.aktivitetId.toString()) {
