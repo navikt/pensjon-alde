@@ -19,7 +19,6 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import styles from '~/common.module.css'
-import { userContext } from '~/context/user-context'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
@@ -57,8 +56,7 @@ function EndringstypeTag({ endringstype }: { endringstype: Endringstype }) {
   )
 }
 
-export async function loader({ params, request, context }: Route.LoaderArgs) {
-  const { navident } = context.get(userContext)
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
 
@@ -67,7 +65,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     fetchOpptjeningstyper(request),
   ])
 
-  return { navident, grunnlag, opptjeningstyper }
+  return { grunnlag, opptjeningstyper }
 }
 
 enum AttesteringUtfall {
@@ -113,14 +111,13 @@ export async function action({ params, request }: Route.ActionArgs) {
   return data<AttesterActionData>({ errors: { utfall: 'Velg et utfall' } }, { status: 400 })
 }
 
-export default function AttesterRoute({ loaderData, actionData }: Route.ComponentProps) {
+export default function AttesterRoute({ actionData, loaderData }: Route.ComponentProps) {
   const { errors, data: actionResultData } = actionData || {}
   const { grunnlag, opptjeningstyper } = loaderData
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
   const isSubmitting = useIsSubmitting()
   const [utfall, setUtfall] = useState<string>('')
-
-  const vurdering = grunnlag.vurdering
+  const { vurdering } = grunnlag
 
   type InntektMedEndring = { endringstype: Endringstype; inntekt: InntektBackendDTO }
   type DagpengerMedEndring = { endringstype: Endringstype; dagpenger: DagpengerBackendDTO }
