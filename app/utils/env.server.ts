@@ -46,7 +46,6 @@ export const env = loadEnv({
   unleashUrl: 'UNLEASH_SERVER_API_URL',
   unleashApiToken: 'UNLEASH_SERVER_API_TOKEN',
   unleashEnvironment: 'UNLEASH_SERVER_API_ENV',
-}, {
   pidEncryptionKey: 'PSAK_PID_ENCRYPTION_KEY',
 })
 
