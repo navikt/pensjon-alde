@@ -1,4 +1,4 @@
-export type { OpptjeningTypeKode, OpptjeningstyperKategori, OpptjeningstyperResponse } from '~/types/opptjeningstyper'
+export type { OpptjeningstyperKategori, OpptjeningstyperResponse, OpptjeningTypeKode } from '~/types/opptjeningstyper'
 
 export type InntektDTO = {
   inntektId?: number | null

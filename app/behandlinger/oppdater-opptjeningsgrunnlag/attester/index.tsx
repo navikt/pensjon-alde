@@ -86,6 +86,11 @@ enum AttesteringUtfall {
   IKKE_GODKJENN = 'IKKE_GODKJENN',
 }
 
+type AttesterActionData = {
+  errors?: { utfall?: string; begrunnelse?: string }
+  data?: { utfall: AttesteringUtfall; begrunnelse: string }
+}
+
 export async function action({ params, request }: Route.ActionArgs) {
   const { behandlingId } = params
   const behandlingApi = createBehandlingApi({ request, behandlingId })
@@ -103,7 +108,7 @@ export async function action({ params, request }: Route.ActionArgs) {
       await behandlingApi.returnerTilSaksbehandler(begrunnelse)
       return redirect(`/behandling/${behandlingId}/attestering-returnert-til-saksbehandler`)
     } else {
-      return data(
+      return data<AttesterActionData>(
         {
           errors: { begrunnelse: 'Begrunnelse må fylles ut' },
           data: {
@@ -116,7 +121,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     }
   }
 
-  return data({ errors: { utfall: 'Velg et utfall' } }, { status: 400 })
+  return data<AttesterActionData>({ errors: { utfall: 'Velg et utfall' } }, { status: 400 })
 }
 
 export default function AttesterRoute({ loaderData, actionData }: Route.ComponentProps) {

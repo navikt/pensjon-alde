@@ -15,13 +15,13 @@ export function SendTilAttestering({ heading, submitLabel, cancelLabel, onAvbryt
 
   return (
     <Page.Block gutters className={`${styles.page} ${styles.center}`}>
-      <VStack gap="8">
+      <VStack gap="space-32">
         <Heading size="medium" level="2">
           {heading}
         </Heading>
 
         <Form method="post">
-          <VStack gap="2" align="center">
+          <VStack gap="space-8" align="center">
             <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
               {submitLabel}
             </Button>

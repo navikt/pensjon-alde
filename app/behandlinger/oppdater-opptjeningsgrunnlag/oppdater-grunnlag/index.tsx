@@ -144,7 +144,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   }))
 
   const sakId = sakIdRaw ? Number(sakIdRaw) : undefined
-  if (sakIdRaw && (isNaN(sakId as number) || !Number.isInteger(sakId))) {
+  if (sakIdRaw && (Number.isNaN(sakId as number) || !Number.isInteger(sakId))) {
     return data({ errors: { _form: 'Ugyldig sakId' } as ActionErrors }, { status: 400 })
   }
 
@@ -1279,7 +1279,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     setForstegangstjenesteLinjer(prev =>
       prev.map(l => {
         if (l._id !== id) return l
-        const feltVerdi = felt === 'periodeType' ? (verdi || null) : verdi
+        const feltVerdi = felt === 'periodeType' ? verdi || null : verdi
         const updated: ForstegangstjenesteLinjeState = { ...l, [felt]: feltVerdi }
         const status = beregnStatus(updated, FORSTEGANGSTJENESTE_FELTER)
         return { ...updated, _status: status }
