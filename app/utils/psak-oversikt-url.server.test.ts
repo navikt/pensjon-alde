@@ -5,7 +5,7 @@ const TEST_KEY = 'MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE'
 vi.mock('./env.server', () => ({
   env: {
     psakSakUrlTemplate: 'https://example.com/psak/sak/{sakId}',
-    psakOversiktUrlTemplate: 'https://example.com/pensjonsoversikt/person',
+    psakOversiktUrlTemplate: 'https://example.com/pensjonsoversikt/person/{pid}',
     pidEncryptionKey: TEST_KEY,
   },
 }))

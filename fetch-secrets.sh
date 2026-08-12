@@ -99,6 +99,7 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pen
   echo PEN_SCOPE="'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'"
   echo PEN_URL="'http://localhost:8089'"
   echo PSAK_SAK_URL_TEMPLATE='http://localhost:9080/psak/sak/sakId={sakId}'
+  echo PSAK_OVERSIKT_URL_TEMPLATE='http://localhost:9080/pensjonsoversikt/person/{pid}'
   echo PSAK_OPPGAVEOVERSIKT='http://localhost:9080/psak/springapi/redirect/oppgave/oppgaveliste'
   echo MODIA_PERSONOVERSIKT='https://modiapersonoversikt.ansatt.dev.nav.no/person/{fnr}'
   echo VERDANDE_BEHANDLING_URL="'http://localhost:3000/behandling/{behandlingId}'"
@@ -115,7 +116,9 @@ fetch_kubernetes_secrets "Unleash" "dev-gcp" "pensjon-saksbehandling" "alde-unle
     "UNLEASH_SERVER_API_ENV"
 >> ${envfile}
 
-
+fetch_kubernetes_secrets "PidEncryptionKey" "dev-gcp" "pensjon-q2" "psak-pid-encryption-key" "strict" \
+    "PSAK_PID_ENCRYPTION_KEY"
+>> ${envfile}
 
 
 echo "${bold}Hentet hemmeligheter og oppdatert .env fil ${normal}"
