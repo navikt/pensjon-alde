@@ -1,11 +1,11 @@
 import {
-  Alert,
   BodyLong,
   BodyShort,
   Button,
   DatePicker,
   Heading,
   HGrid,
+  InlineMessage,
   Radio,
   RadioGroup,
   Select,
@@ -14,11 +14,12 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import React from 'react'
-import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
+import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import { Features } from '~/features'
+import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { buildUrl } from '~/utils/build-url'
@@ -26,6 +27,7 @@ import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import { dateInput, parseForm } from '~/utils/parse-form'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import { isFeatureEnabled } from '../../../utils/unleash.server'
 import type { Route } from './+types'
 import { AfpLivsvarigVenter } from './AfpLivsvarigVenter'
@@ -97,8 +99,8 @@ export type LivsvarigAfpOffentligVurdering = LivsvarigAfpOffentligInnvilget | Li
 const isSoknad = (s: AldeAfpOffentligStatus): s is Soknad => s.status === 'soknad'
 
 export type Props = AktivitetComponentProps<LivsvarigOffentligAfpGrunnlag, LivsvarigAfpOffentligVurdering> & {
-  pensjonsoversiktUrl?: string
-  psakOppgaveoversikt?: string
+  psakPensjonsoversiktUrl?: string
+  psakOppgaveoversiktUrl?: string
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -117,8 +119,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     grunnlag,
     vurdering,
     visMedMulighetForVurdering,
-    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
-    psakOppgaveoversikt: buildUrl(env.psakOppgaveoversikt, request, {}),
+    psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
+    psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
   }
 }
 
@@ -290,7 +292,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, readOnly, pensjonsoversiktUrl, psakOppgaveoversikt, visMedMulighetForVurdering } =
+  const { grunnlag, vurdering, readOnly, psakPensjonsoversiktUrl, psakOppgaveoversiktUrl, visMedMulighetForVurdering } =
     loaderData
   const { errors } = actionData || {}
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
@@ -303,8 +305,8 @@ export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: R
         vurdering={vurdering}
         aktivitet={aktivitet}
         behandling={behandling}
-        pensjonsoversiktUrl={pensjonsoversiktUrl}
-        psakOppgaveoversikt={psakOppgaveoversikt}
+        psakPensjonsoversiktUrl={psakPensjonsoversiktUrl}
+        psakOppgaveoversiktUrl={psakOppgaveoversiktUrl}
         avbrytAktivitet={avbrytAktivitet}
         errors={errors}
       />
@@ -317,8 +319,8 @@ export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: R
         vurdering={vurdering}
         aktivitet={aktivitet}
         behandling={behandling}
-        pensjonsoversiktUrl={pensjonsoversiktUrl}
-        psakOppgaveoversikt={psakOppgaveoversikt}
+        psakPensjonsoversiktUrl={psakPensjonsoversiktUrl}
+        psakOppgaveoversiktUrl={psakOppgaveoversiktUrl}
         avbrytAktivitet={avbrytAktivitet}
         errors={errors}
       />
@@ -338,8 +340,7 @@ function AfpLivsvarigVurdering(
   },
 ) {
   const { grunnlag, vurdering, readOnly, aktivitet, avbrytAktivitet, errors } = props
-  const navigation = useNavigation()
-  const isSubmitting = navigation.state !== 'idle' && navigation.formData != null
+  const isSubmitting = useIsSubmitting()
 
   const soknadTpLeverandorer = grunnlag.afpOffentligStatus
     .filter(status => status.status === 'soknad' || status.status === 'ukjent')
@@ -531,7 +532,7 @@ function AfpLivsvarigVurdering(
                   </VStack>
                 )}
 
-                {errors?._form && <Alert variant="error">{errors._form}</Alert>}
+                {errors?._form && <InlineMessage status="error">{errors._form}</InlineMessage>}
 
                 <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
                   Lagre vurdering
@@ -612,17 +613,23 @@ function AfpLivsvarigVurdering(
   )
 }
 
-function AfpLivsvarigVenterWrapper(props: Props) {
-  if (props.grunnlag.afpOffentligStatus.some(isSoknad)) {
-    const soknad = props.grunnlag.afpOffentligStatus.find(isSoknad)
+function AfpLivsvarigVenterWrapper({
+  grunnlag,
+  aktivitet,
+  psakPensjonsoversiktUrl,
+  psakOppgaveoversiktUrl,
+  avbrytAktivitet,
+}: Props) {
+  if (grunnlag.afpOffentligStatus.some(isSoknad)) {
+    const soknad = grunnlag.afpOffentligStatus.find(isSoknad)
     if (!soknad) return null
     return (
       <AfpLivsvarigVenter
         soknad={soknad}
-        aktivitet={props.aktivitet}
-        pensjonsoversiktUrl={props.pensjonsoversiktUrl}
-        psakOppgaveoversikt={props.psakOppgaveoversikt}
-        avbrytAktivitet={props.avbrytAktivitet}
+        aktivitet={aktivitet}
+        psakPensjonsoversiktUrl={psakPensjonsoversiktUrl}
+        psakOppgaveoversiktUrl={psakOppgaveoversiktUrl}
+        avbrytAktivitet={avbrytAktivitet}
       />
     )
   }

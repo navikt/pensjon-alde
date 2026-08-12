@@ -1,5 +1,7 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: Trenger any for komponenter, siden man ikke vet hvordan grunnlag og vurdering ser ut */
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
+
+// biome-ignore lint/suspicious/noExplicitAny: Komponentregisteret er heterogent — grunnlag/vurdering-typene er ukjente her
+type AnyAktivitetComponent = React.ComponentType<AktivitetComponentProps<any, any>>
 
 export interface ComponentRegistryEntry {
   handlerName: string
@@ -30,29 +32,27 @@ const parseModulePath = (modulePath: string) => {
 }
 
 // Create component map from discovered modules
-const componentMap = new Map<string, React.ComponentType<AktivitetComponentProps<any, any>>>()
+const componentMap = new Map<string, AnyAktivitetComponent>()
 
 // Process all discovered modules
 Object.entries(aktivitetModules).forEach(([path, module]) => {
   const { handlerName } = parseModulePath(path)
 
   // Extract Component export from the module
-  const component = (module as any)?.Component
+  const component = (module as { Component?: AnyAktivitetComponent }).Component
 
   if (component && typeof component === 'function') {
-    componentMap.set(handlerName, component as React.ComponentType<AktivitetComponentProps<any, any>>)
+    componentMap.set(handlerName, component)
   }
 })
 
 // Get all server components (synchronous since they're eagerly loaded)
-export const getAllServerComponents = (): Map<string, React.ComponentType<AktivitetComponentProps<any, any>>> => {
+export const getAllServerComponents = (): Map<string, AnyAktivitetComponent> => {
   return componentMap
 }
 
 // Get server-loaded component
-export const getServerComponent = (
-  handlerName: string,
-): React.ComponentType<AktivitetComponentProps<any, any>> | null => {
+export const getServerComponent = (handlerName: string): AnyAktivitetComponent | null => {
   return componentMap.get(handlerName) || null
 }
 
