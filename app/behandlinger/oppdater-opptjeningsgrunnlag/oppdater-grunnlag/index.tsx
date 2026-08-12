@@ -157,11 +157,25 @@ export async function action({ params, request }: Route.ActionArgs) {
     await api.lagreVurdering(vurdering)
     return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
   } catch (error) {
-    if (isApiError(error) && error.data.status === 400) {
-      const meldinger = error.data.violations?.length
-        ? error.data.violations
-        : [error.data.message ?? 'POPP-validering feilet']
-      return data({ errors: { _server: meldinger } as ActionErrors }, { status: 400 })
+    if (isApiError(error)) {
+      if (error.data.status === 400) {
+        const meldinger = error.data.violations?.length
+          ? error.data.violations
+          : [error.data.message ?? 'POPP-validering feilet']
+        return data({ errors: { _server: meldinger } as ActionErrors }, { status: 400 })
+      }
+      if (error.data.status === 403) {
+        return data(
+          {
+            errors: {
+              _server: [
+                'Mangler rolle tilgang. Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan lagre endringer.',
+              ],
+            } as ActionErrors,
+          },
+          { status: 403 },
+        )
+      }
     }
     return data({ errors: { _server: ['Det oppstod en feil ved lagring'] } as ActionErrors }, { status: 500 })
   }
