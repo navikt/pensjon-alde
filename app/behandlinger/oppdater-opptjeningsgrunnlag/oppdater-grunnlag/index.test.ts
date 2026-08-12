@@ -1,6 +1,36 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { formatCurrencyNok } from '~/utils/currency'
 import { typeLabel } from '../opptjeningstyper.utils'
+import {
+  beregnStatus,
+  dagpengerEndringer,
+  dagpengerGrunnlagTilViewModel,
+  dagpengerKortLabel,
+  dagpengerLabel,
+  forstegangstjenesteEndringer,
+  forstegangstjenesteGrunnlagTilViewModel,
+  forstegangstjenesteKortLabel,
+  forstegangstjenesteLabel,
+  inntektEndringer,
+  inntektGrunnlagTilViewModel,
+  inntektKortLabel,
+  inntektLabel,
+  nyDagpengerLinje,
+  nyForstegangstjenesteLinje,
+  nyInntektLinje,
+  omsorgGrunnlagTilViewModel,
+  omsorgLabel,
+  oppsummeringForKategori,
+  oversettKoderIMelding,
+  parseIsoDate,
+  REQUIRED_KOMMUNE,
+  tilLinjeState,
+  toDagpengerBackend,
+  toForstegangstjenesteBackend,
+  toInntektBackend,
+  toIsoDate,
+  toOmsorgBackend,
+} from './oppdater-grunnlag.utils'
 import type {
   DagpengerBackendDTO,
   ForstegangstjenesteBackendDTO,
@@ -19,30 +49,7 @@ vi.mock('~/api/opptjeningstyper-api.server', () => ({
 
 const { createAktivitetApi } = await import('~/api/aktivitet-api')
 const { fetchOpptjeningstyper } = await import('~/api/opptjeningstyper-api.server')
-const {
-  action,
-  loader,
-  REQUIRED_KOMMUNE,
-  tilLinjeState,
-  beregnStatus,
-  nyInntektLinje,
-  nyDagpengerLinje,
-  nyForstegangstjenesteLinje,
-  oversettKoderIMelding,
-  inntektEndringer,
-  dagpengerEndringer,
-  forstegangstjenesteEndringer,
-  toInntektBackend,
-  toDagpengerBackend,
-  toOmsorgBackend,
-  toForstegangstjenesteBackend,
-  inntektGrunnlagTilViewModel,
-  dagpengerGrunnlagTilViewModel,
-  omsorgGrunnlagTilViewModel,
-  forstegangstjenesteGrunnlagTilViewModel,
-  parseIsoDate,
-  toIsoDate,
-} = await import('./index')
+const { action, loader } = await import('./index')
 
 const opptjeningstyper: OpptjeningstyperResponse = {
   inntekt: {
@@ -300,6 +307,86 @@ describe('forstegangstjenesteEndringer', () => {
     expect(resultat).toContain('Periodetype: – → Første 6 måneder')
     expect(resultat).toContain('FOM: 2010-01-01 → 2010-02-01')
     expect(resultat).toContain('TOM: 2010-06-01 → 2010-07-01')
+  })
+})
+
+describe('labels', () => {
+  it('inntektLabel inkluderer beløp, kortLabel gjør det ikke', () => {
+    const linje = { inntektType: 'DIP_JSF', inntektAr: 2020, belop: 1000, kommune: null }
+
+    expect(inntektLabel(linje, opptjeningstyper)).toBe(`Utenlandsinntekt sjøfolk (2020) – ${formatCurrencyNok(1000)}`)
+    expect(inntektKortLabel(linje, opptjeningstyper)).toBe('Utenlandsinntekt sjøfolk (2020)')
+  })
+
+  it('dagpengerLabel utelater grunnlag og ferietillegg for DP_FF', () => {
+    const linje = {
+      dagpengerType: 'DP_FF',
+      ar: 2020,
+      uavkortetDagpengegrunnlag: 100,
+      utbetalteDagpenger: 50,
+      ferietillegg: 10,
+      barnetillegg: null,
+    }
+
+    const resultat = dagpengerLabel(linje, opptjeningstyper)
+
+    expect(resultat).toBe(`Dagpenger fiskere/fangstmenn (2020) – utbetalt: ${formatCurrencyNok(50)}`)
+    expect(dagpengerKortLabel(linje, opptjeningstyper)).toBe('Dagpenger fiskere/fangstmenn (2020)')
+  })
+
+  it('omsorgLabel viser fnr det er omsorg for når det finnes', () => {
+    expect(omsorgLabel({ omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '12345678901' }, opptjeningstyper)).toBe(
+      'Omsorg for barn (2020) – omsorg for 12345678901',
+    )
+    expect(omsorgLabel({ omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: null }, opptjeningstyper)).toBe(
+      'Omsorg for barn (2020)',
+    )
+  })
+
+  it('forstegangstjenesteLabel viser periode, kortLabel viser kun årstall', () => {
+    const linje = { tjenesteType: 'MIL', periodeType: 'FORSTE_6_MND', fomDato: '2010-01-01', tomDato: '2010-06-01' }
+
+    expect(forstegangstjenesteLabel(linje, opptjeningstyper)).toBe(
+      'Militærtjeneste / Første 6 måneder – 2010-01-01 til 2010-06-01',
+    )
+    expect(forstegangstjenesteKortLabel(linje, opptjeningstyper)).toBe('Militærtjeneste (2010)')
+  })
+})
+
+describe('oppsummeringForKategori', () => {
+  const linjer = [
+    { _id: 'a', _status: 'new' as const, navn: 'ny' },
+    { _id: 'b', _status: 'modified' as const, navn: 'endret' },
+    { _id: 'c', _status: 'deleted' as const, navn: 'slettet' },
+    { _id: 'd', _status: 'original' as const, navn: 'urørt' },
+  ]
+
+  const oppsummer = oppsummeringForKategori('Inntekt', linjer, {
+    label: l => `full-${l.navn}`,
+    kortLabel: l => `kort-${l.navn}`,
+    endringer: l => [`endring-${l.navn}`],
+  })
+
+  it('filtrerer på status og bruker full label for nye og slettede', () => {
+    expect(oppsummer('new')).toEqual([{ id: 'a', kategori: 'Inntekt', label: 'full-ny', endringer: undefined }])
+    expect(oppsummer('deleted')).toEqual([
+      { id: 'c', kategori: 'Inntekt', label: 'full-slettet', endringer: undefined },
+    ])
+    expect(oppsummer('original')).toEqual([{ id: 'd', kategori: 'Inntekt', label: 'full-urørt', endringer: undefined }])
+  })
+
+  it('bruker kortLabel og endringer for endrede linjer', () => {
+    expect(oppsummer('modified')).toEqual([
+      { id: 'b', kategori: 'Inntekt', label: 'kort-endret', endringer: ['endring-endret'] },
+    ])
+  })
+
+  it('faller tilbake til full label når kortLabel mangler', () => {
+    const utenKortLabel = oppsummeringForKategori('Omsorg', linjer, { label: l => `full-${l.navn}` })
+
+    expect(utenKortLabel('modified')).toEqual([
+      { id: 'b', kategori: 'Omsorg', label: 'full-endret', endringer: undefined },
+    ])
   })
 })
 
