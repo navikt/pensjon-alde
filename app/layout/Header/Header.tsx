@@ -9,8 +9,8 @@ interface Props {
   isDarkmode: boolean
   me: UserContext
   setDarkmode: (darkmode: boolean) => void
-  oppgaveoversiktUrl: string | undefined
-  pensjonsoversiktUrl: string | undefined
+  psakOppgaveoversiktUrl: string | undefined
+  psakPensjonsoversiktUrl: string | undefined
   verdandeAktivitetUrl: string | undefined
   verdandeBehandlingUrl: string | undefined
 }
@@ -20,8 +20,8 @@ export const Header = ({
   isDarkmode,
   me,
   setDarkmode,
-  oppgaveoversiktUrl,
-  pensjonsoversiktUrl,
+  psakOppgaveoversiktUrl,
+  psakPensjonsoversiktUrl,
   verdandeAktivitetUrl,
   verdandeBehandlingUrl,
 }: Props) => {
@@ -42,14 +42,14 @@ export const Header = ({
       </InternalHeader.Title>
       <nav className="menu">
         <ul>
-          {oppgaveoversiktUrl && (
+          {psakOppgaveoversiktUrl && (
             <li>
-              <a href={oppgaveoversiktUrl}>Oppgavelisten</a>
+              <a href={psakOppgaveoversiktUrl}>Oppgavelisten</a>
             </li>
           )}
-          {pensjonsoversiktUrl && (
+          {psakPensjonsoversiktUrl && (
             <li>
-              <a href={pensjonsoversiktUrl}>Pensjonsoversikt</a>
+              <a href={psakPensjonsoversiktUrl}>Pensjonsoversikt</a>
             </li>
           )}
         </ul>

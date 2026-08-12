@@ -1,13 +1,13 @@
-import { Alert, Box, Detail, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
+import { InformationSquareIcon } from '@navikt/aksel-icons'
+import { Box, Heading, InfoCard, Link, Page, VStack } from '@navikt/ds-react'
 import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import commonStyles from '~/common.module.css'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { type AktivitetDTO, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
-import { buildUrl } from '~/utils/build-url'
 import { getAllServerComponents } from '~/utils/component-discovery'
-import { env } from '~/utils/env.server'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 interface AktivitetTilAttestering {
@@ -65,7 +65,7 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 
   return {
     aktiviteter: parsedData,
-    pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
+    psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
     behandlingErFullført: behandling.status === BehandlingStatus.FULLFORT,
     behandlingFeilende: behandling.status === BehandlingStatus.FEILENDE,
   }
@@ -76,21 +76,24 @@ export const action = async () => {
 }
 
 export default function Attestering({ loaderData }: Route.ComponentProps) {
-  const { aktiviteter, behandlingErFullført } = loaderData
+  const { aktiviteter, behandlingErFullført, psakPensjonsoversiktUrl } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const components = getAllServerComponents()
 
   if (aktiviteter.length === 0) {
     return (
-      <Box paddingBlock="space-32 space-0" style={{ display: 'flex', justifyContent: 'center' }}>
-        <Alert variant="info" style={{ maxWidth: '600px', width: '100%' }}>
-          <Heading spacing size="small" level="3">
-            Ingen vurdering tatt
-          </Heading>
+      <Page.Block gutters className={commonStyles.behandlingPage}>
+        <Heading level="1" size="large" spacing>
+          Oppsummering av behandlingen
+        </Heading>
 
-          <Detail>Viser bare de aktivitetene som har blitt vurdert</Detail>
-        </Alert>
-      </Box>
+        <InfoCard data-color="info" as="section" aria-label="Ingen vurdering tatt">
+          <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+            <InfoCard.Title>Ingen vurdering tatt</InfoCard.Title>
+          </InfoCard.Header>
+          <InfoCard.Content>Viser bare de aktivitetene som har blitt vurdert</InfoCard.Content>
+        </InfoCard>
+      </Page.Block>
     )
   }
 
@@ -100,13 +103,15 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
         Oppsummering av behandlingen
       </Heading>
       {behandlingErFullført && (
-        <Alert variant="info" size="medium">
-          <HStack gap="space-16">
-            Behandlingen er fullført. Vi kan ikke behandle denne videre og har samlet en oppsummering på hva som har
-            blitt utført.
-            <Link href={loaderData.pensjonsoversiktUrl}>Pensjonsoversikt</Link>
-          </HStack>
-        </Alert>
+        <InfoCard data-color="info" as="section" aria-label="Behandlingen er fullført">
+          <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+            <InfoCard.Title>Behandlingen er fullført</InfoCard.Title>
+          </InfoCard.Header>
+          <InfoCard.Content>
+            Vi kan ikke behandle denne videre og har samlet en oppsummering på hva som har blitt utført.{' '}
+            <Link href={psakPensjonsoversiktUrl}>Pensjonsoversikt</Link>
+          </InfoCard.Content>
+        </InfoCard>
       )}
       {aktiviteter.map(aktivitet => {
         const Component = components.get(aktivitet.handlerName)

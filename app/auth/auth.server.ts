@@ -39,7 +39,7 @@ if (isLocalEnv) {
   })
 
   returnToCookie = createCookie('return-to', {
-    path: '/',
+    path: '/auth',
     httpOnly: true,
     sameSite: 'lax',
     maxAge: 300,
@@ -58,6 +58,12 @@ if (isLocalEnv) {
         redirectURI: azureCallbackUrl,
 
         scopes: ['openid', 'offline_access', `api://${env.clientId}/.default`],
+        cookie: {
+          name: 'alde-oauth2',
+          path: '/auth',
+          httpOnly: true,
+          sameSite: 'Lax',
+        },
       },
       async ({ tokens }) => {
         return {

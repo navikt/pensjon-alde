@@ -5,8 +5,7 @@ import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
 import { AldeBehandlingStatus } from '~/types/behandling'
-import { buildUrl } from '~/utils/build-url'
-import { env } from '~/utils/env.server'
+import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -20,7 +19,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL
   ) {
     return {
-      pensjonsoversiktUrl: buildUrl(env.psakSakUrlTemplate, request, { sakId: behandling.sakId }),
+      psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
       oppsummeringUrl: `/behandling/${behandling.behandlingId}/oppsummering`,
       status: behandling.aldeBehandlingStatus,
     }
@@ -30,19 +29,18 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 }
 
 const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentProps) => {
-  const { pensjonsoversiktUrl, status } = loaderData
-
-  const revalidator = useRevalidator()
+  const { psakPensjonsoversiktUrl, status } = loaderData
+  const { revalidate } = useRevalidator()
 
   useEffect(() => {
     if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
       const intervalId = setInterval(() => {
-        revalidator.revalidate()
+        revalidate()
       }, 1000)
 
       return () => clearInterval(intervalId)
     }
-  }, [status, revalidator])
+  }, [status, revalidate])
 
   if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
     return (
@@ -68,7 +66,7 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
         </Heading>
 
         <HStack gap="space-8" justify="center">
-          <Link href={pensjonsoversiktUrl}>Pensjonsoversikt</Link>
+          <Link href={psakPensjonsoversiktUrl}>Pensjonsoversikt</Link>
         </HStack>
       </VStack>
     </Page.Block>

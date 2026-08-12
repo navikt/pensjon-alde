@@ -16,6 +16,7 @@ pen:
 
 psak:
   sak_url_template: 'https://pensjon-penny-q2.{subdomain}.dev.nav.no/pensjonsoversikt?sakId={sakId}'
+  oversikt_url_template: 'https://pensjon-penny-q2.{subdomain}.dev.nav.no/pensjonsoversikt/person/{pid}'
   oppgaveoversikt: 'https://pensjon-psak-q2.{subdomain}.dev.nav.no/psak/springapi/redirect/oppgave/oppgaveliste'
 
 verdande:

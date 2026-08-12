@@ -3,7 +3,7 @@ import { Form } from 'react-router'
 import styles from '~/common.module.css'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 
-interface SendTilAttesteringProps {
+type SendTilAttesteringProps = {
   heading: string
   submitLabel: string
   cancelLabel: string

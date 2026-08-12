@@ -1,5 +1,6 @@
-import { BodyLong, BodyShort, Box, Button, CopyButton, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
+import { BodyLong, Box, Button, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import commonStyles from '~/common.module.css'
+import { CopyableValue } from '~/components/shared/CopyableValue'
 import type { BehandlingDTO } from '~/types/behandling'
 import { formatDateToNorwegian } from '~/utils/date'
 
@@ -91,16 +92,7 @@ export default function FeilendeBehandling({
                       {behandling.sisteKjoring?.feilmelding}
                     </BodyLong>
                     {behandling.sisteKjoring?.uuid && (
-                      <HStack align="center">
-                        <BodyShort size="small" textColor="subtle">
-                          {behandling.sisteKjoring?.uuid}
-                        </BodyShort>
-                        <CopyButton
-                          copyText={behandling.sisteKjoring?.uuid || behandling.behandlingId.toString()}
-                          size="small"
-                          variant="action"
-                        />
-                      </HStack>
+                      <CopyableValue value={behandling.sisteKjoring?.uuid ?? behandling.behandlingId.toString()} />
                     )}
                   </VStack>
                 </Box>
