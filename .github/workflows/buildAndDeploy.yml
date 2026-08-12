@@ -60,3 +60,48 @@ jobs:
           RESOURCE: .nais/nais.yaml,.nais/unleash-apitoken.yaml
           TELEMETRY: ${{ needs.build.outputs.telemetry }}
           VARS: '.nais/${{ matrix.vars_file }}'
+
+  build-pdf:
+    name: "build-pdf"
+    permissions:
+      contents: "read"
+      id-token: "write"
+      packages: "write"
+    runs-on: "ubuntu-latest"
+    outputs:
+      image: "${{ steps.docker-push.outputs.image }}"
+    steps:
+      - uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
+      - uses: nais/docker-build-push@2d2b0a7193e65422b7f0355d4afb445e0a8b2cc3 # v0
+        id: docker-push
+        with:
+          team: pensjon-saksbehandling
+          dockerfile: pdf/Dockerfile
+          docker_context: .
+          image_suffix: pdf
+
+  deploy-pdf:
+    permissions:
+      contents: "read"
+      id-token: "write"
+    if: github.ref == 'refs/heads/main'
+    needs: [build-pdf]
+    runs-on: 'ubuntu-latest'
+
+    strategy:
+      matrix:
+        include:
+          -  vars_file: vars-q2.yaml
+             cluster: dev-fss
+          -  vars_file: prod.yaml
+             cluster: prod-fss
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: nais/deploy/actions/deploy@2d18f050f07b6a007864c6a57070ed915d571beb # v2
+        name: "deploy-pdf"
+        env:
+          CLUSTER: '${{ matrix.cluster }}'
+          IMAGE: "${{ needs.build-pdf.outputs.image }}"
+          RESOURCE: pdf/nais/nais.yaml
+          VARS: 'pdf/nais/${{ matrix.vars_file }}'
