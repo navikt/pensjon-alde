@@ -22,7 +22,6 @@ import styles from '~/common.module.css'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
-import { typeLabel } from '../oppdater-grunnlag'
 import type {
   DagpengerBackendDTO,
   Endringstype,
@@ -30,6 +29,7 @@ import type {
   InntektBackendDTO,
   OppdaterOpptjeningVurdering,
 } from '../oppdater-grunnlag/oppdater-grunnlag-types'
+import { typeLabel } from '../opptjeningstyper.utils'
 import type { Route } from './+types'
 
 type AttesterGrunnlag = {

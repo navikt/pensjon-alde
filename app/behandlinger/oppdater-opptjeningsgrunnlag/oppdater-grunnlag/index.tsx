@@ -27,6 +27,7 @@ import { Fnr } from '~/components/Fnr'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
+import { typeLabel } from '../opptjeningstyper.utils'
 import type { Route } from './+types'
 import type {
   DagpengerBackendDTO,
@@ -266,17 +267,6 @@ type EndringSummaryItem = {
   kategori: string
   label: string
   endringer?: string[]
-}
-
-export function typeLabel(opptjeningstyper: OpptjeningstyperResponse, code: string): string {
-  const alle = [
-    ...opptjeningstyper.inntekt.typer,
-    ...opptjeningstyper.omsorg.typer,
-    ...opptjeningstyper.dagpenger.typer,
-    ...opptjeningstyper.forstegangstjeneste.typer,
-    ...opptjeningstyper.forstegangstjeneste.subTyper,
-  ]
-  return alle.find(t => t.code === code)?.description ?? code
 }
 
 export function oversettKoderIMelding(melding: string, opptjeningstyper: OpptjeningstyperResponse): string {

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { formatCurrencyNok } from '~/utils/currency'
+import { typeLabel } from '../opptjeningstyper.utils'
 import type {
   DagpengerBackendDTO,
   ForstegangstjenesteBackendDTO,
@@ -27,7 +28,6 @@ const {
   nyInntektLinje,
   nyDagpengerLinje,
   nyForstegangstjenesteLinje,
-  typeLabel,
   oversettKoderIMelding,
   inntektEndringer,
   dagpengerEndringer,
