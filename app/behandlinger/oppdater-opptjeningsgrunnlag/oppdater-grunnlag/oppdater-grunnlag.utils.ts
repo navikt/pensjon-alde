@@ -94,6 +94,17 @@ export function nyInntektLinje(defaultType: string): InntektLinjeState {
   }
 }
 
+export function initialInntektLinjer(
+  inntektListe: InntektBackendDTO[] | undefined,
+  readOnly: boolean,
+  defaultInntektType: string,
+): InntektLinjeState[] {
+  const fraGrunnlag = (inntektListe ?? []).map(inntektGrunnlagTilViewModel).map(tilLinjeState)
+  if (fraGrunnlag.length > 0) return fraGrunnlag
+  if (readOnly) return []
+  return [nyInntektLinje(defaultInntektType)]
+}
+
 export function nyDagpengerLinje(): DagpengerLinjeState {
   return {
     _id: crypto.randomUUID(),

@@ -11,6 +11,7 @@ import {
   forstegangstjenesteGrunnlagTilViewModel,
   forstegangstjenesteKortLabel,
   forstegangstjenesteLabel,
+  initialInntektLinjer,
   inntektEndringer,
   inntektGrunnlagTilViewModel,
   inntektKortLabel,
@@ -159,6 +160,45 @@ describe('nyInntektLinje', () => {
   it('setter kommune til null når typen ikke krever en spesifikk kommune', () => {
     const linje = nyInntektLinje('INNTEKT_ANNET')
     expect(linje.kommune).toBeNull()
+  })
+})
+
+describe('initialInntektLinjer', () => {
+  const inntektListe: InntektBackendDTO[] = [
+    {
+      inntektId: 1,
+      fnr: '12345678901',
+      kommune: '0301',
+      inntektAr: 2020,
+      belop: '1234',
+      inntektType: 'DIP_JSF',
+    },
+  ]
+
+  it('returnerer tom liste når grunnlaget mangler og readOnly er true', () => {
+    expect(initialInntektLinjer(undefined, true, 'DIP_JSF')).toEqual([])
+  })
+
+  it('returnerer tom liste når grunnlaget er en tom liste og readOnly er true', () => {
+    expect(initialInntektLinjer([], true, 'DIP_JSF')).toEqual([])
+  })
+
+  it('mapper grunnlagsdata til linjer når readOnly er true og det finnes data', () => {
+    const linjer = initialInntektLinjer(inntektListe, true, 'DIP_JSF')
+    expect(linjer).toHaveLength(1)
+    expect(linjer[0]).toMatchObject({ inntektType: 'DIP_JSF', inntektAr: 2020, belop: 1234, _status: 'original' })
+  })
+
+  it('returnerer én ny redigerbar linje når grunnlaget mangler og readOnly er false', () => {
+    const linjer = initialInntektLinjer(undefined, false, 'DIP_JSF')
+    expect(linjer).toHaveLength(1)
+    expect(linjer[0]).toMatchObject({ inntektType: 'DIP_JSF', _status: 'new' })
+  })
+
+  it('mapper grunnlagsdata til linjer når readOnly er false og det finnes data', () => {
+    const linjer = initialInntektLinjer(inntektListe, false, 'DIP_JSF')
+    expect(linjer).toHaveLength(1)
+    expect(linjer[0]).toMatchObject({ inntektType: 'DIP_JSF', inntektAr: 2020, belop: 1234, _status: 'original' })
   })
 })
 

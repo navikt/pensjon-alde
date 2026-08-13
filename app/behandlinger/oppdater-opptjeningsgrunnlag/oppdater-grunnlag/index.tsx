@@ -45,8 +45,8 @@ import {
   forstegangstjenesteLabel,
   INNTEKT_FELTER,
   type InntektLinjeState,
+  initialInntektLinjer,
   inntektEndringer,
-  inntektGrunnlagTilViewModel,
   inntektKortLabel,
   inntektLabel,
   type LinjeStatus,
@@ -841,11 +841,9 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
 
   const grunnlagDto = grunnlag.opptjeningsGrunnlagDto
 
-  const [inntektLinjer, setInntektLinjer] = useState<InntektLinjeState[]>(() => {
-    const fraGrunnlag = (grunnlagDto?.inntektListe ?? []).map(inntektGrunnlagTilViewModel)
-    if (fraGrunnlag.length > 0) return fraGrunnlag.map(tilLinjeState)
-    return [nyInntektLinje(defaultInntektType)]
-  })
+  const [inntektLinjer, setInntektLinjer] = useState<InntektLinjeState[]>(() =>
+    initialInntektLinjer(grunnlagDto?.inntektListe, readOnly, defaultInntektType),
+  )
 
   const [dagpengerLinjer, setDagpengerLinjer] = useState<DagpengerLinjeState[]>(() =>
     (grunnlagDto?.dagpengerListe ?? []).map(dagpengerGrunnlagTilViewModel).map(tilLinjeState),
