@@ -1,0 +1,77 @@
+{
+  "inntekt": {
+    "typer": [
+      { "code": "AI", "description": "Antatt inntekt" },
+      { "code": "DIP_JSF", "description": "Diplomatinntekt - Jord/Skog/Fisk" },
+      { "code": "DIP_LON", "description": "Diplomatinntekt - Lønn" },
+      { "code": "DIP_SEL", "description": "Diplomatinntekt - Selvstendig" },
+      { "code": "FL_PGI_LOENN", "description": "Fastland - Lønnsinntekt" },
+      { "code": "FL_PGI_LOENN_PD", "description": "Fastland - Lønnsinntekt - Bare pensjonsdel" },
+      { "code": "FL_PGI_NAERING", "description": "Fastland - Næringsinntekt" },
+      {
+        "code": "FL_PGI_NAERING_FFF",
+        "description": "Fastland - Næringsinntekt - Fiske, fangst eller familiebarnehage"
+      },
+      { "code": "INN_JSF", "description": "Innenlandsinntekt - Jord/Skog/Fisk" },
+      { "code": "INN_LON", "description": "Innenlandsinntekt - Lønn" },
+      { "code": "INN_SEL", "description": "Innenlandsinntekt - Selvstendig" },
+      { "code": "KSL_PGI_LOENN", "description": "Kildeskatt - Lønnsinntekt" },
+      { "code": "KSL_PGI_LOENN_PD", "description": "Kildeskatt - Lønnsinntekt - Bare pensjonsdel" },
+      { "code": "KSL_PGI_NAERING", "description": "Kildeskatt - Næringsinntekt" },
+      {
+        "code": "KSL_PGI_NAERING_FFF",
+        "description": "Kildeskatt - Næringsinntekt - Fiske, fangst eller familiebarnehage"
+      },
+      { "code": "PGI_NAV", "description": "PGI innland fastsatt av NAV" },
+      { "code": "PI66", "description": "Pensjonsgivende inntekt 1966 - Konv" },
+      { "code": "RED_INT", "description": "Reduksjonsinntekt" },
+      { "code": "SJO_JSF", "description": "Sjøinntekt - Jord/Skog/Fisk" },
+      { "code": "SJO_LON", "description": "Sjøinntekt - Lønn" },
+      { "code": "SJO_SEL", "description": "Sjøinntekt - Selvstendig" },
+      { "code": "SUM_PI", "description": "Sum pensjonsgivende inntekt" },
+      { "code": "SVA_JSF", "description": "Svalbardinntekt - Jord/Skog/Fisk" },
+      { "code": "SVA_LON", "description": "Svalbardinntekt - Lønn" },
+      { "code": "SVA_PGI_LOENN", "description": "Svalbard - Lønnsinntekt" },
+      { "code": "SVA_PGI_LOENN_PD", "description": "Svalbard - Lønnsinntekt - Bare pensjonsdel" },
+      { "code": "SVA_PGI_NAERING", "description": "Svalbard - Næringsinntekt" },
+      {
+        "code": "SVA_PGI_NAERING_FFF",
+        "description": "Svalbard - Næringsinntekt - Fiske, fangst eller familiebarnehage"
+      },
+      { "code": "SVA_SEL", "description": "Svalbardinntekt - Selvstendig" },
+      { "code": "UTE_JSF", "description": "Utenlandsinntekt - Jord/Skog/Fisk" },
+      { "code": "UTE_LON", "description": "Utenlandsinntekt - Lønn" },
+      { "code": "UTE_SEL", "description": "Utenlandsinntekt - Selvstendig" }
+    ],
+    "subTyper": []
+  },
+  "omsorg": {
+    "typer": [
+      { "code": "OBO6H", "description": "Omsorg for barn over 6 år med hjelpestønad sats 3 eller 4" },
+      { "code": "OBO7H", "description": "Omsorg for barn over 7 år med hjelpestønad sats 3 eller 4" },
+      { "code": "OBU6", "description": "Omsorg for barn under 6 år" },
+      { "code": "OBU7", "description": "Omsorg for barn under 7 år" },
+      { "code": "OSFE", "description": "Omsorg for syke/funksjonshemmede/eldre" }
+    ],
+    "subTyper": []
+  },
+  "dagpenger": {
+    "typer": [
+      { "code": "DP", "description": "Dagpengeopptjening" },
+      { "code": "DP_FF", "description": "Dagpengeopptjening for fiskere og fangstmenn" }
+    ],
+    "subTyper": []
+  },
+  "forstegangstjeneste": {
+    "typer": [
+      { "code": "SIV", "description": "Sivil førstegangstjeneste" },
+      { "code": "MIL", "description": "Militær førstegangstjeneste" }
+    ],
+    "subTyper": [
+      { "code": "BEFAL", "description": "Befalsskole" },
+      { "code": "NORMAL", "description": "Normal avtjening" },
+      { "code": "TEKN", "description": "Teknisk utdanning" },
+      { "code": "UKJENT", "description": "Ikke oppgitt" }
+    ]
+  }
+}

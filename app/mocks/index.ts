@@ -10,6 +10,7 @@ let isInitialized = false
 function shouldEnableMocking(): boolean {
   return (
     isServer &&
+    !process.env.NAIS_CLUSTER_NAME &&
     (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'mock' || process.env.ENABLE_MOCKING === 'true')
   )
 }
