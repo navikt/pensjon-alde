@@ -163,7 +163,7 @@ Dokumentet får også arkivmetadata (fra `behandling`, UTF-16 så æøå bevares
 
 ## Notater / begrensninger
 
-- Basebildet `mcr.microsoft.com/playwright:v1.61.1-noble` må matche `playwright`-
+- Basebildet `mcr.microsoft.com/playwright:v1.62.1-noble` må matche `playwright`-
   versjonen i `package.json` (Chromium ligger ferdig i bildet).
 - `--ignore-scripts` under install hopper over repoets `prepare` (lefthook, krever git);
   plattform-binærene (esbuild/rollup/lightningcss) kommer fra optional deps.

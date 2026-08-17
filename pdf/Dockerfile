@@ -3,7 +3,7 @@
 #
 # IMPORTANT: build from the REPO ROOT so the context includes app/ + package.json:
 #   docker build -f pdf/Dockerfile -t alde-pdf .
-FROM mcr.microsoft.com/playwright:v1.61.1-noble
+FROM mcr.microsoft.com/playwright:v1.62.1-noble
 
 ENV TZ="Europe/Oslo"
 ENV PDF_PORT=8090
