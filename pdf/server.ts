@@ -26,7 +26,7 @@ const vite = await createViteServer({
   },
   plugins: [stubServerModules(stubsDir)],
   optimizeDeps: { noDiscovery: true, include: [] },
-  server: { middlewareMode: true, watch: null, hmr: false },
+  server: { middlewareMode: true, watch: null, hmr: false, allowedHosts: true },
   appType: 'custom',
 })
 
