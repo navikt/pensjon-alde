@@ -39,6 +39,8 @@ export const env = loadEnv({
   psakOversiktUrlTemplate: 'PSAK_OVERSIKT_URL_TEMPLATE',
   psakOppgaveoversikt: 'PSAK_OPPGAVEOVERSIKT',
 
+  pennyJournalpostUrlTemplate: 'PENNY_JOURNALPOST_URL_TEMPLATE',
+
   verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
   verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
   telemetryUrl: 'TELEMETRY_URL',
