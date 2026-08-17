@@ -53,6 +53,8 @@ function pdfSubject({ behandling: b }: PdfInput): string {
 }
 
 app.post('/pdf', async (req, res) => {
+  const start = Date.now()
+  console.log(`PDF request received: ${req.method} ${req.originalUrl}`)
   try {
     const format = String(req.query.format ?? 'pdfa')
       .toLowerCase()
@@ -77,6 +79,9 @@ app.post('/pdf', async (req, res) => {
             lang: 'nb-NO',
           })
         : rendered
+    console.log(
+      `PDF created: format=${format}, title="${pdfTitle(input)}", bytes=${pdf.length}, took=${Date.now() - start}ms`,
+    )
     res.type('application/pdf').send(pdf)
   } catch (err) {
     vite.ssrFixStacktrace(err as Error)
