@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["app/**/*", "scripts/**/*", "**/*.config.*", "package.json", "pnpm-workspace.yaml"]
+    "includes": ["app/**/*", "pdf/**/*", "scripts/**/*", "**/*.config.*", "package.json", "pnpm-workspace.yaml"]
   },
   "formatter": {
     "enabled": true,

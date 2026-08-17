@@ -151,8 +151,6 @@ function VurdereSamboerComponent({
         autoComplete="off"
         onReset={() => setSelectedVurdering(defaultVurdering)}
       >
-        <div className="samboer-details"></div>
-
         <div className="samboer-assessment">
           <VStack gap="space-24">
             <RadioGroup

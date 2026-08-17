@@ -9,6 +9,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "NODE_ENV=development node --experimental-strip-types server.ts",
+    "dev:pdf": "node --experimental-strip-types pdf/server.ts",
     "dev:mock": "NODE_ENV=mock react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "lint": "biome lint .",

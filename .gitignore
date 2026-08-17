@@ -34,3 +34,6 @@ node_modules/
 
 # Vitest coverage
 /coverage/
+
+# PDF preview output from dev:pdf / curl
+/pdf-preview.pdf
