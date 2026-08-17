@@ -18,11 +18,12 @@ import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
+import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatDateToNorwegian, parseDate } from '~/utils/date'
-import { dateInput, parseForm, radiogroup } from '~/utils/parse-form'
+import { dateInput, parseForm, radiogroup, string } from '~/utils/parse-form'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
@@ -62,6 +63,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   const parsedForm = parseForm<SamboerVurdering>(formData, {
     samboerFra: dateInput,
+    // TODO: Rydd opp string parsing
+    begrunnelse: string,
     vurdering: radiogroup({
       SAMBOER_1_5: 'SAMBOER_1_5',
       SAMBOER_3_2: 'SAMBOER_3_2',
@@ -131,6 +134,7 @@ function VurdereSamboerComponent({
   readOnly,
   avbrytAktivitet,
   errors,
+  begrunnelse,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const defaultVurdering = vurdering?.vurdering
   const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
@@ -185,14 +189,11 @@ function VurdereSamboerComponent({
               </InlineMessage>
             )}
 
-            {/*
-            <Textarea
-                readOnly={readOnly}
-                label="Kommentar samboervurdering"
-                description="Kun ved behov for tilleggsopplysninger"
-                rows={4}
+            <BegrunnelseField
+              readOnly={readOnly}
+              defaultValue={begrunnelse}
+              description="Kun ved behov for tilleggsopplysninger"
             />
-            */}
 
             {errors?._form && (
               <InlineMessage status="error" className="mb-4">

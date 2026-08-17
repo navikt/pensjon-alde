@@ -1,5 +1,6 @@
 export interface Attesteringsdata {
   aktiviter: AktivitetAtt[]
+  journalpostId?: string
 }
 
 export interface AktivitetAtt {
@@ -9,4 +10,5 @@ export interface AktivitetAtt {
   vurdertTidspunkt: string
   vurdertAvBrukerId: string
   vurdertAvBrukerNavn: string
+  begrunnelse?: string
 }

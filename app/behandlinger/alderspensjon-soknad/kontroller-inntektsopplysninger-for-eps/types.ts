@@ -1,3 +1,5 @@
+import type { VurderingBase } from '~/types/vurdering'
+
 export enum EpsType {
   EKTEFELLE = 'EKTEFELLE',
   PARTNER = 'PARTNER',
@@ -24,6 +26,6 @@ export interface KontrollerInntektsopplysningerForEpsGrunnlag {
   epsType: EpsType | null
 }
 
-export interface KontrollerInntektsopplysningerForEpsVurdering {
+export interface KontrollerInntektsopplysningerForEpsVurdering extends VurderingBase {
   epsInntektOver2G: boolean
 }

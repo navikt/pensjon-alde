@@ -54,3 +54,5 @@ export const radiogroup =
 
     return config[value]
   }
+
+export const string = (value: unknown) => (typeof value === 'string' && value.trim() ? value.trim() : null)
