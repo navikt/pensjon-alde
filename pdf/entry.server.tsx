@@ -1,4 +1,4 @@
-import { BodyLong, BodyShort, Box, Detail, Heading, HStack, Label, VStack } from '@navikt/ds-react'
+import { BodyShort, Box, Detail, Heading, HStack, Label, VStack } from '@navikt/ds-react'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createMemoryRouter, RouterProvider } from 'react-router'
@@ -78,12 +78,6 @@ function LockedAttesteringView({ behandling, aktiviteter }: PdfInput) {
 
                 <Box background="neutral-softA" borderWidth="1 1 1 1" marginBlock="space-16" padding="space-16">
                   <VStack gap="space-8">
-                    {a.begrunnelse && (
-                      <div>
-                        <Label>Begrunnelse</Label>
-                        <BodyLong>{a.begrunnelse}</BodyLong>
-                      </div>
-                    )}
                     <div>
                       <Label>Saksbehandler</Label>
                       <div>

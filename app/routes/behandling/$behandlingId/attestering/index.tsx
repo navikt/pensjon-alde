@@ -24,6 +24,7 @@ interface AktivitetTilAttestering {
   vurdertTidspunkt?: string
   vurdertAvBrukerId?: string
   vurdertAvBrukerNavn?: string
+  begrunnelse?: string
 }
 
 const enhanceAttesteringAktivitet =
@@ -45,6 +46,7 @@ const enhanceAttesteringAktivitet =
       vurdertTidspunkt: aktivitet.vurdertTidspunkt,
       vurdertAvBrukerId: aktivitet.vurdertAvBrukerId,
       vurdertAvBrukerNavn: aktivitet.vurdertAvBrukerNavn,
+      begrunnelse: aktivitet.begrunnelse,
     }
   }
 
@@ -65,6 +67,7 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
     .filter(aktivitet => aktivitet.grunnlag || aktivitet.vurdering)
     .filter(aktivitet => aktivitet.handlerName !== 'send-til-attestering')
     .filter(aktivitet => aktivitet.handlerName !== 'attestering')
+    .filter(aktivitet => aktivitet.handlerName !== 'generer-notat')
     .filter(aktivitet => aktivitet.vurdertAvBrukerId)
     .sort((a, b) => (a.vurdertTidspunkt ?? '').localeCompare(b.vurdertTidspunkt ?? ''))
     .map(aktivitet => ({
@@ -79,6 +82,7 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
   } else {
     return {
       aktiviteter: parsedData,
+      journalpostId: attesteringData.journalpostId,
     }
   }
 }
@@ -120,7 +124,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 }
 
 export default function Attestering({ loaderData, actionData }: Route.ComponentProps) {
-  const { aktiviteter } = loaderData
+  const { aktiviteter, journalpostId } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const { errors, data } = actionData || {}
   const isSubmitting = useIsSubmitting()
@@ -211,6 +215,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
         <Heading level="1" size="large">
           Oppgaven er til attestering
         </Heading>
+        <BodyShort>Journalpostid: {journalpostId}</BodyShort>
         <VStack gap="space-56">
           {aktiviteter.map(aktivitet => {
             const Component = components.get(aktivitet.handlerName)
@@ -234,6 +239,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                     <div className="component">
                       <Component
                         readOnly={true}
+                        begrunnelse={aktivitet.begrunnelse}
                         grunnlag={aktivitet.grunnlag}
                         vurdering={aktivitet.vurdering}
                         aktivitet={aktivitet.aktivitet}

@@ -12,7 +12,7 @@ import { buildUrl } from '~/utils/build-url'
 import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
-import { parseForm, radiogroup } from '~/utils/parse-form'
+import { parseForm, radiogroup, string } from '~/utils/parse-form'
 import type { Route } from './+types'
 import type {
   KontrollerInntektsopplysningerForEpsGrunnlag,
@@ -59,6 +59,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   const vurdering = parseForm<KontrollerInntektsopplysningerForEpsVurdering>(formData, {
     epsInntektOver2G: radiogroup({ over2G: true, under2G: false }),
+    // TODO: Rydd opp string parsing
+    begrunnelse: string,
   })
 
   await api.lagreVurdering(vurdering)

@@ -1,3 +1,5 @@
+import type { VurderingBase } from '~/types/vurdering'
+
 export interface NavnTilPerson {
   fornavn: string
   mellomnavn: string | null
@@ -72,7 +74,7 @@ export type SamboerInformasjon = {
   tidligereEktefelle: boolean
 }
 
-export interface SamboerVurdering {
+export interface SamboerVurdering extends VurderingBase {
   samboerFra: string
   vurdering: 'SAMBOER_1_5' | 'SAMBOER_3_2' | 'IKKE_SAMBOER'
 }
