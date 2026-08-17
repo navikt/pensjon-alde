@@ -19,12 +19,14 @@ ${collectAppCss(appDir)}`
 const vite = await createViteServer({
   configFile: false,
   root: process.cwd(),
+  cacheDir: fileURLToPath(new URL('.vite/', import.meta.url)),
   envDir: fileURLToPath(new URL('.', import.meta.url)),
   resolve: {
     alias: [{ find: /^~\//, replacement: appDir }],
   },
   plugins: [stubServerModules(stubsDir)],
-  server: { middlewareMode: true },
+  optimizeDeps: { noDiscovery: true, include: [] },
+  server: { middlewareMode: true, watch: null, hmr: false },
   appType: 'custom',
 })
 
