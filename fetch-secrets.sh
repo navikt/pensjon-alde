@@ -101,6 +101,7 @@ fetch_kubernetes_secrets "AzureAD" "dev-gcp" "pensjon-saksbehandling" "azure-pen
   echo PSAK_SAK_URL_TEMPLATE='http://localhost:9080/psak/sak/sakId={sakId}'
   echo PSAK_OVERSIKT_URL_TEMPLATE='http://localhost:9080/pensjonsoversikt/person/{pid}'
   echo PSAK_OPPGAVEOVERSIKT='http://localhost:9080/psak/springapi/redirect/oppgave/oppgaveliste'
+  echo PENNY_JOURNALPOST_URL_TEMPLATE='https://pensjon-penny-q2.{subdomain}.dev.nav.no/psak/api/bff/dokument/dokumentoversikt/dokument/{journalpostId}.pdf'
   echo MODIA_PERSONOVERSIKT='https://modiapersonoversikt.ansatt.dev.nav.no/person/{fnr}'
   echo VERDANDE_BEHANDLING_URL="'http://localhost:3000/behandling/{behandlingId}'"
   echo VERDANDE_AKTIVITET_URL="'http://localhost:3000/behandling/{behandlingId}/aktivitet/{aktivitetId}'"

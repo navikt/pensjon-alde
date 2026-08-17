@@ -10,9 +10,11 @@ import { type AktivitetDTO, AldeBehandlingStatus, type BehandlingDTO } from '~/t
 import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 import './attestering.css'
-import { ArrowDownIcon } from '@navikt/aksel-icons'
+import { ArrowDownIcon, NewspaperIcon } from '@navikt/aksel-icons'
 import { userContext } from '~/context/user-context'
+import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
+import { env } from '~/utils/env.server'
 
 interface AktivitetTilAttestering {
   aktivitetId: number
@@ -59,6 +61,9 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
   })
   const behandling = await behandlingApi.hentBehandling()
   const attesteringData = await behandlingApi.hentAttesteringsdata()
+  const notatUrl =
+    attesteringData.journalpostId &&
+    buildUrl(env.pennyJournalpostUrlTemplate, request, { journalpostId: attesteringData.journalpostId })
 
   const serverComponents = getAllServerComponents()
 
@@ -82,7 +87,7 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
   } else {
     return {
       aktiviteter: parsedData,
-      journalpostId: attesteringData.journalpostId,
+      notatUrl,
     }
   }
 }
@@ -124,7 +129,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 }
 
 export default function Attestering({ loaderData, actionData }: Route.ComponentProps) {
-  const { aktiviteter, journalpostId } = loaderData
+  const { aktiviteter, notatUrl } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const { errors, data } = actionData || {}
   const isSubmitting = useIsSubmitting()
@@ -212,10 +217,16 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   return (
     <Page.Block width="xl" gutters className={commonStyles.behandlingPage}>
       <VStack gap="space-28">
-        <Heading level="1" size="large">
-          Oppgaven er til attestering
-        </Heading>
-        <BodyShort>Journalpostid: {journalpostId}</BodyShort>
+        <HStack justify="space-between">
+          <Heading level="1" size="large">
+            Oppgaven er til attestering
+          </Heading>
+          {notatUrl && (
+            <Button as="a" target="_blank" variant="tertiary" icon={<NewspaperIcon />} href={notatUrl}>
+              Vis notat
+            </Button>
+          )}
+        </HStack>
         <VStack gap="space-56">
           {aktiviteter.map(aktivitet => {
             const Component = components.get(aktivitet.handlerName)
