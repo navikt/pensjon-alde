@@ -8,6 +8,12 @@ metadata:
 spec:
   image: "{{{ image }}}"
 
+  accessPolicy:
+    inbound:
+      rules:
+        - application: "{{{ pen.application }}}"
+          namespace: "{{{ pen.namespace }}}"
+
   port: 8090
 
   env:
