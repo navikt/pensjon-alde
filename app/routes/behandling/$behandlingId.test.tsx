@@ -284,7 +284,7 @@ describe('getRedirectPath', () => {
       behandling: {
         ...mockBehandling,
         aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-        sisteSaksbehandlerNavident: null,
+        sisteSaksbehandlerNavident: undefined,
         aktiviteter: [
           {
             aktivitetId: 456,
