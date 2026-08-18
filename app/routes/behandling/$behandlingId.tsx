@@ -34,13 +34,22 @@ import { settingsContext } from '~/context/settings-context'
 import { userContext } from '~/context/user-context'
 import { Header } from '~/layout/Header/Header'
 import type { RootOutletContext, loader as rootLoader } from '~/root'
-import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
+import {
+  type AktivitetDTO,
+  AktivitetStatus,
+  AldeBehandlingStatus,
+  type BehandlingDTO,
+  BehandlingStatus,
+} from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
+
+const POLL_INTERVAL_MS = 1500
+const POLL_MAX_MS = 120_000
 
 export function getRedirectPath({
   pathname,
@@ -55,7 +64,8 @@ export function getRedirectPath({
   navident: string
   justCompletedId: string | null
 }): string | null {
-  const exactBehandlingRoute = pathname === `/behandling/${behandlingId}`
+  const normalizedPathname = pathname.replace(/\.data$/, '')
+  const exactBehandlingRoute = normalizedPathname === `/behandling/${behandlingId}`
 
   if (!exactBehandlingRoute) {
     return null
@@ -81,16 +91,17 @@ export function getRedirectPath({
   }
 
   if (behandling.aktiviteter.length > 0) {
+    const erAktivOgVenter = (status: AktivitetDTO['status']) =>
+      status === AktivitetStatus.UNDER_BEHANDLING ||
+      status === AktivitetStatus.FEILET ||
+      status === AktivitetStatus.OPPRETTET
+
     let aktivitetSomSkalVises = behandling.aktiviteter.find(
-      aktivitet =>
-        (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET) &&
-        aktivitet.handlerName &&
-        aktivitet.friendlyName,
+      aktivitet => erAktivOgVenter(aktivitet.status) && aktivitet.handlerName && aktivitet.friendlyName,
     )
     if (!aktivitetSomSkalVises) {
       aktivitetSomSkalVises = behandling.aktiviteter.find(
-        aktivitet =>
-          aktivitet.status === AktivitetStatus.UNDER_BEHANDLING || aktivitet.status === AktivitetStatus.FEILET,
+        aktivitet => erAktivOgVenter(aktivitet.status) && aktivitet.handlerName,
       )
     }
     if (aktivitetSomSkalVises?.handlerName === 'attestering') {
@@ -98,7 +109,11 @@ export function getRedirectPath({
     }
     const shouldRefetchAfterCompletion =
       aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
-    if (aktivitetSomSkalVises && !shouldRefetchAfterCompletion) {
+    if (
+      aktivitetSomSkalVises &&
+      !shouldRefetchAfterCompletion &&
+      behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER
+    ) {
       return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
     }
   }
@@ -147,9 +162,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     aktivitetId: aktivitetId,
     behandling,
     behandlingId,
-    behandlingJobber:
-      behandlingJobber ||
-      (behandling.aktiviteter.find(a => a.aktivitetId?.toString() === justCompletedId) && justCompletedId),
+    behandlingJobber: Boolean(behandlingJobber) || Boolean(justCompletedId),
     isOppsummering,
     isAttestering,
     showStepper: showStepper && !isOppsummering,
@@ -186,7 +199,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
   const stepperContainerRef = useRef<HTMLDivElement>(null)
-  const { revalidate } = useRevalidator()
+  const revalidator = useRevalidator()
+  const revalidatorRef = useRef(revalidator)
+  revalidatorRef.current = revalidator
   const ref = useRef<HTMLDialogElement>(null)
 
   const root = useRouteLoaderData<typeof rootLoader>('root')
@@ -259,20 +274,22 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       : allSteps.length - 1
 
   useEffect(() => {
-    if (behandlingJobber) {
-      let pollCount = 0
-      const intervalId = setInterval(() => {
-        pollCount++
-        revalidate()
+    if (!behandlingJobber) return
 
-        if (pollCount >= 10) {
-          clearInterval(intervalId)
-        }
-      }, 1000)
+    const startedAt = Date.now()
+    const intervalId = setInterval(() => {
+      if (Date.now() - startedAt > POLL_MAX_MS) {
+        clearInterval(intervalId)
+        return
+      }
 
-      return () => clearInterval(intervalId)
-    }
-  }, [behandlingJobber, revalidate])
+      if (revalidatorRef.current.state === 'idle') {
+        revalidatorRef.current.revalidate()
+      }
+    }, POLL_INTERVAL_MS)
+
+    return () => clearInterval(intervalId)
+  }, [behandlingJobber])
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {

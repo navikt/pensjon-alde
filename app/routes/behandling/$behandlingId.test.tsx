@@ -41,6 +41,22 @@ describe('getRedirectPath', () => {
     expect(result).toBeNull()
   })
 
+  it('treats single-fetch .data pathname as the exact behandling route', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123.data',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
+        sisteSaksbehandlerNavident: 'Z999999',
+      },
+      navident: 'Z999999',
+      justCompletedId: '456',
+    })
+
+    expect(result).toBe('/behandling/123/venter-attestering')
+  })
+
   it('returns null when on oppsummering route', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123/oppsummering',
@@ -221,6 +237,34 @@ describe('getRedirectPath', () => {
     expect(result).toBe('/behandling/123/aktivitet/456')
   })
 
+  it('finds newly created aktivitet with OPPRETTET status', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        aktiviteter: [
+          {
+            aktivitetId: 456,
+            handlerName: 'generer-notat',
+            friendlyName: 'Genererer Notat',
+            status: AktivitetStatus.OPPRETTET,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:00:00Z',
+            antallGangerKjort: 0,
+            sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: false,
+          },
+        ],
+      },
+      navident: 'Z999999',
+      justCompletedId: null,
+    })
+
+    expect(result).toBe('/behandling/123/aktivitet/456')
+  })
+
   it('returns null when no aktiviteter need processing', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123',
@@ -244,6 +288,63 @@ describe('getRedirectPath', () => {
       },
       navident: 'Z999999',
       justCompletedId: null,
+    })
+
+    expect(result).toBeNull()
+  })
+
+  it('does not redirect to a handler-less (backend-only) aktivitet', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        aktiviteter: [
+          {
+            aktivitetId: 789,
+            handlerName: null,
+            friendlyName: 'Fullfør kontroll',
+            status: AktivitetStatus.UNDER_BEHANDLING,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:00:00Z',
+            antallGangerKjort: 0,
+            sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: true,
+          },
+        ] as unknown as BehandlingDTO['aktiviteter'],
+      },
+      navident: 'Z999999',
+      justCompletedId: '456',
+    })
+
+    expect(result).toBeNull()
+  })
+
+  it('does not redirect to a handler aktivitet while machine is still working (VENTER_MASKINELL)', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
+        aktiviteter: [
+          {
+            aktivitetId: 456,
+            handlerName: 'generer-notat',
+            friendlyName: 'Genererer Notat',
+            status: AktivitetStatus.UNDER_BEHANDLING,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:00:00Z',
+            antallGangerKjort: 1,
+            sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: true,
+          },
+        ],
+      },
+      navident: 'Z999999',
+      justCompletedId: '999',
     })
 
     expect(result).toBeNull()
