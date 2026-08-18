@@ -37,13 +37,17 @@ function PdfHeader({ behandling: b }: { behandling: BehandlingDTO }) {
   return (
     <Box borderColor="neutral-subtleA" borderWidth="0 0 2 0" paddingBlock="space-16">
       <VStack gap="space-12">
-        <Heading level="1" size="medium">
-          {fullName || '—'}
-        </Heading>
+        <HStack justify="space-between">
+          <Heading level="1" size="medium">
+            {fullName || '—'}
+          </Heading>
+          <Heading size="medium">Internt notat</Heading>
+        </HStack>
         <HStack gap="space-40">
           <HeaderField label="Fødselsnummer" value={b.fnr} />
           <HeaderField label="Fødselsdato" value={b.fodselsdato ? formatDateToNorwegian(b.fodselsdato) : null} />
           <HeaderField label="Sak" value={b.sakId != null ? String(b.sakId) : null} />
+          <HeaderField label="Saken gjelder" value={b.sakType != null ? b.sakType : null} />
         </HStack>
       </VStack>
     </Box>
