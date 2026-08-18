@@ -1,6 +1,6 @@
 import { PersonCheckmarkIcon } from '@navikt/aksel-icons'
 import { Box, Heading, HStack, Link, Loader, Page, VStack } from '@navikt/ds-react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
@@ -30,12 +30,17 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 
 const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentProps) => {
   const { psakPensjonsoversiktUrl, status } = loaderData
-  const { revalidate } = useRevalidator()
+  const { revalidate, state } = useRevalidator()
+  const stateRef = useRef(state)
+  stateRef.current = state
 
   useEffect(() => {
     if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
       const intervalId = setInterval(() => {
-        revalidate()
+        // Ny revalidering avbryter en pågående, som gjør at redirecten aldri lander
+        if (stateRef.current === 'idle') {
+          revalidate()
+        }
       }, 1000)
 
       return () => clearInterval(intervalId)

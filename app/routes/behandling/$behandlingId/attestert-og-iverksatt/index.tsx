@@ -1,6 +1,6 @@
 import { CheckmarkCircleIcon } from '@navikt/aksel-icons'
 import { Heading, HStack, Link, Loader, Page, VStack } from '@navikt/ds-react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { redirect, useFetcher, useOutletContext, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
@@ -43,7 +43,9 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
   const { behandling, dato, psakOppgaveoversikt, psakPensjonsoversikt, status } = loaderData
-  const { revalidate } = useRevalidator()
+  const { revalidate, state } = useRevalidator()
+  const stateRef = useRef(state)
+  stateRef.current = state
   const { avbrytAktivitet } = useOutletContext<{ behandling: BehandlingDTO; avbrytAktivitet: () => void }>()
   const fetcher = useFetcher()
 
@@ -54,7 +56,10 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
   useEffect(() => {
     if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
       const intervalId = setInterval(() => {
-        revalidate()
+        // Ny revalidering avbryter en pågående, som gjør at redirecten aldri lander
+        if (stateRef.current === 'idle') {
+          revalidate()
+        }
       }, 1000)
 
       return () => clearInterval(intervalId)

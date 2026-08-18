@@ -186,7 +186,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
   const stepperContainerRef = useRef<HTMLDivElement>(null)
-  const { revalidate } = useRevalidator()
+  const { revalidate, state: revalidatorState } = useRevalidator()
+  const revalidatorStateRef = useRef(revalidatorState)
+  revalidatorStateRef.current = revalidatorState
   const ref = useRef<HTMLDialogElement>(null)
 
   const root = useRouteLoaderData<typeof rootLoader>('root')
@@ -259,19 +261,16 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       : allSteps.length - 1
 
   useEffect(() => {
-    if (behandlingJobber) {
-      let pollCount = 0
-      const intervalId = setInterval(() => {
-        pollCount++
+    if (!behandlingJobber) return
+
+    const intervalId = setInterval(() => {
+      // Ny revalidering avbryter en pågående, som gjør at redirecten aldri lander
+      if (revalidatorStateRef.current === 'idle') {
         revalidate()
+      }
+    }, 1000)
 
-        if (pollCount >= 10) {
-          clearInterval(intervalId)
-        }
-      }, 1000)
-
-      return () => clearInterval(intervalId)
-    }
+    return () => clearInterval(intervalId)
   }, [behandlingJobber, revalidate])
 
   useEffect(() => {
