@@ -64,8 +64,7 @@ export function getRedirectPath({
   navident: string
   justCompletedId: string | null
 }): string | null {
-  const normalizedPathname = pathname.replace(/\.data$/, '')
-  const exactBehandlingRoute = normalizedPathname === `/behandling/${behandlingId}`
+  const exactBehandlingRoute = pathname === `/behandling/${behandlingId}`
 
   if (!exactBehandlingRoute) {
     return null
@@ -124,9 +123,8 @@ export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Behandling ${params.behandlingId}` }, { name: 'description', content: 'Behandling detaljer' }]
 }
 
-export async function loader({ params, request, context }: Route.LoaderArgs) {
+export async function loader({ params, request, url, context }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
-  const url = new URL(request.url)
   const { navident } = context.get(userContext)
 
   const { showStepper, showMetadata } = context.get(settingsContext)

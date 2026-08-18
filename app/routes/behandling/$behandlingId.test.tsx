@@ -41,22 +41,6 @@ describe('getRedirectPath', () => {
     expect(result).toBeNull()
   })
 
-  it('treats single-fetch .data pathname as the exact behandling route', () => {
-    const result = getRedirectPath({
-      pathname: '/behandling/123.data',
-      behandlingId: '123',
-      behandling: {
-        ...mockBehandling,
-        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-        sisteSaksbehandlerNavident: 'Z999999',
-      },
-      navident: 'Z999999',
-      justCompletedId: '456',
-    })
-
-    expect(result).toBe('/behandling/123/venter-attestering')
-  })
-
   it('returns null when on oppsummering route', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123/oppsummering',
