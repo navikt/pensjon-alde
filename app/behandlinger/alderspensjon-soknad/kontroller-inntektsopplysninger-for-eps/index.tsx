@@ -1,10 +1,24 @@
 import { ExternalLinkIcon, PersonIcon } from '@navikt/aksel-icons'
-import { BodyLong, BodyShort, Box, Button, CopyButton, Heading, HStack, Link, ReadMore, VStack } from '@navikt/ds-react'
-import { useMemo } from 'react'
-import { Form, redirect, useNavigation, useOutletContext } from 'react-router'
+import {
+  BodyLong,
+  BodyShort,
+  Box,
+  Button,
+  CopyButton,
+  Heading,
+  HStack,
+  Link,
+  Radio,
+  RadioGroup,
+  ReadMore,
+  VStack,
+} from '@navikt/ds-react'
+import { useMemo, useState } from 'react'
+import { Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
+import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -97,12 +111,12 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   aktivitet,
   readOnly,
   avbrytAktivitet,
+  vurdering,
+  begrunnelse,
 }) => {
-  const navigation = useNavigation()
   const isSubmitting = useIsSubmitting()
-  const submittedValue = navigation.formData?.get('epsInntektOver2G')
-  const isSubmittingOver2G = isSubmitting && submittedValue === 'over2G'
-  const isSubmittingUnder2G = isSubmitting && submittedValue === 'under2G'
+  const defaultValue = vurdering ? (vurdering.epsInntektOver2G ? 'over2G' : 'under2G') : undefined
+  const [selectedValue, setSelectedValue] = useState(defaultValue)
   const oppgittInntektNum = parseFloat(grunnlag.oppgittInntekt)
   const grunnbelopNum = parseFloat(grunnlag.grunnbelop)
   const oppgittInntektIG = oppgittInntektNum ? Math.round((oppgittInntektNum / grunnbelopNum) * 100) / 100 : 0
@@ -227,41 +241,37 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
           <BodyLong>Ved inntekt over 2G må kravet tas til manuell behandling for å registrere inntekt.</BodyLong>
         </div>
 
-        {!readOnly ? (
-          <VStack gap="space-24">
-            <VStack gap="space-8">
-              <Button
-                type="submit"
-                name="epsInntektOver2G"
-                value="over2G"
-                variant="secondary"
-                size="small"
-                loading={isSubmittingOver2G}
-                disabled={isSubmittingUnder2G}
-              >
-                Over 2G - ta saken til manuell
+        <VStack gap="space-24">
+          <RadioGroup
+            legend="Vurder inntekt"
+            hideLegend
+            name="epsInntektOver2G"
+            value={selectedValue}
+            readOnly={readOnly}
+            size="small"
+            onChange={setSelectedValue}
+          >
+            <Radio value="over2G">Over 2G - ta saken til manuell</Radio>
+            <Radio value="under2G">Under 2G - fortsett behandling</Radio>
+          </RadioGroup>
+
+          <BegrunnelseField
+            readOnly={readOnly}
+            defaultValue={begrunnelse}
+            description="Kun ved behov for tilleggsopplysninger"
+          />
+
+          {!readOnly && (
+            <VStack gap="space-12">
+              <Button type="submit" variant="primary" size="small" loading={isSubmitting} disabled={!selectedValue}>
+                Fortsett behandling
               </Button>
-              <Button
-                type="submit"
-                name="epsInntektOver2G"
-                value="under2G"
-                variant="secondary"
-                size="small"
-                loading={isSubmittingUnder2G}
-                disabled={isSubmittingOver2G}
-              >
-                Under 2G - fortsett behandling
+              <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
+                Avbryt del-auto behandling
               </Button>
             </VStack>
-            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
-              Avbryt del-auto behandling
-            </Button>
-          </VStack>
-        ) : (
-          <VStack gap="space-24">
-            <BodyShort weight="semibold">Vurdert til under 2G</BodyShort>
-          </VStack>
-        )}
+          )}
+        </VStack>
       </VStack>
     </Form>
   )
