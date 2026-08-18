@@ -90,17 +90,18 @@ export function getRedirectPath({
   }
 
   if (behandling.aktiviteter.length > 0) {
-    const erAktivOgVenter = (status: AktivitetDTO['status']) =>
-      status === AktivitetStatus.UNDER_BEHANDLING ||
-      status === AktivitetStatus.FEILET ||
-      status === AktivitetStatus.OPPRETTET
+    const erAktivOgVenter = (aktivitet: AktivitetDTO) =>
+      !aktivitet.behandletFerdigMaskinelt &&
+      (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING ||
+        aktivitet.status === AktivitetStatus.FEILET ||
+        aktivitet.status === AktivitetStatus.OPPRETTET)
 
     let aktivitetSomSkalVises = behandling.aktiviteter.find(
-      aktivitet => erAktivOgVenter(aktivitet.status) && aktivitet.handlerName && aktivitet.friendlyName,
+      aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName && aktivitet.friendlyName,
     )
     if (!aktivitetSomSkalVises) {
       aktivitetSomSkalVises = behandling.aktiviteter.find(
-        aktivitet => erAktivOgVenter(aktivitet.status) && aktivitet.handlerName,
+        aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName,
       )
     }
     if (aktivitetSomSkalVises?.handlerName === 'attestering') {

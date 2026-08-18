@@ -249,6 +249,76 @@ describe('getRedirectPath', () => {
     expect(result).toBe('/behandling/123/aktivitet/456')
   })
 
+  it('skips a machine-handled (behandletFerdigMaskinelt) aktivitet with a handlerName', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        aktiviteter: [
+          {
+            aktivitetId: 456,
+            handlerName: 'generer-notat',
+            friendlyName: 'Genererer Notat',
+            status: AktivitetStatus.OPPRETTET,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:00:00Z',
+            antallGangerKjort: 0,
+            sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: true,
+          },
+        ],
+      },
+      navident: 'Z999999',
+      justCompletedId: null,
+    })
+
+    expect(result).toBeNull()
+  })
+
+  it('redirects to attestering and skips a machine-handled generer-notat still marked OPPRETTET', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
+        sisteSaksbehandlerNavident: undefined,
+        aktiviteter: [
+          {
+            aktivitetId: 456,
+            handlerName: 'generer-notat',
+            friendlyName: 'Genererer Notat',
+            status: AktivitetStatus.OPPRETTET,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:00:00Z',
+            antallGangerKjort: 1,
+            sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: true,
+          },
+          {
+            aktivitetId: 789,
+            handlerName: 'attestering',
+            friendlyName: 'Attestering',
+            status: AktivitetStatus.OPPRETTET,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:01:00Z',
+            antallGangerKjort: 0,
+            sisteAktiveringsdato: '2024-01-01T10:01:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: false,
+          },
+        ],
+      },
+      navident: 'Z999999',
+      justCompletedId: null,
+    })
+
+    expect(result).toBe('/behandling/123/attestering')
+  })
+
   it('returns null when no aktiviteter need processing', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123',
