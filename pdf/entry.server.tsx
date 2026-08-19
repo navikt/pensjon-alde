@@ -77,6 +77,7 @@ function LockedAttesteringView({ behandling, aktiviteter }: PdfInput) {
                       aktivitet={a.aktivitet}
                       behandling={behandling}
                       begrunnelse={a.begrunnelse}
+                      visNotat={true}
                     />
                   </div>
                 </div>
