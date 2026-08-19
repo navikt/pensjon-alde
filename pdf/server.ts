@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
-import { SpanStatusCode, trace } from '@opentelemetry/api'
+import { context, propagation, SpanStatusCode, trace } from '@opentelemetry/api'
 import express from 'express'
 import { collectDefaultMetrics, Histogram, Registry } from 'prom-client'
 import { createServer as createViteServer } from 'vite'
@@ -81,54 +81,57 @@ app.post('/pdf', async (req, res) => {
   const endTimer = pdfDuration.startTimer()
   let format = 'unknown'
   console.log(`PDF request received: ${req.method} ${req.originalUrl}`)
-  await tracer.startActiveSpan('generate-pdf', async span => {
-    try {
-      format = String(req.query.format ?? 'pdfa')
-        .toLowerCase()
-        .replace('-', '')
-      span.setAttribute('pdf.format', format)
-      if (format !== 'pdf' && format !== 'pdfa') {
-        endTimer({ format, outcome: 'invalid_format' })
-        span.setAttribute('pdf.outcome', 'invalid_format')
-        span.setStatus({ code: SpanStatusCode.ERROR, message: 'invalid format' })
-        res.status(400).json({ error: `Ugyldig format: '${req.query.format}'. Bruk 'pdf' eller 'pdfa'.` })
-        return
-      }
+  const parentCtx = propagation.extract(context.active(), req.headers)
+  await context.with(parentCtx, () =>
+    tracer.startActiveSpan('generate-pdf', async span => {
+      try {
+        format = String(req.query.format ?? 'pdfa')
+          .toLowerCase()
+          .replace('-', '')
+        span.setAttribute('pdf.format', format)
+        if (format !== 'pdf' && format !== 'pdfa') {
+          endTimer({ format, outcome: 'invalid_format' })
+          span.setAttribute('pdf.outcome', 'invalid_format')
+          span.setStatus({ code: SpanStatusCode.ERROR, message: 'invalid format' })
+          res.status(400).json({ error: `Ugyldig format: '${req.query.format}'. Bruk 'pdf' eller 'pdfa'.` })
+          return
+        }
 
-      const { renderAttestering } = (await vite.ssrLoadModule('/pdf/entry.server.tsx')) as {
-        renderAttestering: typeof RenderAttestering
+        const { renderAttestering } = (await vite.ssrLoadModule('/pdf/entry.server.tsx')) as {
+          renderAttestering: typeof RenderAttestering
+        }
+        const input = req.body as PdfInput
+        const html = renderAttestering(input, css)
+        const rendered = await htmlToPdf(html, { timeout: renderTimeoutMs })
+        const pdf =
+          format === 'pdfa'
+            ? await toPdfA(rendered, {
+                title: pdfTitle(input),
+                subject: pdfSubject(input),
+                author: 'Nav - Pensjon Alde',
+                lang: 'nb-NO',
+              })
+            : rendered
+        endTimer({ format, outcome: 'success' })
+        span.setAttribute('pdf.outcome', 'success')
+        span.setAttribute('pdf.bytes', pdf.length)
+        span.setStatus({ code: SpanStatusCode.OK })
+        res.type('application/pdf').send(pdf)
+      } catch (err) {
+        const outcome = (err as Error).name === 'MissingComponentError' ? 'missing_component' : 'error'
+        endTimer({ format, outcome })
+        span.setAttribute('pdf.outcome', outcome)
+        span.recordException(err as Error)
+        span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).message })
+        vite.ssrFixStacktrace(err as Error)
+        console.error(err)
+        const status = (err as Error).name === 'MissingComponentError' ? 422 : 500
+        if (!res.headersSent) res.status(status).json({ error: (err as Error).message })
+      } finally {
+        span.end()
       }
-      const input = req.body as PdfInput
-      const html = renderAttestering(input, css)
-      const rendered = await htmlToPdf(html, { timeout: renderTimeoutMs })
-      const pdf =
-        format === 'pdfa'
-          ? await toPdfA(rendered, {
-              title: pdfTitle(input),
-              subject: pdfSubject(input),
-              author: 'Nav - Pensjon Alde',
-              lang: 'nb-NO',
-            })
-          : rendered
-      endTimer({ format, outcome: 'success' })
-      span.setAttribute('pdf.outcome', 'success')
-      span.setAttribute('pdf.bytes', pdf.length)
-      span.setStatus({ code: SpanStatusCode.OK })
-      res.type('application/pdf').send(pdf)
-    } catch (err) {
-      const outcome = (err as Error).name === 'MissingComponentError' ? 'missing_component' : 'error'
-      endTimer({ format, outcome })
-      span.setAttribute('pdf.outcome', outcome)
-      span.recordException(err as Error)
-      span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).message })
-      vite.ssrFixStacktrace(err as Error)
-      console.error(err)
-      const status = (err as Error).name === 'MissingComponentError' ? 422 : 500
-      if (!res.headersSent) res.status(status).json({ error: (err as Error).message })
-    } finally {
-      span.end()
-    }
-  })
+    }),
+  )
 })
 
 const port = Number(process.env.PDF_PORT ?? 8090)
