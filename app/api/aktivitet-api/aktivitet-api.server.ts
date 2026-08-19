@@ -35,7 +35,7 @@ export function aktivitetApi(fetch: Fetcher) {
 
   const hentOutput = <T>() => fetch<T>(`/output`, { method: 'GET' })
 
-  const innhentGrunnlagsdata = <T>() => fetch<T>(`/innhent-grunnlagsdata`, { method: 'GET' })
+  const retryGrunnlagsdata = () => fetch(`/grunnlagsdata/retry`, { method: 'POST' })
 
   return {
     hentAktivitet,
@@ -44,7 +44,7 @@ export function aktivitetApi(fetch: Fetcher) {
     hentInput,
     hentOutput,
     hentVurdering,
-    innhentGrunnlagsdata,
+    retryGrunnlagsdata,
     lagreAttestering,
     lagreVurdering,
   }
