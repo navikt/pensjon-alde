@@ -100,18 +100,29 @@ export async function toPdfA(pdf: Buffer, meta: PdfAMetadata = {}): Promise<Buff
 }
 
 function runGhostscript(args: string[]): Promise<void> {
+  const timeoutMs = Number(process.env.GHOSTSCRIPT_TIMEOUT_MS ?? 30_000)
   return new Promise((resolve, reject) => {
     const gs = spawn(GS_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] })
     let out = ''
+    let timedOut = false
+    const timer = setTimeout(() => {
+      timedOut = true
+      gs.kill('SIGKILL')
+    }, timeoutMs)
     gs.stdout.on('data', chunk => {
       out += chunk
     })
     gs.stderr.on('data', chunk => {
       out += chunk
     })
-    gs.on('error', reject)
+    gs.on('error', err => {
+      clearTimeout(timer)
+      reject(err)
+    })
     gs.on('close', code => {
-      if (code === 0) resolve()
+      clearTimeout(timer)
+      if (timedOut) reject(new Error(`Ghostscript timed out after ${timeoutMs}ms`))
+      else if (code === 0) resolve()
       else reject(new Error(`Ghostscript exited with code ${code}: ${out.trim()}`))
     })
   })

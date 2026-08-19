@@ -5,10 +5,22 @@ let browserPromise: Promise<Browser> | null = null
 function getBrowser(): Promise<Browser> {
   if (!browserPromise) {
     const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH || undefined
-    browserPromise = chromium.launch({
-      executablePath,
-      args: ['--no-sandbox', '--disable-dev-shm-usage'],
-    })
+    const launching = chromium
+      .launch({
+        executablePath,
+        args: ['--no-sandbox', '--disable-dev-shm-usage'],
+      })
+      .then(browser => {
+        browser.on('disconnected', () => {
+          if (browserPromise === launching) browserPromise = null
+        })
+        return browser
+      })
+      .catch(err => {
+        if (browserPromise === launching) browserPromise = null
+        throw err
+      })
+    browserPromise = launching
   }
   return browserPromise
 }
@@ -16,16 +28,19 @@ function getBrowser(): Promise<Browser> {
 export interface PdfRenderOptions {
   continuous?: boolean
   width?: number
+  timeout?: number
 }
 
 export async function htmlToPdf(html: string, options: PdfRenderOptions = {}): Promise<Buffer> {
-  const { continuous = true, width = 1200 } = options
+  const { continuous = true, width = 1200, timeout = 30_000 } = options
   const browser = await getBrowser()
   const page = await browser.newPage()
+  page.setDefaultTimeout(timeout)
+  page.setDefaultNavigationTimeout(timeout)
   try {
     await page.setViewportSize({ width, height: 1200 })
     await page.emulateMedia({ media: 'print' })
-    await page.setContent(html, { waitUntil: 'networkidle' })
+    await page.setContent(html, { waitUntil: 'networkidle', timeout })
     await page.evaluate(() => document.fonts.ready)
 
     if (continuous) {
