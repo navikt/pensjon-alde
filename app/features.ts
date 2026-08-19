@@ -10,4 +10,9 @@ export const Features = {
     added: '2025-12-18',
     team: 'starte-pensjon',
   },
+  NOTAT: {
+    featureFlag: 'pesys.pen.alde.notat',
+    added: '2025-12-19',
+    team: 'starte-pensjon',
+  },
 } satisfies Record<string, Feature>

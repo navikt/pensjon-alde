@@ -4,10 +4,13 @@ import { useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import commonStyles from '~/common.module.css'
+import { userContext } from '~/context/user-context'
+import { Features } from '~/features'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { type AktivitetDTO, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
 import { getAllServerComponents } from '~/utils/component-discovery'
 import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
+import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
 
 interface AktivitetTilAttestering {
@@ -44,7 +47,7 @@ const enhanceAttesteringAktivitet =
     }
   }
 
-export const loader = async ({ params, request }: Route.LoaderArgs) => {
+export const loader = async ({ params, request, context }: Route.LoaderArgs) => {
   const { behandlingId } = params
   const behandlingApi = createBehandlingApi({
     request,
@@ -54,6 +57,9 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
   const attesteringData = await behandlingApi.hentAttesteringsdata()
 
   const serverComponents = getAllServerComponents()
+
+  const { enhet } = context.get(userContext)
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
 
   const parsedData = attesteringData.aktiviter
     .map(enhanceAttesteringAktivitet(behandling))
@@ -68,6 +74,7 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
     psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
     behandlingErFullført: behandling.status === BehandlingStatus.FULLFORT,
     behandlingFeilende: behandling.status === BehandlingStatus.FEILENDE,
+    visNotat,
   }
 }
 
@@ -76,7 +83,7 @@ export const action = async () => {
 }
 
 export default function Attestering({ loaderData }: Route.ComponentProps) {
-  const { aktiviteter, behandlingErFullført, psakPensjonsoversiktUrl } = loaderData
+  const { aktiviteter, behandlingErFullført, psakPensjonsoversiktUrl, visNotat } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const components = getAllServerComponents()
 
@@ -125,6 +132,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
               aktivitet={aktivitet.aktivitet}
               behandling={behandling}
               avbrytAktivitet={() => {}}
+              visNotat={visNotat}
             />
             <Box>
               Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />

@@ -19,11 +19,14 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
+import { userContext } from '~/context/user-context'
+import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatDateToNorwegian, parseDate } from '~/utils/date'
 import { dateInput, parseForm, radiogroup, string } from '~/utils/parse-form'
+import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
@@ -33,7 +36,7 @@ export function meta() {
   return [{ title: `Samboervurdering` }, { name: 'description', content: 'Samboervurdering' }]
 }
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 
   const api = createAktivitetApi({
@@ -45,10 +48,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
+  const { enhet } = context.get(userContext)
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
+
   return {
     readOnly: false,
     samboerInformasjon: grunnlag,
     vurdering,
+    visNotat,
   }
 }
 
@@ -109,7 +116,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function VurderSamboerRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { samboerInformasjon, vurdering, readOnly } = loaderData
+  const { samboerInformasjon, vurdering, readOnly, visNotat } = loaderData
   const { errors } = actionData || {}
 
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
@@ -123,6 +130,7 @@ export default function VurderSamboerRoute({ loaderData, actionData }: Route.Com
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
       errors={errors}
+      visNotat={visNotat}
     />
   )
 }
@@ -135,6 +143,7 @@ function VurdereSamboerComponent({
   avbrytAktivitet,
   errors,
   begrunnelse,
+  visNotat,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
   const defaultVurdering = vurdering?.vurdering
   const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
@@ -189,11 +198,13 @@ function VurdereSamboerComponent({
               </InlineMessage>
             )}
 
-            <BegrunnelseField
-              readOnly={readOnly}
-              defaultValue={begrunnelse}
-              description="Kun ved behov for tilleggsopplysninger"
-            />
+            {visNotat && (
+              <BegrunnelseField
+                readOnly={readOnly}
+                defaultValue={begrunnelse}
+                description="Kun ved behov for tilleggsopplysninger"
+              />
+            )}
 
             {errors?._form && (
               <InlineMessage status="error" className="mb-4">

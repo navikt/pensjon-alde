@@ -12,9 +12,11 @@ import type { Route } from './+types'
 import './attestering.css'
 import { ArrowDownIcon, NewspaperIcon } from '@navikt/aksel-icons'
 import { userContext } from '~/context/user-context'
+import { Features } from '~/features'
 import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
+import { isFeatureEnabled } from '~/utils/unleash.server'
 
 interface AktivitetTilAttestering {
   aktivitetId: number
@@ -54,7 +56,7 @@ const enhanceAttesteringAktivitet =
 
 export const loader = async ({ params, request, context }: Route.LoaderArgs) => {
   const { behandlingId } = params
-  const { navident } = context.get(userContext)
+  const { navident, enhet } = context.get(userContext)
   const behandlingApi = createBehandlingApi({
     request,
     behandlingId,
@@ -66,6 +68,8 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
     buildUrl(env.pennyJournalpostUrlTemplate, request, { journalpostId: attesteringData.journalpostId })
 
   const serverComponents = getAllServerComponents()
+
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
 
   const parsedData = attesteringData.aktiviter
     .map(enhanceAttesteringAktivitet(behandling))
@@ -88,6 +92,7 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
     return {
       aktiviteter: parsedData,
       notatUrl,
+      visNotat,
     }
   }
 }
@@ -129,7 +134,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 }
 
 export default function Attestering({ loaderData, actionData }: Route.ComponentProps) {
-  const { aktiviteter, notatUrl } = loaderData
+  const { aktiviteter, notatUrl, visNotat } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const { errors, data } = actionData || {}
   const isSubmitting = useIsSubmitting()
@@ -221,7 +226,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
           <Heading level="1" size="large">
             Oppgaven er til attestering
           </Heading>
-          {notatUrl && (
+          {visNotat && notatUrl && (
             <Button as="a" target="_blank" variant="tertiary" icon={<NewspaperIcon />} href={notatUrl}>
               Vis notat
             </Button>
@@ -255,6 +260,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                         vurdering={aktivitet.vurdering}
                         aktivitet={aktivitet.aktivitet}
                         behandling={behandling}
+                        visNotat={visNotat}
                       />
                     </div>
                   </div>

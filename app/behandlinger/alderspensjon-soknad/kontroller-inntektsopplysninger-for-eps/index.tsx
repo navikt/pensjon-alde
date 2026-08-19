@@ -19,6 +19,8 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
+import { userContext } from '~/context/user-context'
+import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -27,13 +29,14 @@ import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import { parseForm, radiogroup, string } from '~/utils/parse-form'
+import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
 import type {
   KontrollerInntektsopplysningerForEpsGrunnlag,
   KontrollerInntektsopplysningerForEpsVurdering,
 } from './types'
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 
   const behandlingApi = createBehandlingApi({
@@ -55,10 +58,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const modiaUrl = buildUrl(env.modia, request, { fnr: behandling.fnr })
 
+  const { enhet } = context.get(userContext)
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
+
   return {
     modiaUrl,
     grunnlag,
     vurdering,
+    visNotat,
   }
 }
 
@@ -83,7 +90,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.ComponentProps) => {
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
-  const { grunnlag, vurdering, modiaUrl } = loaderData
+  const { grunnlag, vurdering, modiaUrl, visNotat } = loaderData
 
   return (
     <KontrollerInntektsopplysningerForEPS
@@ -94,6 +101,7 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
       aktivitet={aktivitet}
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
+      visNotat={visNotat}
     />
   )
 }
@@ -113,6 +121,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   avbrytAktivitet,
   vurdering,
   begrunnelse,
+  visNotat,
 }) => {
   const isSubmitting = useIsSubmitting()
   const defaultValue = vurdering ? (vurdering.epsInntektOver2G ? 'over2G' : 'under2G') : undefined
@@ -255,11 +264,13 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             <Radio value="under2G">Under 2G - fortsett behandling</Radio>
           </RadioGroup>
 
-          <BegrunnelseField
-            readOnly={readOnly}
-            defaultValue={begrunnelse}
-            description="Kun ved behov for tilleggsopplysninger"
-          />
+          {visNotat && (
+            <BegrunnelseField
+              readOnly={readOnly}
+              defaultValue={begrunnelse}
+              description="Kun ved behov for tilleggsopplysninger"
+            />
+          )}
 
           {!readOnly && (
             <VStack gap="space-12">
