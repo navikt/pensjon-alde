@@ -20,6 +20,7 @@ interface AktivitetTilAttestering {
   vurdertTidspunkt?: string
   vurdertAvBrukerId?: string
   vurdertAvBrukerNavn?: string
+  begrunnelse?: string
 }
 
 const enhanceAttesteringAktivitet =
@@ -41,6 +42,7 @@ const enhanceAttesteringAktivitet =
       vurdertTidspunkt: aktivitet.vurdertTidspunkt,
       vurdertAvBrukerId: aktivitet.vurdertAvBrukerId,
       vurdertAvBrukerNavn: aktivitet.vurdertAvBrukerNavn,
+      begrunnelse: aktivitet.begrunnelse,
     }
   }
 
@@ -125,6 +127,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
               aktivitet={aktivitet.aktivitet}
               behandling={behandling}
               avbrytAktivitet={() => {}}
+              begrunnelse={aktivitet.begrunnelse}
               visNotat={true}
             />
             <Box>
