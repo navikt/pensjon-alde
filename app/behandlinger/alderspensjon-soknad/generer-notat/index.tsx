@@ -1,10 +1,11 @@
-import { Alert, BodyLong, BodyShort, Box, Button, Heading, HStack, Page, VStack } from '@navikt/ds-react'
+import { Alert, BodyLong, BodyShort, Box, Button, Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import { useEffect, useState } from 'react'
 import { data, Form, redirect, useNavigation, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import commonStyles from '~/common.module.css'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
+import { formatDateToNorwegian } from '~/utils/date'
 import type { Route } from './+types'
 
 export function meta() {
@@ -114,11 +115,20 @@ export default function GenererNotatRoute({ loaderData, actionData }: Route.Comp
 function GenererNotatComponent({
   grunnlag,
   aktivitet,
+  behandling,
   readOnly,
   errors,
 }: AktivitetComponentProps<GenererNotatGrunnlag, GenererNotatVurdering>) {
   if (grunnlag.type === 'error') {
-    return <NotatError grunnlag={grunnlag} readOnly={readOnly} errors={errors} />
+    return (
+      <NotatError
+        grunnlag={grunnlag}
+        behandlingId={behandling.behandlingId}
+        utsattTil={aktivitet.utsattTil}
+        readOnly={readOnly}
+        errors={errors}
+      />
+    )
   }
 
   return (
@@ -166,10 +176,14 @@ function NotatOk({ pdf }: { pdf: string }) {
 
 function NotatError({
   grunnlag,
+  behandlingId,
+  utsattTil,
   readOnly,
   errors,
 }: {
   grunnlag: GenererNotatGrunnlagError
+  behandlingId: number
+  utsattTil?: string | null
   readOnly: boolean
   errors?: FormErrors<GenererNotatVurdering>
 }) {
@@ -189,11 +203,20 @@ function NotatError({
           </BodyLong>
           <BodyLong align="center">
             Hvis du hopper over notatet, går behandlingen videre til attestering uten at notatet journalføres. Da må du
-            selv opprette notatet manuelt i Pesys.
+            selv opprette notatet manuelt i Pesys. Du kan{' '}
+            <Link href={`/behandling/${behandlingId}/oppsummering`} target="_blank" rel="noreferrer">
+              se oppsummeringen av saksbehandlingen så langt
+            </Link>{' '}
+            for å skrive ditt eget notat.
           </BodyLong>
           <BodyShort size="small" textColor="subtle" align="center">
             {grunnlag.feilmelding}
           </BodyShort>
+          {utsattTil && (
+            <BodyShort size="small" textColor="subtle" align="center">
+              Planlagt nytt forsøk {formatDateToNorwegian(utsattTil, { showTime: true })}
+            </BodyShort>
+          )}
         </VStack>
 
         {errors?._form && <Alert variant="error">{errors._form}</Alert>}
