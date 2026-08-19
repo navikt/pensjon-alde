@@ -29,6 +29,8 @@ spec:
   env:
     - name: PDF_PORT
       value: "8090"
+    - name: PDF_RENDER_TIMEOUT_MS
+      value: "30000"
 
   liveness:
     path: '/internal/live'
@@ -44,11 +46,14 @@ spec:
 
   replicas:
     min: 2
-    max: 2
+    max: 6
+    scalingStrategy:
+      cpu:
+        thresholdPercentage: 70
 
   resources:
     limits:
       memory: "2Gi"
     requests:
-      cpu: "200m"
+      cpu: "500m"
       memory: "512Mi"

@@ -45,11 +45,17 @@ const pdfDuration = new Histogram({
   registers: [registry],
 })
 
+const renderTimeoutMs = Math.max(1000, Number(process.env.PDF_RENDER_TIMEOUT_MS ?? 30_000))
+
+let shuttingDown = false
+
 const app = express()
+app.disable('x-powered-by')
 app.use(vite.middlewares)
 app.use(express.json({ limit: '8mb' }))
 
-app.get(['/internal/live', '/internal/ready'], (_req, res) => res.sendStatus(200))
+app.get('/internal/live', (_req, res) => res.sendStatus(200))
+app.get('/internal/ready', (_req, res) => res.sendStatus(shuttingDown ? 503 : 200))
 
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', registry.contentType)
@@ -73,7 +79,11 @@ function pdfSubject({ behandling: b }: PdfInput): string {
 }
 
 app.post('/pdf', async (req, res) => {
-  const start = Date.now()
+  if (shuttingDown) {
+    res.set('Retry-After', '5').status(503).json({ error: 'PDF-tjenesten avsluttes, prøv igjen.' })
+    return
+  }
+
   const endTimer = pdfDuration.startTimer()
   let format = 'unknown'
   console.log(`PDF request received: ${req.method} ${req.originalUrl}`)
@@ -96,7 +106,7 @@ app.post('/pdf', async (req, res) => {
       }
       const input = req.body as PdfInput
       const html = renderAttestering(input, css)
-      const rendered = await htmlToPdf(html)
+      const rendered = await htmlToPdf(html, { timeout: renderTimeoutMs })
       const pdf =
         format === 'pdfa'
           ? await toPdfA(rendered, {
@@ -110,9 +120,6 @@ app.post('/pdf', async (req, res) => {
       span.setAttribute('pdf.outcome', 'success')
       span.setAttribute('pdf.bytes', pdf.length)
       span.setStatus({ code: SpanStatusCode.OK })
-      console.log(
-        `PDF created: format=${format}, title="${pdfTitle(input)}", bytes=${pdf.length}, took=${Date.now() - start}ms`,
-      )
       res.type('application/pdf').send(pdf)
     } catch (err) {
       const outcome = (err as Error).name === 'MissingComponentError' ? 'missing_component' : 'error'
@@ -123,7 +130,7 @@ app.post('/pdf', async (req, res) => {
       vite.ssrFixStacktrace(err as Error)
       console.error(err)
       const status = (err as Error).name === 'MissingComponentError' ? 422 : 500
-      res.status(status).json({ error: (err as Error).message })
+      if (!res.headersSent) res.status(status).json({ error: (err as Error).message })
     } finally {
       span.end()
     }
@@ -132,12 +139,59 @@ app.post('/pdf', async (req, res) => {
 
 const port = Number(process.env.PDF_PORT ?? 8090)
 const server = app.listen(port, '0.0.0.0', () => {
-  console.log(`PDF service listening at http://0.0.0.0:${port} (POST /pdf)`)
+  console.log(`PDF service listening at http://0.0.0.0:${port} (POST /pdf) renderTimeoutMs=${renderTimeoutMs}`)
 })
 
+server.keepAliveTimeout = 65_000
+server.headersTimeout = 66_000
+server.requestTimeout = Math.max(renderTimeoutMs * 2, 120_000)
+
+process.on('unhandledRejection', reason => {
+  console.error('Unhandled promise rejection (logged, not fatal):', reason)
+})
+process.on('uncaughtException', err => {
+  console.error('Uncaught exception, crashing:', err)
+  fatalExit()
+})
+
+let fatalExitStarted = false
+function fatalExit(): void {
+  if (fatalExitStarted) return
+  fatalExitStarted = true
+  shuttingDown = true
+  const forceExit = setTimeout(() => process.exit(1), 5_000)
+  forceExit.unref()
+  server.closeIdleConnections?.()
+  server.close(() => process.exit(1))
+}
+
+let shuttingDownStarted = false
+async function shutdown(signal: string): Promise<void> {
+  if (shuttingDownStarted) return
+  shuttingDownStarted = true
+  shuttingDown = true
+  console.log(`${signal} received, shutting down gracefully...`)
+
+  const forceExit = setTimeout(() => {
+    console.error('Graceful shutdown timed out, forcing exit')
+    process.exit(1)
+  }, 25_000)
+  forceExit.unref()
+
+  server.closeIdleConnections?.()
+  server.close(async () => {
+    try {
+      await closeBrowser()
+    } catch (err) {
+      console.error('Error closing browser during shutdown:', err)
+    }
+    clearTimeout(forceExit)
+    process.exit(0)
+  })
+}
+
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.on(signal, async () => {
-    await closeBrowser()
-    server.close(() => process.exit(0))
+  process.on(signal, () => {
+    void shutdown(signal)
   })
 }
