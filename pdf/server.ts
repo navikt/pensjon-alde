@@ -62,16 +62,10 @@ app.get('/metrics', async (_req, res) => {
   res.send(await registry.metrics())
 })
 
-function pdfName({ behandling: b }: PdfInput): string {
-  return [b.fornavn, b.mellomnavn, b.etternavn].filter(Boolean).join(' ')
-}
-
 function pdfTitle(input: PdfInput): string {
   const b = input.behandling
-  const navn = pdfName(input)
   const base = b.friendlyName ?? 'Behandling'
-  const parts = [navn, b.sakId != null ? `sak ${b.sakId}` : null].filter(Boolean)
-  return parts.length > 0 ? `${base} - ${parts.join(', ')}` : base
+  return b.sakId != null ? `${base} - Sak: ${b.sakId}` : base
 }
 
 function pdfSubject({ behandling: b }: PdfInput): string {
