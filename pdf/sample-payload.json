@@ -1,0 +1,210 @@
+{
+  "behandling": {
+    "behandlingId": 1000001,
+    "type": "FleksibelApSakBehandling",
+    "handlerName": "alderspensjon-soknad",
+    "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
+    "processName": "Alderspensjon søknad",
+    "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
+    "sisteKjoring": null,
+    "sisteKjoringDato": "2025-01-15T16:49:34.37642",
+    "utsattTil": null,
+    "opprettet": "2025-01-15T16:49:29.7398",
+    "stoppet": null,
+    "status": "UNDER_BEHANDLING",
+    "aktiviteter": [
+      {
+        "aktivitetId": 6020942,
+        "type": "FleksibelApSakA203VurderInntektForEpsAktivitet",
+        "handlerName": "kontroller-inntektsopplysninger-for-eps",
+        "friendlyName": "Kontroller inntektsopplysninger for EPS",
+        "opprettet": "2025-01-15T16:49:34.364857",
+        "antallGangerKjort": 1,
+        "sisteAktiveringsdato": "2025-01-15T16:49:34.380546",
+        "status": "FULLFORT",
+        "utsattTil": null
+      },
+      {
+        "aktivitetId": 6020943,
+        "type": "FleksibelApSakA200VurderSamboerAktivitet",
+        "opprettet": "2025-01-15T16:49:34.364857",
+        "handlerName": "vurder-samboer",
+        "friendlyName": "Vurder samboer",
+        "antallGangerKjort": 0,
+        "sisteAktiveringsdato": null,
+        "status": "UNDER_BEHANDLING",
+        "utsattTil": null
+      },
+      {
+        "aktivitetId": 6020941,
+        "type": "FleksibelApSakA202FinnSamboerInformasjonAktivitet",
+        "opprettet": "2025-01-15T16:49:34.297346",
+        "handlerName": null,
+        "friendlyName": "Finn samboer informasjon",
+        "antallGangerKjort": 1,
+        "sisteAktiveringsdato": "2025-01-15T16:49:34.312694",
+        "status": "FULLFORT",
+        "utsattTil": null
+      },
+      {
+        "aktivitetId": 6020940,
+        "type": "FleksibelApSakA201SettBrukPaRettPersongrunnlagAktivitet",
+        "opprettet": "2025-01-15T16:49:34.071661",
+        "handlerName": null,
+        "friendlyName": "Sett bruk på rett persongrunnlag",
+        "antallGangerKjort": 1,
+        "sisteAktiveringsdato": "2025-01-15T16:49:34.271477",
+        "status": "FULLFORT",
+        "utsattTil": null
+      }
+    ],
+    "fnr": "12345678901",
+    "sakId": 23077283,
+    "kravId": 46365419,
+    "fornavn": "Ola",
+    "mellomnavn": null,
+    "etternavn": "Nordmann",
+    "fodselsdato": "1962-03-15"
+  },
+  "aktiviteter": [
+    {
+      "aktivitetId": 6020942,
+      "handlerName": "kontroller-inntektsopplysninger-for-eps",
+      "aktivitet": {
+        "aktivitetId": 6020942,
+        "type": "FleksibelApSakA203VurderInntektForEpsAktivitet",
+        "handlerName": "kontroller-inntektsopplysninger-for-eps",
+        "friendlyName": "Kontroller inntektsopplysninger for EPS",
+        "opprettet": "2025-01-15T16:49:34.364857",
+        "antallGangerKjort": 1,
+        "sisteAktiveringsdato": "2025-01-15T16:49:34.380546",
+        "status": "FULLFORT",
+        "utsattTil": null
+      },
+      "grunnlag": {
+        "oppgittInntekt": "450000",
+        "grunnbelop": "124028",
+        "sokerKontaktinfo": {
+          "reservertMotDigitalVarsling": false,
+          "aktivDigitalt": true
+        },
+        "epsInformasjon": {
+          "fnr": "11111111111",
+          "fornavn": "Kari",
+          "etternavn": "Hansen",
+          "forkortetNavn": "Hansen Kari"
+        },
+        "estimertInntektOver2gOgOppgittInntektUnder2g": true,
+        "oppgittInntektUnder2g": true,
+        "estimertInntektOver2g": true,
+        "onsketVirkningsdato": "2025-04-01",
+        "epsType": "SAMBOER"
+      },
+      "vurdering": {
+        "epsInntektOver2G": true
+      },
+      "vurdertAvBrukerNavn": "Ola Saksbehandler",
+      "vurdertAvBrukerId": "Z100001",
+      "vurdertTidspunkt": "2025-01-14T09:15:00Z",
+      "begrunnelse": "EPS sin inntekt er kontrollert mot oppgitte opplysninger og vurdert til å være over 2G."
+    },
+    {
+      "aktivitetId": 6020943,
+      "handlerName": "vurder-samboer",
+      "aktivitet": {
+        "aktivitetId": 6020943,
+        "type": "FleksibelApSakA200VurderSamboerAktivitet",
+        "opprettet": "2025-01-15T16:49:34.364857",
+        "handlerName": "vurder-samboer",
+        "friendlyName": "Vurder samboer",
+        "antallGangerKjort": 0,
+        "sisteAktiveringsdato": null,
+        "status": "UNDER_BEHANDLING",
+        "utsattTil": null
+      },
+      "grunnlag": {
+        "sokersBostedsadresser": [
+          {
+            "adressenavn": "Storgata",
+            "husnummer": "1",
+            "husbokstav": null,
+            "postnummer": "0182",
+            "poststed": "Oslo",
+            "tilleggsnavn": null,
+            "kommunenummer": "0301",
+            "bruksenhetsnummer": null,
+            "bydelsnummer": null,
+            "koordinater": null,
+            "matrikkelId": null,
+            "adresseString": "Storgata 1, 0182 Oslo",
+            "adresselinjer": ["Storgata 1", "0182 Oslo"],
+            "adresseTilleggsdata": {
+              "angittFlyttedato": "2020-06-01",
+              "gyldigFraOgMed": "2020-06-01",
+              "gyldigTilOgMed": null,
+              "coAdressenavn": null,
+              "oppholdAnnetSted": null,
+              "type": null
+            },
+            "id": null,
+            "type": "VegadresseModel"
+          }
+        ],
+        "samboer": {
+          "fnr": "11111111111",
+          "navn": {
+            "fornavn": "Kari",
+            "mellomnavn": null,
+            "etternavn": "Hansen",
+            "forkortetNavn": "Hansen Kari"
+          },
+          "bostedsadresser": [
+            {
+              "adressenavn": "Storgata",
+              "husnummer": "1",
+              "husbokstav": null,
+              "postnummer": "0182",
+              "poststed": "Oslo",
+              "tilleggsnavn": null,
+              "kommunenummer": "0301",
+              "bruksenhetsnummer": null,
+              "bydelsnummer": null,
+              "koordinater": null,
+              "matrikkelId": null,
+              "adresseString": "Storgata 1, 0182 Oslo",
+              "adresselinjer": ["Storgata 1", "0182 Oslo"],
+              "adresseTilleggsdata": {
+                "angittFlyttedato": "2020-06-01",
+                "gyldigFraOgMed": "2020-06-01",
+                "gyldigTilOgMed": null,
+                "coAdressenavn": null,
+                "oppholdAnnetSted": null,
+                "type": null
+              },
+              "id": null,
+              "type": "VegadresseModel"
+            }
+          ],
+          "fodselsdatoEldsteBarn": "2018-05-12",
+          "harEllerHarHattFellesBarn": true,
+          "tidligereEktefelle": false
+        },
+        "soknad": {
+          "datoForSamboerskap": "2019-01-15",
+          "harEllerHarHattFellesBarn": true,
+          "tidligereEktefelle": false
+        },
+        "kravOnsketVirkningsdato": "2025-04-01",
+        "sokerSivilstand": "UGIFT"
+      },
+      "vurdering": {
+        "samboerFra": "2020-06-01",
+        "vurdering": "SAMBOER_3_2"
+      },
+      "vurdertAvBrukerNavn": "Kari Nordmann",
+      "vurdertAvBrukerId": "Z999999",
+      "vurdertTidspunkt": "2025-01-14T10:22:00Z",
+      "begrunnelse": "Bekreftet samboerskap fra 2020-06-01 basert på felles bostedsadresse. Vurdert som § 3-2 samboer."
+    }
+  ]
+}

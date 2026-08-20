@@ -20,6 +20,7 @@ interface AktivitetTilAttestering {
   vurdertTidspunkt?: string
   vurdertAvBrukerId?: string
   vurdertAvBrukerNavn?: string
+  begrunnelse?: string
 }
 
 const enhanceAttesteringAktivitet =
@@ -41,6 +42,7 @@ const enhanceAttesteringAktivitet =
       vurdertTidspunkt: aktivitet.vurdertTidspunkt,
       vurdertAvBrukerId: aktivitet.vurdertAvBrukerId,
       vurdertAvBrukerNavn: aktivitet.vurdertAvBrukerNavn,
+      begrunnelse: aktivitet.begrunnelse,
     }
   }
 
@@ -57,7 +59,7 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 
   const parsedData = attesteringData.aktiviter
     .map(enhanceAttesteringAktivitet(behandling))
-    .filter(aktivitet => aktivitet.grunnlag && aktivitet.vurdering)
+    .filter(aktivitet => aktivitet.grunnlag && aktivitet.vurdering && aktivitet.vurdertAvBrukerId)
     .map(aktivitet => ({
       ...aktivitet,
       hasComponent: serverComponents.has(aktivitet.handlerName),
@@ -125,6 +127,8 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
               aktivitet={aktivitet.aktivitet}
               behandling={behandling}
               avbrytAktivitet={() => {}}
+              begrunnelse={aktivitet.begrunnelse}
+              visNotat={true}
             />
             <Box>
               Vurdert av: {aktivitet.vurdertAvBrukerId} / {aktivitet.vurdertAvBrukerNavn} <br />

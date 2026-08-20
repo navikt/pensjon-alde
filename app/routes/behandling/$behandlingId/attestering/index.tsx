@@ -10,9 +10,13 @@ import { type AktivitetDTO, AldeBehandlingStatus, type BehandlingDTO } from '~/t
 import { getAllServerComponents } from '~/utils/component-discovery'
 import type { Route } from './+types'
 import './attestering.css'
-import { ArrowDownIcon } from '@navikt/aksel-icons'
+import { ArrowDownIcon, NewspaperIcon } from '@navikt/aksel-icons'
 import { userContext } from '~/context/user-context'
+import { Features } from '~/features'
+import { buildUrl } from '~/utils/build-url'
 import { formatDateToNorwegian } from '~/utils/date'
+import { env } from '~/utils/env.server'
+import { isFeatureEnabled } from '~/utils/unleash.server'
 
 interface AktivitetTilAttestering {
   aktivitetId: number
@@ -24,6 +28,7 @@ interface AktivitetTilAttestering {
   vurdertTidspunkt?: string
   vurdertAvBrukerId?: string
   vurdertAvBrukerNavn?: string
+  begrunnelse?: string
 }
 
 const enhanceAttesteringAktivitet =
@@ -45,26 +50,33 @@ const enhanceAttesteringAktivitet =
       vurdertTidspunkt: aktivitet.vurdertTidspunkt,
       vurdertAvBrukerId: aktivitet.vurdertAvBrukerId,
       vurdertAvBrukerNavn: aktivitet.vurdertAvBrukerNavn,
+      begrunnelse: aktivitet.begrunnelse,
     }
   }
 
 export const loader = async ({ params, request, context }: Route.LoaderArgs) => {
   const { behandlingId } = params
-  const { navident } = context.get(userContext)
+  const { navident, enhet } = context.get(userContext)
   const behandlingApi = createBehandlingApi({
     request,
     behandlingId,
   })
   const behandling = await behandlingApi.hentBehandling()
   const attesteringData = await behandlingApi.hentAttesteringsdata()
+  const notatUrl =
+    attesteringData.journalpostId &&
+    buildUrl(env.pennyJournalpostUrlTemplate, request, { journalpostId: attesteringData.journalpostId })
 
   const serverComponents = getAllServerComponents()
+
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
 
   const parsedData = attesteringData.aktiviter
     .map(enhanceAttesteringAktivitet(behandling))
     .filter(aktivitet => aktivitet.grunnlag || aktivitet.vurdering)
     .filter(aktivitet => aktivitet.handlerName !== 'send-til-attestering')
     .filter(aktivitet => aktivitet.handlerName !== 'attestering')
+    .filter(aktivitet => aktivitet.handlerName !== 'generer-notat')
     .filter(aktivitet => aktivitet.vurdertAvBrukerId)
     .sort((a, b) => (a.vurdertTidspunkt ?? '').localeCompare(b.vurdertTidspunkt ?? ''))
     .map(aktivitet => ({
@@ -79,6 +91,8 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
   } else {
     return {
       aktiviteter: parsedData,
+      notatUrl,
+      visNotat,
     }
   }
 }
@@ -120,7 +134,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 }
 
 export default function Attestering({ loaderData, actionData }: Route.ComponentProps) {
-  const { aktiviteter } = loaderData
+  const { aktiviteter, notatUrl, visNotat } = loaderData
   const { behandling } = useOutletContext<AktivitetOutletContext>()
   const { errors, data } = actionData || {}
   const isSubmitting = useIsSubmitting()
@@ -208,9 +222,16 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   return (
     <Page.Block width="xl" gutters className={commonStyles.behandlingPage}>
       <VStack gap="space-28">
-        <Heading level="1" size="large">
-          Oppgaven er til attestering
-        </Heading>
+        <HStack justify="space-between">
+          <Heading level="1" size="large">
+            Oppgaven er til attestering
+          </Heading>
+          {visNotat && notatUrl && (
+            <Button as="a" target="_blank" variant="tertiary" icon={<NewspaperIcon />} href={notatUrl}>
+              Vis notat
+            </Button>
+          )}
+        </HStack>
         <VStack gap="space-56">
           {aktiviteter.map(aktivitet => {
             const Component = components.get(aktivitet.handlerName)
@@ -234,10 +255,12 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                     <div className="component">
                       <Component
                         readOnly={true}
+                        begrunnelse={aktivitet.begrunnelse}
                         grunnlag={aktivitet.grunnlag}
                         vurdering={aktivitet.vurdering}
                         aktivitet={aktivitet.aktivitet}
                         behandling={behandling}
+                        visNotat={visNotat}
                       />
                     </div>
                   </div>

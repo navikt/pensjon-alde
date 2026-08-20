@@ -10,4 +10,6 @@ export type AktivitetComponentProps<Grunnlag, Vurdering> = {
   behandling: BehandlingDTO
   avbrytAktivitet?: () => void
   errors?: FormErrors<Vurdering>
+  begrunnelse?: string
+  visNotat?: boolean // TODO: Fjerne når notat skal vises for alle
 }

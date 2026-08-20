@@ -1,4 +1,5 @@
 import { isApiError } from '~/api/error.types'
+import type { VurderingBase } from '~/types/vurdering'
 import type { Fetcher } from '../api-client'
 
 export function aktivitetApi(fetch: Fetcher) {
@@ -24,12 +25,17 @@ export function aktivitetApi(fetch: Fetcher) {
     }
   }
 
-  const lagreVurdering = (vurdering: unknown) =>
-    fetch(`/vurdering`, { method: 'POST', body: JSON.stringify({ data: vurdering }) })
+  const lagreVurdering = <T extends object>(payload: T) => {
+    const { begrunnelse = null, ...data } = payload as VurderingBase & Record<string, unknown>
+    return fetch(`/vurdering`, {
+      method: 'POST',
+      body: JSON.stringify({ data, begrunnelse: begrunnelse || null }),
+    })
+  }
 
   const hentOutput = <T>() => fetch<T>(`/output`, { method: 'GET' })
 
-  const innhentGrunnlagsdata = <T>() => fetch<T>(`/innhent-grunnlagsdata`, { method: 'GET' })
+  const retryGrunnlagsdata = () => fetch(`/grunnlagsdata/retry`, { method: 'POST' })
 
   return {
     hentAktivitet,
@@ -38,7 +44,7 @@ export function aktivitetApi(fetch: Fetcher) {
     hentInput,
     hentOutput,
     hentVurdering,
-    innhentGrunnlagsdata,
+    retryGrunnlagsdata,
     lagreAttestering,
     lagreVurdering,
   }

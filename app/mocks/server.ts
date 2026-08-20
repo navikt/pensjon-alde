@@ -180,6 +180,15 @@ const handlers = [
     },
   ),
 
+  // POST /api/saksbehandling/alde/behandling/:id/aktivitet/:aid/grunnlagsdata/retry
+  http.post(
+    '*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/grunnlagsdata/retry',
+    ({ params }) => {
+      console.log(`🎯 MSW intercepted POST grunnlagsdata/retry for aktivitet ${params.aktivitetId}`)
+      return new HttpResponse(null, { status: 200 })
+    },
+  ),
+
   // POST /api/saksbehandling/alde/behandling/:id/aktivitet/:aid/vurdering
   http.post('*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/vurdering', ({ params }) => {
     console.log(`🎯 MSW intercepted POST vurdering for aktivitet ${params.aktivitetId}`)

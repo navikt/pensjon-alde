@@ -1,0 +1,7 @@
+app:
+  name: 'pensjon-alde-pdf-q2'
+  namespace: 'pensjon-saksbehandling'
+
+pen:
+  application: 'pensjon-pen-q2'
+  namespace: 'pensjon-q2'

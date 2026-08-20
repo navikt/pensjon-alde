@@ -1,0 +1,19 @@
+%!
+% PDFA_def.ps — prologue for Ghostscript pdfwrite to emit PDF/A.
+% Adds an sRGB OutputIntent with an embedded ICC profile (required for PDF/A).
+% SRGBICCPath is defined on the gs command line (-c "/SRGBICCPath (…) def").
+% Title and /Lang are also injected via -c pdfmarks.
+
+[/_objdef {icc_PDFA} /type /stream /OBJ pdfmark
+[{icc_PDFA} <</N 3>> /PUT pdfmark
+[{icc_PDFA} SRGBICCPath (r) file /PUT pdfmark
+
+[/_objdef {OutputIntent_PDFA} /type /dict /OBJ pdfmark
+[{OutputIntent_PDFA} <<
+  /Type /OutputIntent
+  /S /GTS_PDFA1
+  /DestOutputProfile {icc_PDFA}
+  /OutputConditionIdentifier (sRGB)
+  /Info (sRGB IEC61966-2.1)
+>> /PUT pdfmark
+[{Catalog} <</OutputIntents [ {OutputIntent_PDFA} ]>> /PUT pdfmark

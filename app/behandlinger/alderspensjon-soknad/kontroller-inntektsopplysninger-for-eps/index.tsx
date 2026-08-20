@@ -1,10 +1,26 @@
 import { ExternalLinkIcon, PersonIcon } from '@navikt/aksel-icons'
-import { BodyLong, BodyShort, Box, Button, CopyButton, Heading, HStack, Link, ReadMore, VStack } from '@navikt/ds-react'
-import { useMemo } from 'react'
-import { Form, redirect, useNavigation, useOutletContext } from 'react-router'
+import {
+  BodyLong,
+  BodyShort,
+  Box,
+  Button,
+  CopyButton,
+  Heading,
+  HStack,
+  Link,
+  Radio,
+  RadioGroup,
+  ReadMore,
+  VStack,
+} from '@navikt/ds-react'
+import { useMemo, useState } from 'react'
+import { Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
+import BegrunnelseField from '~/components/shared/BegrunnelseField'
+import { userContext } from '~/context/user-context'
+import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -12,14 +28,15 @@ import { buildUrl } from '~/utils/build-url'
 import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
-import { parseForm, radiogroup } from '~/utils/parse-form'
+import { parseForm, radiogroup, string } from '~/utils/parse-form'
+import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
 import type {
   KontrollerInntektsopplysningerForEpsGrunnlag,
   KontrollerInntektsopplysningerForEpsVurdering,
 } from './types'
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 
   const behandlingApi = createBehandlingApi({
@@ -41,10 +58,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const modiaUrl = buildUrl(env.modia, request, { fnr: behandling.fnr })
 
+  const { enhet } = context.get(userContext)
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
+
   return {
     modiaUrl,
     grunnlag,
     vurdering,
+    visNotat,
   }
 }
 
@@ -59,6 +80,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   const vurdering = parseForm<KontrollerInntektsopplysningerForEpsVurdering>(formData, {
     epsInntektOver2G: radiogroup({ over2G: true, under2G: false }),
+    // TODO: Rydd opp string parsing
+    begrunnelse: string,
   })
 
   await api.lagreVurdering(vurdering)
@@ -67,7 +90,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.ComponentProps) => {
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
-  const { grunnlag, vurdering, modiaUrl } = loaderData
+  const { grunnlag, vurdering, modiaUrl, visNotat } = loaderData
 
   return (
     <KontrollerInntektsopplysningerForEPS
@@ -78,6 +101,7 @@ const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.Compone
       aktivitet={aktivitet}
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
+      visNotat={visNotat}
     />
   )
 }
@@ -95,12 +119,13 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   aktivitet,
   readOnly,
   avbrytAktivitet,
+  vurdering,
+  begrunnelse,
+  visNotat,
 }) => {
-  const navigation = useNavigation()
   const isSubmitting = useIsSubmitting()
-  const submittedValue = navigation.formData?.get('epsInntektOver2G')
-  const isSubmittingOver2G = isSubmitting && submittedValue === 'over2G'
-  const isSubmittingUnder2G = isSubmitting && submittedValue === 'under2G'
+  const defaultValue = vurdering ? (vurdering.epsInntektOver2G ? 'over2G' : 'under2G') : undefined
+  const [selectedValue, setSelectedValue] = useState(defaultValue)
   const oppgittInntektNum = parseFloat(grunnlag.oppgittInntekt)
   const grunnbelopNum = parseFloat(grunnlag.grunnbelop)
   const oppgittInntektIG = oppgittInntektNum ? Math.round((oppgittInntektNum / grunnbelopNum) * 100) / 100 : 0
@@ -225,41 +250,33 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
           <BodyLong>Ved inntekt over 2G må kravet tas til manuell behandling for å registrere inntekt.</BodyLong>
         </div>
 
-        {!readOnly ? (
-          <VStack gap="space-24">
-            <VStack gap="space-8">
-              <Button
-                type="submit"
-                name="epsInntektOver2G"
-                value="over2G"
-                variant="secondary"
-                size="small"
-                loading={isSubmittingOver2G}
-                disabled={isSubmittingUnder2G}
-              >
-                Over 2G - ta saken til manuell
+        <VStack gap="space-24">
+          <RadioGroup
+            legend="Vurder inntekt"
+            hideLegend
+            name="epsInntektOver2G"
+            value={selectedValue}
+            readOnly={readOnly}
+            size="small"
+            onChange={setSelectedValue}
+          >
+            <Radio value="over2G">Over 2G - ta saken til manuell</Radio>
+            <Radio value="under2G">Under 2G - fortsett behandling</Radio>
+          </RadioGroup>
+
+          {visNotat && <BegrunnelseField readOnly={readOnly} defaultValue={begrunnelse} />}
+
+          {!readOnly && (
+            <VStack gap="space-12">
+              <Button type="submit" variant="primary" size="small" loading={isSubmitting} disabled={!selectedValue}>
+                Fortsett behandling
               </Button>
-              <Button
-                type="submit"
-                name="epsInntektOver2G"
-                value="under2G"
-                variant="secondary"
-                size="small"
-                loading={isSubmittingUnder2G}
-                disabled={isSubmittingOver2G}
-              >
-                Under 2G - fortsett behandling
+              <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
+                Avbryt del-auto behandling
               </Button>
             </VStack>
-            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
-              Avbryt del-auto behandling
-            </Button>
-          </VStack>
-        ) : (
-          <VStack gap="space-24">
-            <BodyShort weight="semibold">Vurdert til under 2G</BodyShort>
-          </VStack>
-        )}
+          )}
+        </VStack>
       </VStack>
     </Form>
   )

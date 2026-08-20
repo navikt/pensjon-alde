@@ -9,6 +9,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "NODE_ENV=development node --experimental-strip-types server.ts",
+    "dev:pdf": "node --experimental-strip-types pdf/server.ts",
     "dev:mock": "NODE_ENV=mock react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "lint": "biome lint .",
@@ -28,6 +29,7 @@
     "build-storybook": "STORYBOOK=true storybook build",
     "capture-screenshots": "tsx scripts/capture-screenshots.ts",
     "capture-docs-screenshots": "tsx scripts/capture-screenshots.ts --docs",
+    "stress-pdf": "tsx scripts/stress-pdf.ts",
     "typecheck": "react-router typegen && tsc",
     "prepare": "lefthook install"
   },
@@ -38,6 +40,7 @@
     "@navikt/ds-css": "^8.16.1",
     "@navikt/ds-react": "^8.16.1",
     "@navikt/ds-tokens": "^8.16.1",
+    "@opentelemetry/api": "^1.9.1",
     "@react-router/express": "^8.3.0",
     "@react-router/node": "^8.3.0",
     "@react-router/serve": "^8.3.0",
@@ -48,6 +51,7 @@
     "express": "^5.2.1",
     "isbot": "^5.2.1",
     "node-cache": "^5.1.2",
+    "prom-client": "^15.1.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.3.0",

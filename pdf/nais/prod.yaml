@@ -1,0 +1,7 @@
+app:
+  name: 'pensjon-alde-pdf'
+  namespace: 'pensjondeployer'
+
+pen:
+  application: 'pensjon-pen'
+  namespace: 'pensjondeployer'
