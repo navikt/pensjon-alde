@@ -264,13 +264,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
             <Radio value="under2G">Under 2G - fortsett behandling</Radio>
           </RadioGroup>
 
-          {visNotat && (
-            <BegrunnelseField
-              readOnly={readOnly}
-              defaultValue={begrunnelse}
-              description="Kun ved behov for tilleggsopplysninger"
-            />
-          )}
+          {visNotat && <BegrunnelseField readOnly={readOnly} defaultValue={begrunnelse} />}
 
           {!readOnly && (
             <VStack gap="space-12">
