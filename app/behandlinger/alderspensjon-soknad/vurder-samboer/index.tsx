@@ -198,13 +198,7 @@ function VurdereSamboerComponent({
               </InlineMessage>
             )}
 
-            {visNotat && (
-              <BegrunnelseField
-                readOnly={readOnly}
-                defaultValue={begrunnelse}
-                description="Kun ved behov for tilleggsopplysninger"
-              />
-            )}
+            {visNotat && <BegrunnelseField readOnly={readOnly} defaultValue={begrunnelse} />}
 
             {errors?._form && (
               <InlineMessage status="error" className="mb-4">
