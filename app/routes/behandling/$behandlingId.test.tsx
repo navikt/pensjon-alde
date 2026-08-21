@@ -165,6 +165,68 @@ describe('getRedirectPath', () => {
     expect(result).toBe('/behandling/123/attestering')
   })
 
+  it('redirects to aktivitet when handlerName is attester and different saksbehandler', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        handlerName: 'oppdater-opptjeningsgrunnlag',
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
+        sisteSaksbehandlerNavident: 'Z888888',
+        aktiviteter: [
+          {
+            aktivitetId: 456,
+            handlerName: 'attester',
+            friendlyName: 'Attester',
+            status: AktivitetStatus.UNDER_BEHANDLING,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:00:00Z',
+            antallGangerKjort: 0,
+            sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: false,
+          },
+        ],
+      },
+      navident: 'Z999999',
+      justCompletedId: null,
+    })
+
+    expect(result).toBe('/behandling/123/aktivitet/456')
+  })
+
+  it('redirects attester aktivitet to venter-attestering for the submitting saksbehandler', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        handlerName: 'oppdater-opptjeningsgrunnlag',
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
+        sisteSaksbehandlerNavident: 'Z999999',
+        aktiviteter: [
+          {
+            aktivitetId: 456,
+            handlerName: 'attester',
+            friendlyName: 'Attester',
+            status: AktivitetStatus.UNDER_BEHANDLING,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:00:00Z',
+            antallGangerKjort: 0,
+            sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: false,
+          },
+        ],
+      },
+      navident: 'Z999999',
+      justCompletedId: null,
+    })
+
+    expect(result).toBe('/behandling/123/venter-attestering')
+  })
+
   it('does NOT redirect when justCompletedId matches aktivitet', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123',

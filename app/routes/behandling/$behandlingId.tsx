@@ -109,6 +109,9 @@ export function getRedirectPath({
     }
     const shouldRefetchAfterCompletion =
       aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
+    if (aktivitetSomSkalVises?.handlerName === 'attester' && !shouldRefetchAfterCompletion) {
+      return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
+    }
     if (
       aktivitetSomSkalVises &&
       !shouldRefetchAfterCompletion &&
