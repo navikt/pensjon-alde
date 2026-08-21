@@ -8,6 +8,7 @@ import {
   HStack,
   InfoCard,
   InlineMessage,
+  Loader,
   LocalAlert,
   Page,
   Select,
@@ -17,16 +18,18 @@ import {
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
-import { useMemo, useState } from 'react'
-import { data, Form, redirect, useOutletContext } from 'react-router'
+import { useEffect, useMemo, useState } from 'react'
+import { data, Form, redirect, useFetcher, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { isApiError } from '~/api/error.types'
 import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import styles from '~/common.module.css'
 import { Fnr } from '~/components/Fnr'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
+import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
+import { OppdaterOpptjeningEndringer } from '../OppdaterOpptjeningEndringer'
 import type { Route } from './+types'
 import {
   beregnStatus,
@@ -824,6 +827,28 @@ function ForstegangstjenesteSeksjon({
       )}
     </Box>
   )
+}
+
+export const Component = ({
+  vurdering,
+}: AktivitetComponentProps<OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering>) => {
+  const fetcher = useFetcher<OpptjeningstyperResponse>()
+
+  useEffect(() => {
+    if (!fetcher.data && fetcher.state === 'idle') {
+      fetcher.load('/api/opptjeningstyper')
+    }
+  }, [fetcher])
+
+  if (!fetcher.data) {
+    return (
+      <HStack justify="center">
+        <Loader size="large" title="Laster opptjeningstyper" />
+      </HStack>
+    )
+  }
+
+  return <OppdaterOpptjeningEndringer vurdering={vurdering} opptjeningstyper={fetcher.data} />
 }
 
 export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.ComponentProps) {
