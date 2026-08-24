@@ -29,37 +29,28 @@ import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
+import { EndringsOppsummering } from '../EndringsOppsummering'
 import { OppdaterOpptjeningEndringer } from '../OppdaterOpptjeningEndringer'
 import type { Route } from './+types'
 import {
   beregnStatus,
+  byggEndringSummary,
   DAGPENGER_FELTER,
   type DagpengerLinjeState,
-  dagpengerEndringer,
   dagpengerGrunnlagTilViewModel,
-  dagpengerKortLabel,
-  dagpengerLabel,
-  type EndringSummaryItem,
+  type EndringSummary,
   FORSTEGANGSTJENESTE_FELTER,
   type ForstegangstjenesteLinjeState,
-  forstegangstjenesteEndringer,
   forstegangstjenesteGrunnlagTilViewModel,
-  forstegangstjenesteKortLabel,
-  forstegangstjenesteLabel,
   INNTEKT_FELTER,
   type InntektLinjeState,
   initialInntektLinjer,
-  inntektEndringer,
-  inntektKortLabel,
-  inntektLabel,
   type LinjeStatus,
   nyDagpengerLinje,
   nyForstegangstjenesteLinje,
   nyInntektLinje,
   type OmsorgLinjeState,
   omsorgGrunnlagTilViewModel,
-  omsorgLabel,
-  oppsummeringForKategori,
   oversettKoderIMelding,
   parseIsoDate,
   REQUIRED_KOMMUNE,
@@ -830,6 +821,7 @@ function ForstegangstjenesteSeksjon({
 }
 
 export const Component = ({
+  grunnlag,
   vurdering,
 }: AktivitetComponentProps<OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering>) => {
   const fetcher = useFetcher<OpptjeningstyperResponse>()
@@ -848,7 +840,13 @@ export const Component = ({
     )
   }
 
-  return <OppdaterOpptjeningEndringer vurdering={vurdering} opptjeningstyper={fetcher.data} />
+  return (
+    <OppdaterOpptjeningEndringer
+      vurdering={vurdering}
+      opptjeningstyper={fetcher.data}
+      opptjeningsGrunnlag={grunnlag?.opptjeningsGrunnlagDto}
+    />
+  )
 }
 
 export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.ComponentProps) {
@@ -1042,39 +1040,19 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
 
   const harKlientFeil = Object.keys(inntektKommuneFeil).length > 0 || Object.keys(forstegangstjenesteFomFeil).length > 0
 
-  const endringSummary = useMemo<{
-    nye: EndringSummaryItem[]
-    endrede: EndringSummaryItem[]
-    slettede: EndringSummaryItem[]
-  }>(() => {
-    // Omsorgslinjer kan kun slettes, derfor ingen kortLabel/endringer.
-    const kategorier = [
-      oppsummeringForKategori('Inntekt', inntektLinjer, {
-        label: l => inntektLabel(l, opptjeningstyper),
-        kortLabel: l => inntektKortLabel(l, opptjeningstyper),
-        endringer: l => inntektEndringer(l, opptjeningstyper),
-      }),
-      oppsummeringForKategori('Dagpenger', dagpengerLinjer, {
-        label: l => dagpengerLabel(l, opptjeningstyper),
-        kortLabel: l => dagpengerKortLabel(l, opptjeningstyper),
-        endringer: l => dagpengerEndringer(l, opptjeningstyper),
-      }),
-      oppsummeringForKategori('Omsorg', omsorgLinjer, {
-        label: l => omsorgLabel(l, opptjeningstyper),
-      }),
-      oppsummeringForKategori('Førstegangstjeneste', forstegangstjenesteLinjer, {
-        label: l => forstegangstjenesteLabel(l, opptjeningstyper),
-        kortLabel: l => forstegangstjenesteKortLabel(l, opptjeningstyper),
-        endringer: l => forstegangstjenesteEndringer(l, opptjeningstyper),
-      }),
-    ]
-
-    return {
-      nye: kategorier.flatMap(oppsummer => oppsummer('new')),
-      endrede: kategorier.flatMap(oppsummer => oppsummer('modified')),
-      slettede: kategorier.flatMap(oppsummer => oppsummer('deleted')),
-    }
-  }, [inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer, opptjeningstyper])
+  const endringSummary = useMemo<EndringSummary>(
+    () =>
+      byggEndringSummary(
+        {
+          inntekt: inntektLinjer,
+          dagpenger: dagpengerLinjer,
+          omsorg: omsorgLinjer,
+          forstegangstjeneste: forstegangstjenesteLinjer,
+        },
+        opptjeningstyper,
+      ),
+    [inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer, opptjeningstyper],
+  )
 
   const harEndringer = endringSummary.nye.length + endringSummary.endrede.length + endringSummary.slettede.length > 0
 
@@ -1243,51 +1221,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
                     <InfoCard.Title>Endringer som vil bli lagret</InfoCard.Title>
                   </InfoCard.Header>
                   <InfoCard.Content>
-                    <VStack gap="space-12">
-                      {endringSummary.nye.length > 0 && (
-                        <div>
-                          <strong>Nye linjer ({endringSummary.nye.length})</strong>
-                          <ul>
-                            {endringSummary.nye.map(item => (
-                              <li key={item.id}>
-                                {item.kategori}: {item.label}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {endringSummary.endrede.length > 0 && (
-                        <div>
-                          <strong>Endrede linjer ({endringSummary.endrede.length})</strong>
-                          <ul>
-                            {endringSummary.endrede.map(item => (
-                              <li key={item.id}>
-                                {item.kategori}: {item.label}
-                                {item.endringer && item.endringer.length > 0 && (
-                                  <ul>
-                                    {item.endringer.map(e => (
-                                      <li key={e}>{e}</li>
-                                    ))}
-                                  </ul>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {endringSummary.slettede.length > 0 && (
-                        <div>
-                          <strong>Slettede linjer ({endringSummary.slettede.length})</strong>
-                          <ul>
-                            {endringSummary.slettede.map(item => (
-                              <li key={item.id}>
-                                {item.kategori}: {item.label}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </VStack>
+                    <EndringsOppsummering summary={endringSummary} />
                   </InfoCard.Content>
                 </InfoCard>
               )}

@@ -7,6 +7,7 @@ import {
   dagpengerGrunnlagTilViewModel,
   dagpengerKortLabel,
   dagpengerLabel,
+  endringSummaryFraVurdering,
   forstegangstjenesteEndringer,
   forstegangstjenesteGrunnlagTilViewModel,
   forstegangstjenesteKortLabel,
@@ -38,6 +39,7 @@ import type {
   InntektBackendDTO,
   OmsorgBackendDTO,
   OppdaterOpptjeningGrunnlag,
+  OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
 } from './oppdater-grunnlag-types'
 
@@ -427,6 +429,56 @@ describe('oppsummeringForKategori', () => {
     expect(utenKortLabel('modified')).toEqual([
       { id: 'b', kategori: 'Omsorg', label: 'full-endret', endringer: undefined },
     ])
+  })
+})
+
+describe('endringSummaryFraVurdering', () => {
+  const grunnlag: NonNullable<OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto']> = {
+    fnr: '12345678901',
+    inntektListe: [
+      { inntektId: 1, fnr: '12345678901', inntektAr: 2025, belop: '100', inntektType: 'DIP_JSF', kommune: '0301' },
+    ],
+    omsorgListe: [{ omsorgId: 5, fnr: '12345678901', omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '10987654321' }],
+    dagpengerListe: [],
+  }
+
+  const oppdatertInntekt: OppdaterOpptjeningVurdering = {
+    inntektEndringer: [
+      {
+        endringstype: 'OPPDATER',
+        inntektListe: [
+          { inntektId: 1, fnr: '12345678901', inntektAr: 2025, belop: '250', inntektType: 'DIP_JSF', kommune: '0301' },
+        ],
+      },
+    ],
+  }
+
+  it('viser fra- og til-verdier for endrede linjer', () => {
+    const summary = endringSummaryFraVurdering(oppdatertInntekt, grunnlag, opptjeningstyper)
+
+    expect(summary.endrede).toHaveLength(1)
+    expect(summary.endrede[0].endringer).toEqual([`Beløp: ${formatCurrencyNok(100)} → ${formatCurrencyNok(250)}`])
+  })
+
+  it('viser slettet omsorg som slettet linje', () => {
+    const vurdering: OppdaterOpptjeningVurdering = {
+      omsorgEndringer: [{ endringstype: 'SLETT', omsorgListe: grunnlag.omsorgListe }],
+    }
+
+    const summary = endringSummaryFraVurdering(vurdering, grunnlag, opptjeningstyper)
+
+    expect(summary.slettede).toEqual([
+      {
+        id: 'omsorg-0-0',
+        kategori: 'Omsorg',
+        label: 'Omsorg for barn (2020) – omsorg for 10987654321',
+        endringer: undefined,
+      },
+    ])
+  })
+
+  it('utelater feltdiff når grunnlaget mangler', () => {
+    expect(endringSummaryFraVurdering(oppdatertInntekt, undefined, opptjeningstyper).endrede[0].endringer).toEqual([])
   })
 })
 

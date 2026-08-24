@@ -1,12 +1,17 @@
-import { BodyShort, CopyButton, Heading, HStack, Table, Tag, VStack } from '@navikt/ds-react'
+import { InformationSquareIcon } from '@navikt/aksel-icons'
+import { BodyShort, CopyButton, Heading, HStack, InfoCard, Table, Tag, VStack } from '@navikt/ds-react'
+import { useMemo } from 'react'
 import { Fnr } from '~/components/Fnr'
 import { formatCurrencyNok } from '~/utils/currency'
+import { EndringsOppsummering } from './EndringsOppsummering'
+import { endringSummaryFraVurdering } from './oppdater-grunnlag/oppdater-grunnlag.utils'
 import type {
   DagpengerBackendDTO,
   Endringstype,
   ForstegangstjenesteBackendDTO,
   InntektBackendDTO,
   OmsorgBackendDTO,
+  OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
 } from './oppdater-grunnlag/oppdater-grunnlag-types'
@@ -25,19 +30,22 @@ export function EndringstypeTag({ endringstype }: { endringstype: Endringstype }
         Endret
       </Tag>
     )
-  return (
-    <Tag variant="error" size="small">
-      Slettet
-    </Tag>
-  )
+  if (endringstype === 'SLETT')
+    return (
+      <Tag variant="error" size="small">
+        Slettet
+      </Tag>
+    )
+  return null
 }
 
 type Props = {
   vurdering: OppdaterOpptjeningVurdering | null
   opptjeningstyper: OpptjeningstyperResponse
+  opptjeningsGrunnlag?: OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto']
 }
 
-export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper }: Props) {
+export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper, opptjeningsGrunnlag }: Props) {
   type InntektMedEndring = { endringstype: Endringstype; inntekt: InntektBackendDTO }
   type DagpengerMedEndring = { endringstype: Endringstype; dagpenger: DagpengerBackendDTO }
   type OmsorgMedEndring = { endringstype: Endringstype; omsorg: OmsorgBackendDTO }
@@ -61,6 +69,11 @@ export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper }: Pro
 
   const harData = inntekter.length + dagpenger.length + omsorg.length + forstegangstjeneste.length > 0
 
+  const summary = useMemo(
+    () => endringSummaryFraVurdering(vurdering, opptjeningsGrunnlag, opptjeningstyper),
+    [vurdering, opptjeningsGrunnlag, opptjeningstyper],
+  )
+
   if (!harData) {
     return <BodyShort>Ingen endringer registrert.</BodyShort>
   }
@@ -79,6 +92,15 @@ export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper }: Pro
           />
         </HStack>
       )}
+
+      <InfoCard data-color="info">
+        <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+          <InfoCard.Title as="h3">Oppsummering av endringene</InfoCard.Title>
+        </InfoCard.Header>
+        <InfoCard.Content>
+          <EndringsOppsummering summary={summary} />
+        </InfoCard.Content>
+      </InfoCard>
 
       {inntekter.length > 0 && (
         <div>

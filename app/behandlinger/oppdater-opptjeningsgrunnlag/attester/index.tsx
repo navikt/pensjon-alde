@@ -82,6 +82,7 @@ export default function AttesterRoute({ actionData, loaderData }: Route.Componen
   const harEndringer =
     (vurdering?.inntektEndringer?.length ?? 0) +
       (vurdering?.dagpengerEndringer?.length ?? 0) +
+      (vurdering?.omsorgEndringer?.length ?? 0) +
       (vurdering?.forstegangstjenesteEndringer?.length ?? 0) >
     0
 
