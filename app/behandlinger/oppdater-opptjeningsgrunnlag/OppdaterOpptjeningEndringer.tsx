@@ -1,10 +1,12 @@
 import { BodyShort, CopyButton, Heading, HStack, Table, Tag, VStack } from '@navikt/ds-react'
+import { Fnr } from '~/components/Fnr'
 import { formatCurrencyNok } from '~/utils/currency'
 import type {
   DagpengerBackendDTO,
   Endringstype,
   ForstegangstjenesteBackendDTO,
   InntektBackendDTO,
+  OmsorgBackendDTO,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
 } from './oppdater-grunnlag/oppdater-grunnlag-types'
@@ -38,6 +40,7 @@ type Props = {
 export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper }: Props) {
   type InntektMedEndring = { endringstype: Endringstype; inntekt: InntektBackendDTO }
   type DagpengerMedEndring = { endringstype: Endringstype; dagpenger: DagpengerBackendDTO }
+  type OmsorgMedEndring = { endringstype: Endringstype; omsorg: OmsorgBackendDTO }
   type ForstegangstjenesteMedEndring = { endringstype: Endringstype; ft: ForstegangstjenesteBackendDTO }
 
   const inntekter: InntektMedEndring[] = (vurdering?.inntektEndringer ?? []).flatMap(e =>
@@ -48,11 +51,15 @@ export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper }: Pro
     e.dagpengerListe.map(d => ({ endringstype: e.endringstype, dagpenger: d })),
   )
 
+  const omsorg: OmsorgMedEndring[] = (vurdering?.omsorgEndringer ?? []).flatMap(e =>
+    e.omsorgListe.map(o => ({ endringstype: e.endringstype, omsorg: o })),
+  )
+
   const forstegangstjeneste: ForstegangstjenesteMedEndring[] = (vurdering?.forstegangstjenesteEndringer ?? []).map(
     e => ({ endringstype: e.endringstype, ft: e.forstegangstjeneste }),
   )
 
-  const harData = inntekter.length + dagpenger.length + forstegangstjeneste.length > 0
+  const harData = inntekter.length + dagpenger.length + omsorg.length + forstegangstjeneste.length > 0
 
   if (!harData) {
     return <BodyShort>Ingen endringer registrert.</BodyShort>
@@ -146,6 +153,38 @@ export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper }: Pro
                     {d.barnetillegg != null ? formatCurrencyNok(Number(d.barnetillegg)) : '–'}
                   </Table.DataCell>
                   <Table.DataCell>{d.kilde ?? '–'}</Table.DataCell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        </div>
+      )}
+
+      {omsorg.length > 0 && (
+        <div>
+          <Heading size="xsmall" level="4" spacing>
+            Omsorg
+          </Heading>
+          <Table size="small" style={{ width: '100%' }}>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell style={{ width: '7rem' }}>Endring</Table.HeaderCell>
+                <Table.HeaderCell>Type</Table.HeaderCell>
+                <Table.HeaderCell>År</Table.HeaderCell>
+                <Table.HeaderCell>Omsorg for (fnr)</Table.HeaderCell>
+                <Table.HeaderCell>Kilde</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {omsorg.map(({ endringstype, omsorg: o }) => (
+                <Table.Row key={`${endringstype}-${o.omsorgType}-${o.ar}-${o.omsorgId ?? o.fnrOmsorgFor ?? ''}`}>
+                  <Table.DataCell>
+                    <EndringstypeTag endringstype={endringstype} />
+                  </Table.DataCell>
+                  <Table.DataCell>{typeLabel(opptjeningstyper, o.omsorgType)}</Table.DataCell>
+                  <Table.DataCell>{o.ar}</Table.DataCell>
+                  <Table.DataCell>{o.fnrOmsorgFor ? <Fnr value={o.fnrOmsorgFor} /> : '–'}</Table.DataCell>
+                  <Table.DataCell>{o.kilde ?? '–'}</Table.DataCell>
                 </Table.Row>
               ))}
             </Table.Body>
