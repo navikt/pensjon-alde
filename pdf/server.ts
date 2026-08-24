@@ -57,6 +57,8 @@ app.use(express.json({ limit: '8mb' }))
 app.get('/internal/live', (_req, res) => res.sendStatus(200))
 app.get('/internal/ready', (_req, res) => res.sendStatus(shuttingDown ? 503 : 200))
 
+app.get('/ping', (_req, res) => res.send('pong'))
+
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', registry.contentType)
   res.send(await registry.metrics())
