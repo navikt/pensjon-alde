@@ -834,18 +834,22 @@ export const Component = ({
 
   if (!fetcher.data) {
     return (
-      <HStack justify="center">
-        <Loader size="large" title="Laster opptjeningstyper" />
-      </HStack>
+      <Box paddingBlock="space-28">
+        <HStack justify="center">
+          <Loader size="large" title="Laster opptjeningstyper" />
+        </HStack>
+      </Box>
     )
   }
 
   return (
-    <OppdaterOpptjeningEndringer
-      vurdering={vurdering}
-      opptjeningstyper={fetcher.data}
-      opptjeningsGrunnlag={grunnlag?.opptjeningsGrunnlagDto}
-    />
+    <Box paddingBlock="space-28">
+      <OppdaterOpptjeningEndringer
+        vurdering={vurdering}
+        opptjeningstyper={fetcher.data}
+        opptjeningsGrunnlag={grunnlag?.opptjeningsGrunnlagDto}
+      />
+    </Box>
   )
 }
 
