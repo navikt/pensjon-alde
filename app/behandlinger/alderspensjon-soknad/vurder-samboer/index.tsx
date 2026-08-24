@@ -49,8 +49,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   const vurdering = await api.hentVurdering<SamboerVurdering>()
 
   const { enhet } = context.get(userContext)
-  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
-
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhet: enhet })
   return {
     readOnly: false,
     samboerInformasjon: grunnlag,

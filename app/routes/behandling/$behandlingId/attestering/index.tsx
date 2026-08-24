@@ -69,7 +69,7 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
 
   const serverComponents = getAllServerComponents()
 
-  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhet: enhet })
 
   const parsedData = attesteringData.aktiviter
     .map(enhanceAttesteringAktivitet(behandling))
