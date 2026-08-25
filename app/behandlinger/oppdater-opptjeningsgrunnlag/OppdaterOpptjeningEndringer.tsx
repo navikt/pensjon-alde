@@ -1,7 +1,8 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
-import { BodyShort, CopyButton, Heading, HStack, InfoCard, Table, Tag, VStack } from '@navikt/ds-react'
+import { BodyShort, Heading, InfoCard, Table, Tag, VStack } from '@navikt/ds-react'
 import { useMemo } from 'react'
 import { Fnr } from '~/components/Fnr'
+import { CopyableValue } from '~/components/shared/CopyableValue'
 import { formatCurrencyNok } from '~/utils/currency'
 import { EndringsOppsummering } from './EndringsOppsummering'
 import { endringSummaryFraVurdering } from './oppdater-grunnlag/oppdater-grunnlag.utils'
@@ -39,13 +40,17 @@ export function EndringstypeTag({ endringstype }: { endringstype: Endringstype }
   return null
 }
 
-type Props = {
+interface OppdaterOpptjeningEndringerProps {
   vurdering: OppdaterOpptjeningVurdering | null
   opptjeningstyper: OpptjeningstyperResponse
   opptjeningsGrunnlag?: OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto']
 }
 
-export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper, opptjeningsGrunnlag }: Props) {
+export function OppdaterOpptjeningEndringer({
+  vurdering,
+  opptjeningstyper,
+  opptjeningsGrunnlag,
+}: OppdaterOpptjeningEndringerProps) {
   type InntektMedEndring = { endringstype: Endringstype; inntekt: InntektBackendDTO }
   type DagpengerMedEndring = { endringstype: Endringstype; dagpenger: DagpengerBackendDTO }
   type OmsorgMedEndring = { endringstype: Endringstype; omsorg: OmsorgBackendDTO }
@@ -79,18 +84,17 @@ export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper, opptj
   }
 
   return (
-    <VStack gap="space-32">
+    <VStack gap="space-28">
       {vurdering?.sakId != null && (
-        <HStack gap="space-4" align="center">
-          <BodyShort weight="semibold">Saksnummer:</BodyShort>
-          <CopyButton
-            size="small"
-            copyText={String(vurdering.sakId)}
-            text={String(vurdering.sakId)}
-            activeText="Kopiert!"
-            iconPosition="right"
-          />
-        </HStack>
+        <CopyableValue
+          title="Saksnummer:"
+          text={String(vurdering.sakId)}
+          textColor="default"
+          textWeight="semibold"
+          textSize="medium"
+          value={String(vurdering.sakId)}
+          useAccentColor={false}
+        />
       )}
 
       <InfoCard data-color="info">
@@ -98,6 +102,8 @@ export function OppdaterOpptjeningEndringer({ vurdering, opptjeningstyper, opptj
           <InfoCard.Title as="h3">Oppsummering av endringene</InfoCard.Title>
         </InfoCard.Header>
         <InfoCard.Content>
+          <BodyShort spacing>Endringene vil først bli gjeldende ved godkjenning.</BodyShort>
+
           <EndringsOppsummering summary={summary} />
         </InfoCard.Content>
       </InfoCard>

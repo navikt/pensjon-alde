@@ -2,7 +2,7 @@
   "name": "alde",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1",
+  "packageManager": "pnpm@11.23.0",
   "engines": {
     "node": ">=24.19.0"
   },
@@ -34,8 +34,8 @@
     "prepare": "lefthook install"
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^2.9.0",
-    "@grafana/faro-web-tracing": "^2.9.0",
+    "@grafana/faro-web-sdk": "^2.10.0",
+    "@grafana/faro-web-tracing": "^2.10.0",
     "@navikt/aksel-icons": "^8.16.1",
     "@navikt/ds-css": "^8.16.1",
     "@navikt/ds-react": "^8.16.1",
@@ -57,15 +57,15 @@
     "react-router": "^8.3.0",
     "remix-auth": "^4.2.0",
     "remix-auth-oauth2": "^3.4.1",
-    "unleash-client": "^6.11.1"
+    "unleash-client": "^6.12.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.7",
+    "@biomejs/biome": "^2.5.9",
     "@playwright/test": "^1.62.1",
     "@react-router/dev": "^8.3.0",
-    "@storybook/addon-vitest": "^10.5.7",
-    "@storybook/react": "^10.5.7",
-    "@storybook/react-vite": "^10.5.7",
+    "@storybook/addon-vitest": "^10.5.9",
+    "@storybook/react": "^10.5.9",
+    "@storybook/react-vite": "^10.5.9",
     "@tailwindcss/vite": "^4.3.3",
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.6",
@@ -78,8 +78,8 @@
     "msw": "^2.15.0",
     "playwright": "1.62.1",
     "react-router-devtools": "^6.2.3",
-    "storybook": "^10.5.7",
-    "tsx": "^4.23.10",
+    "storybook": "^10.5.9",
+    "tsx": "^4.23.12",
     "typescript": "^7.0.2",
     "vite": "^8.2.1",
     "vite-node": "^6.0.0",
