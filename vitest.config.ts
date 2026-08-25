@@ -6,6 +6,7 @@ export default mergeConfig(
   defineConfig({
     test: {
       setupFiles: ['./app/test/setup-env.ts'],
+      include: ['app/**/*.test.{ts,tsx}'],
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html'],

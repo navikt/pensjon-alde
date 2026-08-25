@@ -145,7 +145,7 @@ function VurdereSamboerComponent({
   begrunnelse,
   visNotat,
 }: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
-  const defaultVurdering = vurdering?.vurdering
+  const defaultVurdering = vurdering?.vurdering ?? ''
   const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
   const isSubmitting = useIsSubmitting()
 

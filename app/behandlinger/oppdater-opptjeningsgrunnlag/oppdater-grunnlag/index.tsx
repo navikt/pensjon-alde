@@ -28,7 +28,6 @@ import { Fnr } from '~/components/Fnr'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import type { AktivitetDTO } from '~/types/behandling'
 import { formatCurrencyNok } from '~/utils/currency'
 import { EndringsOppsummering } from '../EndringsOppsummering'
 import { OppdaterOpptjeningEndringer } from '../OppdaterOpptjeningEndringer'
@@ -80,12 +79,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
 
   let grunnlag: OppdaterOpptjeningGrunnlag = {}
-  let aktivitet: AktivitetDTO | null = null
   let readOnly = false
 
   try {
     grunnlag = (await api.hentGrunnlagsdata<OppdaterOpptjeningGrunnlag>()) ?? {}
-    aktivitet = (await api.hentAktivitet<AktivitetDTO>()) ?? null
   } catch (error) {
     if (isApiError(error) && error.data.status === 403) {
       readOnly = true
@@ -96,7 +93,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const opptjeningstyper = await fetchOpptjeningstyper(request)
 
-  return { grunnlag, opptjeningstyper, readOnly, aktivitet }
+  return { grunnlag, opptjeningstyper, readOnly }
 }
 
 export type ActionErrors = { _form?: string; _server?: string[] }
@@ -824,7 +821,7 @@ function ForstegangstjenesteSeksjon({
 }
 
 export const Component = ({
-  aktivitet,
+  behandling,
   grunnlag,
   vurdering,
 }: AktivitetComponentProps<OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering>) => {
@@ -849,7 +846,7 @@ export const Component = ({
   return (
     <Box paddingBlock="space-28">
       <OppdaterOpptjeningEndringer
-        aktivitet={aktivitet}
+        behandling={behandling}
         vurdering={vurdering}
         opptjeningstyper={fetcher.data}
         opptjeningsGrunnlag={grunnlag?.opptjeningsGrunnlagDto}

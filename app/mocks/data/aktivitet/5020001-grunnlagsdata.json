@@ -1,0 +1,72 @@
+{
+  "kanOppretteGenerellSak": true,
+  "saker": [
+    { "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" },
+    { "sakId": 23077284, "sakType": "UFOREP", "sakStatus": "OPPRETTET" }
+  ],
+  "opptjeningsGrunnlagDto": {
+    "fnr": "12345678901",
+    "inntektListe": [
+      {
+        "inntektId": 502057001,
+        "kilde": "PEN",
+        "kommune": "0301",
+        "inntektAr": 2020,
+        "belop": "480000",
+        "inntektType": "INN_LON"
+      },
+      {
+        "inntektId": 502057002,
+        "kilde": "PEN",
+        "kommune": "0301",
+        "inntektAr": 2021,
+        "belop": "512000",
+        "inntektType": "INN_LON"
+      },
+      {
+        "inntektId": 502057003,
+        "kilde": "SKD",
+        "kommune": "0301",
+        "inntektAr": 2022,
+        "belop": "534500",
+        "inntektType": "FL_PGI_LOENN"
+      }
+    ],
+    "dagpengerListe": [
+      {
+        "dagpengerId": 502058001,
+        "kilde": "PEN",
+        "ar": 2019,
+        "dagpengerType": "DP",
+        "uavkortetDagpengegrunnlag": 350000,
+        "utbetalteDagpenger": 185000,
+        "ferietillegg": 12000,
+        "barnetillegg": 0
+      }
+    ],
+    "omsorgListe": [
+      {
+        "omsorgId": 502059001,
+        "kilde": "PEN",
+        "ar": 2010,
+        "omsorgType": "OBU6",
+        "fnrOmsorgFor": "01011012345"
+      }
+    ],
+    "forstegangstjeneste": {
+      "forstegangstjenesteId": 502060001,
+      "kilde": "PEN",
+      "tjenestestartDato": "2012-01-15",
+      "dimitteringDato": "2012-12-31",
+      "forstegangstjenestePeriodeListe": [
+        {
+          "forstegangstjenestePeriodeId": 1,
+          "periodeType": "NORMAL",
+          "tjenesteType": "MIL",
+          "fomDato": "2012-01-15",
+          "tomDato": "2012-12-31"
+        }
+      ]
+    }
+  }
+}

@@ -3,7 +3,7 @@ import { BodyShort, Heading, InfoCard, Table, Tag, VStack } from '@navikt/ds-rea
 import { useMemo } from 'react'
 import { Fnr } from '~/components/Fnr'
 import { CopyableValue } from '~/components/shared/CopyableValue'
-import type { AktivitetDTO } from '~/types/behandling'
+import { AldeBehandlingStatus, type BehandlingDTO } from '~/types/behandling'
 import { formatCurrencyNok } from '~/utils/currency'
 import { EndringsOppsummering } from './EndringsOppsummering'
 import { endringSummaryFraVurdering } from './oppdater-grunnlag/oppdater-grunnlag.utils'
@@ -42,14 +42,14 @@ export function EndringstypeTag({ endringstype }: { endringstype: Endringstype }
 }
 
 interface OppdaterOpptjeningEndringerProps {
-  aktivitet: AktivitetDTO | null
+  behandling: BehandlingDTO
   vurdering: OppdaterOpptjeningVurdering | null
   opptjeningstyper: OpptjeningstyperResponse
   opptjeningsGrunnlag?: OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto']
 }
 
 export function OppdaterOpptjeningEndringer({
-  aktivitet,
+  behandling,
   vurdering,
   opptjeningstyper,
   opptjeningsGrunnlag,
@@ -105,7 +105,7 @@ export function OppdaterOpptjeningEndringer({
           <InfoCard.Title as="h3">Oppsummering av endringene</InfoCard.Title>
         </InfoCard.Header>
         <InfoCard.Content>
-          {aktivitet?.status !== 'FULLFORT' && (
+          {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING && (
             <BodyShort spacing>Endringene vil først bli gjeldende ved godkjenning.</BodyShort>
           )}
 

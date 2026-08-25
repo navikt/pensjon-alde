@@ -140,7 +140,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   const isSubmitting = useIsSubmitting()
 
   const components = getAllServerComponents()
-  const [utfall, setUtfall] = React.useState<AttesteringUtfall | undefined>(data?.utfall)
+  const [utfall, setUtfall] = React.useState<AttesteringUtfall | ''>(data?.utfall ?? '')
 
   const begrunnelseRef = React.useRef<HTMLFieldSetElement>(null)
 
@@ -162,12 +162,12 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   }
 
   useEffect(() => {
-    if (utfall !== undefined) {
+    if (utfall !== '') {
       attesteringViewRef.current?.scrollIntoView()
     }
   }, [utfall])
 
-  const AktivitetAttestering = () => (
+  const attesteringSkjema = (
     <Box background="brand-blue-soft" borderRadius="16" padding="space-28" as="div" ref={attesteringViewRef}>
       <Form method="POST">
         <VStack gap="space-28">
@@ -303,7 +303,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
           })}
         </VStack>
 
-        <AktivitetAttestering />
+        {attesteringSkjema}
       </VStack>
     </Page.Block>
   )
