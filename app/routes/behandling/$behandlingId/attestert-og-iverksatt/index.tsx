@@ -84,7 +84,7 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
       <VStack gap="space-32" className="content" align="center">
         <CheckmarkCircleIcon fontSize="6rem" style={{ color: 'var(--ax-bg-success-strong)' }} />
         <Heading size="medium" level="1">
-          <HStack align="center">Saken er attestert og iverksatt</HStack>
+          <HStack align="center">Attestert og iverksatt</HStack>
         </Heading>
 
         <VStack gap="space-8" align="center">
