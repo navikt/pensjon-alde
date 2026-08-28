@@ -59,7 +59,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   const modiaUrl = buildUrl(env.modia, request, { fnr: behandling.fnr })
 
   const { enhet } = context.get(userContext)
-  const visNotat = isFeatureEnabled(Features.NOTAT, { enhetId: enhet })
+  const visNotat = isFeatureEnabled(Features.NOTAT, { enhet: enhet })
 
   return {
     modiaUrl,
