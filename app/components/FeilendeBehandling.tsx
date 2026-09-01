@@ -92,7 +92,11 @@ export default function FeilendeBehandling({
                       {behandling.sisteKjoring?.feilmelding}
                     </BodyLong>
                     {behandling.sisteKjoring?.uuid && (
-                      <CopyableValue value={behandling.sisteKjoring?.uuid ?? behandling.behandlingId.toString()} />
+                      <CopyableValue
+                        title={behandling.sisteKjoring?.uuid ?? behandling.behandlingId.toString()}
+                        value={behandling.sisteKjoring?.uuid ?? behandling.behandlingId.toString()}
+                        textColor="subtle"
+                      />
                     )}
                   </VStack>
                 </Box>

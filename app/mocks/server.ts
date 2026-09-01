@@ -62,6 +62,22 @@ const handlers = [
     const { id } = params
     console.log(`🎯 MSW intercepted attestering request to: ${request.url}`)
 
+    // Explicit fixture wins. grunnlag/vurdering are written as objects in the file
+    // but the API delivers them as JSON strings.
+    const fixture = loadMockData(`attesteringsdata-${id}.json`)
+    if (fixture) {
+      console.log(`📄 Returning attesteringsdata fixture for ID: ${id}`)
+      return HttpResponse.json({
+        ...fixture,
+        aktiviter: (fixture.aktiviter ?? []).map((aktivitet: Record<string, unknown>) => ({
+          ...aktivitet,
+          grunnlag: typeof aktivitet.grunnlag === 'object' ? JSON.stringify(aktivitet.grunnlag) : aktivitet.grunnlag,
+          vurdering:
+            typeof aktivitet.vurdering === 'object' ? JSON.stringify(aktivitet.vurdering) : aktivitet.vurdering,
+        })),
+      })
+    }
+
     // Load behandling and find relevant aktiviteter by handlerName
     const behandling = loadMockData(`behandling-${id}.json`)
     const aktiviteter = behandling?.aktiviteter ?? []

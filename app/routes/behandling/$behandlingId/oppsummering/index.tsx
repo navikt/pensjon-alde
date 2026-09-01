@@ -104,6 +104,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
       <Heading level="1" size="large" spacing>
         Oppsummering av behandlingen
       </Heading>
+
       {behandlingErFullført && (
         <InfoCard data-color="info" as="section" aria-label="Behandlingen er fullført">
           <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
@@ -115,6 +116,7 @@ export default function Attestering({ loaderData }: Route.ComponentProps) {
           </InfoCard.Content>
         </InfoCard>
       )}
+
       {aktiviteter.map(aktivitet => {
         const Component = components.get(aktivitet.handlerName)
 

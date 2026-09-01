@@ -20,6 +20,9 @@ const workers = process.env.CI
   ? Math.min(4, cpuCount)
   : Math.min(Math.floor(cpuCount * 0.8), Math.floor(totalMemoryGB / 2))
 
+// Override when port 3001 is occupied by a running dev server
+const port = Number(process.env.E2E_PORT ?? 3001)
+
 export default defineConfig({
   testDir: './playwright',
   outputDir: './playwright/test-results',
@@ -33,7 +36,7 @@ export default defineConfig({
     timeout: 5000,
   },
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: `http://localhost:${port}`,
     trace: 'retry-with-trace',
     screenshot: 'off',
     video: 'retry-with-video',
@@ -80,8 +83,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev:mock',
-    port: 3001,
+    command: `npm run dev:mock -- --port ${port}`,
+    port,
     timeout: 60000,
     reuseExistingServer: !process.env.CI,
   },

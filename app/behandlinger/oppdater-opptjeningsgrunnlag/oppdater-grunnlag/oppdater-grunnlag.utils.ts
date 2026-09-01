@@ -3,12 +3,15 @@ import { typeLabel } from '../opptjeningstyper.utils'
 import type {
   DagpengerBackendDTO,
   DagpengerDTO,
+  Endringstype,
   ForstegangstjenesteBackendDTO,
   ForstegangstjenesteDTO,
   InntektBackendDTO,
   InntektDTO,
   OmsorgBackendDTO,
   OmsorgDTO,
+  OppdaterOpptjeningGrunnlag,
+  OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
 } from './oppdater-grunnlag-types'
 
@@ -49,6 +52,12 @@ export type EndringSummaryItem = {
   kategori: string
   label: string
   endringer?: string[]
+}
+
+export type EndringSummary = {
+  nye: EndringSummaryItem[]
+  endrede: EndringSummaryItem[]
+  slettede: EndringSummaryItem[]
 }
 
 export function tilLinjeState<T extends object>(dto: T): T & { _id: string; _status: LinjeStatus; _original: T } {
@@ -300,6 +309,123 @@ export function oppsummeringForKategori<T extends { _id: string; _status: LinjeS
         label: (status === 'modified' && format.kortLabel ? format.kortLabel : format.label)(linje),
         endringer: status === 'modified' ? format.endringer?.(linje) : undefined,
       }))
+}
+
+export function byggEndringSummary(
+  linjer: {
+    inntekt: InntektLinjeState[]
+    dagpenger: DagpengerLinjeState[]
+    omsorg: OmsorgLinjeState[]
+    forstegangstjeneste: ForstegangstjenesteLinjeState[]
+  },
+  opptjeningstyper: OpptjeningstyperResponse,
+): EndringSummary {
+  // Omsorgslinjer kan kun slettes, derfor ingen kortLabel/endringer.
+  const kategorier = [
+    oppsummeringForKategori('Inntekt', linjer.inntekt, {
+      label: l => inntektLabel(l, opptjeningstyper),
+      kortLabel: l => inntektKortLabel(l, opptjeningstyper),
+      endringer: l => inntektEndringer(l, opptjeningstyper),
+    }),
+    oppsummeringForKategori('Dagpenger', linjer.dagpenger, {
+      label: l => dagpengerLabel(l, opptjeningstyper),
+      kortLabel: l => dagpengerKortLabel(l, opptjeningstyper),
+      endringer: l => dagpengerEndringer(l, opptjeningstyper),
+    }),
+    oppsummeringForKategori('Omsorg', linjer.omsorg, {
+      label: l => omsorgLabel(l, opptjeningstyper),
+    }),
+    oppsummeringForKategori('Førstegangstjeneste', linjer.forstegangstjeneste, {
+      label: l => forstegangstjenesteLabel(l, opptjeningstyper),
+      kortLabel: l => forstegangstjenesteKortLabel(l, opptjeningstyper),
+      endringer: l => forstegangstjenesteEndringer(l, opptjeningstyper),
+    }),
+  ]
+
+  return {
+    nye: kategorier.flatMap(oppsummer => oppsummer('new')),
+    endrede: kategorier.flatMap(oppsummer => oppsummer('modified')),
+    slettede: kategorier.flatMap(oppsummer => oppsummer('deleted')),
+  }
+}
+
+const STATUS_FRA_ENDRINGSTYPE: Record<Endringstype, LinjeStatus> = {
+  OPPRETT: 'new',
+  OPPDATER: 'modified',
+  SLETT: 'deleted',
+}
+
+/**
+ * Bygger samme oppsummering som redigeringsskjemaet, men fra en lagret vurdering.
+ * `grunnlag` er opptjeningsgrunnlaget slik det var før endringene, og brukes til å
+ * finne «fra»-verdiene for endrede linjer. Uten grunnlag vises kun «til»-verdiene.
+ */
+export function endringSummaryFraVurdering(
+  vurdering: OppdaterOpptjeningVurdering | null | undefined,
+  grunnlag: OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto'] | null | undefined,
+  opptjeningstyper: OpptjeningstyperResponse,
+): EndringSummary {
+  const originaleInntekter = new Map<number, InntektDTO>()
+  for (const i of grunnlag?.inntektListe ?? []) {
+    if (i.inntektId != null) originaleInntekter.set(i.inntektId, inntektGrunnlagTilViewModel(i))
+  }
+
+  const originaleDagpenger = new Map<number, DagpengerDTO>()
+  for (const d of grunnlag?.dagpengerListe ?? []) {
+    if (d.dagpengerId != null) originaleDagpenger.set(d.dagpengerId, dagpengerGrunnlagTilViewModel(d))
+  }
+
+  const originaleForstegangstjenester = forstegangstjenesteGrunnlagTilViewModel(grunnlag?.forstegangstjeneste)
+
+  const inntekt: InntektLinjeState[] = (vurdering?.inntektEndringer ?? []).flatMap((endring, ei) =>
+    endring.inntektListe.map((dto, li) => {
+      const linje = inntektGrunnlagTilViewModel(dto)
+      return {
+        ...linje,
+        _id: `inntekt-${ei}-${li}`,
+        _status: STATUS_FRA_ENDRINGSTYPE[endring.endringstype],
+        _original: linje.inntektId != null ? (originaleInntekter.get(linje.inntektId) ?? null) : null,
+      }
+    }),
+  )
+
+  const dagpenger: DagpengerLinjeState[] = (vurdering?.dagpengerEndringer ?? []).flatMap((endring, ei) =>
+    endring.dagpengerListe.map((dto, li) => {
+      const linje = dagpengerGrunnlagTilViewModel(dto)
+      return {
+        ...linje,
+        _id: `dagpenger-${ei}-${li}`,
+        _status: STATUS_FRA_ENDRINGSTYPE[endring.endringstype],
+        _original: linje.dagpengerId != null ? (originaleDagpenger.get(linje.dagpengerId) ?? null) : null,
+      }
+    }),
+  )
+
+  const omsorg: OmsorgLinjeState[] = (vurdering?.omsorgEndringer ?? []).flatMap((endring, ei) =>
+    endring.omsorgListe.map((dto, li) => ({
+      ...omsorgGrunnlagTilViewModel(dto),
+      _id: `omsorg-${ei}-${li}`,
+      _status: STATUS_FRA_ENDRINGSTYPE[endring.endringstype],
+      _original: null,
+    })),
+  )
+
+  const forstegangstjeneste: ForstegangstjenesteLinjeState[] = (vurdering?.forstegangstjenesteEndringer ?? []).flatMap(
+    (endring, ei) =>
+      forstegangstjenesteGrunnlagTilViewModel(endring.forstegangstjeneste).map((linje, li) => {
+        const kandidater = originaleForstegangstjenester.filter(
+          o => o.forstegangstjenesteId != null && o.forstegangstjenesteId === linje.forstegangstjenesteId,
+        )
+        return {
+          ...linje,
+          _id: `forstegangstjeneste-${ei}-${li}`,
+          _status: STATUS_FRA_ENDRINGSTYPE[endring.endringstype],
+          _original: kandidater.length === 1 ? kandidater[0] : null,
+        }
+      }),
+  )
+
+  return byggEndringSummary({ inntekt, dagpenger, omsorg, forstegangstjeneste }, opptjeningstyper)
 }
 
 export function toInntektBackend(l: InntektLinjeState, fnr: string): InntektBackendDTO {
