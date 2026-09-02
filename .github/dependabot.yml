@@ -11,6 +11,17 @@ updates:
       default-days: 7
     open-pull-requests-limit: 10
 
+  - package-ecosystem: docker
+    directory: "/pdf"
+    schedule:
+      interval: weekly
+      day: monday
+      time: '08:00'
+      timezone: 'Europe/Oslo'
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 10
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
