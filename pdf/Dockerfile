@@ -23,7 +23,7 @@ RUN corepack enable
 # Install dependencies (incl. vite — the service resolves modules at runtime).
 # --ignore-scripts skips the repo's `prepare` (lefthook, needs git) and browser
 # re-download; platform binaries come from optional deps.
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .pnpmfile.cjs ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Source needed by the runtime Vite SSR + component discovery.
