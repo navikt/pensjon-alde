@@ -79,7 +79,7 @@
     "playwright": "1.62.1",
     "react-router-devtools": "^6.2.3",
     "storybook": "^10.5.7",
-    "tsx": "^4.23.10",
+    "tsx": "^4.23.12",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
     "vite-node": "^6.0.0",
