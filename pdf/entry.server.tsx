@@ -126,7 +126,7 @@ export function renderAttestering(input: PdfInput, css: string): string {
 <head>
 <meta charset="utf-8" />
 <style>${css}</style>
-<style>html{font-size:13px}body{margin:0;background:#fff}.pdf-root{margin:0 auto;padding:24px}.pdf-divider{border:none;border-top:1px solid var(--ax-border-neutral,#c9c2bc);margin:0}</style>
+<style>html{font-size:13px}body{margin:0;background:#fff}.pdf-root{margin:0 auto;padding:24px}.pdf-divider{border:none;border-top:1px solid var(--ax-border-neutral,#c9c2bc);margin:0}.attestering textarea{field-sizing:content;overflow:hidden;resize:none}</style>
 </head>
 <body class="attestering">
 <div class="pdf-root">${body}</div>
