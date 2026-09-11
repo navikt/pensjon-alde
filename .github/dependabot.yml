@@ -65,10 +65,20 @@ updates:
         patterns:
           - 'react'
           - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
       react-router:
         patterns:
           - 'react-router'
           - '@react-router/*'
+      vitest:
+        patterns:
+          - 'vitest'
+          - '@vitest/*'
+      playwright:
+        patterns:
+          - 'playwright'
+          - '@playwright/*'
     ignore:
       # Major versjon av @types/node skal følge Node.js versjonen i psak-frontend (v24).
       - dependency-name: '@types/node'
