@@ -72,7 +72,7 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
-    "@vitest/coverage-v8": "4.1.10",
+    "@vitest/coverage-v8": "4.1.11",
     "glob": "^13.0.6",
     "lefthook": "^2.1.12",
     "msw": "^2.15.0",
