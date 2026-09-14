@@ -31,12 +31,12 @@ fetch_nais_secret "$team" "dev-gcp" "$azure_secret_name" write_env "$secrets_fil
   "AZURE_OPENID_CONFIG_JWKS_URI" \
   "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
 {
-  echo AZURE_CALLBACK_URL="'http://localhost:9081/auth/callback'"
+  echo AZURE_CALLBACK_URL="'http://localhost:3001/auth/callback'"
 } >> "$secrets_file"
 complete_step
 
 start_step "Unleash"
-fetch_nais_secret "pensjon-saksbehandling" "dev-gcp" "alde-unleash-api-token" write_env "$secrets_file" \
+fetch_nais_secret "$team" "dev-gcp" "alde-unleash-api-token" write_env "$secrets_file" \
     "UNLEASH_SERVER_API_TOKEN" \
     "UNLEASH_SERVER_API_URL" \
     "UNLEASH_SERVER_API_ENV"
@@ -48,7 +48,6 @@ fetch_nais_secret "$team" "dev-gcp" "psak-pid-encryption-key" write_env "$secret
 complete_step
 
 {
-  echo AZURE_CALLBACK_URL="'http://localhost:3001/auth/callback'"
   echo IS_LOCAL_ENV="'true'"
   echo PEN_SCOPE="'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'"
   echo PEN_URL="'http://localhost:8089'"
