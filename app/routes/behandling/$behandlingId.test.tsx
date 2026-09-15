@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { BehandlingDTO } from '~/types/behandling'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
-import { getRedirectPath } from './$behandlingId'
+import { getRedirectPath, skalViseFeilende } from './$behandlingId'
 
 const mockBehandling: BehandlingDTO = {
   behandlingId: 123,
@@ -402,5 +402,23 @@ describe('getRedirectPath', () => {
     })
 
     expect(result).toBeNull()
+  })
+})
+
+describe('skalViseFeilende', () => {
+  it('returns true when behandling status is FEILENDE', () => {
+    expect(skalViseFeilende({ ...mockBehandling, status: BehandlingStatus.FEILENDE })).toBe(true)
+  })
+
+  it('returns false when behandling status is UNDER_BEHANDLING', () => {
+    expect(skalViseFeilende({ ...mockBehandling, status: BehandlingStatus.UNDER_BEHANDLING })).toBe(false)
+  })
+
+  it('returns false when behandling status is FULLFORT', () => {
+    expect(skalViseFeilende({ ...mockBehandling, status: BehandlingStatus.FULLFORT })).toBe(false)
+  })
+
+  it('returns false when behandling status is DEBUG', () => {
+    expect(skalViseFeilende({ ...mockBehandling, status: BehandlingStatus.DEBUG })).toBe(false)
   })
 })
