@@ -1,11 +1,10 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
 import { BodyShort, InfoCard, Page } from '@navikt/ds-react'
-import { Outlet, redirect, useFetcher, useOutlet, useOutletContext } from 'react-router'
+import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
-import FeilendeBehandling from '~/components/FeilendeBehandling'
-import { type AktivitetDTO, AktivitetStatus, BehandlingStatus } from '~/types/behandling'
+import type { AktivitetDTO } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 
@@ -76,7 +75,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     aktivitet,
     debug: debugData,
     showDebug,
-    dato: Date.now(),
   }
 }
 
@@ -91,52 +89,34 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandling, aktivitet, debug, showDebug, dato } = loaderData
+  const { behandling, aktivitet, debug, showDebug } = loaderData
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
 
-  const fetcher = useFetcher()
-
-  function retry() {
-    fetcher.submit(
-      {},
-      {
-        method: 'POST',
-      },
-    )
-  }
-
-  if (
-    behandling.status === BehandlingStatus.FEILENDE ||
-    (behandling.status === BehandlingStatus.DEBUG && aktivitet.status === AktivitetStatus.FEILET)
-  ) {
-    return <FeilendeBehandling dato={dato} behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
-  } else {
-    return (
-      <Page.Block className="aktivitet">
-        <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
-        {!outlet && (
-          <Page.Block gutters>
-            <InfoCard data-color="info" as="section" aria-label="Aktivitet ikke implementert enda">
-              <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
-                <InfoCard.Title>Aktivitet ikke implementert enda</InfoCard.Title>
-              </InfoCard.Header>
-              <InfoCard.Content>
-                <BodyShort>
-                  <strong>Aktivitet:</strong> {aktivitet.friendlyName}
-                </BodyShort>
-                <BodyShort>
-                  <strong>Type:</strong> {aktivitet.type}
-                </BodyShort>
-                <BodyShort>
-                  <strong>Behandling:</strong> {behandling.friendlyName}
-                </BodyShort>
-              </InfoCard.Content>
-            </InfoCard>
-          </Page.Block>
-        )}
-        {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
-      </Page.Block>
-    )
-  }
+  return (
+    <Page.Block className="aktivitet">
+      <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
+      {!outlet && (
+        <Page.Block gutters>
+          <InfoCard data-color="info" as="section" aria-label="Aktivitet ikke implementert enda">
+            <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+              <InfoCard.Title>Aktivitet ikke implementert enda</InfoCard.Title>
+            </InfoCard.Header>
+            <InfoCard.Content>
+              <BodyShort>
+                <strong>Aktivitet:</strong> {aktivitet.friendlyName}
+              </BodyShort>
+              <BodyShort>
+                <strong>Type:</strong> {aktivitet.type}
+              </BodyShort>
+              <BodyShort>
+                <strong>Behandling:</strong> {behandling.friendlyName}
+              </BodyShort>
+            </InfoCard.Content>
+          </InfoCard>
+        </Page.Block>
+      )}
+      {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
+    </Page.Block>
+  )
 }

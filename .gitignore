@@ -37,3 +37,4 @@ node_modules/
 
 # PDF preview output from dev:pdf / curl
 /pdf-preview.pdf
+.pi/
