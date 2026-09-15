@@ -1,0 +1,46 @@
+{
+  "behandlingId": 5000002,
+  "type": "OppdaterOpptjeningsgrunnlagBehandling",
+  "handlerName": "oppdater-opptjeningsgrunnlag",
+  "friendlyName": "Oppdater opptjeningsgrunnlag",
+  "processName": "Oppdater opptjeningsgrunnlag",
+  "aldeBehandlingStatus": "VENTER_ATTESTERING",
+  "sisteKjoring": null,
+  "sisteKjoringDato": "2025-04-02T09:00:00.000000",
+  "utsattTil": null,
+  "opprettet": "2025-04-01T08:50:00.000000",
+  "stoppet": null,
+  "status": "TIL_ATTESTERING",
+  "aktiviteter": [
+    {
+      "aktivitetId": 5020002,
+      "type": "A100OppdaterOpptjeningsgrunnlagAktivitet",
+      "handlerName": "oppdater-grunnlag",
+      "friendlyName": "Oppdater grunnlag",
+      "opprettet": "2025-04-01T08:50:00.000000",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-04-01T09:00:00.000000",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 5020003,
+      "type": "A300AttesteringAktivitet",
+      "handlerName": "attestering",
+      "friendlyName": "Attestering",
+      "opprettet": "2025-04-01T08:50:00.000000",
+      "antallGangerKjort": 0,
+      "sisteAktiveringsdato": null,
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": null
+    }
+  ],
+  "fnr": "12345678901",
+  "sakId": 23077283,
+  "kravId": 46365422,
+  "fornavn": "Ola",
+  "mellomnavn": null,
+  "etternavn": "Nordmann",
+  "fodselsdato": "1962-03-15",
+  "sakType": "ALDER"
+}

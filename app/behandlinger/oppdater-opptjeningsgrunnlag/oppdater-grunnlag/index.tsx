@@ -8,6 +8,7 @@ import {
   HStack,
   InfoCard,
   InlineMessage,
+  Loader,
   LocalAlert,
   Page,
   Select,
@@ -17,46 +18,39 @@ import {
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
-import { useMemo, useState } from 'react'
-import { data, Form, redirect, useOutletContext } from 'react-router'
+import { useEffect, useMemo, useState } from 'react'
+import { data, Form, redirect, useFetcher, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { isApiError } from '~/api/error.types'
 import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import styles from '~/common.module.css'
 import { Fnr } from '~/components/Fnr'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
+import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatCurrencyNok } from '~/utils/currency'
+import { EndringsOppsummering } from '../EndringsOppsummering'
+import { OppdaterOpptjeningEndringer } from '../OppdaterOpptjeningEndringer'
 import type { Route } from './+types'
 import {
   beregnStatus,
+  byggEndringSummary,
   DAGPENGER_FELTER,
   type DagpengerLinjeState,
-  dagpengerEndringer,
   dagpengerGrunnlagTilViewModel,
-  dagpengerKortLabel,
-  dagpengerLabel,
-  type EndringSummaryItem,
+  type EndringSummary,
   FORSTEGANGSTJENESTE_FELTER,
   type ForstegangstjenesteLinjeState,
-  forstegangstjenesteEndringer,
   forstegangstjenesteGrunnlagTilViewModel,
-  forstegangstjenesteKortLabel,
-  forstegangstjenesteLabel,
   INNTEKT_FELTER,
   type InntektLinjeState,
   initialInntektLinjer,
-  inntektEndringer,
-  inntektKortLabel,
-  inntektLabel,
   type LinjeStatus,
   nyDagpengerLinje,
   nyForstegangstjenesteLinje,
   nyInntektLinje,
   type OmsorgLinjeState,
   omsorgGrunnlagTilViewModel,
-  omsorgLabel,
-  oppsummeringForKategori,
   oversettKoderIMelding,
   parseIsoDate,
   REQUIRED_KOMMUNE,
@@ -75,6 +69,15 @@ import type {
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
 } from './oppdater-grunnlag-types'
+
+const OPPTJENINGSTYPE_VALG = [
+  { value: 'inntekt', label: 'Inntekter' },
+  { value: 'dagpenger', label: 'Dagpenger' },
+  { value: 'omsorg', label: 'Omsorg' },
+  { value: 'forstegangstjeneste', label: 'Førstegangstjeneste' },
+] as const
+
+type OpptjeningstypeValg = (typeof OPPTJENINGSTYPE_VALG)[number]['value']
 
 export function meta() {
   return [{ title: 'Oppdater opptjeningsgrunnlag' }]
@@ -826,6 +829,41 @@ function ForstegangstjenesteSeksjon({
   )
 }
 
+export const Component = ({
+  behandling,
+  grunnlag,
+  vurdering,
+}: AktivitetComponentProps<OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering>) => {
+  const fetcher = useFetcher<OpptjeningstyperResponse>()
+
+  useEffect(() => {
+    if (!fetcher.data && fetcher.state === 'idle') {
+      fetcher.load('/api/opptjeningstyper')
+    }
+  }, [fetcher])
+
+  if (!fetcher.data) {
+    return (
+      <Box paddingBlock="space-28">
+        <HStack justify="center">
+          <Loader size="large" title="Laster opptjeningstyper" />
+        </HStack>
+      </Box>
+    )
+  }
+
+  return (
+    <Box paddingBlock="space-28">
+      <OppdaterOpptjeningEndringer
+        behandling={behandling}
+        vurdering={vurdering}
+        opptjeningstyper={fetcher.data}
+        opptjeningsGrunnlag={grunnlag?.opptjeningsGrunnlagDto}
+      />
+    </Box>
+  )
+}
+
 export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { grunnlag, opptjeningstyper, readOnly } = loaderData
   const { errors } = actionData || {}
@@ -834,8 +872,12 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
 
   const saker = grunnlag.saker ?? []
   const [selectedSakId, setSelectedSakId] = useState('')
+  const [valgtType, setValgtType] = useState<OpptjeningstypeValg | ''>('')
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
-  const sakIdFeil = saker.length > 0 && !selectedSakId ? 'Du må velge en sak før du kan lagre' : undefined
+  const manglerSak = saker.length > 0 && !selectedSakId
+  const sakIdFeil = hasAttemptedSubmit && manglerSak ? 'Du må velge en sak før du kan lagre' : undefined
+  const valgtTypeFeil =
+    hasAttemptedSubmit && !valgtType ? 'Du må velge en opptjeningstype for å sende inn endring.' : undefined
 
   const defaultInntektType = opptjeningstyper.inntekt.typer[0]?.code ?? ''
 
@@ -1015,41 +1057,36 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
     return feil
   }, [forstegangstjenesteLinjer])
 
-  const harKlientFeil = Object.keys(inntektKommuneFeil).length > 0 || Object.keys(forstegangstjenesteFomFeil).length > 0
+  const harKlientFeil =
+    (valgtType === 'inntekt' && Object.keys(inntektKommuneFeil).length > 0) ||
+    (valgtType === 'forstegangstjeneste' && Object.keys(forstegangstjenesteFomFeil).length > 0)
 
-  const endringSummary = useMemo<{
-    nye: EndringSummaryItem[]
-    endrede: EndringSummaryItem[]
-    slettede: EndringSummaryItem[]
-  }>(() => {
-    // Omsorgslinjer kan kun slettes, derfor ingen kortLabel/endringer.
-    const kategorier = [
-      oppsummeringForKategori('Inntekt', inntektLinjer, {
-        label: l => inntektLabel(l, opptjeningstyper),
-        kortLabel: l => inntektKortLabel(l, opptjeningstyper),
-        endringer: l => inntektEndringer(l, opptjeningstyper),
-      }),
-      oppsummeringForKategori('Dagpenger', dagpengerLinjer, {
-        label: l => dagpengerLabel(l, opptjeningstyper),
-        kortLabel: l => dagpengerKortLabel(l, opptjeningstyper),
-        endringer: l => dagpengerEndringer(l, opptjeningstyper),
-      }),
-      oppsummeringForKategori('Omsorg', omsorgLinjer, {
-        label: l => omsorgLabel(l, opptjeningstyper),
-      }),
-      oppsummeringForKategori('Førstegangstjeneste', forstegangstjenesteLinjer, {
-        label: l => forstegangstjenesteLabel(l, opptjeningstyper),
-        kortLabel: l => forstegangstjenesteKortLabel(l, opptjeningstyper),
-        endringer: l => forstegangstjenesteEndringer(l, opptjeningstyper),
-      }),
-    ]
+  const endringSummary = useMemo<EndringSummary>(
+    () =>
+      byggEndringSummary(
+        {
+          inntekt: valgtType === 'inntekt' ? inntektLinjer : [],
+          dagpenger: valgtType === 'dagpenger' ? dagpengerLinjer : [],
+          omsorg: valgtType === 'omsorg' ? omsorgLinjer : [],
+          forstegangstjeneste: valgtType === 'forstegangstjeneste' ? forstegangstjenesteLinjer : [],
+        },
+        opptjeningstyper,
+      ),
+    [valgtType, inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer, opptjeningstyper],
+  )
 
-    return {
-      nye: kategorier.flatMap(oppsummer => oppsummer('new')),
-      endrede: kategorier.flatMap(oppsummer => oppsummer('modified')),
-      slettede: kategorier.flatMap(oppsummer => oppsummer('deleted')),
+  const andreTyperMedEndringer = useMemo(() => {
+    if (!valgtType) return []
+    const harEndring: Record<OpptjeningstypeValg, boolean> = {
+      inntekt: inntektLinjer.some(l => l._status !== 'original'),
+      dagpenger: dagpengerLinjer.some(l => l._status !== 'original'),
+      omsorg: omsorgLinjer.some(l => l._status !== 'original'),
+      forstegangstjeneste: forstegangstjenesteLinjer.some(l => l._status !== 'original'),
     }
-  }, [inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer, opptjeningstyper])
+    return OPPTJENINGSTYPE_VALG.filter(valg => valg.value !== valgtType && harEndring[valg.value]).map(
+      valg => valg.label,
+    )
+  }, [valgtType, inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer])
 
   const harEndringer = endringSummary.nye.length + endringSummary.endrede.length + endringSummary.slettede.length > 0
 
@@ -1062,10 +1099,10 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
       slettede: linjer.filter(l => l._status === 'deleted'),
     })
 
-    const inntekt = byStatus(inntektLinjer)
-    const dagpenger = byStatus(dagpengerLinjer)
-    const omsorg = byStatus(omsorgLinjer)
-    const ft = byStatus(forstegangstjenesteLinjer)
+    const inntekt = byStatus(valgtType === 'inntekt' ? inntektLinjer : [])
+    const dagpenger = byStatus(valgtType === 'dagpenger' ? dagpengerLinjer : [])
+    const omsorg = byStatus(valgtType === 'omsorg' ? omsorgLinjer : [])
+    const ft = byStatus(valgtType === 'forstegangstjeneste' ? forstegangstjenesteLinjer : [])
 
     return JSON.stringify({
       fnr,
@@ -1105,46 +1142,54 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
         ...ft.slettede.map(l => ({ endringstype: 'SLETT', forstegangstjeneste: toForstegangstjenesteBackend(l, fnr) })),
       ],
     })
-  }, [grunnlag, inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer])
+  }, [grunnlag, valgtType, inntektLinjer, dagpengerLinjer, omsorgLinjer, forstegangstjenesteLinjer])
 
   const seksjoner = (
     <VStack gap="space-24">
-      <InntekterSeksjon
-        linjer={inntektLinjer}
-        opptjeningstyper={opptjeningstyper}
-        readOnly={readOnly}
-        kommuneFeil={inntektKommuneFeil}
-        onLeggTil={() => setInntektLinjer(prev => [...prev, nyInntektLinje(defaultInntektType)])}
-        onSlett={slettInntektLinje}
-        onGjenopprett={gjenopprettInntektLinje}
-        onOppdater={oppdaterInntektLinje}
-      />
-      <DagpengerSeksjon
-        linjer={dagpengerLinjer}
-        opptjeningstyper={opptjeningstyper}
-        readOnly={readOnly}
-        onLeggTil={() => setDagpengerLinjer(prev => [...prev, nyDagpengerLinje()])}
-        onSlett={slettDagpengerLinje}
-        onGjenopprett={gjenopprettDagpengerLinje}
-        onOppdater={oppdaterDagpengerLinje}
-      />
-      <OmsorgSeksjon
-        linjer={omsorgLinjer}
-        opptjeningstyper={opptjeningstyper}
-        readOnly={readOnly}
-        onSlett={slettOmsorgLinje}
-        onGjenopprett={gjenopprettOmsorgLinje}
-      />
-      <ForstegangstjenesteSeksjon
-        linjer={forstegangstjenesteLinjer}
-        opptjeningstyper={opptjeningstyper}
-        readOnly={readOnly}
-        fomFeil={forstegangstjenesteFomFeil}
-        onLeggTil={() => setForstegangstjenesteLinjer(prev => [...prev, nyForstegangstjenesteLinje()])}
-        onSlett={slettForstegangstjenesteLinje}
-        onGjenopprett={gjenopprettForstegangstjenesteLinje}
-        onOppdater={oppdaterForstegangstjenesteLinje}
-      />
+      {valgtType === 'inntekt' && (
+        <InntekterSeksjon
+          linjer={inntektLinjer}
+          opptjeningstyper={opptjeningstyper}
+          readOnly={readOnly}
+          kommuneFeil={inntektKommuneFeil}
+          onLeggTil={() => setInntektLinjer(prev => [...prev, nyInntektLinje(defaultInntektType)])}
+          onSlett={slettInntektLinje}
+          onGjenopprett={gjenopprettInntektLinje}
+          onOppdater={oppdaterInntektLinje}
+        />
+      )}
+      {valgtType === 'dagpenger' && (
+        <DagpengerSeksjon
+          linjer={dagpengerLinjer}
+          opptjeningstyper={opptjeningstyper}
+          readOnly={readOnly}
+          onLeggTil={() => setDagpengerLinjer(prev => [...prev, nyDagpengerLinje()])}
+          onSlett={slettDagpengerLinje}
+          onGjenopprett={gjenopprettDagpengerLinje}
+          onOppdater={oppdaterDagpengerLinje}
+        />
+      )}
+      {valgtType === 'omsorg' && (
+        <OmsorgSeksjon
+          linjer={omsorgLinjer}
+          opptjeningstyper={opptjeningstyper}
+          readOnly={readOnly}
+          onSlett={slettOmsorgLinje}
+          onGjenopprett={gjenopprettOmsorgLinje}
+        />
+      )}
+      {valgtType === 'forstegangstjeneste' && (
+        <ForstegangstjenesteSeksjon
+          linjer={forstegangstjenesteLinjer}
+          opptjeningstyper={opptjeningstyper}
+          readOnly={readOnly}
+          fomFeil={forstegangstjenesteFomFeil}
+          onLeggTil={() => setForstegangstjenesteLinjer(prev => [...prev, nyForstegangstjenesteLinje()])}
+          onSlett={slettForstegangstjenesteLinje}
+          onGjenopprett={gjenopprettForstegangstjenesteLinje}
+          onOppdater={oppdaterForstegangstjenesteLinje}
+        />
+      )}
     </VStack>
   )
 
@@ -1182,33 +1227,48 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
             method="post"
             onSubmit={e => {
               setHasAttemptedSubmit(true)
-              if (!harEndringer) e.preventDefault()
+              if (manglerSak || !valgtType || !harEndringer) e.preventDefault()
             }}
           >
             <VStack gap="space-24">
               {saker.length > 0 && (
-                <Box>
-                  <Heading size="small" level="3" spacing>
-                    Velg sak
-                  </Heading>
-                  <Select
-                    label="Sak"
-                    name="sakId"
-                    size="small"
-                    value={selectedSakId}
-                    onChange={e => setSelectedSakId(e.target.value)}
-                  >
-                    <option value="">Velg sak</option>
-                    {saker.map(sak => (
-                      <option key={sak.sakId} value={sak.sakId}>
-                        {sak.sakId}
-                        {sak.sakType ? ` – ${sak.sakType}` : ''}
-                        {sak.sakStatus ? ` (${sak.sakStatus})` : ''}
-                      </option>
-                    ))}
-                  </Select>
-                </Box>
+                <Select
+                  label="Sak"
+                  name="sakId"
+                  size="small"
+                  value={selectedSakId}
+                  onChange={e => setSelectedSakId(e.target.value)}
+                  error={sakIdFeil}
+                  style={{ maxWidth: '20rem' }}
+                >
+                  <option value="">Velg sak</option>
+                  {saker.map(sak => (
+                    <option key={sak.sakId} value={sak.sakId}>
+                      {sak.sakId}
+                      {sak.sakType ? ` – ${sak.sakType}` : ''}
+                      {sak.sakStatus ? ` (${sak.sakStatus})` : ''}
+                    </option>
+                  ))}
+                </Select>
               )}
+
+              <Select
+                label="Opptjeningstype"
+                name="opptjeningstype"
+                size="small"
+                value={valgtType}
+                onChange={e => setValgtType(e.target.value as OpptjeningstypeValg | '')}
+                description="Du må velge en opptjeningstype for å se og oppdatere grunnlaget"
+                error={valgtTypeFeil}
+                style={{ maxWidth: '20rem' }}
+              >
+                <option value="">Velg opptjeningstype</option>
+                {OPPTJENINGSTYPE_VALG.map(valg => (
+                  <option key={valg.value} value={valg.value}>
+                    {valg.label}
+                  </option>
+                ))}
+              </Select>
 
               {seksjoner}
 
@@ -1218,60 +1278,23 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
                     <InfoCard.Title>Endringer som vil bli lagret</InfoCard.Title>
                   </InfoCard.Header>
                   <InfoCard.Content>
-                    <VStack gap="space-12">
-                      {endringSummary.nye.length > 0 && (
-                        <div>
-                          <strong>Nye linjer ({endringSummary.nye.length})</strong>
-                          <ul>
-                            {endringSummary.nye.map(item => (
-                              <li key={item.id}>
-                                {item.kategori}: {item.label}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {endringSummary.endrede.length > 0 && (
-                        <div>
-                          <strong>Endrede linjer ({endringSummary.endrede.length})</strong>
-                          <ul>
-                            {endringSummary.endrede.map(item => (
-                              <li key={item.id}>
-                                {item.kategori}: {item.label}
-                                {item.endringer && item.endringer.length > 0 && (
-                                  <ul>
-                                    {item.endringer.map(e => (
-                                      <li key={e}>{e}</li>
-                                    ))}
-                                  </ul>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {endringSummary.slettede.length > 0 && (
-                        <div>
-                          <strong>Slettede linjer ({endringSummary.slettede.length})</strong>
-                          <ul>
-                            {endringSummary.slettede.map(item => (
-                              <li key={item.id}>
-                                {item.kategori}: {item.label}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </VStack>
+                    <EndringsOppsummering summary={endringSummary} />
                   </InfoCard.Content>
                 </InfoCard>
               )}
 
               <input type="hidden" name="payload" value={payload} />
 
+              {andreTyperMedEndringer.length > 0 && (
+                <InlineMessage status="warning">
+                  Du har ulagrede endringer i {andreTyperMedEndringer.join(', ')}. Kun endringer i valgt opptjeningstype
+                  blir lagret.
+                </InlineMessage>
+              )}
+
               {sakIdFeil && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
 
-              {hasAttemptedSubmit && !harEndringer && (
+              {hasAttemptedSubmit && valgtType && !harEndringer && (
                 <InlineMessage status="error">
                   Ingen endringer er registrert. Gjør minst én endring før du lagrer.
                 </InlineMessage>
@@ -1295,13 +1318,7 @@ export default function OppdaterGrunnlagRoute({ loaderData, actionData }: Route.
               )}
 
               <HStack gap="space-8">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="small"
-                  loading={isSubmitting}
-                  disabled={harKlientFeil || !!sakIdFeil}
-                >
+                <Button type="submit" variant="primary" size="small" loading={isSubmitting} disabled={harKlientFeil}>
                   Lagre og gå videre
                 </Button>
                 <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
