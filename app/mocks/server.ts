@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { HttpResponse, http } from 'msw'
@@ -14,6 +15,8 @@ function loadMockData(filename: string) {
     return null
   }
 }
+
+const behandlingOverrides = new Map<string, Record<string, unknown>>()
 
 // Define handlers for API endpoints
 const handlers = [
@@ -37,7 +40,8 @@ const handlers = [
 
     if (mockData) {
       console.log(`📄 Returning specific mock data for ID: ${id}`)
-      return HttpResponse.json(mockData)
+      const override = behandlingOverrides.get(String(id))
+      return HttpResponse.json(override ? { ...mockData, ...override } : mockData)
     }
 
     // Fallback to default mock data if specific file doesn't exist
@@ -197,7 +201,32 @@ const handlers = [
 
   // POST /api/saksbehandling/alde/behandling/:id/fortsett
   http.post('*/api/saksbehandling/alde/behandling/:behandlingId/fortsett', ({ params }) => {
-    console.log(`🎯 MSW intercepted POST fortsett for behandling ${params.behandlingId}`)
+    const id = String(params.behandlingId)
+    console.log(`🎯 MSW intercepted POST fortsett for behandling ${id}`)
+
+    const mockData = loadMockData(`behandling-${id}.json`)
+
+    if (mockData?.status === 'FEILENDE') {
+      const naa = new Date().toISOString()
+      behandlingOverrides.set(id, {
+        status: 'UNDER_BEHANDLING',
+        aldeBehandlingStatus: 'VENTER_SAKSBEHANDLER',
+        utsattTil: null,
+        sisteKjoringDato: naa,
+        sisteKjoring: {
+          ...mockData.sisteKjoring,
+          uuid: randomUUID(),
+          avsluttet: naa,
+          feilmelding: null,
+          stackTrace: null,
+        },
+        aktiviteter: mockData.aktiviteter.map((aktivitet: { status: string }) =>
+          aktivitet.status === 'FEILET' ? { ...aktivitet, status: 'UNDER_BEHANDLING' } : aktivitet,
+        ),
+      })
+      console.log(`♻️  Behandling ${id} er nå satt til UNDER_BEHANDLING etter fortsett`)
+    }
+
     return HttpResponse.json({ ok: true })
   }),
 
