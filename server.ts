@@ -20,6 +20,7 @@ if (isDev) {
 } else {
   app.use(compression())
   app.disable('x-powered-by')
+  app.set('trust proxy', 1)
   app.use(
     '/assets',
     express.static('build/client/assets', {immutable: true, maxAge: '1y'}),

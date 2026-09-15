@@ -3,7 +3,7 @@
 #
 # IMPORTANT: build from the REPO ROOT so the context includes app/ + package.json:
 #   docker build -f pdf/Dockerfile -t alde-pdf .
-FROM mcr.microsoft.com/playwright:v1.62.1-noble
+FROM mcr.microsoft.com/playwright:v1.63.0-noble
 
 ENV TZ="Europe/Oslo"
 ENV PDF_PORT=8090
@@ -23,7 +23,7 @@ RUN corepack enable
 # Install dependencies (incl. vite — the service resolves modules at runtime).
 # --ignore-scripts skips the repo's `prepare` (lefthook, needs git) and browser
 # re-download; platform binaries come from optional deps.
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .pnpmfile.cjs ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Source needed by the runtime Vite SSR + component discovery.
