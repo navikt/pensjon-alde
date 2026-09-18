@@ -34,6 +34,8 @@
     "prepare": "lefthook install"
   },
   "dependencies": {
+    "@conform-to/react": "^1.21.1",
+    "@conform-to/zod": "^1.21.1",
     "@grafana/faro-web-sdk": "^2.11.0",
     "@grafana/faro-web-tracing": "^2.11.0",
     "@navikt/aksel-icons": "^8.16.2",
@@ -57,7 +59,8 @@
     "react-router": "^8.3.1",
     "remix-auth": "^4.2.0",
     "remix-auth-oauth2": "^3.4.1",
-    "unleash-client": "^6.12.1"
+    "unleash-client": "^6.12.1",
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12",
