@@ -128,8 +128,8 @@ function VurdereSamboerComponent({
   const [form, fields] = useForm<SamboerVurderingInput>({
     lastResult,
     constraint: getZodConstraint(samboerVurderingSchema),
-    shouldValidate: 'onBlur',
-    shouldRevalidate: 'onInput',
+    shouldValidate: 'onSubmit',
+    shouldRevalidate: 'onBlur',
     defaultValue: {
       vurdering: vurdering?.vurdering,
       samboerFra: vurdering?.samboerFra ? format(new Date(vurdering.samboerFra), DATO_FORMAT) : '',
