@@ -7,7 +7,8 @@ const DATO_PAKREVD = 'Du må skrive en dato, f.eks. på denne måten: ddmmååå
 const DATO_FREM_I_TID = 'Dato kan ikke være etter dagens dato'
 
 export const samboerVurderingSchema = z.object({
-  vurdering: z.enum(['SAMBOER_3_2', 'SAMBOER_1_5', 'IKKE_SAMBOER'], {
+  samboerFnr: z.string({ error: 'Fødselsnummer for samboer mangler' }),
+  samboerType: z.enum(['SAMBOER_3_2', 'SAMBOER_1_5', 'IKKE_SAMBOER'], {
     error: 'Du må velge et alternativ',
   }),
   samboerFra: z.string({ error: DATO_PAKREVD }).transform((value, ctx) => {
