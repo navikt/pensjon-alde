@@ -169,7 +169,7 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     aktivitetId: aktivitetId,
     behandling,
     behandlingId,
-    behandlingJobber: Boolean(behandlingJobber) || Boolean(justCompletedId),
+    behandlingJobber: !behandlingFeiler && (Boolean(behandlingJobber) || Boolean(justCompletedId)),
     behandlingFeiler,
     isOppsummering,
     isAttestering,
