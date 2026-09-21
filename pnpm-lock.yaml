@@ -10,6 +10,12 @@ importers:
 
   .:
     dependencies:
+      '@conform-to/react':
+        specifier: ^1.21.1
+        version: 1.21.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@conform-to/zod':
+        specifier: ^1.21.1
+        version: 1.21.1(zod@4.6.2)
       '@grafana/faro-web-sdk':
         specifier: ^2.11.0
         version: 2.11.0
@@ -82,6 +88,9 @@ importers:
       unleash-client:
         specifier: ^6.12.1
         version: 6.12.1(supports-color@7.2.0)
+      zod:
+        specifier: ^4.6.2
+        version: 4.6.2
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.5.13
@@ -304,6 +313,20 @@ packages:
     peerDependencies:
       react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  '@conform-to/dom@1.21.1':
+    resolution: {integrity: sha512-pYnhrJoM1xDbAx36rVxxm4643TFWwquTDoI8abtgnC40XIHDZDUhy3pIrZrv+QjwtLEgSWGP5GX/LqJ+IDfe/Q==}
+
+  '@conform-to/react@1.21.1':
+    resolution: {integrity: sha512-q0kzC5dEHL4okfmdbih95OfuelXw6xlLeN9WvtxQ7CP047D6A5lRK+0DykZZHCFP4idsQzC8NUBQd/tkKXPukg==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+
+  '@conform-to/zod@1.21.1':
+    resolution: {integrity: sha512-VqMuYoUVtZJ57P1EYD4tDuOyOaN5jiep1Ui6BRl7aP1m6tA8Do+mKioR7WXkGKULiNsjgPR7/FyWLtMUmtJNHg==}
+    peerDependencies:
+      zod: ^3.21.0 || ^4.0.0
 
   '@date-fns/tz@1.5.0':
     resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
@@ -3528,6 +3551,9 @@ packages:
     resolution: {integrity: sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==}
     engines: {node: '>=12'}
 
+  zod@4.6.2:
+    resolution: {integrity: sha512-lh5RCAGFa1Cm2hjtNwLQhSs/AsqdWnTQaBER9fEwN/88pSh7KOtJavtBx/0VlkN/uFd61SwYmljLMDAsHlvzBQ==}
+
 snapshots:
 
   '@adobe/css-tools@4.5.0': {}
@@ -3684,6 +3710,19 @@ snapshots:
       react-dom: 19.3.0(react@19.3.0)
       react-lifecycles-compat: 3.0.4
       warning: 3.0.0
+
+  '@conform-to/dom@1.21.1': {}
+
+  '@conform-to/react@1.21.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+    dependencies:
+      '@conform-to/dom': 1.21.1
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
+
+  '@conform-to/zod@1.21.1(zod@4.6.2)':
+    dependencies:
+      '@conform-to/dom': 1.21.1
+      zod: 4.6.2
 
   '@date-fns/tz@1.5.0': {}
 
@@ -6692,3 +6731,5 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
+
+  zod@4.6.2: {}

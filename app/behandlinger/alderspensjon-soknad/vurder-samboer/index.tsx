@@ -1,3 +1,6 @@
+import type { SubmissionResult } from '@conform-to/react'
+import { getFormProps, useForm } from '@conform-to/react'
+import { getZodConstraint, parseWithZod } from '@conform-to/zod/v4'
 import { PersonIcon } from '@navikt/aksel-icons'
 import {
   BodyShort,
@@ -12,8 +15,7 @@ import {
   useDatepicker,
   VStack,
 } from '@navikt/ds-react'
-import { isAfter, startOfDay } from 'date-fns'
-import { useState } from 'react'
+import { format, isValid, parse } from 'date-fns'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
@@ -22,14 +24,14 @@ import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { userContext } from '~/context/user-context'
 import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
-import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
+import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
-import { formatDateToNorwegian, parseDate } from '~/utils/date'
-import { dateInput, parseForm, radiogroup, string } from '~/utils/parse-form'
+import { formatDateToNorwegian } from '~/utils/date'
 import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
+import { DATO_FORMAT, type SamboerVurderingInput, samboerVurderingSchema } from './samboer-schema'
 import type { SamboerVurdering, VurderSamboerGrunnlag } from './samboer-types'
 
 export function meta() {
@@ -67,47 +69,21 @@ export async function action({ params, request }: Route.ActionArgs) {
   })
   const formData = await request.formData()
 
-  const parsedForm = parseForm<SamboerVurdering>(formData, {
-    samboerFra: dateInput,
-    // TODO: Rydd opp string parsing
-    begrunnelse: string,
-    vurdering: radiogroup({
-      SAMBOER_1_5: 'SAMBOER_1_5',
-      SAMBOER_3_2: 'SAMBOER_3_2',
-      IKKE_SAMBOER: 'IKKE_SAMBOER',
-    }),
-  })
+  const submission = parseWithZod(formData, { schema: samboerVurderingSchema })
 
-  const errors: FormErrors<SamboerVurdering> = {}
-
-  if (parsedForm.vurdering === null) {
-    errors.vurdering = 'Du må velge et alternativ'
-  }
-
-  if (!parsedForm.samboerFra) {
-    errors.samboerFra = 'Du må skrive en dato, f.eks. på denne måten: ddmmåååå'
-  }
-
-  if (parsedForm.samboerFra) {
-    const samboerFraDate = parseDate(parsedForm.samboerFra)
-    if (samboerFraDate && isAfter(startOfDay(samboerFraDate), startOfDay(new Date()))) {
-      errors.samboerFra = 'Dato kan ikke være etter dagens dato'
-    }
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return data({ errors }, { status: 400 })
+  if (submission.status !== 'success') {
+    return data({ result: submission.reply() }, { status: 400 })
   }
 
   try {
-    await api.lagreVurdering(parsedForm)
+    await api.lagreVurdering(submission.value)
     return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
   } catch {
     return data(
       {
-        errors: {
-          _form: 'Det oppstod en feil ved lagring av vurderingen',
-        } as FormErrors<SamboerVurdering>,
+        result: submission.reply({
+          formErrors: ['Det oppstod en feil ved lagring av vurderingen'],
+        }),
       },
       { status: 500 },
     )
@@ -116,7 +92,6 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 export default function VurderSamboerRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { samboerInformasjon, vurdering, readOnly, visNotat } = loaderData
-  const { errors } = actionData || {}
 
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
@@ -128,10 +103,14 @@ export default function VurderSamboerRoute({ loaderData, actionData }: Route.Com
       aktivitet={aktivitet}
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
-      errors={errors}
+      lastResult={actionData?.result}
       visNotat={visNotat}
     />
   )
+}
+
+type VurdereSamboerComponentProps = AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering> & {
+  lastResult?: SubmissionResult | null
 }
 
 function VurdereSamboerComponent({
@@ -140,39 +119,47 @@ function VurdereSamboerComponent({
   vurdering,
   readOnly,
   avbrytAktivitet,
-  errors,
+  lastResult,
   begrunnelse,
   visNotat,
-}: AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering>) {
-  const defaultVurdering = vurdering?.vurdering
-  const [selectedVurdering, setSelectedVurdering] = useState(defaultVurdering)
+}: VurdereSamboerComponentProps) {
   const isSubmitting = useIsSubmitting()
 
+  const [form, fields] = useForm<SamboerVurderingInput>({
+    lastResult,
+    constraint: getZodConstraint(samboerVurderingSchema),
+    shouldValidate: 'onSubmit',
+    shouldRevalidate: 'onBlur',
+    defaultValue: {
+      vurdering: vurdering?.vurdering,
+      samboerFra: vurdering?.samboerFra ? format(new Date(vurdering.samboerFra), DATO_FORMAT) : '',
+      begrunnelse: begrunnelse ?? vurdering?.begrunnelse ?? '',
+    },
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: samboerVurderingSchema })
+    },
+  })
+
+  const initialSamboerFra = parse(fields.samboerFra.initialValue ?? '', DATO_FORMAT, new Date())
+
   const { inputProps, datepickerProps } = useDatepicker({
-    defaultSelected: vurdering?.samboerFra ? new Date(vurdering.samboerFra) : undefined,
-    required: true,
+    defaultSelected: isValid(initialSamboerFra) ? initialSamboerFra : undefined,
   })
 
   const { samboer, sokersBostedsadresser, soknad, kravOnsketVirkningsdato } = grunnlag
 
   const sidebar = (
     <div>
-      <Form
-        method="post"
-        className="decision-form"
-        autoComplete="off"
-        onReset={() => setSelectedVurdering(defaultVurdering)}
-      >
+      <Form method="post" className="decision-form" autoComplete="off" {...getFormProps(form)}>
         <div className="samboer-assessment">
           <VStack gap="space-24">
             <RadioGroup
               legend="Vurder samboerskap"
-              name="vurdering"
-              value={selectedVurdering}
+              name={fields.vurdering.name}
+              defaultValue={fields.vurdering.initialValue}
               readOnly={readOnly}
               size="small"
-              error={errors?.vurdering}
-              onChange={setSelectedVurdering}
+              error={fields.vurdering.errors?.[0]}
             >
               <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
               <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
@@ -185,23 +172,23 @@ function VurdereSamboerComponent({
                 size="small"
                 readOnly={readOnly}
                 label="Fra og med"
-                name="samboerFra"
-                error={errors?.samboerFra}
+                name={fields.samboerFra.name}
+                error={fields.samboerFra.errors?.[0]}
               />
             </DatePicker>
 
-            {selectedVurdering === 'IKKE_SAMBOER' && (
+            {fields.vurdering.value === 'IKKE_SAMBOER' && (
               <InlineMessage status="info" size="small">
                 Ved innvilgelse: Vedtaksbrevet opplyser at søker regnes som enslig og får nytt vedtak etter 12 måneder
                 som samboer.
               </InlineMessage>
             )}
 
-            {visNotat && <BegrunnelseField readOnly={readOnly} defaultValue={begrunnelse} />}
+            {visNotat && <BegrunnelseField readOnly={readOnly} defaultValue={fields.begrunnelse.initialValue} />}
 
-            {errors?._form && (
+            {form.errors?.[0] && (
               <InlineMessage status="error" className="mb-4">
-                {errors._form}
+                {form.errors[0]}
               </InlineMessage>
             )}
 
