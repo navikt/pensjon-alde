@@ -32,7 +32,8 @@ import type { Route } from './+types'
 import AddressBlock from './AddressBlock/AddressBlock'
 import AddressWrapper from './AddressWrapper/AddressWrapper'
 import { DATO_FORMAT, type SamboerVurderingInput, samboerVurderingSchema } from './samboer-schema'
-import type { SamboerVurdering, VurderSamboerGrunnlag } from './samboer-types'
+import type { SamboerVurderingRespons, VurderSamboerGrunnlag } from './samboer-types'
+import { normaliserSamboerVurdering, tilSamboerVurderingPayload } from './samboer-vurdering'
 
 export function meta() {
   return [{ title: `Samboervurdering` }, { name: 'description', content: 'Samboervurdering' }]
@@ -48,7 +49,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   })
 
   const grunnlag = await api.hentGrunnlagsdata<VurderSamboerGrunnlag>()
-  const vurdering = await api.hentVurdering<SamboerVurdering>()
+  const vurdering = await api.hentVurdering<SamboerVurderingRespons>()
 
   const { enhet } = context.get(userContext)
   const visNotat = isFeatureEnabled(Features.NOTAT, { enhet: enhet })
@@ -76,7 +77,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   try {
-    await api.lagreVurdering(submission.value)
+    await api.lagreVurdering(tilSamboerVurderingPayload(submission.value))
     return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
   } catch {
     return data(
@@ -109,7 +110,7 @@ export default function VurderSamboerRoute({ loaderData, actionData }: Route.Com
   )
 }
 
-type VurdereSamboerComponentProps = AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurdering> & {
+type VurdereSamboerComponentProps = AktivitetComponentProps<VurderSamboerGrunnlag, SamboerVurderingRespons> & {
   lastResult?: SubmissionResult | null
 }
 
@@ -125,15 +126,22 @@ function VurdereSamboerComponent({
 }: VurdereSamboerComponentProps) {
   const isSubmitting = useIsSubmitting()
 
+  const { samboer, sokersBostedsadresser, soknad, kravOnsketVirkningsdato } = grunnlag
+
+  const normalisertVurdering = normaliserSamboerVurdering(vurdering)
+
   const [form, fields] = useForm<SamboerVurderingInput>({
     lastResult,
     constraint: getZodConstraint(samboerVurderingSchema),
     shouldValidate: 'onSubmit',
     shouldRevalidate: 'onBlur',
     defaultValue: {
-      vurdering: vurdering?.vurdering,
-      samboerFra: vurdering?.samboerFra ? format(new Date(vurdering.samboerFra), DATO_FORMAT) : '',
-      begrunnelse: begrunnelse ?? vurdering?.begrunnelse ?? '',
+      samboerFnr: samboer.fnr,
+      samboerType: normalisertVurdering?.samboerType,
+      samboerFra: normalisertVurdering?.samboerFra
+        ? format(new Date(normalisertVurdering.samboerFra), DATO_FORMAT)
+        : '',
+      begrunnelse: begrunnelse ?? normalisertVurdering?.begrunnelse ?? '',
     },
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: samboerVurderingSchema })
@@ -146,20 +154,21 @@ function VurdereSamboerComponent({
     defaultSelected: isValid(initialSamboerFra) ? initialSamboerFra : undefined,
   })
 
-  const { samboer, sokersBostedsadresser, soknad, kravOnsketVirkningsdato } = grunnlag
+  const skjulteFeil = [...(form.errors ?? []), ...(fields.samboerFnr.errors ?? [])]
 
   const sidebar = (
     <div>
       <Form method="post" className="decision-form" autoComplete="off" {...getFormProps(form)}>
         <div className="samboer-assessment">
           <VStack gap="space-24">
+            <input type="hidden" name={fields.samboerFnr.name} defaultValue={fields.samboerFnr.initialValue} />
             <RadioGroup
               legend="Vurder samboerskap"
-              name={fields.vurdering.name}
-              defaultValue={fields.vurdering.initialValue}
+              name={fields.samboerType.name}
+              defaultValue={fields.samboerType.initialValue}
               readOnly={readOnly}
               size="small"
-              error={fields.vurdering.errors?.[0]}
+              error={fields.samboerType.errors?.[0]}
             >
               <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
               <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
@@ -177,7 +186,7 @@ function VurdereSamboerComponent({
               />
             </DatePicker>
 
-            {fields.vurdering.value === 'IKKE_SAMBOER' && (
+            {fields.samboerType.value === 'IKKE_SAMBOER' && (
               <InlineMessage status="info" size="small">
                 Ved innvilgelse: Vedtaksbrevet opplyser at søker regnes som enslig og får nytt vedtak etter 12 måneder
                 som samboer.
@@ -186,9 +195,9 @@ function VurdereSamboerComponent({
 
             {visNotat && <BegrunnelseField readOnly={readOnly} defaultValue={fields.begrunnelse.initialValue} />}
 
-            {form.errors?.[0] && (
+            {skjulteFeil.length > 0 && (
               <InlineMessage status="error" className="mb-4">
-                {form.errors[0]}
+                {skjulteFeil[0]}
               </InlineMessage>
             )}
 

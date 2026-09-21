@@ -74,7 +74,27 @@ export type SamboerInformasjon = {
   tidligereEktefelle: boolean
 }
 
+export type SamboerType = 'SAMBOER_1_5' | 'SAMBOER_3_2' | 'IKKE_SAMBOER'
+
 export interface SamboerVurdering extends VurderingBase {
+  samboerFnr: string
   samboerFra: string
-  vurdering: 'SAMBOER_1_5' | 'SAMBOER_3_2' | 'IKKE_SAMBOER'
+  samboerType: SamboerType
+}
+
+export type SamboerVurderingRespons = VurderingBase & {
+  samboerFnr?: string
+  samboerFra?: string
+  samboerType?: SamboerType
+  vurdering?: SamboerType
+}
+
+export type NormalisertSamboerVurdering = VurderingBase & {
+  samboerFnr?: string
+  samboerFra?: string
+  samboerType?: SamboerType
+}
+
+export type SamboerVurderingPayload = SamboerVurdering & {
+  vurdering: SamboerType
 }
