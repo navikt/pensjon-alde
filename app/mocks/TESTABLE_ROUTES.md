@@ -10,14 +10,20 @@ Start the mock server with `pnpm dev:mock`.
 | [/behandling/1000002/aktivitet/7020942/alderspensjon-soknad/kontroller-inntektsopplysninger-for-eps](http://localhost:3001/behandling/1000002/aktivitet/7020942/alderspensjon-soknad/kontroller-inntektsopplysninger-for-eps) | 1000002 | Aktiv aktivitet |
 | [/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering](http://localhost:3001/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering) | 3000001 | Aktiv aktivitet |
 | [/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig](http://localhost:3001/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig) | 3000002 | Aktiv aktivitet |
-| [/behandling/5000001/aktivitet/5020001/oppdater-opptjeningsgrunnlag/oppdater-grunnlag](http://localhost:3001/behandling/5000001/aktivitet/5020001/oppdater-opptjeningsgrunnlag/oppdater-grunnlag) | 5000001 | Aktiv aktivitet |
+| [/behandling/7000101/aktivitet/7010101/oppdater-opptjening-inntekt/oppdater-grunnlag](http://localhost:3001/behandling/7000101/aktivitet/7010101/oppdater-opptjening-inntekt/oppdater-grunnlag) | 7000101 | Aktiv aktivitet |
+| [/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-grunnlag](http://localhost:3001/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-grunnlag) | 7000201 | Aktiv aktivitet |
+| [/behandling/7000301/aktivitet/7010301/oppdater-opptjening-dagpenger/oppdater-grunnlag](http://localhost:3001/behandling/7000301/aktivitet/7010301/oppdater-opptjening-dagpenger/oppdater-grunnlag) | 7000301 | Aktiv aktivitet |
+| [/behandling/7000401/aktivitet/7010401/oppdater-opptjening-forstegangstjeneste/oppdater-grunnlag](http://localhost:3001/behandling/7000401/aktivitet/7010401/oppdater-opptjening-forstegangstjeneste/oppdater-grunnlag) | 7000401 | Aktiv aktivitet |
 
 ## Attestering
 
 | Route | Behandling | `aldeBehandlingStatus` |
 | ------- | ------------ | ------------------------ |
 | [/behandling/6359437](http://localhost:3001/behandling/6359437) | 6359437 | VENTER_ATTESTERING |
-| [/behandling/5000002/attestering](http://localhost:3001/behandling/5000002/attestering) | 5000002 | VENTER_ATTESTERING |
+| [/behandling/7000102/attestering](http://localhost:3001/behandling/7000102/attestering) | 7000102 | VENTER_ATTESTERING |
+| [/behandling/7000202/attestering](http://localhost:3001/behandling/7000202/attestering) | 7000202 | VENTER_ATTESTERING |
+| [/behandling/7000302/attestering](http://localhost:3001/behandling/7000302/attestering) | 7000302 | VENTER_ATTESTERING |
+| [/behandling/7000402/attestering](http://localhost:3001/behandling/7000402/attestering) | 7000402 | VENTER_ATTESTERING |
 
 ## Statussider
 
@@ -42,9 +48,16 @@ Start the mock server with `pnpm dev:mock`.
 | `behandling-2000004.json` | 2000004 | FULLFORT |
 | `behandling-3000001.json` | 3000001 | UNDER_BEHANDLING |
 | `behandling-3000002.json` | 3000002 | UNDER_BEHANDLING |
-| `behandling-5000001.json` | 5000001 | VENTER_SAKSBEHANDLER |
-| `behandling-5000002.json` | 5000002 | VENTER_ATTESTERING |
+| `behandling-5000001.json` | 5000001 | VENTER_MASKINELL |
 | `behandling-6359437.json` | 6359437 | VENTER_ATTESTERING |
+| `behandling-7000101.json` | 7000101 | VENTER_SAKSBEHANDLER (inntekt) |
+| `behandling-7000102.json` | 7000102 | VENTER_ATTESTERING (inntekt) |
+| `behandling-7000201.json` | 7000201 | VENTER_SAKSBEHANDLER (omsorg) |
+| `behandling-7000202.json` | 7000202 | VENTER_ATTESTERING (omsorg) |
+| `behandling-7000301.json` | 7000301 | VENTER_SAKSBEHANDLER (dagpenger) |
+| `behandling-7000302.json` | 7000302 | VENTER_ATTESTERING (dagpenger) |
+| `behandling-7000401.json` | 7000401 | VENTER_SAKSBEHANDLER (førstegangstjeneste) |
+| `behandling-7000402.json` | 7000402 | VENTER_ATTESTERING (førstegangstjeneste) |
 
 ## Attesteringsdata
 

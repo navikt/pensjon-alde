@@ -1,9 +1,9 @@
 {
-  "behandlingId": 5000002,
-  "type": "OppdaterOpptjeningsgrunnlagBehandling",
-  "handlerName": "oppdater-opptjeningsgrunnlag",
-  "friendlyName": "Oppdater opptjeningsgrunnlag",
-  "processName": "Oppdater opptjeningsgrunnlag",
+  "behandlingId": 7000102,
+  "type": "OppdaterOpptjeningInntektBehandling",
+  "handlerName": "oppdater-opptjening-inntekt",
+  "friendlyName": "Oppdater inntekter",
+  "processName": "Oppdater inntekter",
   "aldeBehandlingStatus": "VENTER_ATTESTERING",
   "sisteKjoring": null,
   "sisteKjoringDato": "2025-04-02T09:00:00.000000",
@@ -13,8 +13,8 @@
   "status": "TIL_ATTESTERING",
   "aktiviteter": [
     {
-      "aktivitetId": 5020002,
-      "type": "A100OppdaterOpptjeningsgrunnlagAktivitet",
+      "aktivitetId": 7010102,
+      "type": "A100OppdaterOpptjeningInntektAktivitet",
       "handlerName": "oppdater-grunnlag",
       "friendlyName": "Oppdater grunnlag",
       "opprettet": "2025-04-01T08:50:00.000000",
@@ -24,7 +24,7 @@
       "utsattTil": null
     },
     {
-      "aktivitetId": 5020003,
+      "aktivitetId": 7010103,
       "type": "A300AttesteringAktivitet",
       "handlerName": "attestering",
       "friendlyName": "Attestering",

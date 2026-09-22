@@ -1,5 +1,5 @@
 import { VStack } from '@navikt/ds-react'
-import type { EndringSummary } from './oppdater-grunnlag/oppdater-grunnlag.utils'
+import type { EndringSummary } from './opptjening.utils'
 
 interface EndringsOppsummeringProps {
   summary: EndringSummary

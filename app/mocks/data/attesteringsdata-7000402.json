@@ -1,0 +1,58 @@
+{
+  "aktiviter": [
+    {
+      "aktivitetId": 7010402,
+      "vurdertTidspunkt": "2025-04-02T08:30:00.000000",
+      "vurdertAvBrukerId": "A123456",
+      "vurdertAvBrukerNavn": "Siri Saksbehandler",
+      "grunnlag": {
+        "kanOppretteGenerellSak": true,
+        "opptjeningsGrunnlagDto": {
+          "fnr": "12345678901",
+          "inntektListe": [],
+          "dagpengerListe": [],
+          "omsorgListe": [],
+          "forstegangstjeneste": {
+            "forstegangstjenesteId": 502060001,
+            "kilde": "PEN",
+            "tjenestestartDato": "2012-01-15",
+            "dimitteringDato": "2012-12-31",
+            "forstegangstjenestePeriodeListe": [
+              {
+                "forstegangstjenestePeriodeId": 1,
+                "periodeType": "NORMAL",
+                "tjenesteType": "MIL",
+                "fomDato": "2012-01-15",
+                "tomDato": "2012-12-31"
+              }
+            ]
+          }
+        }
+      },
+      "vurdering": {
+        "sakId": 23077283,
+        "fnr": "12345678901",
+        "forstegangstjenesteEndringer": [
+          {
+            "endringstype": "OPPDATER",
+            "forstegangstjeneste": {
+              "forstegangstjenesteId": 502060001,
+              "kilde": "PEN",
+              "tjenestestartDato": "2012-02-01",
+              "dimitteringDato": "2012-12-31",
+              "forstegangstjenestePeriodeListe": [
+                {
+                  "forstegangstjenestePeriodeId": null,
+                  "periodeType": "NORMAL",
+                  "tjenesteType": "MIL",
+                  "fomDato": "2012-02-01",
+                  "tomDato": "2012-12-31"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

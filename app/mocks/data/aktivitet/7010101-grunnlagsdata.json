@@ -1,0 +1,39 @@
+{
+  "kanOppretteGenerellSak": true,
+  "saker": [
+    { "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" },
+    { "sakId": 23077284, "sakType": "UFOREP", "sakStatus": "OPPRETTET" }
+  ],
+  "opptjeningsGrunnlagDto": {
+    "fnr": "12345678901",
+    "dagpengerListe": [],
+    "omsorgListe": [],
+    "forstegangstjeneste": null,
+    "inntektListe": [
+      {
+        "inntektId": 502057001,
+        "kilde": "PEN",
+        "kommune": "0301",
+        "inntektAr": 2020,
+        "belop": "480000",
+        "inntektType": "INN_LON"
+      },
+      {
+        "inntektId": 502057002,
+        "kilde": "PEN",
+        "kommune": "0301",
+        "inntektAr": 2021,
+        "belop": "512000",
+        "inntektType": "INN_LON"
+      },
+      {
+        "inntektId": 502057003,
+        "kilde": "SKD",
+        "kommune": "0301",
+        "inntektAr": 2022,
+        "belop": "534500",
+        "inntektType": "FL_PGI_LOENN"
+      }
+    ]
+  }
+}

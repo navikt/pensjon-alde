@@ -6,7 +6,7 @@ import { CopyableValue } from '~/components/shared/CopyableValue'
 import { AldeBehandlingStatus, type BehandlingDTO } from '~/types/behandling'
 import { formatCurrencyNok } from '~/utils/currency'
 import { EndringsOppsummering } from './EndringsOppsummering'
-import { endringSummaryFraVurdering } from './oppdater-grunnlag/oppdater-grunnlag.utils'
+import { endringSummaryFraVurdering } from './opptjening.utils'
 import type {
   DagpengerBackendDTO,
   Endringstype,
@@ -16,7 +16,7 @@ import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
-} from './oppdater-grunnlag/oppdater-grunnlag-types'
+} from './opptjening-types'
 import { typeLabel } from './opptjeningstyper.utils'
 
 export function EndringstypeTag({ endringstype }: { endringstype: Endringstype }) {

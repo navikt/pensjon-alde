@@ -1,0 +1,35 @@
+{
+  "kanOppretteGenerellSak": true,
+  "saker": [
+    { "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" },
+    { "sakId": 23077284, "sakType": "UFOREP", "sakStatus": "OPPRETTET" }
+  ],
+  "opptjeningsGrunnlagDto": {
+    "fnr": "12345678901",
+    "inntektListe": [],
+    "omsorgListe": [],
+    "forstegangstjeneste": null,
+    "dagpengerListe": [
+      {
+        "dagpengerId": 502058001,
+        "kilde": "PEN",
+        "ar": 2019,
+        "dagpengerType": "DP",
+        "uavkortetDagpengegrunnlag": 350000,
+        "utbetalteDagpenger": 185000,
+        "ferietillegg": 12000,
+        "barnetillegg": 0
+      },
+      {
+        "dagpengerId": 502058002,
+        "kilde": "PEN",
+        "ar": 2020,
+        "dagpengerType": "DP_FF",
+        "uavkortetDagpengegrunnlag": null,
+        "utbetalteDagpenger": 94000,
+        "ferietillegg": null,
+        "barnetillegg": 4500
+      }
+    ]
+  }
+}

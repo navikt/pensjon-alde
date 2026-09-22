@@ -1,0 +1,46 @@
+{
+  "aktiviter": [
+    {
+      "aktivitetId": 7010202,
+      "vurdertTidspunkt": "2025-04-02T08:30:00.000000",
+      "vurdertAvBrukerId": "A123456",
+      "vurdertAvBrukerNavn": "Siri Saksbehandler",
+      "grunnlag": {
+        "kanOppretteGenerellSak": true,
+        "opptjeningsGrunnlagDto": {
+          "fnr": "12345678901",
+          "inntektListe": [],
+          "dagpengerListe": [],
+          "forstegangstjeneste": null,
+          "omsorgListe": [
+            {
+              "omsorgId": 502059001,
+              "kilde": "PEN",
+              "ar": 2010,
+              "omsorgType": "OBU6",
+              "fnrOmsorgFor": "01011012345"
+            }
+          ]
+        }
+      },
+      "vurdering": {
+        "sakId": 23077283,
+        "fnr": "12345678901",
+        "omsorgEndringer": [
+          {
+            "endringstype": "SLETT",
+            "omsorgListe": [
+              {
+                "omsorgId": 502059001,
+                "kilde": "PEN",
+                "ar": 2010,
+                "omsorgType": "OBU6",
+                "fnrOmsorgFor": "01011012345"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

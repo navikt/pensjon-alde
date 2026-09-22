@@ -1,7 +1,7 @@
 {
   "aktiviter": [
     {
-      "aktivitetId": 5020002,
+      "aktivitetId": 7010102,
       "vurdertTidspunkt": "2025-04-02T08:30:00.000000",
       "vurdertAvBrukerId": "A123456",
       "vurdertAvBrukerNavn": "Siri Saksbehandler",
@@ -9,6 +9,9 @@
         "kanOppretteGenerellSak": true,
         "opptjeningsGrunnlagDto": {
           "fnr": "12345678901",
+          "dagpengerListe": [],
+          "omsorgListe": [],
+          "forstegangstjeneste": null,
           "inntektListe": [
             {
               "inntektId": 502057001,
@@ -18,18 +21,7 @@
               "belop": "480000",
               "inntektType": "INN_LON"
             }
-          ],
-          "dagpengerListe": [],
-          "omsorgListe": [
-            {
-              "omsorgId": 502059001,
-              "kilde": "PEN",
-              "ar": 2010,
-              "omsorgType": "OBU6",
-              "fnrOmsorgFor": "01011012345"
-            }
-          ],
-          "forstegangstjeneste": null
+          ]
         }
       },
       "vurdering": {
@@ -62,23 +54,7 @@
               }
             ]
           }
-        ],
-        "dagpengerEndringer": [],
-        "omsorgEndringer": [
-          {
-            "endringstype": "SLETT",
-            "omsorgListe": [
-              {
-                "omsorgId": 502059001,
-                "kilde": "PEN",
-                "ar": 2010,
-                "omsorgType": "OBU6",
-                "fnrOmsorgFor": "01011012345"
-              }
-            ]
-          }
-        ],
-        "forstegangstjenesteEndringer": []
+        ]
       }
     }
   ]

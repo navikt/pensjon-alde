@@ -1,0 +1,67 @@
+{
+  "aktiviter": [
+    {
+      "aktivitetId": 7010302,
+      "vurdertTidspunkt": "2025-04-02T08:30:00.000000",
+      "vurdertAvBrukerId": "A123456",
+      "vurdertAvBrukerNavn": "Siri Saksbehandler",
+      "grunnlag": {
+        "kanOppretteGenerellSak": true,
+        "opptjeningsGrunnlagDto": {
+          "fnr": "12345678901",
+          "inntektListe": [],
+          "omsorgListe": [],
+          "forstegangstjeneste": null,
+          "dagpengerListe": [
+            {
+              "dagpengerId": 502058001,
+              "kilde": "PEN",
+              "ar": 2019,
+              "dagpengerType": "DP",
+              "uavkortetDagpengegrunnlag": 350000,
+              "utbetalteDagpenger": 185000,
+              "ferietillegg": 12000,
+              "barnetillegg": 0
+            }
+          ]
+        }
+      },
+      "vurdering": {
+        "sakId": 23077283,
+        "fnr": "12345678901",
+        "dagpengerEndringer": [
+          {
+            "endringstype": "OPPDATER",
+            "dagpengerListe": [
+              {
+                "dagpengerId": 502058001,
+                "kilde": "PEN",
+                "ar": 2019,
+                "dagpengerType": "DP",
+                "uavkortetDagpengegrunnlag": 350000,
+                "utbetalteDagpenger": 192000,
+                "ferietillegg": 12000,
+                "barnetillegg": 0
+              }
+            ]
+          },
+          {
+            "endringstype": "OPPRETT",
+            "dagpengerListe": [
+              {
+                "dagpengerId": null,
+                "kilde": null,
+                "ar": 2020,
+                "dagpengerType": "DP_FF",
+                "uavkortetDagpengegrunnlag": null,
+                "utbetalteDagpenger": 94000,
+                "ferietillegg": null,
+                "barnetillegg": 4500
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

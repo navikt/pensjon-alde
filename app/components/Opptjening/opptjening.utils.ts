@@ -1,5 +1,4 @@
 import { formatCurrencyNok } from '~/utils/currency'
-import { typeLabel } from '../opptjeningstyper.utils'
 import type {
   DagpengerBackendDTO,
   DagpengerDTO,
@@ -13,9 +12,12 @@ import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
-} from './oppdater-grunnlag-types'
+} from './opptjening-types'
+import { typeLabel } from './opptjeningstyper.utils'
 
 const KILDE = 'PEN'
+
+export const FORSTEGANGSTJENESTE_TIDLIGSTE_DATO = '2010-01-01'
 
 export const REQUIRED_KOMMUNE: Partial<Record<string, string>> = {
   DIP_JSF: '0301',
@@ -84,6 +86,7 @@ export const DAGPENGER_FELTER: (keyof DagpengerDTO)[] = [
   'ferietillegg',
   'barnetillegg',
 ]
+export const OMSORG_FELTER: (keyof OmsorgDTO)[] = ['omsorgType', 'ar', 'fnrOmsorgFor']
 export const FORSTEGANGSTJENESTE_FELTER: (keyof ForstegangstjenesteDTO)[] = [
   'tjenesteType',
   'periodeType',
@@ -138,6 +141,84 @@ export function nyForstegangstjenesteLinje(): ForstegangstjenesteLinjeState {
     fomDato: '',
     tomDato: '',
   }
+}
+
+export function endreInntektFelt(linje: InntektLinjeState, felt: keyof InntektDTO, verdi: string): InntektLinjeState {
+  if (felt === 'inntektAr') {
+    const n = Number(verdi.replace(/\D/g, ''))
+    return { ...linje, inntektAr: n || linje.inntektAr }
+  }
+  if (felt === 'belop') {
+    const clean = verdi.replace(/\D/g, '')
+    return { ...linje, belop: clean ? Number(clean) : null }
+  }
+  if (felt === 'inntektType') {
+    const requiredKommune = REQUIRED_KOMMUNE[verdi]
+    return { ...linje, inntektType: verdi, ...(requiredKommune !== undefined ? { kommune: requiredKommune } : {}) }
+  }
+  return { ...linje, [felt]: verdi || null }
+}
+
+const DAGPENGER_NUMERISKE_FELTER: (keyof DagpengerDTO)[] = [
+  'uavkortetDagpengegrunnlag',
+  'utbetalteDagpenger',
+  'ferietillegg',
+  'barnetillegg',
+]
+
+export function endreDagpengerFelt(
+  linje: DagpengerLinjeState,
+  felt: keyof DagpengerDTO,
+  verdi: string,
+): DagpengerLinjeState {
+  if (felt === 'dagpengerType') {
+    // Tilbake til opprinnelig type gjenoppretter feltene som ble nullet for ferietillegg-typen.
+    if (linje._original && verdi === linje._original.dagpengerType) {
+      return { ...linje, ...linje._original, _id: linje._id, _status: linje._status, _original: linje._original }
+    }
+    return { ...linje, dagpengerType: verdi }
+  }
+  if (felt === 'ar') {
+    const n = Number(verdi.replace(/\D/g, ''))
+    return { ...linje, ar: n || linje.ar }
+  }
+  if (DAGPENGER_NUMERISKE_FELTER.includes(felt)) {
+    const clean = verdi.replace(/\D/g, '')
+    return { ...linje, [felt]: clean ? Number(clean) : null }
+  }
+  return { ...linje, [felt]: verdi || null }
+}
+
+export function endreForstegangstjenesteFelt(
+  linje: ForstegangstjenesteLinjeState,
+  felt: keyof ForstegangstjenesteDTO,
+  verdi: string,
+): ForstegangstjenesteLinjeState {
+  const feltVerdi = felt === 'periodeType' ? verdi || null : verdi
+  return { ...linje, [felt]: feltVerdi }
+}
+
+export function finnInntektKommuneFeil(linjer: InntektLinjeState[]): Record<string, string> {
+  const feil: Record<string, string> = {}
+  for (const linje of linjer) {
+    if (linje._status === 'deleted') continue
+    const required = REQUIRED_KOMMUNE[linje.inntektType]
+    if (required && linje.kommune?.trim() !== required) {
+      feil[linje._id] = `Skattekommune for denne inntektstypen må være ${required}`
+    }
+  }
+  return feil
+}
+
+export function finnForstegangstjenesteFomFeil(linjer: ForstegangstjenesteLinjeState[]): Record<string, string> {
+  const feil: Record<string, string> = {}
+  for (const linje of linjer) {
+    if (linje._status === 'deleted') continue
+    if (linje.fomDato && linje.fomDato < FORSTEGANGSTJENESTE_TIDLIGSTE_DATO) {
+      feil[linje._id] = 'Tjenestestartdato kan ikke være før 01.01.2010'
+    }
+  }
+  return feil
 }
 
 export function oversettKoderIMelding(melding: string, opptjeningstyper: OpptjeningstyperResponse): string {
@@ -311,31 +392,33 @@ export function oppsummeringForKategori<T extends { _id: string; _status: LinjeS
       }))
 }
 
+export type OpptjeningLinjer = {
+  inntekt?: InntektLinjeState[]
+  dagpenger?: DagpengerLinjeState[]
+  omsorg?: OmsorgLinjeState[]
+  forstegangstjeneste?: ForstegangstjenesteLinjeState[]
+}
+
 export function byggEndringSummary(
-  linjer: {
-    inntekt: InntektLinjeState[]
-    dagpenger: DagpengerLinjeState[]
-    omsorg: OmsorgLinjeState[]
-    forstegangstjeneste: ForstegangstjenesteLinjeState[]
-  },
+  linjer: OpptjeningLinjer,
   opptjeningstyper: OpptjeningstyperResponse,
 ): EndringSummary {
   // Omsorgslinjer kan kun slettes, derfor ingen kortLabel/endringer.
   const kategorier = [
-    oppsummeringForKategori('Inntekt', linjer.inntekt, {
+    oppsummeringForKategori('Inntekt', linjer.inntekt ?? [], {
       label: l => inntektLabel(l, opptjeningstyper),
       kortLabel: l => inntektKortLabel(l, opptjeningstyper),
       endringer: l => inntektEndringer(l, opptjeningstyper),
     }),
-    oppsummeringForKategori('Dagpenger', linjer.dagpenger, {
+    oppsummeringForKategori('Dagpenger', linjer.dagpenger ?? [], {
       label: l => dagpengerLabel(l, opptjeningstyper),
       kortLabel: l => dagpengerKortLabel(l, opptjeningstyper),
       endringer: l => dagpengerEndringer(l, opptjeningstyper),
     }),
-    oppsummeringForKategori('Omsorg', linjer.omsorg, {
+    oppsummeringForKategori('Omsorg', linjer.omsorg ?? [], {
       label: l => omsorgLabel(l, opptjeningstyper),
     }),
-    oppsummeringForKategori('Førstegangstjeneste', linjer.forstegangstjeneste, {
+    oppsummeringForKategori('Førstegangstjeneste', linjer.forstegangstjeneste ?? [], {
       label: l => forstegangstjenesteLabel(l, opptjeningstyper),
       kortLabel: l => forstegangstjenesteKortLabel(l, opptjeningstyper),
       endringer: l => forstegangstjenesteEndringer(l, opptjeningstyper),
@@ -347,6 +430,10 @@ export function byggEndringSummary(
     endrede: kategorier.flatMap(oppsummer => oppsummer('modified')),
     slettede: kategorier.flatMap(oppsummer => oppsummer('deleted')),
   }
+}
+
+export function harEndringer(summary: EndringSummary): boolean {
+  return summary.nye.length + summary.endrede.length + summary.slettede.length > 0
 }
 
 const STATUS_FRA_ENDRINGSTYPE: Record<Endringstype, LinjeStatus> = {
@@ -490,6 +577,126 @@ export function toForstegangstjenesteBackend(
         tomDato: l.tomDato || null,
       },
     ],
+  }
+}
+
+function grupperPaStatus<T extends { _status: LinjeStatus }>(linjer: T[]) {
+  return {
+    nye: linjer.filter(l => l._status === 'new'),
+    endrede: linjer.filter(l => l._status === 'modified'),
+    slettede: linjer.filter(l => l._status === 'deleted'),
+  }
+}
+
+export function byggInntektPayload(linjer: InntektLinjeState[], fnr: string): OppdaterOpptjeningVurdering {
+  const { nye, endrede, slettede } = grupperPaStatus(linjer)
+  return {
+    fnr,
+    inntektEndringer: [
+      ...(nye.length > 0
+        ? [{ endringstype: 'OPPRETT' as const, inntektListe: nye.map(l => toInntektBackend(l, fnr)) }]
+        : []),
+      ...(endrede.length > 0
+        ? [{ endringstype: 'OPPDATER' as const, inntektListe: endrede.map(l => toInntektBackend(l, fnr)) }]
+        : []),
+      ...(slettede.length > 0
+        ? [{ endringstype: 'SLETT' as const, inntektListe: slettede.map(l => toInntektBackend(l, fnr)) }]
+        : []),
+    ],
+  }
+}
+
+export function byggDagpengerPayload(linjer: DagpengerLinjeState[], fnr: string): OppdaterOpptjeningVurdering {
+  const { nye, endrede, slettede } = grupperPaStatus(linjer)
+  return {
+    fnr,
+    dagpengerEndringer: [
+      ...(nye.length > 0
+        ? [{ endringstype: 'OPPRETT' as const, dagpengerListe: nye.map(l => toDagpengerBackend(l, fnr)) }]
+        : []),
+      ...(endrede.length > 0
+        ? [{ endringstype: 'OPPDATER' as const, dagpengerListe: endrede.map(l => toDagpengerBackend(l, fnr)) }]
+        : []),
+      ...(slettede.length > 0
+        ? [{ endringstype: 'SLETT' as const, dagpengerListe: slettede.map(l => toDagpengerBackend(l, fnr)) }]
+        : []),
+    ],
+  }
+}
+
+export function byggOmsorgPayload(linjer: OmsorgLinjeState[], fnr: string): OppdaterOpptjeningVurdering {
+  const { slettede } = grupperPaStatus(linjer)
+  return {
+    fnr,
+    omsorgEndringer: [
+      ...(slettede.length > 0
+        ? [{ endringstype: 'SLETT' as const, omsorgListe: slettede.map(l => toOmsorgBackend(l, fnr)) }]
+        : []),
+    ],
+  }
+}
+
+export function byggForstegangstjenestePayload(
+  linjer: ForstegangstjenesteLinjeState[],
+  fnr: string,
+): OppdaterOpptjeningVurdering {
+  const { nye, endrede, slettede } = grupperPaStatus(linjer)
+  return {
+    fnr,
+    forstegangstjenesteEndringer: [
+      ...nye.map(l => ({
+        endringstype: 'OPPRETT' as const,
+        forstegangstjeneste: toForstegangstjenesteBackend(l, fnr),
+      })),
+      ...endrede.map(l => ({
+        endringstype: 'OPPDATER' as const,
+        forstegangstjeneste: toForstegangstjenesteBackend(l, fnr),
+      })),
+      ...slettede.map(l => ({
+        endringstype: 'SLETT' as const,
+        forstegangstjeneste: toForstegangstjenesteBackend(l, fnr),
+      })),
+    ],
+  }
+}
+
+export function validerInntektPayload(payload: OppdaterOpptjeningVurdering): string[] {
+  const feil: string[] = []
+  const inntekter = (payload.inntektEndringer ?? [])
+    .filter(e => e.endringstype !== 'SLETT')
+    .flatMap(e => e.inntektListe)
+  for (const inntekt of inntekter) {
+    const required = REQUIRED_KOMMUNE[inntekt.inntektType]
+    if (required && inntekt.kommune?.trim() !== required) {
+      feil.push(`Skattekommune for ${inntekt.inntektType} må være ${required}`)
+    }
+  }
+  return feil
+}
+
+export function validerForstegangstjenestePayload(payload: OppdaterOpptjeningVurdering): string[] {
+  const feil: string[] = []
+  const tjenester = (payload.forstegangstjenesteEndringer ?? [])
+    .filter(e => e.endringstype !== 'SLETT')
+    .map(e => e.forstegangstjeneste)
+  for (const ft of tjenester) {
+    if (ft.tjenestestartDato && ft.tjenestestartDato < FORSTEGANGSTJENESTE_TIDLIGSTE_DATO) {
+      feil.push('Tjenestestartdato for førstegangstjeneste kan ikke være før 01.01.2010')
+    }
+  }
+  return feil
+}
+
+/** Ferietillegg-linjer (DP_FF) har ikke grunnlag eller ferietillegg, POPP avviser verdier her. */
+export function normaliserDagpengerPayload(payload: OppdaterOpptjeningVurdering): OppdaterOpptjeningVurdering {
+  return {
+    ...payload,
+    dagpengerEndringer: (payload.dagpengerEndringer ?? []).map(e => ({
+      ...e,
+      dagpengerListe: e.dagpengerListe.map(d =>
+        d.dagpengerType === 'DP_FF' ? { ...d, uavkortetDagpengegrunnlag: null, ferietillegg: null } : d,
+      ),
+    })),
   }
 }
 
