@@ -69,7 +69,6 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
     aktiviteter: parsedData,
     psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
     behandlingErFullført: behandling.status === BehandlingStatus.FULLFORT,
-    behandlingFeilende: behandling.status === BehandlingStatus.FEILENDE,
   }
 }
 

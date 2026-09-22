@@ -1,11 +1,10 @@
 import { CheckmarkCircleIcon } from '@navikt/aksel-icons'
 import { Heading, HStack, Link, Loader, Page, VStack } from '@navikt/ds-react'
 import { useEffect } from 'react'
-import { redirect, useFetcher, useOutletContext, useRevalidator } from 'react-router'
+import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
-import FeilendeBehandling from '~/components/FeilendeBehandling'
-import { AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
+import { AldeBehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { env } from '~/utils/env.server'
 import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
@@ -25,7 +24,6 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
     return {
       behandlingId,
       behandling,
-      dato: Date.now(),
       psakOppgaveoversikt: buildUrl(psakOppgaveoversikt, request, {}),
       psakPensjonsoversikt: buildPsakOversiktUrl(request, behandling),
       status: behandling.aldeBehandlingStatus,
@@ -42,14 +40,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
-  const { behandling, dato, psakOppgaveoversikt, psakPensjonsoversikt, status } = loaderData
+  const { psakOppgaveoversikt, psakPensjonsoversikt, status } = loaderData
   const { revalidate } = useRevalidator()
-  const { avbrytAktivitet } = useOutletContext<{ behandling: BehandlingDTO; avbrytAktivitet: () => void }>()
-  const fetcher = useFetcher()
-
-  function retry() {
-    fetcher.submit({}, { method: 'POST' })
-  }
 
   useEffect(() => {
     if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
@@ -60,10 +52,6 @@ const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
       return () => clearInterval(intervalId)
     }
   }, [status, revalidate])
-
-  if (behandling.status === BehandlingStatus.FEILENDE) {
-    return <FeilendeBehandling dato={dato} behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
-  }
 
   if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
     return (

@@ -66,14 +66,12 @@ type Story = StoryObj<typeof meta>
 
 export const MedFeilmelding: Story = {
   args: {
-    dato: Date.now(),
     behandling: baseBehandling,
   },
 }
 
 export const UtenNesteKjoring: Story = {
   args: {
-    dato: Date.now(),
     behandling: {
       ...baseBehandling,
       utsattTil: null,
@@ -83,7 +81,6 @@ export const UtenNesteKjoring: Story = {
 
 export const FlereFeil: Story = {
   args: {
-    dato: Date.now(),
     behandling: {
       ...baseBehandling,
       aktiviteter: [

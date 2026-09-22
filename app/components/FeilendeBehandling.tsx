@@ -5,17 +5,18 @@ import type { BehandlingDTO } from '~/types/behandling'
 import { formatDateToNorwegian } from '~/utils/date'
 
 export default function FeilendeBehandling({
-  dato,
   behandling,
   retry,
   avbrytAktivitet,
 }: {
-  dato: number
   behandling: BehandlingDTO
   retry: () => void
   avbrytAktivitet: () => void
 }) {
   const nesteKjoring = behandling.utsattTil ? new Date(behandling.utsattTil)?.getTime() : undefined
+  const feiletDato = behandling.sisteKjoring?.avsluttet
+    ? new Date(behandling.sisteKjoring.avsluttet).getTime()
+    : undefined
 
   function finnFeilendeAktivitet() {
     const feilendeAktivitetId = behandling?.sisteKjoring?.aktivitetId
@@ -102,7 +103,7 @@ export default function FeilendeBehandling({
                 </Box>
               </VStack>
               <BodyLong size="small" textColor="subtle">
-                {formatDateToNorwegian(dato, { showTime: true })}
+                {feiletDato && formatDateToNorwegian(feiletDato, { showTime: true })}
               </BodyLong>
             </VStack>
           </VStack>

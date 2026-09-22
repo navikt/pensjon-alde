@@ -16,11 +16,12 @@ import {
   Textarea,
   VStack,
 } from '@navikt/ds-react'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Form,
   Outlet,
   redirect,
+  useFetcher,
   useNavigate,
   useOutletContext,
   useParams,
@@ -28,6 +29,7 @@ import {
   useRouteLoaderData,
 } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
+import FeilendeBehandling from '~/components/FeilendeBehandling'
 import { Fnr } from '~/components/Fnr'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
@@ -50,6 +52,10 @@ import behandlingStyles from './$behandlingId.module.css'
 
 const POLL_INTERVAL_MS = 1500
 const POLL_MAX_MS = 120_000
+
+export function skalViseFeilende(behandling: BehandlingDTO): boolean {
+  return behandling.status === BehandlingStatus.FEILENDE
+}
 
 export function getRedirectPath({
   pathname,
@@ -146,6 +152,8 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL &&
     (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
+  const behandlingFeiler = skalViseFeilende(behandling)
+
   const redirectPath = getRedirectPath({
     pathname: url.pathname,
     behandlingId,
@@ -161,7 +169,8 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     aktivitetId: aktivitetId,
     behandling,
     behandlingId,
-    behandlingJobber: Boolean(behandlingJobber) || Boolean(justCompletedId),
+    behandlingJobber: !behandlingFeiler && (Boolean(behandlingJobber) || Boolean(justCompletedId)),
+    behandlingFeiler,
     isOppsummering,
     isAttestering,
     showStepper: showStepper && !isOppsummering,
@@ -175,6 +184,11 @@ export async function action({ params, request }: Route.ActionArgs) {
   const formData = await request.formData()
 
   const api = createBehandlingApi({ request, behandlingId })
+
+  if (formData.get('intent') === 'retry') {
+    await api.fortsett()
+    return redirect(`/behandling/${behandlingId}`)
+  }
 
   const formAktivitetId = formData.get('aktivitetId')
 
@@ -192,8 +206,22 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, showStepper, showMetadata, isAttestering, isOppsummering, urls } =
-    loaderData
+  const {
+    aktivitetId,
+    behandling,
+    behandlingJobber,
+    behandlingFeiler,
+    showStepper,
+    showMetadata,
+    isAttestering,
+    isOppsummering,
+    urls,
+  } = loaderData
+  const retryFetcher = useFetcher()
+  const [venterPaRetry, setVenterPaRetry] = useState(false)
+  const isLoading = behandlingJobber || venterPaRetry
+  const kjoringUuid = behandling.sisteKjoring?.uuid ?? null
+  const ventetPaKjoringRef = useRef<string | null>(null)
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
   const navigate = useNavigate()
@@ -201,6 +229,20 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const revalidator = useRevalidator()
   const revalidatorRef = useRef(revalidator)
   revalidatorRef.current = revalidator
+
+  function retry() {
+    ventetPaKjoringRef.current = kjoringUuid
+    setVenterPaRetry(true)
+    retryFetcher.submit({ intent: 'retry' }, { method: 'POST' })
+  }
+
+  useEffect(() => {
+    if (!venterPaRetry) return
+
+    if (!behandlingFeiler || kjoringUuid !== ventetPaKjoringRef.current) {
+      setVenterPaRetry(false)
+    }
+  }, [venterPaRetry, behandlingFeiler, kjoringUuid])
   const ref = useRef<HTMLDialogElement>(null)
 
   const root = useRouteLoaderData<typeof rootLoader>('root')
@@ -273,12 +315,13 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       : allSteps.length - 1
 
   useEffect(() => {
-    if (!behandlingJobber) return
+    if (!isLoading) return
 
     const startedAt = Date.now()
     const intervalId = setInterval(() => {
       if (Date.now() - startedAt > POLL_MAX_MS) {
         clearInterval(intervalId)
+        setVenterPaRetry(false)
         return
       }
 
@@ -288,7 +331,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     }, POLL_INTERVAL_MS)
 
     return () => clearInterval(intervalId)
-  }, [behandlingJobber])
+  }, [isLoading])
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {
@@ -517,7 +560,13 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
             </Show>
 
             <main className={behandlingStyles.mainContent}>
-              {behandlingJobber ? <AldeLoader /> : <Outlet context={{ behandling, avbrytAktivitet }} />}
+              {isLoading ? (
+                <AldeLoader />
+              ) : behandlingFeiler ? (
+                <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
+              ) : (
+                <Outlet context={{ behandling, avbrytAktivitet }} />
+              )}
             </main>
           </HStack>
 
