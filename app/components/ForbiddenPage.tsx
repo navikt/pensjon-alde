@@ -36,7 +36,7 @@ export default function ForbiddenPage({ dato, traceId }: { dato: number; traceId
               </BodyLong>
 
               <Box borderRadius="8" borderColor="neutral-subtle" borderWidth="1" padding="space-8">
-                <CopyableValue value={traceId} />
+                <CopyableValue title={traceId} value={traceId} textColor="subtle" />
               </Box>
               <BodyLong size="small" textColor="subtle">
                 {formatDateToNorwegian(dato, { showTime: true })}

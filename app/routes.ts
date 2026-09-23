@@ -40,6 +40,7 @@ export default [
   route('/auth/callback', './auth/callback.tsx'),
   route('/auth/microsoft', './auth/microsoft.tsx'),
   route('/settings', 'routes/settings.tsx'),
+  route('/api/opptjeningstyper', 'routes/api/opptjeningstyper.ts'),
 
   route('/behandling/:behandlingId', 'routes/behandling/$behandlingId.tsx', [
     route('oppsummering', 'routes/behandling/$behandlingId/oppsummering/index.tsx'),

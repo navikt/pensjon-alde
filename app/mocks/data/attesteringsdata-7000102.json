@@ -1,0 +1,61 @@
+{
+  "aktiviter": [
+    {
+      "aktivitetId": 7010102,
+      "vurdertTidspunkt": "2025-04-02T08:30:00.000000",
+      "vurdertAvBrukerId": "A123456",
+      "vurdertAvBrukerNavn": "Siri Saksbehandler",
+      "grunnlag": {
+        "kanOppretteGenerellSak": true,
+        "opptjeningsGrunnlagDto": {
+          "fnr": "12345678901",
+          "dagpengerListe": [],
+          "omsorgListe": [],
+          "forstegangstjeneste": null,
+          "inntektListe": [
+            {
+              "inntektId": 502057001,
+              "kilde": "PEN",
+              "kommune": "0301",
+              "inntektAr": 2020,
+              "belop": "480000",
+              "inntektType": "INN_LON"
+            }
+          ]
+        }
+      },
+      "vurdering": {
+        "sakId": 23077283,
+        "fnr": "12345678901",
+        "inntektEndringer": [
+          {
+            "endringstype": "OPPDATER",
+            "inntektListe": [
+              {
+                "inntektId": 502057001,
+                "kilde": "PEN",
+                "kommune": "0301",
+                "inntektAr": 2020,
+                "belop": "495000",
+                "inntektType": "INN_LON"
+              }
+            ]
+          },
+          {
+            "endringstype": "OPPRETT",
+            "inntektListe": [
+              {
+                "inntektId": null,
+                "kilde": null,
+                "kommune": "0301",
+                "inntektAr": 2023,
+                "belop": "610000",
+                "inntektType": "INN_LON"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

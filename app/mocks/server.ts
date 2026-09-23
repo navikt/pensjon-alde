@@ -11,7 +11,9 @@ function loadMockData(filename: string) {
     const data = fs.readFileSync(filePath, 'utf-8')
     return JSON.parse(data)
   } catch (error) {
-    console.warn(`Could not load mock data from ${filename}:`, error)
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.warn(`Could not load mock data from ${filename}:`, error)
+    }
     return null
   }
 }
@@ -65,6 +67,22 @@ const handlers = [
   http.get('*/api/saksbehandling/alde/behandling/:id/attesteringsdata', ({ params, request }) => {
     const { id } = params
     console.log(`🎯 MSW intercepted attestering request to: ${request.url}`)
+
+    // Explicit fixture wins. grunnlag/vurdering are written as objects in the file
+    // but the API delivers them as JSON strings.
+    const fixture = loadMockData(`attesteringsdata-${id}.json`)
+    if (fixture) {
+      console.log(`📄 Returning attesteringsdata fixture for ID: ${id}`)
+      return HttpResponse.json({
+        ...fixture,
+        aktiviter: (fixture.aktiviter ?? []).map((aktivitet: Record<string, unknown>) => ({
+          ...aktivitet,
+          grunnlag: typeof aktivitet.grunnlag === 'object' ? JSON.stringify(aktivitet.grunnlag) : aktivitet.grunnlag,
+          vurdering:
+            typeof aktivitet.vurdering === 'object' ? JSON.stringify(aktivitet.vurdering) : aktivitet.vurdering,
+        })),
+      })
+    }
 
     // Load behandling and find relevant aktiviteter by handlerName
     const behandling = loadMockData(`behandling-${id}.json`)
@@ -249,6 +267,7 @@ const handlers = [
     if (mockData) {
       return HttpResponse.json(mockData)
     }
+    console.log('❌ No mock data found for opptjeningstyper.json')
     return HttpResponse.text('Not found', { status: 404 })
   }),
 ]

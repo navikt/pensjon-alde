@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { formatCurrencyNok } from '~/utils/currency'
-import { typeLabel } from '../opptjeningstyper.utils'
 import {
   beregnStatus,
   dagpengerEndringer,
   dagpengerGrunnlagTilViewModel,
   dagpengerKortLabel,
   dagpengerLabel,
+  endringSummaryFraVurdering,
   forstegangstjenesteEndringer,
   forstegangstjenesteGrunnlagTilViewModel,
   forstegangstjenesteKortLabel,
@@ -16,6 +16,7 @@ import {
   inntektGrunnlagTilViewModel,
   inntektKortLabel,
   inntektLabel,
+  normaliserDagpengerPayload,
   nyDagpengerLinje,
   nyForstegangstjenesteLinje,
   nyInntektLinje,
@@ -31,15 +32,19 @@ import {
   toInntektBackend,
   toIsoDate,
   toOmsorgBackend,
-} from './oppdater-grunnlag.utils'
+  validerForstegangstjenestePayload,
+  validerInntektPayload,
+} from './opptjening.utils'
 import type {
   DagpengerBackendDTO,
   ForstegangstjenesteBackendDTO,
   InntektBackendDTO,
   OmsorgBackendDTO,
   OppdaterOpptjeningGrunnlag,
+  OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
-} from './oppdater-grunnlag-types'
+} from './opptjening-types'
+import { typeLabel } from './opptjeningstyper.utils'
 
 vi.mock('~/api/aktivitet-api', () => ({
   createAktivitetApi: vi.fn(),
@@ -50,7 +55,7 @@ vi.mock('~/api/opptjeningstyper-api.server', () => ({
 
 const { createAktivitetApi } = await import('~/api/aktivitet-api')
 const { fetchOpptjeningstyper } = await import('~/api/opptjeningstyper-api.server')
-const { action, loader } = await import('./index')
+const { hentOpptjeningLoaderData, lagreOpptjeningVurdering } = await import('./opptjening-api.server')
 
 const opptjeningstyper: OpptjeningstyperResponse = {
   inntekt: {
@@ -96,11 +101,26 @@ function requestMedFormData(fields: Record<string, string>): Request {
   return new Request('http://localhost/aktivitet', { method: 'POST', body: formData })
 }
 
-function assertDataResult(result: Awaited<ReturnType<typeof action>>) {
+function assertDataResult(result: Awaited<ReturnType<typeof lagreOpptjeningVurdering>>) {
   if (result instanceof Response) {
     throw new Error('Forventet data()-resultat, fikk Response (redirect)')
   }
   return result
+}
+
+const validerAlt = (payload: OppdaterOpptjeningVurdering) => [
+  ...validerInntektPayload(payload),
+  ...validerForstegangstjenestePayload(payload),
+]
+
+function lagre(request: Request, options: Partial<Parameters<typeof lagreOpptjeningVurdering>[0]> = {}) {
+  return lagreOpptjeningVurdering({
+    request,
+    behandlingId: '1',
+    aktivitetId: '2',
+    valider: validerAlt,
+    ...options,
+  })
 }
 
 beforeEach(() => {
@@ -430,6 +450,56 @@ describe('oppsummeringForKategori', () => {
   })
 })
 
+describe('endringSummaryFraVurdering', () => {
+  const grunnlag: NonNullable<OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto']> = {
+    fnr: '12345678901',
+    inntektListe: [
+      { inntektId: 1, fnr: '12345678901', inntektAr: 2025, belop: '100', inntektType: 'DIP_JSF', kommune: '0301' },
+    ],
+    omsorgListe: [{ omsorgId: 5, fnr: '12345678901', omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '10987654321' }],
+    dagpengerListe: [],
+  }
+
+  const oppdatertInntekt: OppdaterOpptjeningVurdering = {
+    inntektEndringer: [
+      {
+        endringstype: 'OPPDATER',
+        inntektListe: [
+          { inntektId: 1, fnr: '12345678901', inntektAr: 2025, belop: '250', inntektType: 'DIP_JSF', kommune: '0301' },
+        ],
+      },
+    ],
+  }
+
+  it('viser fra- og til-verdier for endrede linjer', () => {
+    const summary = endringSummaryFraVurdering(oppdatertInntekt, grunnlag, opptjeningstyper)
+
+    expect(summary.endrede).toHaveLength(1)
+    expect(summary.endrede[0].endringer).toEqual([`Beløp: ${formatCurrencyNok(100)} → ${formatCurrencyNok(250)}`])
+  })
+
+  it('viser slettet omsorg som slettet linje', () => {
+    const vurdering: OppdaterOpptjeningVurdering = {
+      omsorgEndringer: [{ endringstype: 'SLETT', omsorgListe: grunnlag.omsorgListe }],
+    }
+
+    const summary = endringSummaryFraVurdering(vurdering, grunnlag, opptjeningstyper)
+
+    expect(summary.slettede).toEqual([
+      {
+        id: 'omsorg-0-0',
+        kategori: 'Omsorg',
+        label: 'Omsorg for barn (2020) – omsorg for 10987654321',
+        endringer: undefined,
+      },
+    ])
+  })
+
+  it('utelater feltdiff når grunnlaget mangler', () => {
+    expect(endringSummaryFraVurdering(oppdatertInntekt, undefined, opptjeningstyper).endrede[0].endringer).toEqual([])
+  })
+})
+
 describe('toInntektBackend', () => {
   it('mapper linjen til backend-DTO med kilde PEN', () => {
     const linje = tilLinjeState({ inntektAr: 2020, inntektType: 'DIP_JSF', belop: 100, kommune: '0301' })
@@ -631,7 +701,7 @@ describe('parseIsoDate / toIsoDate', () => {
   })
 })
 
-describe('loader', () => {
+describe('hentOpptjeningLoaderData', () => {
   it('henter grunnlag og opptjeningstyper (happy path)', async () => {
     const grunnlag: OppdaterOpptjeningGrunnlag = {
       saker: [],
@@ -642,10 +712,11 @@ describe('loader', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = await loader({
-      params: { behandlingId: '1', aktivitetId: '2' },
+    const result = await hentOpptjeningLoaderData({
       request: new Request('http://localhost/aktivitet'),
-    } as never)
+      behandlingId: '1',
+      aktivitetId: '2',
+    })
 
     expect(result.grunnlag).toBe(grunnlag)
     expect(result.opptjeningstyper).toBe(opptjeningstyper)
@@ -658,10 +729,11 @@ describe('loader', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = await loader({
-      params: { behandlingId: '1', aktivitetId: '2' },
+    const result = await hentOpptjeningLoaderData({
       request: new Request('http://localhost/aktivitet'),
-    } as never)
+      behandlingId: '1',
+      aktivitetId: '2',
+    })
 
     expect(result.readOnly).toBe(true)
     expect(result.grunnlag).toEqual({})
@@ -674,37 +746,21 @@ describe('loader', () => {
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
     await expect(
-      loader({
-        params: { behandlingId: '1', aktivitetId: '2' },
+      hentOpptjeningLoaderData({
         request: new Request('http://localhost/aktivitet'),
-      } as never),
+        behandlingId: '1',
+        aktivitetId: '2',
+      }),
     ).rejects.toBeDefined()
-  })
-
-  it('returnerer savedVurdering null når det ikke finnes en lagret vurdering', async () => {
-    const api = fakeApi()
-    vi.mocked(createAktivitetApi).mockReturnValue(api as never)
-
-    const result = await loader({
-      params: { behandlingId: '1', aktivitetId: '2' },
-      request: new Request('http://localhost/aktivitet'),
-    } as never)
-
-    expect(result.opptjeningstyper).toBe(opptjeningstyper)
   })
 })
 
-describe('action', () => {
+describe('lagreOpptjeningVurdering', () => {
   it('returnerer _form-feil når payload mangler', async () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({}),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({})))
 
     expect(result.data.errors._form).toBe('Mangler skjemadata')
     expect(result.init?.status).toBe(400)
@@ -714,12 +770,7 @@ describe('action', () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({ payload: 'ikke-json{' }),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: 'ikke-json{' })))
 
     expect(result.data.errors._form).toBe('Ugyldig skjemadata')
     expect(result.init?.status).toBe(400)
@@ -738,12 +789,7 @@ describe('action', () => {
       ],
     }
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({ payload: JSON.stringify(payload) }),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify(payload) })))
 
     expect(result.data.errors._form).toContain('Skattekommune for DIP_JSF må være 0301')
     expect(result.init?.status).toBe(400)
@@ -763,10 +809,7 @@ describe('action', () => {
       ],
     }
 
-    const result = await action({
-      params: { behandlingId: '1', aktivitetId: '2' },
-      request: requestMedFormData({ payload: JSON.stringify(payload) }),
-    } as never)
+    const result = await lagre(requestMedFormData({ payload: JSON.stringify(payload) }))
 
     expect(result).toBeInstanceOf(Response)
     expect(api.lagreVurdering).toHaveBeenCalled()
@@ -785,12 +828,7 @@ describe('action', () => {
       ],
     }
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({ payload: JSON.stringify(payload) }),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify(payload) })))
 
     expect(result.data.errors._form).toContain('Tjenestestartdato for førstegangstjeneste kan ikke være før 01.01.2010')
   })
@@ -814,12 +852,7 @@ describe('action', () => {
       ],
     }
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({ payload: JSON.stringify(payload) }),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify(payload) })))
 
     expect(result.data.errors._form).toBe(
       'Skattekommune for DIP_JSF må være 0301. Tjenestestartdato for førstegangstjeneste kan ikke være før 01.01.2010',
@@ -847,10 +880,9 @@ describe('action', () => {
       ],
     }
 
-    await action({
-      params: { behandlingId: '1', aktivitetId: '2' },
-      request: requestMedFormData({ payload: JSON.stringify(payload) }),
-    } as never)
+    await lagre(requestMedFormData({ payload: JSON.stringify(payload) }), {
+      normaliser: normaliserDagpengerPayload,
+    })
 
     expect(api.lagreVurdering).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -873,10 +905,7 @@ describe('action', () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    await action({
-      params: { behandlingId: '1', aktivitetId: '2' },
-      request: requestMedFormData({ payload: JSON.stringify({}), sakId: '999' }),
-    } as never)
+    await lagre(requestMedFormData({ payload: JSON.stringify({}), sakId: '999' }))
 
     expect(api.lagreVurdering).toHaveBeenCalledWith(expect.objectContaining({ sakId: 999 }))
   })
@@ -885,10 +914,7 @@ describe('action', () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = await action({
-      params: { behandlingId: '1', aktivitetId: '2' },
-      request: requestMedFormData({ payload: JSON.stringify({}) }),
-    } as never)
+    const result = await lagre(requestMedFormData({ payload: JSON.stringify({}) }))
 
     expect(result).toBeInstanceOf(Response)
     expect((result as Response).status).toBe(302)
@@ -903,12 +929,7 @@ describe('action', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({ payload: JSON.stringify({}) }),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
 
     expect(result.data.errors._server).toEqual(['Feil A', 'Feil B'])
     expect(result.init?.status).toBe(400)
@@ -922,12 +943,7 @@ describe('action', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({ payload: JSON.stringify({}) }),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
 
     expect(result.data.errors._server).toEqual(['Noe gikk galt'])
   })
@@ -938,12 +954,7 @@ describe('action', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({ payload: JSON.stringify({}) }),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
 
     expect(result.data.errors._server).toEqual(['POPP-validering feilet'])
   })
@@ -952,14 +963,21 @@ describe('action', () => {
     const api = fakeApi({ lagreVurdering: vi.fn().mockRejectedValue(new Error('Nettverksfeil')) })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(
-      await action({
-        params: { behandlingId: '1', aktivitetId: '2' },
-        request: requestMedFormData({ payload: JSON.stringify({}) }),
-      } as never),
-    )
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
 
     expect(result.data.errors._server).toEqual(['Det oppstod en feil ved lagring'])
     expect(result.init?.status).toBe(500)
+  })
+
+  it('returnerer 403-melding om manglende rolle', async () => {
+    const api = fakeApi({
+      lagreVurdering: vi.fn().mockRejectedValue({ data: { status: 403, title: 'Forbidden' } }),
+    })
+    vi.mocked(createAktivitetApi).mockReturnValue(api as never)
+
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
+
+    expect(result.data.errors._server?.[0]).toContain('Spesial PGI')
+    expect(result.init?.status).toBe(403)
   })
 })

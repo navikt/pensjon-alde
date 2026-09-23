@@ -1,22 +1,22 @@
+import { ArrowDownIcon, NewspaperIcon } from '@navikt/aksel-icons'
 import { BodyShort, Box, Button, Heading, HStack, Label, Page, Radio, RadioGroup, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import type { AktivitetAtt } from '~/api/behandling-api/types'
 import commonStyles from '~/common.module.css'
+import { userContext } from '~/context/user-context'
+import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { type AktivitetDTO, AldeBehandlingStatus, type BehandlingDTO } from '~/types/behandling'
-import { getAllServerComponents } from '~/utils/component-discovery'
-import type { Route } from './+types'
-import './attestering.css'
-import { ArrowDownIcon, NewspaperIcon } from '@navikt/aksel-icons'
-import { userContext } from '~/context/user-context'
-import { Features } from '~/features'
 import { buildUrl } from '~/utils/build-url'
+import { getAllServerComponents } from '~/utils/component-discovery'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import { isFeatureEnabled } from '~/utils/unleash.server'
+import type { Route } from './+types'
+import './attestering.css'
 
 interface AktivitetTilAttestering {
   aktivitetId: number
@@ -140,7 +140,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   const isSubmitting = useIsSubmitting()
 
   const components = getAllServerComponents()
-  const [utfall, setUtfall] = React.useState<AttesteringUtfall | undefined>(data?.utfall)
+  const [utfall, setUtfall] = React.useState<AttesteringUtfall | ''>(data?.utfall ?? '')
 
   const begrunnelseRef = React.useRef<HTMLFieldSetElement>(null)
 
@@ -162,62 +162,60 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
   }
 
   useEffect(() => {
-    if (utfall !== undefined) {
+    if (utfall !== '') {
       attesteringViewRef.current?.scrollIntoView()
     }
   }, [utfall])
 
-  const AktivitetAttestering = () => {
-    return (
-      <Box background="brand-blue-soft" borderRadius="16" padding="space-28" as="div" ref={attesteringViewRef}>
-        <Form method="POST">
-          <VStack gap="space-40">
-            <Heading level="2" size="medium">
-              Attestering
-            </Heading>
-            <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
-              <Radio size="small" value={AttesteringUtfall.GODKJENN}>
-                Godkjenn
+  const attesteringSkjema = (
+    <Box background="brand-blue-soft" borderRadius="16" padding="space-28" as="div" ref={attesteringViewRef}>
+      <Form method="POST">
+        <VStack gap="space-28">
+          <Heading level="2" size="medium">
+            Attestering
+          </Heading>
+          <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
+            <Radio size="small" value={AttesteringUtfall.GODKJENN}>
+              Godkjenn
+            </Radio>
+            <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
+              Ikke godkjenn
+            </Radio>
+          </RadioGroup>
+          {utfall === AttesteringUtfall.IKKE_GODKJENN && (
+            <RadioGroup
+              ref={begrunnelseRef}
+              legend="Velg begrunnelse"
+              name="begrunnelse"
+              error={errors?.begrunnelse}
+              defaultValue={data?.begrunnelse}
+            >
+              <Radio size="small" value="Feil i vedtak">
+                Feil i vedtak
               </Radio>
-              <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
-                Ikke godkjenn
+
+              <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
+                Forvaltningsnotat utilstrekkelig
+              </Radio>
+
+              <Radio size="small" value="Hent inn nytt grunnlag">
+                Hent inn nytt grunnlag
+              </Radio>
+
+              <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
+                Saksbehandlerstandard ikke fulgt
               </Radio>
             </RadioGroup>
-            {utfall === AttesteringUtfall.IKKE_GODKJENN && (
-              <RadioGroup
-                ref={begrunnelseRef}
-                legend="Velg begrunnelse"
-                name="begrunnelse"
-                error={errors?.begrunnelse}
-                defaultValue={data?.begrunnelse}
-              >
-                <Radio size="small" value="Feil i vedtak">
-                  Feil i vedtak
-                </Radio>
-
-                <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
-                  Forvaltningsnotat utilstrekkelig
-                </Radio>
-
-                <Radio size="small" value="Hent inn nytt grunnlag">
-                  Hent inn nytt grunnlag
-                </Radio>
-
-                <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
-                  Saksbehandlerstandard ikke fulgt
-                </Radio>
-              </RadioGroup>
-            )}
-            {utfall && (
-              <Button style={{ alignSelf: 'start' }} size="small" type="submit" loading={isSubmitting}>
-                {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
-              </Button>
-            )}
-          </VStack>
-        </Form>
-      </Box>
-    )
-  }
+          )}
+          {utfall && (
+            <Button style={{ alignSelf: 'start' }} size="small" type="submit" loading={isSubmitting}>
+              {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
+            </Button>
+          )}
+        </VStack>
+      </Form>
+    </Box>
+  )
 
   return (
     <Page.Block width="xl" gutters className={commonStyles.behandlingPage}>
@@ -232,6 +230,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
             </Button>
           )}
         </HStack>
+
         <VStack gap="space-56">
           {aktiviteter.map(aktivitet => {
             const Component = components.get(aktivitet.handlerName)
@@ -265,6 +264,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                     </div>
                   </div>
                 </Box>
+
                 <Box
                   background="neutral-softA"
                   borderWidth="0 1 1 1"
@@ -283,6 +283,7 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
                         {formatDateToNorwegian(aktivitet.vurdertTidspunkt, { showTime: true })}
                       </BodyShort>
                     </VStack>
+
                     {aktiviteter.length > 1 && (
                       <div>
                         <Button
@@ -301,7 +302,8 @@ export default function Attestering({ loaderData, actionData }: Route.ComponentP
             ) : null
           })}
         </VStack>
-        <AktivitetAttestering />
+
+        {attesteringSkjema}
       </VStack>
     </Page.Block>
   )
