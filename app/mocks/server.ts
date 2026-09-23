@@ -11,7 +11,9 @@ function loadMockData(filename: string) {
     const data = fs.readFileSync(filePath, 'utf-8')
     return JSON.parse(data)
   } catch (error) {
-    console.warn(`Could not load mock data from ${filename}:`, error)
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.warn(`Could not load mock data from ${filename}:`, error)
+    }
     return null
   }
 }
@@ -265,6 +267,7 @@ const handlers = [
     if (mockData) {
       return HttpResponse.json(mockData)
     }
+    console.log('❌ No mock data found for opptjeningstyper.json')
     return HttpResponse.text('Not found', { status: 404 })
   }),
 ]
