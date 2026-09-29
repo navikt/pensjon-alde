@@ -4,6 +4,7 @@
   "handlerName": "alderspensjon-soknad",
   "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
   "aldeBehandlingStatus": "AUTOMATISK_TIL_MANUELL",
+  "saksbehandletAv": [],
   "sisteKjoring": null,
   "sisteKjoringDato": "2025-01-15T16:49:34.37642",
   "utsattTil": null,

@@ -17,7 +17,7 @@ const mockBehandling: BehandlingDTO = {
   status: BehandlingStatus.UNDER_BEHANDLING,
   aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
   opprettet: '2024-01-01T10:00:00Z',
-  sisteSaksbehandlerNavident: 'Z999999',
+  saksbehandletAv: [],
   utsattTil: null,
   aktiviteter: [],
   type: 'FORSTEGANGSBEHANDLING',
@@ -84,7 +84,7 @@ describe('getRedirectPath', () => {
       behandling: {
         ...mockBehandling,
         aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-        sisteSaksbehandlerNavident: 'Z999999',
+        saksbehandletAv: ['Z999999'],
       },
       navident: 'Z999999',
       justCompletedId: null,
@@ -100,13 +100,33 @@ describe('getRedirectPath', () => {
       behandling: {
         ...mockBehandling,
         aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-        sisteSaksbehandlerNavident: 'Z888888',
+        saksbehandletAv: ['Z888888'],
       },
       navident: 'Z999999',
       justCompletedId: null,
     })
 
     expect(result).toBeNull()
+  })
+
+  it('does NOT let any of two saksbehandlere who behandlet attestere (both redirect to venter-attestering)', () => {
+    const saksbehandletAv = ['Z111111', 'Z222222']
+
+    for (const navident of saksbehandletAv) {
+      const result = getRedirectPath({
+        pathname: '/behandling/123',
+        behandlingId: '123',
+        behandling: {
+          ...mockBehandling,
+          aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
+          saksbehandletAv,
+        },
+        navident,
+        justCompletedId: null,
+      })
+
+      expect(result).toBe('/behandling/123/venter-attestering')
+    }
   })
 
   it('redirects to aktivitet when aktivitet has handlerName and friendlyName', () => {
@@ -284,7 +304,7 @@ describe('getRedirectPath', () => {
       behandling: {
         ...mockBehandling,
         aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-        sisteSaksbehandlerNavident: undefined,
+        saksbehandletAv: [],
         aktiviteter: [
           {
             aktivitetId: 456,

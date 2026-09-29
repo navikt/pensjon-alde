@@ -90,7 +90,7 @@ export function getRedirectPath({
 
   if (
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING &&
-    behandling.sisteSaksbehandlerNavident === navident
+    behandling.saksbehandletAv.includes(navident)
   ) {
     return `/behandling/${behandlingId}/venter-attestering`
   }

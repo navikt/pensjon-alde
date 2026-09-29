@@ -5,6 +5,7 @@
   "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
   "processName": "Alderspensjon søknad",
   "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
+  "saksbehandletAv": [],
   "sisteKjoring": null,
   "sisteKjoringDato": "2025-04-01T09:00:00.000000",
   "utsattTil": null,
