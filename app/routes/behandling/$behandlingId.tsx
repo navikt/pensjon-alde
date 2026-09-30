@@ -34,6 +34,7 @@ import { Fnr } from '~/components/Fnr'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import { userContext } from '~/context/user-context'
+import { useBehandlingEvents } from '~/hooks/use-behandling-events'
 import { Header } from '~/layout/Header/Header'
 import type { RootOutletContext, loader as rootLoader } from '~/root'
 import {
@@ -229,6 +230,8 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const revalidator = useRevalidator()
   const revalidatorRef = useRef(revalidator)
   revalidatorRef.current = revalidator
+
+  useBehandlingEvents(behandling.behandlingId)
 
   function retry() {
     ventetPaKjoringRef.current = kjoringUuid

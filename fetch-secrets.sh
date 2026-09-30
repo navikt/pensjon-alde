@@ -42,12 +42,14 @@ fetch_nais_secret "$team" "dev-gcp" "alde-unleash-api-token" write_env "$secrets
     "UNLEASH_SERVER_API_ENV"
 complete_step
 
+
 start_step "PidEncryptionKey"
 fetch_nais_secret "$team" "dev-gcp" "psak-pid-encryption-key" write_env "$secrets_file" \
     "PSAK_PID_ENCRYPTION_KEY"
 complete_step
 
 {
+  echo BEHANDLING_KAFKA_TOPIC='pensjon-q2.behandling'
   echo IS_LOCAL_ENV="'true'"
   echo PEN_SCOPE="'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'"
   echo PEN_URL="'http://localhost:8089'"
