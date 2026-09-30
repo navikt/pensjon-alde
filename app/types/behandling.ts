@@ -58,7 +58,7 @@ export interface BehandlingDTO {
   stoppet: string | null // LocalDateTime as ISO string
   status: BehandlingStatus
   aktiviteter: AktivitetDTO[]
-  sisteSaksbehandlerNavident?: string
+  saksbehandletAv: string[]
 
   fnr: string | null
   sakId: number | null

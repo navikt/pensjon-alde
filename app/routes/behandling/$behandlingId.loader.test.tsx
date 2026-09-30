@@ -24,7 +24,7 @@ const mockBehandling: BehandlingDTO = {
   status: BehandlingStatus.UNDER_BEHANDLING,
   aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
   opprettet: '2024-01-01T10:00:00Z',
-  sisteSaksbehandlerNavident: 'Z999999',
+  saksbehandletAv: [],
   utsattTil: null,
   aktiviteter: [],
   type: 'FORSTEGANGSBEHANDLING',

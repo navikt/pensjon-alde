@@ -5,6 +5,7 @@
   "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
   "processName": "Alderspensjon søknad",
   "aldeBehandlingStatus": "VENTER_MASKINELL",
+  "saksbehandletAv": [],
   "sisteKjoring": {
     "behandlingId": 5000001,
     "aktivitetId": 6020943,
