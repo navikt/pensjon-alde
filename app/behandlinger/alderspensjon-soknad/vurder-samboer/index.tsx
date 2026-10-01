@@ -269,44 +269,45 @@ function VurdereSamboerComponent({
             )}
           </VStack>
 
-          <VStack gap="space-4">
-            <Heading size="xsmall" level="2">
-              Opplysninger fra vårt register
-            </Heading>
-            <HStack gap="space-4">
-              Tidligere gift med hverandre:{' '}
-              <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
-            </HStack>
-            <HStack gap="space-4">
-              Felles barn:{' '}
-              <BodyShort weight="semibold">
-                {samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}
-                {samboer.harEllerHarHattFellesBarn &&
-                  samboer.fodselsdatoEldsteBarn &&
-                  `, første født ${formatDateToNorwegian(samboer.fodselsdatoEldsteBarn)}`}
-              </BodyShort>
-            </HStack>
-
-            {grunnlag.sokerSivilstand && (
-              <HStack gap="space-4">
-                Søkers sivilstand: <BodyShort weight="semibold">{grunnlag.sokerSivilstand}</BodyShort>
-              </HStack>
-            )}
-          </VStack>
-
-          {gjeldendeSaker.length > 0 && (
+          <VStack gap="space-16">
             <VStack gap="space-4">
               <Heading size="xsmall" level="2">
-                Samboers gjeldende saker
+                Opplysninger fra vårt register
               </Heading>
-              {gjeldendeSaker.map(sak => (
-                <HStack key={`${sak.saktype}-${sak.samboerFra}`} gap="space-4">
-                  {sak.saktype}, samboer fra:{' '}
-                  <BodyShort weight="semibold">{formatDateToNorwegian(sak.samboerFra)}</BodyShort>
+              <HStack gap="space-4">
+                Tidligere gift med hverandre:{' '}
+                <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
+              </HStack>
+              <HStack gap="space-4">
+                Felles barn:{' '}
+                <BodyShort weight="semibold">
+                  {samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}
+                  {samboer.harEllerHarHattFellesBarn &&
+                    samboer.fodselsdatoEldsteBarn &&
+                    `, første født ${formatDateToNorwegian(samboer.fodselsdatoEldsteBarn)}`}
+                </BodyShort>
+              </HStack>
+
+              {grunnlag.sokerSivilstand && (
+                <HStack gap="space-4">
+                  Søkers sivilstand: <BodyShort weight="semibold">{grunnlag.sokerSivilstand}</BodyShort>
                 </HStack>
-              ))}
+              )}
             </VStack>
-          )}
+
+            {gjeldendeSaker.length > 0 && (
+              <VStack gap="space-4">
+                <Heading size="xsmall" level="3">
+                  Samboer fra og med i {gjeldendeSaker.length > 1 ? 'berørte saker' : 'berørt sak'}
+                </Heading>
+                {gjeldendeSaker.map(sak => (
+                  <HStack key={`${sak.saktype}-${sak.samboerFra}`} gap="space-4">
+                    {sak.saktype}: <BodyShort weight="semibold">{formatDateToNorwegian(sak.samboerFra)}</BodyShort>
+                  </HStack>
+                ))}
+              </VStack>
+            )}
+          </VStack>
         </HStack>
       </AktivitetVurderingLayout.Section>
       <AktivitetVurderingLayout.Section>
