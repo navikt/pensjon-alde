@@ -129,6 +129,7 @@ function VurdereSamboerComponent({
   const { samboer, sokersBostedsadresser, soknad, kravOnsketVirkningsdato } = grunnlag
 
   const normalisertVurdering = normaliserSamboerVurdering(vurdering)
+  const gjeldendeSaker = samboer.gjeldendeSaker ?? []
 
   const [form, fields] = useForm<SamboerVurderingInput>({
     lastResult,
@@ -292,6 +293,20 @@ function VurdereSamboerComponent({
               </HStack>
             )}
           </VStack>
+
+          {gjeldendeSaker.length > 0 && (
+            <VStack gap="space-4">
+              <Heading size="xsmall" level="2">
+                Samboers gjeldende saker
+              </Heading>
+              {gjeldendeSaker.map(sak => (
+                <HStack key={`${sak.saktype}-${sak.samboerFra}`} gap="space-4">
+                  {sak.saktype}, samboer fra:{' '}
+                  <BodyShort weight="semibold">{formatDateToNorwegian(sak.samboerFra)}</BodyShort>
+                </HStack>
+              ))}
+            </VStack>
+          )}
         </HStack>
       </AktivitetVurderingLayout.Section>
       <AktivitetVurderingLayout.Section>
