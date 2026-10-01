@@ -34,7 +34,7 @@ import { Fnr } from '~/components/Fnr'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import { userContext } from '~/context/user-context'
-import { useBehandlingEvents } from '~/hooks/use-behandling-events'
+import { BehandlingEventsContext, useBehandlingEvents } from '~/hooks/use-behandling-events'
 import { Header } from '~/layout/Header/Header'
 import type { RootOutletContext, loader as rootLoader } from '~/root'
 import {
@@ -231,7 +231,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const revalidatorRef = useRef(revalidator)
   revalidatorRef.current = revalidator
 
-  useBehandlingEvents(behandling.behandlingId)
+  const sseLive = useBehandlingEvents(behandling.behandlingId)
+  const sseLiveRef = useRef(sseLive)
+  sseLiveRef.current = sseLive
 
   function retry() {
     ventetPaKjoringRef.current = kjoringUuid
@@ -328,7 +330,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         return
       }
 
-      if (revalidatorRef.current.state === 'idle') {
+      if (!sseLiveRef.current && revalidatorRef.current.state === 'idle') {
         revalidatorRef.current.revalidate()
       }
     }, POLL_INTERVAL_MS)
@@ -568,7 +570,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
               ) : behandlingFeiler ? (
                 <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
               ) : (
-                <Outlet context={{ behandling, avbrytAktivitet }} />
+                <BehandlingEventsContext value={sseLive}>
+                  <Outlet context={{ behandling, avbrytAktivitet }} />
+                </BehandlingEventsContext>
               )}
             </main>
           </HStack>

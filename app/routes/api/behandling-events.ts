@@ -30,7 +30,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
         onEvent: event => send(`data: ${JSON.stringify(event)}\n\n`),
         onClose: () => close(),
       })
-      const ping = setInterval(() => send(': ping\n\n'), 20_000)
+      const ping = setInterval(() => send('event: ping\ndata: {}\n\n'), 20_000)
 
       console.log('[behandling-events] Client connected', { behandlingId, connections: connections() })
 
