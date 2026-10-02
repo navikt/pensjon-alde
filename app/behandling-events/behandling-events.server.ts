@@ -1,7 +1,12 @@
 import { randomUUID } from 'node:crypto'
 import { Consumer, MessagesStreamModes, stringDeserializers } from '@platformatic/kafka'
 
-export type BehandlingEvent = { behandlingId: number }
+export type BehandlingEvent = {
+  behandlingId: number
+  status?: string
+  aldeBehandlingStatus?: string | null
+  aktivitet?: { aktivitetId: number; friendlyName: string; handlerName: string | null } | null
+}
 type Subscription = { onEvent: (event: BehandlingEvent) => void; onClose: () => void }
 type Status = 'disconnected' | 'connecting' | 'connected'
 

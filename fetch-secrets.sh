@@ -58,7 +58,7 @@ fetch_nais_secret "$team" "dev-gcp" "$kafka_secret_name" write_env "$secrets_fil
 complete_step
 
 {
-  echo BEHANDLING_KAFKA_TOPIC='pensjon-q2.behandling'
+  echo BEHANDLING_KAFKA_TOPIC='pensjon-q2.alde-behandling'
   echo IS_LOCAL_ENV="'true'"
   echo PEN_SCOPE="'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'"
   echo PEN_URL="'http://localhost:8089'"

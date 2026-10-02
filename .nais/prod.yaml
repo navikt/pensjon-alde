@@ -26,7 +26,7 @@ verdande:
 
 kafka:
   pool: nav-prod
-  behandling_topic: pensjondeployer.behandling
+  behandling_topic: pensjondeployer.alde-behandling
 
 modia:
   oversikt: 'https://modiapersonoversikt.intern.nav.no/person/{fnr}'
