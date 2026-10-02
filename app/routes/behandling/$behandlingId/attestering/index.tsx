@@ -84,7 +84,7 @@ export const loader = async ({ params, request, context }: Route.LoaderArgs) => 
       hasComponent: serverComponents.has(aktivitet.handlerName),
     }))
 
-  if (behandling.sisteSaksbehandlerNavident === navident) {
+  if (behandling.saksbehandletAv.includes(navident)) {
     return redirect(`/behandling/${behandlingId}/venter-attestering`)
   } else if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_ATTESTERING) {
     return redirect(`/behandling/${behandlingId}`)
