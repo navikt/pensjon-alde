@@ -67,6 +67,8 @@ export type VurderingResponse = {
   vurdertAvBrukerNavn?: string | null
 }
 
+export type ActionErrors = { _form?: string; _server?: string[] }
+
 export type Endringstype = 'OPPRETT' | 'OPPDATER' | 'SLETT'
 
 export type InntektBackendDTO = {
