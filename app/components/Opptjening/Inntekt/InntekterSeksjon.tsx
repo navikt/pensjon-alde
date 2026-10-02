@@ -2,10 +2,10 @@ import { PlusIcon } from '@navikt/aksel-icons'
 import { BodyShort, Box, Button, Heading, Select, Table, TextField } from '@navikt/ds-react'
 import { useMemo } from 'react'
 import { formatCurrencyNok } from '~/utils/currency'
-import { HandlingKnapper } from './HandlingKnapper'
-import { type InntektLinjeState, REQUIRED_KOMMUNE } from './opptjening.utils'
-import type { InntektDTO, OpptjeningstyperResponse } from './opptjening-types'
-import { StatusTag } from './StatusTag'
+import { HandlingKnapper } from '../felles/HandlingKnapper'
+import { type InntektLinjeState, REQUIRED_KOMMUNE } from '../felles/opptjening.utils'
+import type { InntektDTO, OpptjeningstyperResponse } from '../felles/opptjening-types'
+import { StatusTag } from '../felles/StatusTag'
 
 interface InntekterSeksjonProps {
   linjer: InntektLinjeState[]

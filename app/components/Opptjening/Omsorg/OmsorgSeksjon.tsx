@@ -1,10 +1,10 @@
 import { BodyShort, Box, Heading, Table } from '@navikt/ds-react'
 import { useMemo } from 'react'
 import { Fnr } from '~/components/Fnr'
-import { HandlingKnapper } from './HandlingKnapper'
-import type { OmsorgLinjeState } from './opptjening.utils'
-import type { OpptjeningstyperResponse } from './opptjening-types'
-import { StatusTag } from './StatusTag'
+import { HandlingKnapper } from '../felles/HandlingKnapper'
+import type { OmsorgLinjeState } from '../felles/opptjening.utils'
+import type { OpptjeningstyperResponse } from '../felles/opptjening-types'
+import { StatusTag } from '../felles/StatusTag'
 
 interface OmsorgSeksjonProps {
   linjer: OmsorgLinjeState[]

@@ -11,7 +11,10 @@ import {
   tilLinjeState,
   useLinjeState,
 } from '~/components/Opptjening'
-import { hentOpptjeningLoaderData, lagreOpptjeningVurdering } from '~/components/Opptjening/opptjening-api.server'
+import {
+  hentOpptjeningLoaderData,
+  lagreOpptjeningVurdering,
+} from '~/components/Opptjening/felles/opptjening-api.server'
 import type { Route } from './+types'
 
 export function meta() {

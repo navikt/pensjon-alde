@@ -1,5 +1,5 @@
 import { DatePicker, useDatepicker } from '@navikt/ds-react'
-import { parseIsoDate, toIsoDate } from './opptjening.utils'
+import { parseIsoDate, toIsoDate } from '../felles/opptjening.utils'
 
 interface DatoVelgerCellProps {
   value: string
