@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
+import { useBehandlingEventsLive } from '~/hooks/use-behandling-events'
 import { AldeBehandlingStatus } from '~/types/behandling'
 import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
@@ -31,16 +32,17 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentProps) => {
   const { psakPensjonsoversiktUrl, status } = loaderData
   const { revalidate } = useRevalidator()
+  const sseLive = useBehandlingEventsLive()
 
   useEffect(() => {
-    if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
+    if (!sseLive && status === AldeBehandlingStatus.VENTER_ATTESTERING) {
       const intervalId = setInterval(() => {
         revalidate()
       }, 1000)
 
       return () => clearInterval(intervalId)
     }
-  }, [status, revalidate])
+  }, [sseLive, status, revalidate])
 
   if (status === AldeBehandlingStatus.VENTER_ATTESTERING) {
     return (
