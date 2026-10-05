@@ -11,7 +11,7 @@ Start the mock server with `pnpm dev:mock`.
 | [/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering](http://localhost:3001/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering) | 3000001 | Aktiv aktivitet |
 | [/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig](http://localhost:3001/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig) | 3000002 | Aktiv aktivitet |
 | [/behandling/7000101/aktivitet/7010101/oppdater-opptjening-inntekt/oppdater-grunnlag](http://localhost:3001/behandling/7000101/aktivitet/7010101/oppdater-opptjening-inntekt/oppdater-grunnlag) | 7000101 | Aktiv aktivitet |
-| [/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-grunnlag](http://localhost:3001/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-grunnlag) | 7000201 | Aktiv aktivitet |
+| [/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg](http://localhost:3001/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg) | 7000201 | Aktiv aktivitet |
 | [/behandling/7000301/aktivitet/7010301/oppdater-opptjening-dagpenger/oppdater-grunnlag](http://localhost:3001/behandling/7000301/aktivitet/7010301/oppdater-opptjening-dagpenger/oppdater-grunnlag) | 7000301 | Aktiv aktivitet |
 | [/behandling/7000401/aktivitet/7010401/oppdater-opptjening-forstegangstjeneste/oppdater-grunnlag](http://localhost:3001/behandling/7000401/aktivitet/7010401/oppdater-opptjening-forstegangstjeneste/oppdater-grunnlag) | 7000401 | Aktiv aktivitet |
 

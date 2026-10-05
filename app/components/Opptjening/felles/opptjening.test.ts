@@ -20,8 +20,6 @@ import {
   nyDagpengerLinje,
   nyForstegangstjenesteLinje,
   nyInntektLinje,
-  omsorgGrunnlagTilViewModel,
-  omsorgLabel,
   oppsummeringForKategori,
   oversettKoderIMelding,
   parseIsoDate,
@@ -31,7 +29,6 @@ import {
   toForstegangstjenesteBackend,
   toInntektBackend,
   toIsoDate,
-  toOmsorgBackend,
   validerForstegangstjenestePayload,
   validerInntektPayload,
 } from './opptjening.utils'
@@ -39,7 +36,6 @@ import type {
   DagpengerBackendDTO,
   ForstegangstjenesteBackendDTO,
   InntektBackendDTO,
-  OmsorgBackendDTO,
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
@@ -95,7 +91,7 @@ function fakeApi(overrides: Partial<Record<'hentGrunnlagsdata' | 'lagreVurdering
 
 function requestMedFormData(fields: Record<string, string>): Request {
   const formData = new FormData()
-  for (const [key, value] of Object.entries(fields)) {
+  for (const [key, value] of Object.entries({ sakId: '999', ...fields })) {
     formData.set(key, value)
   }
   return new Request('http://localhost/aktivitet', { method: 'POST', body: formData })
@@ -394,15 +390,6 @@ describe('labels', () => {
     expect(dagpengerKortLabel(linje, opptjeningstyper)).toBe('Dagpenger fiskere/fangstmenn (2020)')
   })
 
-  it('omsorgLabel viser fnr det er omsorg for når det finnes', () => {
-    expect(omsorgLabel({ omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '12345678901' }, opptjeningstyper)).toBe(
-      'Omsorg for barn (2020) – omsorg for 12345678901',
-    )
-    expect(omsorgLabel({ omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: null }, opptjeningstyper)).toBe(
-      'Omsorg for barn (2020)',
-    )
-  })
-
   it('forstegangstjenesteLabel viser periode, kortLabel viser kun årstall', () => {
     const linje = { tjenesteType: 'MIL', periodeType: 'FORSTE_6_MND', fomDato: '2010-01-01', tomDato: '2010-06-01' }
 
@@ -456,7 +443,7 @@ describe('endringSummaryFraVurdering', () => {
     inntektListe: [
       { inntektId: 1, fnr: '12345678901', inntektAr: 2025, belop: '100', inntektType: 'DIP_JSF', kommune: '0301' },
     ],
-    omsorgListe: [{ omsorgId: 5, fnr: '12345678901', omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '10987654321' }],
+    omsorgListe: [{ omsorgId: 5, omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '10987654321' }],
     dagpengerListe: [],
   }
 
@@ -480,7 +467,7 @@ describe('endringSummaryFraVurdering', () => {
 
   it('viser slettet omsorg som slettet linje', () => {
     const vurdering: OppdaterOpptjeningVurdering = {
-      omsorgEndringer: [{ endringstype: 'SLETT', omsorgListe: grunnlag.omsorgListe }],
+      omsorgTilSletting: [{ ar: 2020, omsorgType: 'OMS_BARN' }],
     }
 
     const summary = endringSummaryFraVurdering(vurdering, grunnlag, opptjeningstyper)
@@ -553,21 +540,6 @@ describe('toDagpengerBackend', () => {
   })
 })
 
-describe('toOmsorgBackend', () => {
-  it('mapper linjen til backend-DTO', () => {
-    const linje = tilLinjeState({ ar: 2020, omsorgType: 'OMS_BARN', fnrOmsorgFor: '10987654321' })
-
-    expect(toOmsorgBackend(linje, '12345678901')).toEqual({
-      omsorgId: null,
-      fnr: '12345678901',
-      fnrOmsorgFor: '10987654321',
-      omsorgType: 'OMS_BARN',
-      kilde: 'PEN',
-      ar: 2020,
-    })
-  })
-})
-
 describe('toForstegangstjenesteBackend', () => {
   it('bygger en periodeliste med ett element fra linjen', () => {
     const linje = tilLinjeState({
@@ -634,19 +606,6 @@ describe('dagpengerGrunnlagTilViewModel', () => {
       utbetalteDagpenger: null,
       ferietillegg: null,
       barnetillegg: null,
-    })
-  })
-})
-
-describe('omsorgGrunnlagTilViewModel', () => {
-  it('mapper felter', () => {
-    const dto: OmsorgBackendDTO = { fnr: '12345678901', omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '999' }
-
-    expect(omsorgGrunnlagTilViewModel(dto)).toEqual({
-      omsorgId: null,
-      ar: 2020,
-      omsorgType: 'OMS_BARN',
-      fnrOmsorgFor: '999',
     })
   })
 })
@@ -908,6 +867,35 @@ describe('lagreOpptjeningVurdering', () => {
     await lagre(requestMedFormData({ payload: JSON.stringify({}), sakId: '999' }))
 
     expect(api.lagreVurdering).toHaveBeenCalledWith(expect.objectContaining({ sakId: 999 }))
+  })
+
+  it('krever sakId når vurderingen lagres', async () => {
+    const api = fakeApi()
+    vi.mocked(createAktivitetApi).mockReturnValue(api as never)
+
+    const result = await lagre(requestMedFormData({ payload: JSON.stringify({ fnr: '12345678901' }), sakId: '' }))
+
+    expect(assertDataResult(result)).toMatchObject({ data: { errors: { _form: 'Mangler sakId' } } })
+    expect(api.lagreVurdering).not.toHaveBeenCalled()
+  })
+
+  it('sender Omsorg-data i lagreVurdering med sakId, fnr og flat omsorgTilSletting-liste', async () => {
+    const api = fakeApi()
+    vi.mocked(createAktivitetApi).mockReturnValue(api as never)
+    const omsorg = { ar: 2020, omsorgType: 'OMS_BARN' }
+
+    await lagre(
+      requestMedFormData({
+        payload: JSON.stringify({ fnr: '12345678901', omsorgTilSletting: [omsorg] }),
+        sakId: '999',
+      }),
+    )
+
+    expect(api.lagreVurdering).toHaveBeenCalledWith({
+      sakId: 999,
+      fnr: '12345678901',
+      omsorgTilSletting: [omsorg],
+    })
   })
 
   it('redirecter til behandlingssiden etter vellykket lagring', async () => {

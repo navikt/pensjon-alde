@@ -5,6 +5,8 @@ import { Fnr } from '~/components/Fnr'
 import { CopyableValue } from '~/components/shared/CopyableValue'
 import { AldeBehandlingStatus, type BehandlingDTO } from '~/types/behandling'
 import { formatCurrencyNok } from '~/utils/currency'
+import { medOmsorgGrunnlag } from '../Omsorg/omsorg.utils'
+import type { OmsorgGrunnlagDTO } from '../Omsorg/omsorg-types'
 import { EndringsOppsummering } from './EndringsOppsummering'
 import { endringSummaryFraVurdering } from './opptjening.utils'
 import type {
@@ -12,7 +14,6 @@ import type {
   Endringstype,
   ForstegangstjenesteBackendDTO,
   InntektBackendDTO,
-  OmsorgBackendDTO,
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
@@ -56,7 +57,7 @@ export function OppdaterOpptjeningEndringer({
 }: OppdaterOpptjeningEndringerProps) {
   type InntektMedEndring = { endringstype: Endringstype; inntekt: InntektBackendDTO }
   type DagpengerMedEndring = { endringstype: Endringstype; dagpenger: DagpengerBackendDTO }
-  type OmsorgMedEndring = { endringstype: Endringstype; omsorg: OmsorgBackendDTO }
+  type OmsorgMedEndring = { endringstype: Endringstype; omsorg: OmsorgGrunnlagDTO }
   type ForstegangstjenesteMedEndring = { endringstype: Endringstype; ft: ForstegangstjenesteBackendDTO }
 
   const inntekter: InntektMedEndring[] = (vurdering?.inntektEndringer ?? []).flatMap(e =>
@@ -67,9 +68,10 @@ export function OppdaterOpptjeningEndringer({
     e.dagpengerListe.map(d => ({ endringstype: e.endringstype, dagpenger: d })),
   )
 
-  const omsorg: OmsorgMedEndring[] = (vurdering?.omsorgEndringer ?? []).flatMap(e =>
-    e.omsorgListe.map(o => ({ endringstype: e.endringstype, omsorg: o })),
-  )
+  const omsorg: OmsorgMedEndring[] = (vurdering?.omsorgTilSletting ?? []).map(o => ({
+    endringstype: 'SLETT',
+    omsorg: medOmsorgGrunnlag(o, opptjeningsGrunnlag?.omsorgListe),
+  }))
 
   const forstegangstjeneste: ForstegangstjenesteMedEndring[] = (vurdering?.forstegangstjenesteEndringer ?? []).map(
     e => ({ endringstype: e.endringstype, ft: e.forstegangstjeneste }),

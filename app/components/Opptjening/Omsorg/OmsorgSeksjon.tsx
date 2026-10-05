@@ -2,9 +2,9 @@ import { BodyShort, Box, Heading, Table } from '@navikt/ds-react'
 import { useMemo } from 'react'
 import { Fnr } from '~/components/Fnr'
 import { HandlingKnapper } from '../felles/HandlingKnapper'
-import type { OmsorgLinjeState } from '../felles/opptjening.utils'
 import type { OpptjeningstyperResponse } from '../felles/opptjening-types'
 import { StatusTag } from '../felles/StatusTag'
+import type { OmsorgLinjeState } from './omsorg.utils'
 
 interface OmsorgSeksjonProps {
   linjer: OmsorgLinjeState[]

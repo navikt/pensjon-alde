@@ -1,5 +1,6 @@
 {
   "behandlingId": 7000402,
+  "saksbehandletAv": ["A123456"],
   "type": "OppdaterOpptjeningForstegangstjenesteBehandling",
   "handlerName": "oppdater-opptjening-forstegangstjeneste",
   "friendlyName": "Oppdater førstegangstjeneste",

@@ -2,7 +2,7 @@ import { expect, type Page, test } from '@playwright/test'
 
 const SKJEMA = {
   inntekt: '/behandling/7000101/aktivitet/7010101/oppdater-opptjening-inntekt/oppdater-grunnlag',
-  omsorg: '/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-grunnlag',
+  omsorg: '/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg',
   dagpenger: '/behandling/7000301/aktivitet/7010301/oppdater-opptjening-dagpenger/oppdater-grunnlag',
   forstegangstjeneste:
     '/behandling/7000401/aktivitet/7010401/oppdater-opptjening-forstegangstjeneste/oppdater-grunnlag',
@@ -59,11 +59,11 @@ test.describe('oppdater opptjening – inntekt', () => {
     await page.getByRole('textbox', { name: 'Beløp' }).first().fill('495000')
     await page.getByRole('button', { name: 'Lagre og gå videre' }).click()
 
-    await expect(page.getByText('Du må velge en sak før du kan lagre')).toBeVisible()
+    await expect(page.getByText('Du må velge en sak før du kan lagre')).toHaveCount(2)
 
     await page.getByLabel('Sak').selectOption('23077283')
 
-    await expect(page.getByText('Du må velge en sak før du kan lagre')).toBeHidden()
+    await expect(page.getByText('Du må velge en sak før du kan lagre')).toHaveCount(0)
   })
 
   test('krever minst én endring før lagring', async ({ page }) => {
@@ -271,8 +271,10 @@ test.describe('oppdater opptjening – attestering', () => {
   test('viser slettet omsorg attestanten skal godkjenne', async ({ page }) => {
     await goto(page, ATTESTERING.omsorg)
 
+    await expect(page.getByRole('heading', { name: 'Oppsummering av endringene' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Omsorg' })).toBeVisible()
     await expect(page.getByText('Slettede linjer (1)')).toBeVisible()
+    await expect(page.getByText('Omsorg for barn under 6 år (2010) – omsorg for 01011012345')).toBeVisible()
   })
 
   test('viser endret førstegangstjeneste attestanten skal godkjenne', async ({ page }) => {

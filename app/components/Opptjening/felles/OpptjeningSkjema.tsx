@@ -40,8 +40,13 @@ export function OpptjeningSkjema({
   const [selectedSakId, setSelectedSakId] = useState('')
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
-  const manglerSak = saker.length > 0 && !selectedSakId
-  const sakIdFeil = hasAttemptedSubmit && manglerSak ? 'Du må velge en sak før du kan lagre' : undefined
+  const manglerSak = !selectedSakId
+  const sakIdFeil =
+    hasAttemptedSubmit && manglerSak
+      ? saker.length > 0
+        ? 'Du må velge en sak før du kan lagre'
+        : 'Ingen saker er tilgjengelige for lagring'
+      : undefined
   const harEndringer = harEndringerISummary(endringSummary)
 
   return (
@@ -140,6 +145,8 @@ export function OpptjeningSkjema({
                   </LocalAlert.Content>
                 </LocalAlert>
               )}
+
+              {sakIdFeil && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
 
               <HStack gap="space-8">
                 <Button type="submit" variant="primary" size="small" loading={isSubmitting} disabled={harKlientFeil}>

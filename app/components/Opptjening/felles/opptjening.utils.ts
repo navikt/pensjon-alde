@@ -5,7 +5,7 @@ import type {
   ForstegangstjenesteDTO,
 } from '../Forstegangstjeneste/forstegangstjeneste-types'
 import type { InntektBackendDTO, InntektDTO } from '../Inntekt/inntekt-types'
-import type { OmsorgBackendDTO, OmsorgDTO } from '../Omsorg/omsorg-types'
+import { medOmsorgGrunnlag, type OmsorgLinjeState, omsorgLabel } from '../Omsorg/omsorg.utils'
 import type {
   Endringstype,
   OppdaterOpptjeningGrunnlag,
@@ -41,7 +41,6 @@ export type LinjeStatus = 'original' | 'new' | 'modified' | 'deleted'
 
 export type InntektLinjeState = InntektDTO & { _id: string; _status: LinjeStatus; _original: InntektDTO | null }
 export type DagpengerLinjeState = DagpengerDTO & { _id: string; _status: LinjeStatus; _original: DagpengerDTO | null }
-export type OmsorgLinjeState = OmsorgDTO & { _id: string; _status: LinjeStatus; _original: OmsorgDTO | null }
 export type ForstegangstjenesteLinjeState = ForstegangstjenesteDTO & {
   _id: string
   _status: LinjeStatus
@@ -85,7 +84,6 @@ export const DAGPENGER_FELTER: (keyof DagpengerDTO)[] = [
   'ferietillegg',
   'barnetillegg',
 ]
-export const OMSORG_FELTER: (keyof OmsorgDTO)[] = ['omsorgType', 'ar', 'fnrOmsorgFor']
 export const FORSTEGANGSTJENESTE_FELTER: (keyof ForstegangstjenesteDTO)[] = [
   'tjenesteType',
   'periodeType',
@@ -351,11 +349,6 @@ export function dagpengerKortLabel(l: DagpengerDTO, opptjeningstyper: Opptjening
   return `${typeLabel(opptjeningstyper, l.dagpengerType)} (${l.ar})`
 }
 
-export function omsorgLabel(l: OmsorgDTO, opptjeningstyper: OpptjeningstyperResponse): string {
-  const omsorgFor = l.fnrOmsorgFor ? ` – omsorg for ${l.fnrOmsorgFor}` : ''
-  return `${typeLabel(opptjeningstyper, l.omsorgType)} (${l.ar})${omsorgFor}`
-}
-
 export function forstegangstjenesteLabel(
   l: ForstegangstjenesteDTO,
   opptjeningstyper: OpptjeningstyperResponse,
@@ -487,14 +480,12 @@ export function endringSummaryFraVurdering(
     }),
   )
 
-  const omsorg: OmsorgLinjeState[] = (vurdering?.omsorgEndringer ?? []).flatMap((endring, ei) =>
-    endring.omsorgListe.map((dto, li) => ({
-      ...omsorgGrunnlagTilViewModel(dto),
-      _id: `omsorg-${ei}-${li}`,
-      _status: STATUS_FRA_ENDRINGSTYPE[endring.endringstype],
-      _original: null,
-    })),
-  )
+  const omsorg: OmsorgLinjeState[] = (vurdering?.omsorgTilSletting ?? []).map((dto, li) => ({
+    ...medOmsorgGrunnlag(dto, grunnlag?.omsorgListe),
+    _id: `omsorg-0-${li}`,
+    _status: 'deleted',
+    _original: null,
+  }))
 
   const forstegangstjeneste: ForstegangstjenesteLinjeState[] = (vurdering?.forstegangstjenesteEndringer ?? []).flatMap(
     (endring, ei) =>
@@ -543,17 +534,6 @@ export function toDagpengerBackend(l: DagpengerLinjeState, fnr: string): Dagpeng
         : null,
     ferietillegg: isFF ? null : l.ferietillegg != null ? Number(l.ferietillegg) : null,
     barnetillegg: l.barnetillegg != null ? Number(l.barnetillegg) : null,
-  }
-}
-
-export function toOmsorgBackend(l: OmsorgLinjeState, fnr: string): OmsorgBackendDTO {
-  return {
-    omsorgId: l.omsorgId ?? null,
-    fnr,
-    fnrOmsorgFor: l.fnrOmsorgFor ?? null,
-    omsorgType: l.omsorgType,
-    kilde: KILDE,
-    ar: Number(l.ar),
   }
 }
 
@@ -618,18 +598,6 @@ export function byggDagpengerPayload(linjer: DagpengerLinjeState[], fnr: string)
         : []),
       ...(slettede.length > 0
         ? [{ endringstype: 'SLETT' as const, dagpengerListe: slettede.map(l => toDagpengerBackend(l, fnr)) }]
-        : []),
-    ],
-  }
-}
-
-export function byggOmsorgPayload(linjer: OmsorgLinjeState[], fnr: string): OppdaterOpptjeningVurdering {
-  const { slettede } = grupperPaStatus(linjer)
-  return {
-    fnr,
-    omsorgEndringer: [
-      ...(slettede.length > 0
-        ? [{ endringstype: 'SLETT' as const, omsorgListe: slettede.map(l => toOmsorgBackend(l, fnr)) }]
         : []),
     ],
   }
@@ -718,15 +686,6 @@ export function dagpengerGrunnlagTilViewModel(dto: DagpengerBackendDTO): Dagpeng
     utbetalteDagpenger: dto.utbetalteDagpenger ?? null,
     ferietillegg: dto.ferietillegg ?? null,
     barnetillegg: dto.barnetillegg ?? null,
-  }
-}
-
-export function omsorgGrunnlagTilViewModel(dto: OmsorgBackendDTO): OmsorgDTO {
-  return {
-    omsorgId: dto.omsorgId ?? null,
-    ar: dto.ar ?? 0,
-    omsorgType: dto.omsorgType ?? '',
-    fnrOmsorgFor: dto.fnrOmsorgFor ?? null,
   }
 }
 

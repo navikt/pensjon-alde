@@ -1,5 +1,6 @@
 {
   "behandlingId": 7000302,
+  "saksbehandletAv": ["A123456"],
   "type": "OppdaterOpptjeningDagpengerBehandling",
   "handlerName": "oppdater-opptjening-dagpenger",
   "friendlyName": "Oppdater dagpenger",

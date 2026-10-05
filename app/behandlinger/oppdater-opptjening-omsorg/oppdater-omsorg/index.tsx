@@ -3,11 +3,10 @@ import {
   byggEndringSummary,
   byggOmsorgPayload,
   OMSORG_FELTER,
-  type OmsorgDTO,
+  type OmsorgGrunnlagDTO,
   OmsorgSeksjon,
   OpptjeningAktivitetComponent,
   OpptjeningSkjema,
-  omsorgGrunnlagTilViewModel,
   tilLinjeState,
   useLinjeState,
 } from '~/components/Opptjening'
@@ -39,8 +38,8 @@ export default function OppdaterOmsorgRoute({ loaderData, actionData }: Route.Co
 
   const grunnlagDto = grunnlag.opptjeningsGrunnlagDto
 
-  const { linjer, slett, gjenopprett } = useLinjeState<OmsorgDTO>(
-    () => (grunnlagDto?.omsorgListe ?? []).map(omsorgGrunnlagTilViewModel).map(tilLinjeState),
+  const { linjer, slett, gjenopprett } = useLinjeState<OmsorgGrunnlagDTO>(
+    () => (grunnlagDto?.omsorgListe ?? []).map(tilLinjeState),
     OMSORG_FELTER,
   )
 

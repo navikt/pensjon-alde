@@ -3,7 +3,7 @@ export type { OpptjeningstyperKategori, OpptjeningstyperResponse, OpptjeningType
 import type { DagpengerBackendDTO } from '../Dagpenger/dagpenger-types'
 import type { ForstegangstjenesteBackendDTO } from '../Forstegangstjeneste/forstegangstjeneste-types'
 import type { InntektBackendDTO } from '../Inntekt/inntekt-types'
-import type { OmsorgBackendDTO } from '../Omsorg/omsorg-types'
+import type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from '../Omsorg/omsorg-types'
 
 export type {
   DagpengerBackendDTO,
@@ -14,7 +14,7 @@ export type {
   ForstegangstjenesteDTO,
 } from '../Forstegangstjeneste/forstegangstjeneste-types'
 export type { InntektBackendDTO, InntektDTO } from '../Inntekt/inntekt-types'
-export type { OmsorgBackendDTO, OmsorgDTO } from '../Omsorg/omsorg-types'
+export type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from '../Omsorg/omsorg-types'
 
 export type OppdaterPgiSakValg = {
   sakId: number
@@ -27,9 +27,9 @@ export type OppdaterOpptjeningGrunnlag = {
   kanOppretteGenerellSak?: boolean
   opptjeningsGrunnlagDto?: {
     fnr: string | null
-    inntektListe: InntektBackendDTO[]
-    omsorgListe: OmsorgBackendDTO[]
-    dagpengerListe: DagpengerBackendDTO[]
+    inntektListe?: InntektBackendDTO[]
+    omsorgListe?: OmsorgGrunnlagDTO[]
+    dagpengerListe?: DagpengerBackendDTO[]
     forstegangstjeneste?: ForstegangstjenesteBackendDTO | null
   }
 }
@@ -39,7 +39,7 @@ export type OppdaterOpptjeningVurdering = {
   fnr?: string
   inntektEndringer?: { endringstype: Endringstype; inntektListe: InntektBackendDTO[] }[]
   dagpengerEndringer?: { endringstype: Endringstype; dagpengerListe: DagpengerBackendDTO[] }[]
-  omsorgEndringer?: { endringstype: Endringstype; omsorgListe: OmsorgBackendDTO[] }[]
+  omsorgTilSletting?: OmsorgTilSlettingDTO[]
   forstegangstjenesteEndringer?: { endringstype: Endringstype; forstegangstjeneste: ForstegangstjenesteBackendDTO }[]
 }
 

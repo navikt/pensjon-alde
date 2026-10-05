@@ -1,5 +1,6 @@
 {
   "behandlingId": 7000102,
+  "saksbehandletAv": ["A123456"],
   "type": "OppdaterOpptjeningInntektBehandling",
   "handlerName": "oppdater-opptjening-inntekt",
   "friendlyName": "Oppdater inntekter",

@@ -1,5 +1,6 @@
 {
   "behandlingId": 7000201,
+  "saksbehandletAv": ["A123456"],
   "type": "OppdaterOpptjeningOmsorgBehandling",
   "handlerName": "oppdater-opptjening-omsorg",
   "friendlyName": "Oppdater omsorg",
@@ -15,8 +16,8 @@
     {
       "aktivitetId": 7010201,
       "type": "A100OppdaterOpptjeningOmsorgAktivitet",
-      "handlerName": "oppdater-grunnlag",
-      "friendlyName": "Oppdater grunnlag",
+      "handlerName": "oppdater-omsorg",
+      "friendlyName": "Oppdater opptjeningsgrunnlag omsorg",
       "opprettet": "2025-04-01T08:50:00.000000",
       "antallGangerKjort": 1,
       "sisteAktiveringsdato": "2025-04-01T09:00:00.000000",

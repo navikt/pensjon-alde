@@ -70,14 +70,18 @@ export async function lagreOpptjeningVurdering({
     return data({ errors: { _form: validationErrors.join('. ') } as ActionErrors }, { status: 400 })
   }
 
-  const sakId = sakIdRaw ? Number(sakIdRaw) : undefined
-  if (sakIdRaw && (Number.isNaN(sakId as number) || !Number.isInteger(sakId))) {
+  if (typeof sakIdRaw !== 'string' || sakIdRaw.trim() === '') {
+    return data({ errors: { _form: 'Mangler sakId' } as ActionErrors }, { status: 400 })
+  }
+
+  const sakId = Number(sakIdRaw)
+  if (!Number.isInteger(sakId)) {
     return data({ errors: { _form: 'Ugyldig sakId' } as ActionErrors }, { status: 400 })
   }
 
   const vurdering: OppdaterOpptjeningVurdering = {
-    ...(sakId !== undefined ? { sakId } : {}),
     ...(normaliser ? normaliser(payload) : payload),
+    sakId,
   }
 
   try {
