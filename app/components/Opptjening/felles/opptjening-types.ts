@@ -1,37 +1,20 @@
 export type { OpptjeningstyperKategori, OpptjeningstyperResponse, OpptjeningTypeKode } from '~/types/opptjeningstyper'
 
-export type InntektDTO = {
-  inntektId?: number | null
-  kommune?: string | null
-  inntektAr: number
-  belop?: number | null
-  inntektType: string
-}
+import type { DagpengerBackendDTO } from '../Dagpenger/dagpenger-types'
+import type { ForstegangstjenesteBackendDTO } from '../Forstegangstjeneste/forstegangstjeneste-types'
+import type { InntektBackendDTO } from '../Inntekt/inntekt-types'
+import type { OmsorgBackendDTO } from '../Omsorg/omsorg-types'
 
-export type DagpengerDTO = {
-  dagpengerId?: number | null
-  ar: number
-  dagpengerType: string
-  uavkortetDagpengegrunnlag?: number | null
-  utbetalteDagpenger?: number | null
-  ferietillegg?: number | null
-  barnetillegg?: number | null
-}
-
-export type OmsorgDTO = {
-  omsorgId?: number | null
-  ar: number
-  omsorgType: string
-  fnrOmsorgFor?: string | null
-}
-
-export type ForstegangstjenesteDTO = {
-  forstegangstjenesteId?: number | null
-  tjenesteType: string
-  periodeType?: string | null
-  fomDato: string
-  tomDato: string
-}
+export type {
+  DagpengerBackendDTO,
+  DagpengerDTO,
+} from '../Dagpenger/dagpenger-types'
+export type {
+  ForstegangstjenesteBackendDTO,
+  ForstegangstjenesteDTO,
+} from '../Forstegangstjeneste/forstegangstjeneste-types'
+export type { InntektBackendDTO, InntektDTO } from '../Inntekt/inntekt-types'
+export type { OmsorgBackendDTO, OmsorgDTO } from '../Omsorg/omsorg-types'
 
 export type OppdaterPgiSakValg = {
   sakId: number
@@ -70,52 +53,3 @@ export type VurderingResponse = {
 export type ActionErrors = { _form?: string; _server?: string[] }
 
 export type Endringstype = 'OPPRETT' | 'OPPDATER' | 'SLETT'
-
-export type InntektBackendDTO = {
-  inntektId?: number | null
-  fnr: string
-  kilde?: string | null
-  kommune?: string | null
-  piMerke?: string | null
-  inntektAr: number
-  belop?: string | null
-  inntektType: string
-}
-
-export type DagpengerBackendDTO = {
-  dagpengerId?: number | null
-  fnr: string
-  dagpengerType: string
-  rapportType?: string | null
-  kilde?: string | null
-  ar: number
-  utbetalteDagpenger?: number | null
-  uavkortetDagpengegrunnlag?: number | null
-  ferietillegg?: number | null
-  barnetillegg?: number | null
-}
-
-export type OmsorgBackendDTO = {
-  omsorgId?: number | null
-  fnr: string
-  fnrOmsorgFor?: string | null
-  omsorgType: string
-  kilde?: string | null
-  ar: number
-}
-
-export type ForstegangstjenesteBackendDTO = {
-  forstegangstjenesteId?: number | null
-  fnr: string
-  kilde?: string | null
-  rapportType?: string | null
-  tjenestestartDato?: string | null
-  dimitteringDato?: string | null
-  forstegangstjenestePeriodeListe: {
-    forstegangstjenestePeriodeId?: number | null
-    periodeType?: string | null
-    tjenesteType: string
-    fomDato?: string | null
-    tomDato?: string | null
-  }[]
-}

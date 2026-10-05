@@ -4,8 +4,9 @@ import { useMemo } from 'react'
 import { formatCurrencyNok } from '~/utils/currency'
 import { HandlingKnapper } from '../felles/HandlingKnapper'
 import { type InntektLinjeState, REQUIRED_KOMMUNE } from '../felles/opptjening.utils'
-import type { InntektDTO, OpptjeningstyperResponse } from '../felles/opptjening-types'
+import type { OpptjeningstyperResponse } from '../felles/opptjening-types'
 import { StatusTag } from '../felles/StatusTag'
+import type { InntektDTO } from './inntekt-types'
 
 interface InntekterSeksjonProps {
   linjer: InntektLinjeState[]

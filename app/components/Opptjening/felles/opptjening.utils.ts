@@ -1,14 +1,13 @@
 import { formatCurrencyNok } from '~/utils/currency'
+import type { DagpengerBackendDTO, DagpengerDTO } from '../Dagpenger/dagpenger-types'
 import type {
-  DagpengerBackendDTO,
-  DagpengerDTO,
-  Endringstype,
   ForstegangstjenesteBackendDTO,
   ForstegangstjenesteDTO,
-  InntektBackendDTO,
-  InntektDTO,
-  OmsorgBackendDTO,
-  OmsorgDTO,
+} from '../Forstegangstjeneste/forstegangstjeneste-types'
+import type { InntektBackendDTO, InntektDTO } from '../Inntekt/inntekt-types'
+import type { OmsorgBackendDTO, OmsorgDTO } from '../Omsorg/omsorg-types'
+import type {
+  Endringstype,
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,

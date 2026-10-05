@@ -2,9 +2,10 @@ import { PlusIcon } from '@navikt/aksel-icons'
 import { BodyShort, Box, Button, Heading, Select, Table } from '@navikt/ds-react'
 import { HandlingKnapper } from '../felles/HandlingKnapper'
 import type { ForstegangstjenesteLinjeState } from '../felles/opptjening.utils'
-import type { ForstegangstjenesteDTO, OpptjeningstyperResponse } from '../felles/opptjening-types'
+import type { OpptjeningstyperResponse } from '../felles/opptjening-types'
 import { StatusTag } from '../felles/StatusTag'
 import { DatoVelgerCell } from './DatoVelgerCell'
+import type { ForstegangstjenesteDTO } from './forstegangstjeneste-types'
 
 const TIDLIGSTE_DATO = new Date(2010, 0, 1)
 

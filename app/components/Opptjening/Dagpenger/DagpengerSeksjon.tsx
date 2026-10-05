@@ -4,8 +4,9 @@ import { useMemo } from 'react'
 import { formatCurrencyNok } from '~/utils/currency'
 import { HandlingKnapper } from '../felles/HandlingKnapper'
 import type { DagpengerLinjeState } from '../felles/opptjening.utils'
-import type { DagpengerDTO, OpptjeningstyperResponse } from '../felles/opptjening-types'
+import type { OpptjeningstyperResponse } from '../felles/opptjening-types'
 import { StatusTag } from '../felles/StatusTag'
+import type { DagpengerDTO } from './dagpenger-types'
 
 interface DagpengerSeksjonProps {
   linjer: DagpengerLinjeState[]
