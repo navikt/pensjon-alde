@@ -1,6 +1,7 @@
-import { Box, HStack, Loader } from '@navikt/ds-react'
+import { Box, VStack } from '@navikt/ds-react'
 import { useEffect } from 'react'
 import { useFetcher } from 'react-router'
+import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import { OppdaterOpptjeningEndringer } from './OppdaterOpptjeningEndringer'
 import type {
@@ -9,11 +10,20 @@ import type {
   OpptjeningstyperResponse,
 } from './opptjening-types'
 
+const UTEN_TYPER: OpptjeningstyperResponse = {
+  inntekt: { typer: [], subTyper: [] },
+  omsorg: { typer: [], subTyper: [] },
+  dagpenger: { typer: [], subTyper: [] },
+  forstegangstjeneste: { typer: [], subTyper: [] },
+}
+
 /** Oppsummeringsvisningen som brukes i attestering og oppsummering for alle opptjeningsbehandlingene. */
 export const OpptjeningAktivitetComponent = ({
   behandling,
   grunnlag,
   vurdering,
+  begrunnelse,
+  visNotat,
 }: AktivitetComponentProps<OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering>) => {
   const fetcher = useFetcher<OpptjeningstyperResponse>()
 
@@ -23,24 +33,17 @@ export const OpptjeningAktivitetComponent = ({
     }
   }, [fetcher])
 
-  if (!fetcher.data) {
-    return (
-      <Box paddingBlock="space-28">
-        <HStack justify="center">
-          <Loader size="large" title="Laster opptjeningstyper" />
-        </HStack>
-      </Box>
-    )
-  }
-
   return (
     <Box paddingBlock="space-28">
-      <OppdaterOpptjeningEndringer
-        behandling={behandling}
-        vurdering={vurdering}
-        opptjeningstyper={fetcher.data}
-        opptjeningsGrunnlag={grunnlag?.opptjeningsGrunnlagDto}
-      />
+      <VStack gap="space-28">
+        <OppdaterOpptjeningEndringer
+          behandling={behandling}
+          vurdering={vurdering}
+          opptjeningstyper={fetcher.data ?? UTEN_TYPER}
+          opptjeningsGrunnlag={grunnlag?.opptjeningsGrunnlagDto}
+        />
+        {visNotat && <BegrunnelseField readOnly defaultValue={begrunnelse} />}
+      </VStack>
     </Box>
   )
 }

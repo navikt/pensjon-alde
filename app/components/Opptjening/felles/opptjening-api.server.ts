@@ -52,6 +52,7 @@ export async function lagreOpptjeningVurdering({
   const formData = await request.formData()
   const sakIdRaw = formData.get('sakId')
   const payloadRaw = formData.get('payload')
+  const begrunnelse = formData.get('begrunnelse')?.toString().trim()
 
   if (typeof payloadRaw !== 'string' || payloadRaw.length === 0) {
     return data({ errors: { _form: 'Mangler skjemadata' } as ActionErrors }, { status: 400 })
@@ -85,7 +86,7 @@ export async function lagreOpptjeningVurdering({
   }
 
   try {
-    await api.lagreVurdering(vurdering)
+    await api.lagreVurdering({ ...vurdering, ...(begrunnelse ? { begrunnelse } : {}) })
     return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
   } catch (error) {
     if (isApiError(error)) {

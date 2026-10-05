@@ -20,15 +20,22 @@ import {
   hentOpptjeningLoaderData,
   lagreOpptjeningVurdering,
 } from '~/components/Opptjening/felles/opptjening-api.server'
+import { userContext } from '~/context/user-context'
+import { Features } from '~/features'
+import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
 
 export function meta() {
   return [{ title: 'Oppdater førstegangstjeneste' }]
 }
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
-  return hentOpptjeningLoaderData({ request, behandlingId, aktivitetId })
+  const { enhet } = context.get(userContext)
+  return {
+    ...(await hentOpptjeningLoaderData({ request, behandlingId, aktivitetId })),
+    visNotat: isFeatureEnabled(Features.NOTAT, { enhet }),
+  }
 }
 
 export async function action({ params, request }: Route.ActionArgs) {
@@ -44,7 +51,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 export const Component = OpptjeningAktivitetComponent
 
 export default function OppdaterForstegangstjenesteRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, opptjeningstyper, readOnly } = loaderData
+  const { grunnlag, opptjeningstyper, readOnly, visNotat } = loaderData
   const { errors } = actionData || {}
 
   const grunnlagDto = grunnlag.opptjeningsGrunnlagDto
@@ -73,6 +80,7 @@ export default function OppdaterForstegangstjenesteRoute({ loaderData, actionDat
       opptjeningstyper={opptjeningstyper}
       readOnly={readOnly}
       errors={errors}
+      visNotat={visNotat}
       endringSummary={endringSummary}
       payload={payload}
       harKlientFeil={Object.keys(fomFeil).length > 0}

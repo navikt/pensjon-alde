@@ -898,6 +898,26 @@ describe('lagreOpptjeningVurdering', () => {
     })
   })
 
+  it('sender begrunnelse til lagreVurdering når den er fylt ut', async () => {
+    const api = fakeApi()
+    vi.mocked(createAktivitetApi).mockReturnValue(api as never)
+
+    await lagre(
+      requestMedFormData({ payload: JSON.stringify({ fnr: '12345678901' }), begrunnelse: '  Feilregistrert  ' }),
+    )
+
+    expect(api.lagreVurdering).toHaveBeenCalledWith({ sakId: 999, fnr: '12345678901', begrunnelse: 'Feilregistrert' })
+  })
+
+  it('utelater tom begrunnelse', async () => {
+    const api = fakeApi()
+    vi.mocked(createAktivitetApi).mockReturnValue(api as never)
+
+    await lagre(requestMedFormData({ payload: JSON.stringify({ fnr: '12345678901' }), begrunnelse: '   ' }))
+
+    expect(api.lagreVurdering).toHaveBeenCalledWith({ sakId: 999, fnr: '12345678901' })
+  })
+
   it('redirecter til behandlingssiden etter vellykket lagring', async () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)

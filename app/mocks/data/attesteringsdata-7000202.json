@@ -5,6 +5,7 @@
       "vurdertTidspunkt": "2025-04-02T08:30:00.000000",
       "vurdertAvBrukerId": "A123456",
       "vurdertAvBrukerNavn": "Siri Saksbehandler",
+      "begrunnelse": "Omsorgsopptjeningen er registrert på feil forelder.",
       "grunnlag": {
         "saker": [{ "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" }],
         "opptjeningsGrunnlagDto": {

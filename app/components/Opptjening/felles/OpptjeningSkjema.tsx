@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { Form, useOutletContext } from 'react-router'
 import styles from '~/common.module.css'
+import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { EndringsOppsummering } from './EndringsOppsummering'
@@ -19,6 +20,7 @@ interface OpptjeningSkjemaProps {
   endringSummary: EndringSummary
   payload: string
   harKlientFeil?: boolean
+  visNotat?: boolean
   children: ReactNode
 }
 
@@ -31,6 +33,7 @@ export function OpptjeningSkjema({
   endringSummary,
   payload,
   harKlientFeil = false,
+  visNotat = false,
   children,
 }: OpptjeningSkjemaProps) {
   const { avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
@@ -120,6 +123,8 @@ export function OpptjeningSkjema({
                   </InfoCard.Content>
                 </InfoCard>
               )}
+
+              {visNotat && <BegrunnelseField />}
 
               <input type="hidden" name="payload" value={payload} />
 
