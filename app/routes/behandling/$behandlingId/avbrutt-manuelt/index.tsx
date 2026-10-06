@@ -2,8 +2,8 @@ import { Heading, Link, Page, VStack } from '@navikt/ds-react'
 import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
+import { useBehandlingHeaderData } from '~/layout/BehandlingHeaderLayout/use-behandling-header-data'
 import { AldeBehandlingStatus } from '~/types/behandling'
-import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -13,15 +13,13 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 
   if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.AVBRUTT_AV_BRUKER) {
     return redirect(`/behandling/${behandlingId}`)
-  } else {
-    return {
-      psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
-    }
   }
+
+  return null
 }
 
-const AvbruttManuelt = ({ loaderData }: Route.ComponentProps) => {
-  const { psakPensjonsoversiktUrl } = loaderData
+const AvbruttManuelt = () => {
+  const { psakPensjonsoversiktUrl } = useBehandlingHeaderData()
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>
       <VStack gap="space-32">

@@ -2,6 +2,7 @@ import { BodyShort, Box, Detail, Heading, HStack, Label, VStack } from '@navikt/
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createMemoryRouter, RouterProvider } from 'react-router'
+import type { ToppbarInfo } from '~/api/behandling-api/types'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { getServerComponent } from '~/utils/component-discovery'
 import { formatDateToNorwegian } from '~/utils/date'
@@ -18,8 +19,10 @@ export interface PdfAktivitet {
   vurdertTidspunkt: string
 }
 
+export type BehandlingMedToppbarinfo = BehandlingDTO & ToppbarInfo
+
 export interface PdfInput {
-  behandling: BehandlingDTO
+  behandling: BehandlingMedToppbarinfo
   aktiviteter: PdfAktivitet[]
 }
 
@@ -32,7 +35,7 @@ function HeaderField({ label, value }: { label: string; value: string | null }) 
   )
 }
 
-function PdfHeader({ behandling: b }: { behandling: BehandlingDTO }) {
+function PdfHeader({ behandling: b }: { behandling: BehandlingMedToppbarinfo }) {
   const fullName = [b.fornavn, b.mellomnavn, b.etternavn].filter(Boolean).join(' ')
   return (
     <Box borderColor="neutral-subtleA" borderWidth="0 0 2 0" paddingBlock="space-16">

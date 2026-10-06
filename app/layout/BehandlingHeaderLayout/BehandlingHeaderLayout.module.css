@@ -1,0 +1,16 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.pageFullHeight :global(.aksel-page__content--grow) {
+  display: flex;
+  flex-direction: column;
+  padding-block-end: 0;
+}
+
+.pageFullHeight {
+  min-height: 0;
+  flex: 1;
+}

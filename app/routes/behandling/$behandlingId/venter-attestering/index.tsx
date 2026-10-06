@@ -3,10 +3,10 @@ import { Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
 import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
+import { useBehandlingHeaderData } from '~/layout/BehandlingHeaderLayout/use-behandling-header-data'
 import { AldeBehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { env } from '~/utils/env.server'
-import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
@@ -19,13 +19,13 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
   } else {
     return {
       psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
-      psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
     }
   }
 }
 
 const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
-  const { psakOppgaveoversiktUrl, psakPensjonsoversiktUrl } = loaderData
+  const { psakOppgaveoversiktUrl } = loaderData
+  const { psakPensjonsoversiktUrl } = useBehandlingHeaderData()
 
   return (
     <Page.Block gutters className={`${commonStyles.page} ${commonStyles.center}`}>

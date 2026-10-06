@@ -12,13 +12,6 @@ vi.mock('~/api/behandling-api', () => ({
 
 const mockBehandling: BehandlingDTO = {
   behandlingId: 123,
-  sakId: 456,
-  kravId: 789,
-  fnr: '12345678901',
-  fornavn: 'Ola',
-  etternavn: 'Nordmann',
-  mellomnavn: null,
-  fodselsdato: '1990-01-01',
   handlerName: 'alderspensjon-soknad',
   friendlyName: 'Alderspensjon søknad',
   status: BehandlingStatus.UNDER_BEHANDLING,
@@ -32,13 +25,12 @@ const mockBehandling: BehandlingDTO = {
   sisteKjoring: null,
   stoppet: null,
   processName: null,
-  sakType: null,
 }
 
 function createContext() {
   const values = new Map<unknown, unknown>([
     [userContext, { navident: 'Z999999', fornavn: 'Ola', etternavn: 'Nordmann', enhet: '1234' }],
-    [settingsContext, { showStepper: true, showMetadata: true, kladdemodus: false }],
+    [settingsContext, { showStepper: true, kladdemodus: false }],
   ])
   return { get: (key: unknown) => values.get(key) } as never
 }

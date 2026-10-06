@@ -4,10 +4,10 @@ import { useEffect } from 'react'
 import { redirect, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
+import { useBehandlingHeaderData } from '~/layout/BehandlingHeaderLayout/use-behandling-header-data'
 import { AldeBehandlingStatus } from '~/types/behandling'
 import { buildUrl } from '~/utils/build-url'
 import { env } from '~/utils/env.server'
-import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types'
 
 export const loader = async ({ request, params }: Route.LoaderArgs) => {
@@ -25,7 +25,6 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
       behandlingId,
       behandling,
       psakOppgaveoversikt: buildUrl(psakOppgaveoversikt, request, {}),
-      psakPensjonsoversikt: buildPsakOversiktUrl(request, behandling),
       status: behandling.aldeBehandlingStatus,
     }
   } else {
@@ -40,7 +39,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 const AttestertOgIverksatt = ({ loaderData }: Route.ComponentProps) => {
-  const { psakOppgaveoversikt, psakPensjonsoversikt, status } = loaderData
+  const { psakOppgaveoversikt, status } = loaderData
+  const { psakPensjonsoversiktUrl: psakPensjonsoversikt } = useBehandlingHeaderData()
   const { revalidate } = useRevalidator()
 
   useEffect(() => {
