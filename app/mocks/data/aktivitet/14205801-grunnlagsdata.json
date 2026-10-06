@@ -1,5 +1,5 @@
 {
-  "kanOppretteGenerellSak": true,
+  "saker": [{ "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" }],
   "opptjeningsGrunnlagDto": {
     "fnr": "00000000000",
     "omsorgListe": [

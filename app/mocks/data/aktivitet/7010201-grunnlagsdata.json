@@ -1,5 +1,4 @@
 {
-  "kanOppretteGenerellSak": true,
   "saker": [
     { "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" },
     { "sakId": 23077284, "sakType": "UFOREP", "sakStatus": "OPPRETTET" }

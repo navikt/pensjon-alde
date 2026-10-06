@@ -12,7 +12,6 @@ export type OppdaterPgiSakValg = {
 
 export type OppdaterOpptjeningGrunnlag = {
   saker?: OppdaterPgiSakValg[]
-  kanOppretteGenerellSak?: boolean
   opptjeningsGrunnlagDto?: {
     fnr: string | null
     omsorgListe?: OmsorgGrunnlagDTO[]
