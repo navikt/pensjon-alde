@@ -5,10 +5,7 @@ import { byggOmsorgPayload, medOmsorgGrunnlag, omsorgLabel, toOmsorgTilSletting 
 import type { OmsorgGrunnlagDTO } from './omsorg-types'
 
 const opptjeningstyper: OpptjeningstyperResponse = {
-  inntekt: { typer: [], subTyper: [] },
   omsorg: { typer: [{ code: 'OMS_BARN', description: 'Omsorg for barn' }], subTyper: [] },
-  dagpenger: { typer: [], subTyper: [] },
-  forstegangstjeneste: { typer: [], subTyper: [] },
 }
 
 describe('omsorgLabel', () => {

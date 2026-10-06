@@ -11,10 +11,7 @@ import type {
 } from './opptjening-types'
 
 const UTEN_TYPER: OpptjeningstyperResponse = {
-  inntekt: { typer: [], subTyper: [] },
   omsorg: { typer: [], subTyper: [] },
-  dagpenger: { typer: [], subTyper: [] },
-  forstegangstjeneste: { typer: [], subTyper: [] },
 }
 
 /** Oppsummeringsvisningen som brukes i attestering og oppsummering for alle opptjeningsbehandlingene. */

@@ -25,7 +25,6 @@ const { fetchOpptjeningstyper } = await import('~/api/opptjeningstyper-api.serve
 const { hentOpptjeningLoaderData, lagreOpptjeningVurdering } = await import('./opptjening-api.server')
 
 const opptjeningstyper: OpptjeningstyperResponse = {
-  inntekt: { typer: [], subTyper: [] },
   omsorg: {
     typer: [
       { code: 'OMS_BARN', description: 'Omsorg for barn' },
@@ -36,8 +35,6 @@ const opptjeningstyper: OpptjeningstyperResponse = {
     ],
     subTyper: [],
   },
-  dagpenger: { typer: [], subTyper: [] },
-  forstegangstjeneste: { typer: [], subTyper: [] },
 }
 
 function fakeApi(overrides: Partial<Record<'hentGrunnlagsdata' | 'lagreVurdering', unknown>> = {}) {
