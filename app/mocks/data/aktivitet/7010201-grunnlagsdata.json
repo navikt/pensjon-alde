@@ -1,0 +1,29 @@
+{
+  "kanOppretteGenerellSak": true,
+  "saker": [
+    { "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" },
+    { "sakId": 23077284, "sakType": "UFOREP", "sakStatus": "OPPRETTET" }
+  ],
+  "opptjeningsGrunnlagDto": {
+    "fnr": "12345678901",
+    "inntektListe": [],
+    "dagpengerListe": [],
+    "forstegangstjeneste": null,
+    "omsorgListe": [
+      {
+        "omsorgId": 502059001,
+        "kilde": "PEN",
+        "ar": 2010,
+        "omsorgType": "OBU6",
+        "fnrOmsorgFor": "01011012345"
+      },
+      {
+        "omsorgId": 502059002,
+        "kilde": "PEN",
+        "ar": 2011,
+        "omsorgType": "OBU6",
+        "fnrOmsorgFor": "01011012345"
+      }
+    ]
+  }
+}
