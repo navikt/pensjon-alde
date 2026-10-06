@@ -6,9 +6,6 @@
   ],
   "opptjeningsGrunnlagDto": {
     "fnr": "12345678901",
-    "inntektListe": [],
-    "dagpengerListe": [],
-    "forstegangstjeneste": null,
     "omsorgListe": [
       {
         "omsorgId": 502059001,
