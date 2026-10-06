@@ -33,20 +33,7 @@ export async function hentOpptjeningLoaderData({ request, behandlingId, aktivite
   return { grunnlag, opptjeningstyper, readOnly }
 }
 
-/**
- * Felles action for opptjeningsskjemaene. `valider` kjøres på den parsede payloaden og
- * returnerer feilmeldinger som blokkerer lagring, `normaliser` kan rydde payloaden før sending.
- */
-export async function lagreOpptjeningVurdering({
-  request,
-  behandlingId,
-  aktivitetId,
-  valider,
-  normaliser,
-}: AktivitetRef & {
-  valider?: (payload: OppdaterOpptjeningVurdering) => string[]
-  normaliser?: (payload: OppdaterOpptjeningVurdering) => OppdaterOpptjeningVurdering
-}) {
+export async function lagreOpptjeningVurdering({ request, behandlingId, aktivitetId }: AktivitetRef) {
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
 
   const formData = await request.formData()
@@ -66,11 +53,6 @@ export async function lagreOpptjeningVurdering({
     return data({ errors: { _form: 'Ugyldig skjemadata' } as ActionErrors }, { status: 400 })
   }
 
-  const validationErrors = valider?.(payload) ?? []
-  if (validationErrors.length > 0) {
-    return data({ errors: { _form: validationErrors.join('. ') } as ActionErrors }, { status: 400 })
-  }
-
   if (typeof sakIdRaw !== 'string' || sakIdRaw.trim() === '') {
     return data({ errors: { _form: 'Mangler sakId' } as ActionErrors }, { status: 400 })
   }
@@ -81,7 +63,7 @@ export async function lagreOpptjeningVurdering({
   }
 
   const vurdering: OppdaterOpptjeningVurdering = {
-    ...(normaliser ? normaliser(payload) : payload),
+    ...payload,
     sakId,
   }
 
