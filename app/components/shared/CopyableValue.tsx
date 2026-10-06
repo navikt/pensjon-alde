@@ -18,7 +18,7 @@ export const CopyableValue = ({
   value,
   iconPosition = 'right',
   iconSize = 'small',
-  text = value,
+  text,
   textColor = 'subtle',
   textSize = 'small',
   textWeight = 'regular',
