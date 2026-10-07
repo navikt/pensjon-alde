@@ -1,4 +1,5 @@
 export interface Attesteringsdata {
+  brukerKanAttestere: boolean
   aktiviter: AktivitetAtt[]
   journalpostId?: string
 }
