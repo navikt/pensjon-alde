@@ -13,6 +13,9 @@ spec:
         - host: "login.microsoftonline.com"
         - host: "{{{ pen.host }}}"
         - host: "teampensjon-unleash-api.nav.cloud.nais.io"
+  kafka:
+    pool: "{{{ kafka.pool }}}"
+
   envFrom:
     - secret: alde-unleash-api-token
     - secret: psak-pid-encryption-key
@@ -59,6 +62,8 @@ spec:
       value: "{{{ telemetry.environment }}}"
     - name: "MODIA_PERSONOVERSIKT"
       value: "{{{ modia.oversikt }}}"
+    - name: "BEHANDLING_KAFKA_TOPIC"
+      value: "{{{ kafka.behandling_topic }}}"
 
   image: "{{{ image }}}"
   ingresses:
