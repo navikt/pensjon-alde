@@ -85,7 +85,6 @@ describe('handler-discovery', () => {
       stoppet: null,
       aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
       status: BehandlingStatus.UNDER_BEHANDLING,
-      saksbehandletAv: [],
       aktiviteter: [],
       processName: null,
     }
@@ -151,7 +150,6 @@ describe('handler-discovery', () => {
       stoppet: null,
       aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
       status: BehandlingStatus.UNDER_BEHANDLING,
-      saksbehandletAv: [],
       aktiviteter: [],
       processName: null,
     }

@@ -7,7 +7,6 @@ const baseBehandling: BehandlingDTO = {
   behandlingId: 6359437,
   type: 'FleksibelApSak',
   aldeBehandlingStatus: AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL,
-  saksbehandletAv: [],
   handlerName: 'alderspensjon-soknad',
   friendlyName: 'Alderspensjon søknad',
   sisteKjoring: {

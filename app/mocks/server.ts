@@ -99,6 +99,7 @@ const handlers = [
 
     // Build attestering data, only includes aktiviteter present in the behandling
     const attesteringData = {
+      brukerKanAttestere: !(behandling?.saksbehandletAv ?? []).includes('Z990000'),
       aktiviter: [
         ...(epsAktivitet
           ? [

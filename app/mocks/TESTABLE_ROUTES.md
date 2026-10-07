@@ -21,7 +21,7 @@ Start the mock server with `pnpm dev:mock`.
 
 | Route | Behandling | `aldeBehandlingStatus` |
 | ------- | ------------ | ------------------------ |
-| [/behandling/2000001/venter-attestering](http://localhost:3001/behandling/2000001/venter-attestering) | 2000001 | VENTER_ATTESTERING |
+| [/behandling/2000001/attestering](http://localhost:3001/behandling/2000001/attestering) (bruker har saksbehandlet → venter) | 2000001 | VENTER_ATTESTERING |
 | [/behandling/2000001/attestering-returnert-til-saksbehandler](http://localhost:3001/behandling/2000001/attestering-returnert-til-saksbehandler) | 2000001 | VENTER_ATTESTERING |
 | [/behandling/2000002/avbrutt-automatisk](http://localhost:3001/behandling/2000002/avbrutt-automatisk) | 2000002 | AUTOMATISK_TIL_MANUELL |
 | [/behandling/2000003/avbrutt-manuelt](http://localhost:3001/behandling/2000003/avbrutt-manuelt) | 2000003 | AVBRUTT_AV_BRUKER |
