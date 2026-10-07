@@ -47,7 +47,6 @@ export default [
       route('attestering', 'routes/behandling/$behandlingId/attestering/index.tsx'),
       route('avbrutt-manuelt', 'routes/behandling/$behandlingId/avbrutt-manuelt/index.tsx'),
       route('avbrutt-automatisk', 'routes/behandling/$behandlingId/avbrutt-automatisk/index.tsx'),
-      route('venter-attestering', 'routes/behandling/$behandlingId/venter-attestering/index.tsx'),
       route('attestert-og-iverksatt', 'routes/behandling/$behandlingId/attestert-og-iverksatt/index.tsx'),
       route(
         'attestering-returnert-til-saksbehandler',

@@ -1,30 +1,9 @@
 import { CheckmarkCircleIcon } from '@navikt/aksel-icons'
 import { Heading, HStack, Link, Page, VStack } from '@navikt/ds-react'
-import { redirect } from 'react-router'
-import { createBehandlingApi } from '~/api/behandling-api'
 import commonStyles from '~/common.module.css'
 import { useBehandlingHeaderData } from '~/layout/BehandlingHeaderLayout/use-behandling-header-data'
-import { AldeBehandlingStatus } from '~/types/behandling'
-import { buildUrl } from '~/utils/build-url'
-import { env } from '~/utils/env.server'
-import type { Route } from './+types'
 
-export const loader = async ({ params, request }: Route.LoaderArgs) => {
-  const { behandlingId } = params
-
-  const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
-
-  if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_ATTESTERING) {
-    return redirect(`/behandling/${behandlingId}`)
-  } else {
-    return {
-      psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
-    }
-  }
-}
-
-const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
-  const { psakOppgaveoversiktUrl } = loaderData
+export default function VenterAttestering({ psakOppgaveoversiktUrl }: { psakOppgaveoversiktUrl: string }) {
   const { psakPensjonsoversiktUrl } = useBehandlingHeaderData()
 
   return (
@@ -43,5 +22,3 @@ const Avbrutt = ({ loaderData }: Route.ComponentProps) => {
     </Page.Block>
   )
 }
-
-export default Avbrutt

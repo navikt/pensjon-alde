@@ -6,7 +6,6 @@ import { createBehandlingApi } from '~/api/behandling-api'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
-import { userContext } from '~/context/user-context'
 import {
   type AktivitetDTO,
   AktivitetStatus,
@@ -28,13 +27,11 @@ export function getRedirectPath({
   pathname,
   behandlingId,
   behandling,
-  navident,
   justCompletedId,
 }: {
   pathname: string
   behandlingId: string
   behandling: BehandlingDTO
-  navident: string
   justCompletedId: string | null
 }): string | null {
   const exactBehandlingRoute = pathname === `/behandling/${behandlingId}`
@@ -55,11 +52,8 @@ export function getRedirectPath({
     return `/behandling/${behandlingId}/avbrutt-manuelt`
   }
 
-  if (
-    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING &&
-    behandling.saksbehandletAv.includes(navident)
-  ) {
-    return `/behandling/${behandlingId}/venter-attestering`
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING) {
+    return `/behandling/${behandlingId}/attestering`
   }
 
   if (behandling.aktiviteter.length > 0) {
@@ -99,8 +93,6 @@ export function meta({ params }: Route.MetaArgs) {
 
 export async function loader({ params, request, url, context }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
-  const { navident } = context.get(userContext)
-
   const { showStepper } = context.get(settingsContext)
   const justCompletedId = url.searchParams.get('justCompleted')
 
@@ -120,7 +112,6 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     pathname: url.pathname,
     behandlingId,
     behandling,
-    navident,
     justCompletedId,
   })
   if (redirectPath) {
