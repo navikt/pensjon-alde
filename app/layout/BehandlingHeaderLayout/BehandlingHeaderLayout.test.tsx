@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ToppbarInfo } from '~/api/behandling-api/types'
-import { loader, shouldRevalidate } from './BehandlingHeaderLayout'
+import { loader, shouldRevalidate } from '.'
 
 const hentToppbarinfo = vi.fn()
 const createBehandlingApi = vi.fn((_: { request: Request; behandlingId: string }) => ({ hentToppbarinfo }))

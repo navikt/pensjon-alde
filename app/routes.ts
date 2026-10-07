@@ -41,7 +41,7 @@ export default [
   route('/auth/microsoft', './auth/microsoft.tsx'),
   route('/settings', 'routes/settings.tsx'),
 
-  layout('layout/BehandlingHeaderLayout/BehandlingHeaderLayout.tsx', [
+  layout('layout/BehandlingHeaderLayout/index.tsx', { id: 'BehandlingHeaderLayout' }, [
     route('/behandling/:behandlingId', 'routes/behandling/$behandlingId.tsx', [
       route('oppsummering', 'routes/behandling/$behandlingId/oppsummering/index.tsx'),
       route('attestering', 'routes/behandling/$behandlingId/attestering/index.tsx'),

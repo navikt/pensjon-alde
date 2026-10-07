@@ -9,7 +9,7 @@ import { buildUrl } from '~/utils/build-url'
 import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
-import type { Route } from './+types/BehandlingHeaderLayout'
+import type { Route } from './+types/index'
 import styles from './BehandlingHeaderLayout.module.css'
 
 export async function loader({ params, request }: Route.LoaderArgs) {
