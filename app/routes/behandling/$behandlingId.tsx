@@ -1,41 +1,11 @@
-import { BugIcon, ExternalLinkIcon, PersonCircleIcon, PersonIcon, RobotSmileIcon } from '@navikt/aksel-icons'
-import {
-  BodyLong,
-  BodyShort,
-  Box,
-  Button,
-  CopyButton,
-  HStack,
-  Label,
-  Modal,
-  Page,
-  Process,
-  Show,
-  Spacer,
-  Tag,
-  Textarea,
-  VStack,
-} from '@navikt/ds-react'
+import { BugIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
+import { BodyLong, BodyShort, Box, Button, HStack, Modal, Process, Show, Textarea, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef, useState } from 'react'
-import {
-  Form,
-  Outlet,
-  redirect,
-  useFetcher,
-  useNavigate,
-  useOutletContext,
-  useParams,
-  useRevalidator,
-  useRouteLoaderData,
-} from 'react-router'
+import { Form, Outlet, redirect, useFetcher, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
-import { Fnr } from '~/components/Fnr'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
-import { userContext } from '~/context/user-context'
-import { Header } from '~/layout/Header/Header'
-import type { RootOutletContext, loader as rootLoader } from '~/root'
 import {
   type AktivitetDTO,
   AktivitetStatus,
@@ -43,10 +13,6 @@ import {
   type BehandlingDTO,
   BehandlingStatus,
 } from '~/types/behandling'
-import { buildUrl } from '~/utils/build-url'
-import { formatDateToAge, formatDateToNorwegian } from '~/utils/date'
-import { env } from '~/utils/env.server'
-import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
@@ -61,13 +27,11 @@ export function getRedirectPath({
   pathname,
   behandlingId,
   behandling,
-  navident,
   justCompletedId,
 }: {
   pathname: string
   behandlingId: string
   behandling: BehandlingDTO
-  navident: string
   justCompletedId: string | null
 }): string | null {
   const exactBehandlingRoute = pathname === `/behandling/${behandlingId}`
@@ -88,11 +52,8 @@ export function getRedirectPath({
     return `/behandling/${behandlingId}/avbrutt-manuelt`
   }
 
-  if (
-    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING &&
-    behandling.saksbehandletAv.includes(navident)
-  ) {
-    return `/behandling/${behandlingId}/venter-attestering`
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING) {
+    return `/behandling/${behandlingId}/attestering`
   }
 
   if (behandling.aktiviteter.length > 0) {
@@ -132,18 +93,11 @@ export function meta({ params }: Route.MetaArgs) {
 
 export async function loader({ params, request, url, context }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
-  const { navident } = context.get(userContext)
-
-  const { showStepper, showMetadata } = context.get(settingsContext)
+  const { showStepper } = context.get(settingsContext)
   const justCompletedId = url.searchParams.get('justCompleted')
 
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
-
-  const urls = {
-    psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
-    psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
-  }
 
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')
@@ -158,7 +112,6 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     pathname: url.pathname,
     behandlingId,
     behandling,
-    navident,
     justCompletedId,
   })
   if (redirectPath) {
@@ -171,11 +124,8 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     behandlingId,
     behandlingJobber: !behandlingFeiler && (Boolean(behandlingJobber) || Boolean(justCompletedId)),
     behandlingFeiler,
-    isOppsummering,
     isAttestering,
     showStepper: showStepper && !isOppsummering,
-    showMetadata,
-    urls,
   }
 }
 
@@ -206,17 +156,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const {
-    aktivitetId,
-    behandling,
-    behandlingJobber,
-    behandlingFeiler,
-    showStepper,
-    showMetadata,
-    isAttestering,
-    isOppsummering,
-    urls,
-  } = loaderData
+  const { aktivitetId, behandling, behandlingJobber, behandlingFeiler, showStepper, isAttestering } = loaderData
   const retryFetcher = useFetcher()
   const [venterPaRetry, setVenterPaRetry] = useState(false)
   const isLoading = behandlingJobber || venterPaRetry
@@ -244,12 +184,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     }
   }, [venterPaRetry, behandlingFeiler, kjoringUuid])
   const ref = useRef<HTMLDialogElement>(null)
-
-  const root = useRouteLoaderData<typeof rootLoader>('root')
-  if (!root) throw new Error('Root loader data not found')
-
-  const { me, verdandeAktivitetUrl, verdandeBehandlingUrl, telemetry } = root
-  const { setDarkmode, isDarkmode } = useOutletContext<RootOutletContext>()
 
   const avbrytAktivitet = () => ref.current?.showModal()
 
@@ -361,241 +295,76 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   }, [activeStepIndex])
 
   return (
-    <div className={behandlingStyles.root}>
-      <Header
-        me={me}
-        isDarkmode={isDarkmode}
-        setDarkmode={setDarkmode}
-        psakPensjonsoversiktUrl={urls.psakPensjonsoversiktUrl}
-        psakOppgaveoversiktUrl={urls.psakOppgaveoversiktUrl}
-        environment={telemetry.environment}
-        verdandeAktivitetUrl={verdandeAktivitetUrl}
-        verdandeBehandlingUrl={verdandeBehandlingUrl}
-      />
-      <Box asChild>
-        <Page contentBlockPadding="none" className={behandlingStyles.pageFullHeight}>
-          <VStack>
-            <Box
-              paddingInline="space-40"
-              paddingBlock="space-8"
-              borderWidth="1 0"
-              background="neutral-soft"
-              borderColor="neutral-subtle"
-            >
-              <HStack align="center" gap="space-4">
-                <HStack align="center">
-                  <PersonIcon fontSize="1.5em" /> <Fnr value={behandling.fnr} />
-                </HStack>
-                <span>/</span>
-                {behandling.etternavn}, {behandling.fornavn} {behandling.mellomnavn}
-                <span>/</span>
-                Født: {formatDateToNorwegian(behandling.fodselsdato)} ({formatDateToAge(behandling.fodselsdato)})
-                <Spacer />
-                {behandling.sakType}
-                {behandling.sakId && (
-                  <>
-                    <span>/</span>
-                    <HStack align="center">
-                      {behandling.sakId}
-                      <CopyButton size="small" data-color="accent" copyText={behandling.sakId?.toString() ?? ''} />
-                    </HStack>
-                  </>
-                )}
-              </HStack>
-            </Box>
-          </VStack>
-          {showMetadata && (
-            <Box padding="space-16" borderWidth="1 0">
-              <HStack gap="space-24" align="center">
-                <VStack>
-                  <Label size="small">Behandling</Label>
-                  <BodyShort>{behandling.friendlyName}</BodyShort>
-                </VStack>
-
-                <VStack>
-                  <Label size="small">Alde Status</Label>
-                  <Tag
-                    variant={behandling.aldeBehandlingStatus === AldeBehandlingStatus.FULLFORT ? 'success' : 'info'}
-                    size="small"
-                  >
-                    {behandling.aldeBehandlingStatus}
-                  </Tag>
-                </VStack>
-
-                <VStack>
-                  <Label size="small">Behandling Status</Label>
-                  <Tag
-                    variant={
-                      behandling.status === BehandlingStatus.FULLFORT
-                        ? 'success'
-                        : behandling.status === BehandlingStatus.FEILENDE
-                          ? 'error'
-                          : 'info'
-                    }
-                    size="small"
-                  >
-                    {behandling.status}
-                  </Tag>
-                </VStack>
-
-                <VStack>
-                  <Label size="small">Opprettet</Label>
-                  <BodyShort size="small">{formatDateToNorwegian(behandling.opprettet)}</BodyShort>
-                </VStack>
-
-                {behandling.kravId && (
-                  <VStack>
-                    <Label size="small">Krav</Label>
-                    <CopyButton
-                      text={behandling.kravId.toString()}
-                      copyText={behandling.kravId.toString()}
-                      data-color="accent"
-                      size="small"
-                    />
-                  </VStack>
-                )}
-
-                {behandling.sakId && (
-                  <VStack>
-                    <Label size="small">Sak</Label>
-                    <CopyButton
-                      text={behandling.sakId.toString()}
-                      copyText={behandling.sakId.toString()}
-                      data-color="accent"
-                      size="small"
-                    />
-                  </VStack>
-                )}
-
-                <Spacer />
-
-                {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && !isOppsummering && (
-                  <Button
-                    type="submit"
-                    size="small"
-                    onClick={() => window.open(`/behandling/${behandling.behandlingId}/oppsummering`, '_self')}
-                  >
-                    Vis oppsummering
-                  </Button>
-                )}
-
-                {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && isOppsummering && (
-                  <Button
-                    type="submit"
-                    size="small"
-                    onClick={() => window.open(`/behandling/${behandling.behandlingId}`, '_self')}
-                  >
-                    Fortsett saksbehandling
-                  </Button>
-                )}
-
-                {isOppsummering && behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
-                  <Button
-                    type="submit"
-                    size="small"
-                    onClick={() => window.open(urls.psakPensjonsoversiktUrl, '_blank')}
-                    icon={<ExternalLinkIcon title="a11y-title" fontSize="1.5rem" />}
-                    iconPosition="right"
-                  >
-                    Åpne pensjonsoversikten
-                  </Button>
-                )}
-
-                {behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER && (
-                  <Button
-                    data-color="danger"
-                    type="submit"
-                    size="small"
-                    variant="primary"
-                    onClick={() => ref.current?.showModal()}
-                  >
-                    Ta til manuell
-                  </Button>
-                )}
-              </HStack>
-            </Box>
-          )}
-
-          <HStack justify="start" wrap={false} style={{ flex: 1 }}>
-            <Show asChild above="2xl">
-              <Box
-                borderWidth="0 1 0 0"
-                borderColor="neutral-subtle"
-                className={behandlingStyles.pennyVenstremenyBredde}
-              >
-                <VStack>
-                  <Box
-                    paddingBlock="space-24"
-                    paddingInline="space-44"
-                    borderWidth="0 0 1 0"
-                    borderColor="neutral-subtle"
-                  >
-                    <BodyShort as="h2" size="small" weight="semibold">
-                      {behandling.processName}
-                    </BodyShort>
-                  </Box>
-
-                  <Box paddingBlock="space-24" paddingInline="space-44">
-                    <Process hideStatusText={true}>
-                      {allSteps
-                        .filter(it => showStepper || it.handlerName)
-                        .map((step, _index) => (
-                          <Process.Event
-                            className={behandlingStyles.xsmall}
-                            key={step.aktivitetId}
-                            status={finnStatus(step)}
-                            title={step.friendlyName}
-                            onClick={() => {
-                              if (!showStepper || !step.redirectUrl) return
-
-                              navigate(step.redirectUrl)
-                            }}
-                            bullet={finnProcessIcon(step)}
-                          ></Process.Event>
-                        ))}
-                    </Process>
-                  </Box>
-                </VStack>
+    <>
+      <HStack justify="start" wrap={false} style={{ flex: 1 }}>
+        <Show asChild above="2xl">
+          <Box borderWidth="0 1 0 0" borderColor="neutral-subtle" className={behandlingStyles.pennyVenstremenyBredde}>
+            <VStack>
+              <Box paddingBlock="space-24" paddingInline="space-44" borderWidth="0 0 1 0" borderColor="neutral-subtle">
+                <BodyShort as="h2" size="small" weight="semibold">
+                  {behandling.processName}
+                </BodyShort>
               </Box>
-            </Show>
 
-            <main className={behandlingStyles.mainContent}>
-              {isLoading ? (
-                <AldeLoader />
-              ) : behandlingFeiler ? (
-                <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
-              ) : (
-                <Outlet context={{ behandling, avbrytAktivitet }} />
-              )}
-            </main>
-          </HStack>
+              <Box paddingBlock="space-24" paddingInline="space-44">
+                <Process hideStatusText={true}>
+                  {allSteps
+                    .filter(it => showStepper || it.handlerName)
+                    .map((step, _index) => (
+                      <Process.Event
+                        className={behandlingStyles.xsmall}
+                        key={step.aktivitetId}
+                        status={finnStatus(step)}
+                        title={step.friendlyName}
+                        onClick={() => {
+                          if (!showStepper || !step.redirectUrl) return
 
-          <Modal ref={ref} header={{ heading: 'Vil du avbryte del-automatisk behandling?' }}>
-            <Form method="post">
-              {aktivitetId && <input type="hidden" name="aktivitetId" value={aktivitetId} />}
-              <Modal.Body>
-                <VStack gap="space-16">
-                  <BodyLong>Saksbehandlingen vil fortsettes som manuell kravbehandling.</BodyLong>
-                  <BodyLong>
-                    Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
-                    bedre. Ikke skriv personopplysninger.
-                  </BodyLong>
+                          navigate(step.redirectUrl)
+                        }}
+                        bullet={finnProcessIcon(step)}
+                      ></Process.Event>
+                    ))}
+                </Process>
+              </Box>
+            </VStack>
+          </Box>
+        </Show>
 
-                  <Textarea label="Tilbakemelding (frivillig, ikke anonymt)" name="begrunnelse" />
-                </VStack>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button type="submit" variant="primary" onClick={() => ref.current?.close()}>
-                  Avbryt behandling{' '}
-                </Button>
-                <Button type="button" variant="secondary" onClick={() => ref.current?.close()}>
-                  Fortsett del-auto behandling
-                </Button>
-              </Modal.Footer>
-            </Form>
-          </Modal>
-        </Page>
-      </Box>
-    </div>
+        <main className={behandlingStyles.mainContent}>
+          {isLoading ? (
+            <AldeLoader />
+          ) : behandlingFeiler ? (
+            <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
+          ) : (
+            <Outlet context={{ behandling, avbrytAktivitet }} />
+          )}
+        </main>
+      </HStack>
+
+      <Modal ref={ref} header={{ heading: 'Vil du avbryte del-automatisk behandling?' }}>
+        <Form method="post">
+          <input type="hidden" name="aktivitetId" value={aktivitetId} />
+          <Modal.Body>
+            <VStack gap="space-16">
+              <BodyLong>Saksbehandlingen vil fortsettes som manuell kravbehandling.</BodyLong>
+              <BodyLong>
+                Beklager at du ikke kunne fullføre denne behandlingen her. Vi vil gjerne lære så vi kan gjøre dette
+                bedre. Ikke skriv personopplysninger.
+              </BodyLong>
+
+              <Textarea label="Tilbakemelding (frivillig, ikke anonymt)" name="begrunnelse" />
+            </VStack>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button type="submit" variant="primary" onClick={() => ref.current?.close()}>
+              Avbryt behandling{' '}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => ref.current?.close()}>
+              Fortsett del-auto behandling
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </>
   )
 }

@@ -58,17 +58,6 @@ export interface BehandlingDTO {
   stoppet: string | null // LocalDateTime as ISO string
   status: BehandlingStatus
   aktiviteter: AktivitetDTO[]
-  saksbehandletAv: string[]
-
-  fnr: string | null
-  sakId: number | null
-  kravId: number | null
-  sakType: string | null
-
-  fornavn: string | null
-  mellomnavn: string | null
-  etternavn: string | null
-  fodselsdato: string | null // LocalDate as ISO string
 }
 
 export interface AldeBehandlingKjoringDTO {

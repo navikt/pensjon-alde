@@ -16,10 +16,10 @@ import {
 import React from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
-import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
+import { useBehandlingHeaderData } from '~/layout/BehandlingHeaderLayout/use-behandling-header-data'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { buildUrl } from '~/utils/build-url'
@@ -27,7 +27,6 @@ import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
 import { env } from '~/utils/env.server'
 import { dateInput, parseForm } from '~/utils/parse-form'
-import { buildPsakOversiktUrl } from '~/utils/psak-oversikt-url.server'
 import { isFeatureEnabled } from '../../../utils/unleash.server'
 import type { Route } from './+types'
 import { AfpLivsvarigVenter } from './AfpLivsvarigVenter'
@@ -109,7 +108,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const visMedMulighetForVurdering = isFeatureEnabled(Features.AFP_LIVSVARIG_MED_VURDERING)
 
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
-  const behandling = await createBehandlingApi({ request, behandlingId }).hentBehandling()
 
   const grunnlag = await api.hentGrunnlagsdata<LivsvarigOffentligAfpGrunnlag>()
   const vurdering = await api.hentVurdering<LivsvarigAfpOffentligVurdering>()
@@ -119,7 +117,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     grunnlag,
     vurdering,
     visMedMulighetForVurdering,
-    psakPensjonsoversiktUrl: buildPsakOversiktUrl(request, behandling),
     psakOppgaveoversiktUrl: buildUrl(env.psakOppgaveoversikt, request, {}),
   }
 }
@@ -292,8 +289,8 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, readOnly, psakPensjonsoversiktUrl, psakOppgaveoversiktUrl, visMedMulighetForVurdering } =
-    loaderData
+  const { grunnlag, vurdering, readOnly, psakOppgaveoversiktUrl, visMedMulighetForVurdering } = loaderData
+  const { psakPensjonsoversiktUrl } = useBehandlingHeaderData()
   const { errors } = actionData || {}
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 

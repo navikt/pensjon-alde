@@ -1,9 +1,3 @@
-.root {
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-}
-
 .xsmall {
   :global(.aksel-heading--small) {
     font-size: var(--ax-font-size-heading-xsmall);
@@ -12,17 +6,6 @@
 
 .pennyVenstremenyBredde {
   max-width: 305px;
-}
-
-.pageFullHeight :global(.aksel-page__content--grow) {
-  display: flex;
-  flex-direction: column;
-  padding-block-end: 0;
-}
-
-.pageFullHeight {
-  min-height: 0;
-  flex: 1;
 }
 
 .mainContent {

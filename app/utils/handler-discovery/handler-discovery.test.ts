@@ -85,17 +85,8 @@ describe('handler-discovery', () => {
       stoppet: null,
       aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
       status: BehandlingStatus.UNDER_BEHANDLING,
-      saksbehandletAv: [],
       aktiviteter: [],
-      fnr: null,
-      sakId: 23077283,
-      kravId: 46365419,
-      fornavn: null,
-      mellomnavn: null,
-      etternavn: null,
-      fodselsdato: null,
       processName: null,
-      sakType: null,
     }
 
     const mockAktivitet: AktivitetDTO = {
@@ -159,17 +150,8 @@ describe('handler-discovery', () => {
       stoppet: null,
       aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
       status: BehandlingStatus.UNDER_BEHANDLING,
-      saksbehandletAv: [],
       aktiviteter: [],
-      fnr: null,
-      sakId: 23077283,
-      kravId: 46365419,
-      fornavn: null,
-      mellomnavn: null,
-      etternavn: null,
-      fodselsdato: null,
       processName: null,
-      sakType: null,
     }
 
     it('should return true for aktivitet with UI implementation', () => {

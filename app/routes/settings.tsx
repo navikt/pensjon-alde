@@ -19,7 +19,6 @@ export async function action({ request }: Route.ActionArgs) {
 
   const settings = {
     showStepper: formData.has('showStepper'),
-    showMetadata: formData.has('showMetadata'),
     kladdemodus: formData.has('kladdemodus'),
   }
 
@@ -51,9 +50,6 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
               <CheckboxGroup legend="Visningsinnstillinger">
                 <Checkbox name="showStepper" value="showStepper" defaultChecked={settings.showStepper}>
                   Vis alle aktivitetene i stegvisningen
-                </Checkbox>
-                <Checkbox name="showMetadata" value="showMetadata" defaultChecked={settings.showMetadata}>
-                  Vis metadata
                 </Checkbox>
                 <Checkbox name="kladdemodus" value="kladdemodus" defaultChecked={settings.kladdemodus}>
                   Kladdemodus

@@ -5,19 +5,11 @@ import { getRedirectPath, skalViseFeilende } from './$behandlingId'
 
 const mockBehandling: BehandlingDTO = {
   behandlingId: 123,
-  sakId: 456,
-  kravId: 789,
-  fnr: '12345678901',
-  fornavn: 'Ola',
-  etternavn: 'Nordmann',
-  mellomnavn: null,
-  fodselsdato: '1990-01-01',
   handlerName: 'alderspensjon-soknad',
   friendlyName: 'Alderspensjon søknad',
   status: BehandlingStatus.UNDER_BEHANDLING,
   aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER,
   opprettet: '2024-01-01T10:00:00Z',
-  saksbehandletAv: [],
   utsattTil: null,
   aktiviteter: [],
   type: 'FORSTEGANGSBEHANDLING',
@@ -25,7 +17,6 @@ const mockBehandling: BehandlingDTO = {
   sisteKjoring: null,
   stoppet: null,
   processName: null,
-  sakType: null,
 }
 
 describe('getRedirectPath', () => {
@@ -34,7 +25,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123/aktivitet/456',
       behandlingId: '123',
       behandling: mockBehandling,
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -46,7 +36,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123/oppsummering',
       behandlingId: '123',
       behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.FULLFORT },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -58,7 +47,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123',
       behandlingId: '123',
       behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.FULLFORT },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -70,63 +58,21 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123',
       behandlingId: '123',
       behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/avbrutt-automatisk')
   })
 
-  it('redirects to venter-attestering when same saksbehandler on exact route', () => {
+  it('redirects to attestering when VENTER_ATTESTERING on exact route', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123',
       behandlingId: '123',
-      behandling: {
-        ...mockBehandling,
-        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-        saksbehandletAv: ['Z999999'],
-      },
-      navident: 'Z999999',
+      behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING },
       justCompletedId: null,
     })
 
-    expect(result).toBe('/behandling/123/venter-attestering')
-  })
-
-  it('does NOT redirect to venter-attestering when different saksbehandler', () => {
-    const result = getRedirectPath({
-      pathname: '/behandling/123',
-      behandlingId: '123',
-      behandling: {
-        ...mockBehandling,
-        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-        saksbehandletAv: ['Z888888'],
-      },
-      navident: 'Z999999',
-      justCompletedId: null,
-    })
-
-    expect(result).toBeNull()
-  })
-
-  it('does NOT let any of two saksbehandlere who behandlet attestere (both redirect to venter-attestering)', () => {
-    const saksbehandletAv = ['Z111111', 'Z222222']
-
-    for (const navident of saksbehandletAv) {
-      const result = getRedirectPath({
-        pathname: '/behandling/123',
-        behandlingId: '123',
-        behandling: {
-          ...mockBehandling,
-          aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-          saksbehandletAv,
-        },
-        navident,
-        justCompletedId: null,
-      })
-
-      expect(result).toBe('/behandling/123/venter-attestering')
-    }
+    expect(result).toBe('/behandling/123/attestering')
   })
 
   it('redirects to aktivitet when aktivitet has handlerName and friendlyName', () => {
@@ -150,7 +96,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -178,7 +123,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -206,7 +150,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: '456',
     })
 
@@ -234,7 +177,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -262,7 +204,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -290,7 +231,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -304,7 +244,6 @@ describe('getRedirectPath', () => {
       behandling: {
         ...mockBehandling,
         aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
-        saksbehandletAv: [],
         aktiviteter: [
           {
             aktivitetId: 456,
@@ -332,7 +271,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -360,7 +298,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: null,
     })
 
@@ -388,7 +325,6 @@ describe('getRedirectPath', () => {
           },
         ] as unknown as BehandlingDTO['aktiviteter'],
       },
-      navident: 'Z999999',
       justCompletedId: '456',
     })
 
@@ -417,7 +353,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      navident: 'Z999999',
       justCompletedId: '999',
     })
 
