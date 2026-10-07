@@ -133,7 +133,6 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     behandlingId,
     behandlingJobber: !behandlingFeiler && (Boolean(behandlingJobber) || Boolean(justCompletedId)),
     behandlingFeiler,
-    isOppsummering,
     isAttestering,
     showStepper: showStepper && !isOppsummering,
   }

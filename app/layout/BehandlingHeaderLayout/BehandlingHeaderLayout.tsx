@@ -25,11 +25,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 }
 
-export function shouldRevalidate({ currentParams, nextParams, defaultShouldRevalidate }: ShouldRevalidateFunctionArgs) {
-  if (currentParams.behandlingId !== nextParams.behandlingId) {
-    return defaultShouldRevalidate
-  }
-  return false
+export function shouldRevalidate({ currentParams, nextParams }: ShouldRevalidateFunctionArgs) {
+  return currentParams.behandlingId !== nextParams.behandlingId
 }
 
 export default function BehandlingHeaderLayout({ loaderData }: Route.ComponentProps) {
@@ -39,8 +36,7 @@ export default function BehandlingHeaderLayout({ loaderData }: Route.ComponentPr
   if (!root) throw new Error('Root loader data not found')
 
   const { me, verdandeAktivitetUrl, verdandeBehandlingUrl, telemetry } = root
-  const outletContext = useOutletContext<RootOutletContext>()
-  const { setDarkmode, isDarkmode } = outletContext
+  const { setDarkmode, isDarkmode } = useOutletContext<RootOutletContext>()
 
   return (
     <div className={styles.root}>
@@ -73,7 +69,7 @@ export default function BehandlingHeaderLayout({ loaderData }: Route.ComponentPr
               Født: {formatDateToNorwegian(toppbarinfo.fodselsdato)} ({formatDateToAge(toppbarinfo.fodselsdato)})
               <Spacer />
               {toppbarinfo.sakType}
-              {toppbarinfo.sakId && (
+              {toppbarinfo.sakId != null && (
                 <>
                   <span>/</span>
                   <HStack align="center">
@@ -85,7 +81,7 @@ export default function BehandlingHeaderLayout({ loaderData }: Route.ComponentPr
             </HStack>
           </Box>
 
-          <Outlet context={outletContext} />
+          <Outlet />
         </Page>
       </Box>
     </div>

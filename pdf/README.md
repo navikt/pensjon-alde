@@ -149,7 +149,7 @@ bufferen til **PDF/A-2b** med **Ghostscript** (`pdfa.ts` + `PDFA_def.ps`): fonte
 embeddes og en sRGB OutputIntent legges til. Ghostscript ligger i Docker-imaget.
 
 Dokumentet får også arkivmetadata (fra `behandling` og `toppbarInfo`, UTF-16 så æøå bevares):
-**Title** = `{friendlyName} - {navn}, sak {sakId}`, **Subject** = `{friendlyName}`,
+**Title** = `{friendlyName} - Sak: {sakId}` (bare `{friendlyName}` uten sakId), **Subject** = `{friendlyName}`,
 **Author** = `Nav - Pensjon Alde`, og **språk** `/Lang nb-NO`.
 (Merk: `/Creator` og `/Producer` settes/overstyres av Ghostscript, så vi bruker `/Author`.)
 

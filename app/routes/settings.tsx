@@ -51,7 +51,6 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
                 <Checkbox name="showStepper" value="showStepper" defaultChecked={settings.showStepper}>
                   Vis alle aktivitetene i stegvisningen
                 </Checkbox>
-
                 <Checkbox name="kladdemodus" value="kladdemodus" defaultChecked={settings.kladdemodus}>
                   Kladdemodus
                 </Checkbox>
