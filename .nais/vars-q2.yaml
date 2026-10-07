@@ -25,6 +25,10 @@ verdande:
   aktivitet_url: 'https://pensjon-verdande-q2.{subdomain}.dev.nav.no/aktivitet/{behandlingId}/{aktivitetId}'
   behandling_url: 'https://pensjon-verdande-q2.{subdomain}.dev.nav.no/behandling/{behandlingId}'
 
+kafka:
+  pool: nav-dev
+  behandling_topic: pensjon-q2.alde-behandling
+
 modia:
   oversikt: 'https://modiapersonoversikt.ansatt.dev.nav.no/person/{fnr}'
 
