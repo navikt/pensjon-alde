@@ -12,3 +12,13 @@ export interface AktivitetAtt {
   vurdertAvBrukerNavn: string
   begrunnelse?: string
 }
+
+export interface ToppbarInfo {
+  fnr: string | null
+  sakId: number | null
+  sakType: string | null
+  fornavn: string
+  etternavn: string
+  mellomnavn: string | null
+  fodselsdato: string // LocalDate as ISO string
+}

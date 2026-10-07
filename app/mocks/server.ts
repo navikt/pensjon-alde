@@ -60,6 +60,28 @@ const handlers = [
     return HttpResponse.text('Behandling not found', { status: 404 })
   }),
 
+  // GET /api/saksbehandling/alde/behandling/:id/toppbarinfo
+  http.get('*/api/saksbehandling/alde/behandling/:id/toppbarinfo', ({ params, request }) => {
+    const { id } = params
+    console.log(`🎯 MSW intercepted toppbarinfo request to: ${request.url}`)
+
+    const behandling = loadMockData(`behandling-${id}.json`) ?? loadMockData('behandling-default.json')
+
+    if (!behandling) {
+      return HttpResponse.text('Behandling not found', { status: 404 })
+    }
+
+    return HttpResponse.json({
+      fnr: behandling.fnr ?? null,
+      sakId: behandling.sakId ?? null,
+      sakType: behandling.sakType ?? null,
+      fornavn: behandling.fornavn ?? '',
+      etternavn: behandling.etternavn ?? '',
+      mellomnavn: behandling.mellomnavn ?? null,
+      fodselsdato: behandling.fodselsdato,
+    })
+  }),
+
   // Dynamic mock: loads behandling by ID and builds attestering data from its actual aktiviteter
   // GET /api/saksbehandling/alde/behandling/:id/attesteringsdata
   http.get('*/api/saksbehandling/alde/behandling/:id/attesteringsdata', ({ params, request }) => {

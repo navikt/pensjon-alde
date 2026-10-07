@@ -42,15 +42,7 @@ const baseBehandling: BehandlingDTO = {
       behandletFerdigMaskinelt: false,
     },
   ],
-  fnr: '12345678901',
-  sakId: 1001,
-  kravId: 2001,
-  fornavn: 'Ola',
-  mellomnavn: null,
-  etternavn: 'Nordmann',
-  fodselsdato: '1960-05-15',
   processName: null,
-  sakType: null,
 }
 
 const meta = {

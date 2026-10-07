@@ -50,13 +50,13 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     aktivitetId,
   })
 
-  const behandling = await behandlingApi.hentBehandling()
+  const toppbarinfo = await behandlingApi.hentToppbarinfo()
   const grunnlag = await aktivtetApi.hentGrunnlagsdata<KontrollerInntektsopplysningerForEpsGrunnlag>()
 
   // const vurdering = await api.hentVurdering<KontrollerInntektsopplysningerForEpsVurdering>()
   const vurdering = null
 
-  const modiaUrl = buildUrl(env.modia, request, { fnr: behandling.fnr })
+  const modiaUrl = buildUrl(env.modia, request, { fnr: toppbarinfo.fnr })
 
   const { enhet } = context.get(userContext)
   const visNotat = isFeatureEnabled(Features.NOTAT, { enhet: enhet })

@@ -5,13 +5,6 @@ import { getRedirectPath, skalViseFeilende } from './$behandlingId'
 
 const mockBehandling: BehandlingDTO = {
   behandlingId: 123,
-  sakId: 456,
-  kravId: 789,
-  fnr: '12345678901',
-  fornavn: 'Ola',
-  etternavn: 'Nordmann',
-  mellomnavn: null,
-  fodselsdato: '1990-01-01',
   handlerName: 'alderspensjon-soknad',
   friendlyName: 'Alderspensjon søknad',
   status: BehandlingStatus.UNDER_BEHANDLING,
@@ -25,7 +18,6 @@ const mockBehandling: BehandlingDTO = {
   sisteKjoring: null,
   stoppet: null,
   processName: null,
-  sakType: null,
 }
 
 describe('getRedirectPath', () => {

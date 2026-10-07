@@ -8,7 +8,6 @@ export const settingsMiddleware: MiddlewareFunction = async ({ request, context 
   const cookieHeader = request.headers.get('cookie')
   let settings: SettingsContext = {
     showStepper: false,
-    showMetadata: false,
     kladdemodus: false,
   }
 

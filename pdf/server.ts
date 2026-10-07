@@ -64,10 +64,9 @@ app.get('/metrics', async (_req, res) => {
   res.send(await registry.metrics())
 })
 
-function pdfTitle(input: PdfInput): string {
-  const b = input.behandling
-  const base = b.friendlyName ?? 'Behandling'
-  return b.sakId != null ? `${base} - Sak: ${b.sakId}` : base
+function pdfTitle({ behandling, toppbarInfo }: PdfInput): string {
+  const base = behandling.friendlyName ?? 'Behandling'
+  return toppbarInfo.sakId != null ? `${base} - Sak: ${toppbarInfo.sakId}` : base
 }
 
 function pdfSubject({ behandling: b }: PdfInput): string {

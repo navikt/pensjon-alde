@@ -57,10 +57,12 @@
         "status": "FULLFORT",
         "utsattTil": null
       }
-    ],
+    ]
+  },
+  "toppbarInfo": {
     "fnr": "12345678901",
     "sakId": 23077283,
-    "kravId": 46365419,
+    "sakType": "Alderspensjon",
     "fornavn": "Ola",
     "mellomnavn": null,
     "etternavn": "Nordmann",
