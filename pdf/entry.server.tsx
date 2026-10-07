@@ -19,11 +19,10 @@ export interface PdfAktivitet {
   vurdertTidspunkt: string
 }
 
-export type BehandlingMedToppbarinfo = BehandlingDTO & ToppbarInfo
-
 export interface PdfInput {
-  behandling: BehandlingMedToppbarinfo
+  behandling: BehandlingDTO
   aktiviteter: PdfAktivitet[]
+  toppbarInfo: ToppbarInfo
 }
 
 function HeaderField({ label, value }: { label: string; value: string | null }) {
@@ -35,8 +34,8 @@ function HeaderField({ label, value }: { label: string; value: string | null }) 
   )
 }
 
-function PdfHeader({ behandling: b }: { behandling: BehandlingMedToppbarinfo }) {
-  const fullName = [b.fornavn, b.mellomnavn, b.etternavn].filter(Boolean).join(' ')
+function PdfHeader({ toppbarInfo: t }: { toppbarInfo: ToppbarInfo }) {
+  const fullName = [t.fornavn, t.mellomnavn, t.etternavn].filter(Boolean).join(' ')
   return (
     <Box borderColor="neutral-subtleA" borderWidth="0 0 2 0" paddingBlock="space-16">
       <VStack gap="space-12">
@@ -47,20 +46,20 @@ function PdfHeader({ behandling: b }: { behandling: BehandlingMedToppbarinfo }) 
           <Heading size="medium">Internt notat</Heading>
         </HStack>
         <HStack gap="space-40">
-          <HeaderField label="Fødselsnummer" value={b.fnr} />
-          <HeaderField label="Fødselsdato" value={b.fodselsdato ? formatDateToNorwegian(b.fodselsdato) : null} />
-          <HeaderField label="Sak" value={b.sakId != null ? String(b.sakId) : null} />
-          <HeaderField label="Saken gjelder" value={b.sakType != null ? b.sakType : null} />
+          <HeaderField label="Fødselsnummer" value={t.fnr} />
+          <HeaderField label="Fødselsdato" value={t.fodselsdato ? formatDateToNorwegian(t.fodselsdato) : null} />
+          <HeaderField label="Sak" value={t.sakId != null ? String(t.sakId) : null} />
+          <HeaderField label="Saken gjelder" value={t.sakType} />
         </HStack>
       </VStack>
     </Box>
   )
 }
 
-function LockedAttesteringView({ behandling, aktiviteter }: PdfInput) {
+function LockedAttesteringView({ behandling, aktiviteter, toppbarInfo }: PdfInput) {
   return (
     <VStack gap="space-40">
-      <PdfHeader behandling={behandling} />
+      <PdfHeader toppbarInfo={toppbarInfo} />
       <VStack gap="space-56">
         {aktiviteter.map((a, index) => {
           const Component = getServerComponent(a.handlerName)

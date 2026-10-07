@@ -1,7 +1,7 @@
 # PDF-tjeneste (`pdf/`)
 
 En frittstående tjeneste som rendrer de eksisterende aktivitet-komponentene (Aksel +
-CSS) til PDF. Java-backend POST-er `behandling` + `aktiviteter` som JSON, tjenesten
+CSS) til PDF. Java-backend POST-er `behandling` + `aktiviteter` + `toppbarInfo` som JSON, tjenesten
 rendrer den låste attesterings-visningen og returnerer en PDF.
 
 Kjøres som **egen deployment/container** — helt adskilt fra saksbehandler-appen, men
@@ -59,6 +59,7 @@ Content-Type: application/json
 ```jsonc
 {
   "behandling": { /* BehandlingDTO — sendes til hver Component som props.behandling */ },
+  "toppbarInfo": { /* ToppbarInfo — fnr, navn, fødselsdato, sakId og sakType til PDF-headeren */ },
   "aktiviteter": [
     {
       "handlerName": "vurder-samboer",   // → getServerComponent(handlerName)
@@ -147,7 +148,7 @@ Chromium lager vanlig PDF, ikke PDF/A. Med `?format=pdfa` (default) konverteres
 bufferen til **PDF/A-2b** med **Ghostscript** (`pdfa.ts` + `PDFA_def.ps`): fonter
 embeddes og en sRGB OutputIntent legges til. Ghostscript ligger i Docker-imaget.
 
-Dokumentet får også arkivmetadata (fra `behandling`, UTF-16 så æøå bevares):
+Dokumentet får også arkivmetadata (fra `behandling` og `toppbarInfo`, UTF-16 så æøå bevares):
 **Title** = `{friendlyName} - {navn}, sak {sakId}`, **Subject** = `{friendlyName}`,
 **Author** = `Nav - Pensjon Alde`, og **språk** `/Lang nb-NO`.
 (Merk: `/Creator` og `/Producer` settes/overstyres av Ghostscript, så vi bruker `/Author`.)
