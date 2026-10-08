@@ -33,22 +33,83 @@ export interface AttesteringActionData {
   data?: { utfall?: AttesteringUtfall; begrunnelse?: string }
 }
 
-interface Props {
+interface AttesteringProps {
   aktiviteter: AktivitetTilAttestering[]
   notatUrl?: string
   visNotat: boolean
   actionData?: AttesteringActionData
 }
 
-export default function Attestering({ aktiviteter, notatUrl, visNotat, actionData }: Props) {
-  const { behandling } = useOutletContext<AktivitetOutletContext>()
+interface AktivitetAttesteringProps {
+  actionData?: AttesteringActionData
+  containerRef: React.RefObject<HTMLDivElement | null>
+}
+
+function AktivitetAttestering({ actionData, containerRef }: AktivitetAttesteringProps) {
   const { errors, data } = actionData || {}
   const isSubmitting = useIsSubmitting()
+  const [utfall, setUtfall] = React.useState<AttesteringUtfall | ''>(data?.utfall ?? '')
+
+  useEffect(() => {
+    if (utfall) {
+      containerRef.current?.scrollIntoView()
+    }
+  }, [utfall, containerRef])
+
+  return (
+    <Box background="brand-blue-soft" borderRadius="16" padding="space-28" as="div" ref={containerRef}>
+      <Form method="POST">
+        <VStack gap="space-40">
+          <Heading level="2" size="medium">
+            Attestering
+          </Heading>
+          <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
+            <Radio size="small" value={AttesteringUtfall.GODKJENN}>
+              Godkjenn
+            </Radio>
+            <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
+              Ikke godkjenn
+            </Radio>
+          </RadioGroup>
+          {utfall === AttesteringUtfall.IKKE_GODKJENN && (
+            <RadioGroup
+              legend="Velg begrunnelse"
+              name="begrunnelse"
+              error={errors?.begrunnelse}
+              defaultValue={data?.begrunnelse}
+            >
+              <Radio size="small" value="Feil i vedtak">
+                Feil i vedtak
+              </Radio>
+
+              <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
+                Forvaltningsnotat utilstrekkelig
+              </Radio>
+
+              <Radio size="small" value="Hent inn nytt grunnlag">
+                Hent inn nytt grunnlag
+              </Radio>
+
+              <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
+                Saksbehandlerstandard ikke fulgt
+              </Radio>
+            </RadioGroup>
+          )}
+          {utfall && (
+            <Button style={{ alignSelf: 'start' }} size="small" type="submit" loading={isSubmitting}>
+              {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
+            </Button>
+          )}
+        </VStack>
+      </Form>
+    </Box>
+  )
+}
+
+export default function Attestering({ aktiviteter, notatUrl, visNotat, actionData }: AttesteringProps) {
+  const { behandling } = useOutletContext<AktivitetOutletContext>()
 
   const components = getAllServerComponents()
-  const [utfall, setUtfall] = React.useState<AttesteringUtfall | undefined>(data?.utfall)
-
-  const begrunnelseRef = React.useRef<HTMLFieldSetElement>(null)
 
   const attesteringViewRef = React.useRef<HTMLDivElement>(null)
 
@@ -65,64 +126,6 @@ export default function Attestering({ aktiviteter, notatUrl, visNotat, actionDat
     } else {
       attesteringViewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
-  }
-
-  useEffect(() => {
-    if (utfall !== undefined) {
-      attesteringViewRef.current?.scrollIntoView()
-    }
-  }, [utfall])
-
-  const AktivitetAttestering = () => {
-    return (
-      <Box background="brand-blue-soft" borderRadius="16" padding="space-28" as="div" ref={attesteringViewRef}>
-        <Form method="POST">
-          <VStack gap="space-40">
-            <Heading level="2" size="medium">
-              Attestering
-            </Heading>
-            <RadioGroup legend="Beslutning" name="utfall" onChange={setUtfall} value={utfall}>
-              <Radio size="small" value={AttesteringUtfall.GODKJENN}>
-                Godkjenn
-              </Radio>
-              <Radio size="small" value={AttesteringUtfall.IKKE_GODKJENN}>
-                Ikke godkjenn
-              </Radio>
-            </RadioGroup>
-            {utfall === AttesteringUtfall.IKKE_GODKJENN && (
-              <RadioGroup
-                ref={begrunnelseRef}
-                legend="Velg begrunnelse"
-                name="begrunnelse"
-                error={errors?.begrunnelse}
-                defaultValue={data?.begrunnelse}
-              >
-                <Radio size="small" value="Feil i vedtak">
-                  Feil i vedtak
-                </Radio>
-
-                <Radio size="small" value="Forvaltningsnotat utilstrekkelig">
-                  Forvaltningsnotat utilstrekkelig
-                </Radio>
-
-                <Radio size="small" value="Hent inn nytt grunnlag">
-                  Hent inn nytt grunnlag
-                </Radio>
-
-                <Radio size="small" value="Saksbehandlerstandard ikke fulgt">
-                  Saksbehandlerstandard ikke fulgt
-                </Radio>
-              </RadioGroup>
-            )}
-            {utfall && (
-              <Button style={{ alignSelf: 'start' }} size="small" type="submit" loading={isSubmitting}>
-                {utfall === AttesteringUtfall.IKKE_GODKJENN ? 'Returner til saksbehandler' : 'Attester og iverksett'}
-              </Button>
-            )}
-          </VStack>
-        </Form>
-      </Box>
-    )
   }
 
   return (
@@ -207,7 +210,8 @@ export default function Attestering({ aktiviteter, notatUrl, visNotat, actionDat
             ) : null
           })}
         </VStack>
-        <AktivitetAttestering />
+
+        <AktivitetAttestering actionData={actionData} containerRef={attesteringViewRef} />
       </VStack>
     </Page.Block>
   )

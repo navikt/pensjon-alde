@@ -9,8 +9,5 @@ export type OpptjeningstyperKategori = {
 }
 
 export type OpptjeningstyperResponse = {
-  inntekt: OpptjeningstyperKategori
   omsorg: OpptjeningstyperKategori
-  dagpenger: OpptjeningstyperKategori
-  forstegangstjeneste: OpptjeningstyperKategori
 }

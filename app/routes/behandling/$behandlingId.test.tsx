@@ -53,6 +53,17 @@ describe('getRedirectPath', () => {
     expect(result).toBe('/behandling/123/oppsummering')
   })
 
+  it('redirects to attestering-returnert-til-saksbehandler when RETURNERT_TIL_SAKSBEHANDLER', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.RETURNERT_TIL_SAKSBEHANDLER },
+      justCompletedId: null,
+    })
+
+    expect(result).toBe('/behandling/123/attestering-returnert-til-saksbehandler')
+  })
+
   it('redirects to avbrutt-automatisk when AUTOMATISK_TIL_MANUELL on exact route', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123',

@@ -8,7 +8,6 @@ import { getServerComponent } from '~/utils/component-discovery'
 import { formatDateToNorwegian } from '~/utils/date'
 
 export interface PdfAktivitet {
-  aktivitetId: number
   handlerName: string
   aktivitet: AktivitetDTO
   grunnlag: unknown
@@ -67,7 +66,7 @@ function LockedAttesteringView({ behandling, aktiviteter, toppbarInfo }: PdfInpu
             throw new MissingComponentError([a.handlerName])
           }
           return (
-            <React.Fragment key={a.aktivitetId}>
+            <React.Fragment key={a.aktivitet.aktivitetId}>
               {index > 0 && <hr className="pdf-divider" />}
               <VStack>
                 <div className="component-area">
