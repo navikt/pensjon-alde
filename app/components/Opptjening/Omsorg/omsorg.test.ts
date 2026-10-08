@@ -5,6 +5,7 @@ import { byggOmsorgPayload, medOmsorgGrunnlag, omsorgLabel, toOmsorgTilSletting 
 import type { OmsorgGrunnlagDTO } from './omsorg-types'
 
 const opptjeningstyper: OpptjeningstyperResponse = {
+  // Oppdiktet kode – testene trenger bare en vilkårlig kode med beskrivelse
   omsorg: { typer: [{ code: 'OMS_BARN', description: 'Omsorg for barn' }], subTyper: [] },
 }
 

@@ -1,8 +1,8 @@
 import { data, redirect } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { isApiError } from '~/api/error.types'
-import { fetchOpptjeningstyper } from '~/api/opptjeningstyper-api.server'
 import type { ActionErrors, OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering } from './opptjening-types'
+import { opptjeningstyperFraGrunnlag } from './opptjeningstyper.utils'
 
 const MANGLER_ROLLE = 'Mangler rolle tilgang. Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan lagre endringer.'
 
@@ -28,7 +28,7 @@ export async function hentOpptjeningLoaderData({ request, behandlingId, aktivite
     }
   }
 
-  const opptjeningstyper = await fetchOpptjeningstyper(request)
+  const opptjeningstyper = opptjeningstyperFraGrunnlag(grunnlag)
 
   return { grunnlag, opptjeningstyper, readOnly }
 }

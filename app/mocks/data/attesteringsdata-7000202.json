@@ -8,7 +8,13 @@
       "vurdertAvBrukerNavn": "Siri Saksbehandler",
       "begrunnelse": "Omsorgsopptjeningen er registrert på feil forelder.",
       "grunnlag": {
-        "saker": [{ "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" }],
+        "saker": [
+          {
+            "sakId": 23077283,
+            "sakType": "ALDER",
+            "sakStatus": "LOPENDE"
+          }
+        ],
         "opptjeningsGrunnlagDto": {
           "fnr": "12345678901",
           "omsorgListe": [
@@ -20,7 +26,29 @@
               "fnrOmsorgFor": "01011012345"
             }
           ]
-        }
+        },
+        "opptjeningstyper": [
+          {
+            "code": "OSFE",
+            "description": "Omsorg for syke/funksjonshemmede/eldre"
+          },
+          {
+            "code": "OBO7H",
+            "description": "Omsorg for barn over 7 år med hjelpestønad sats 3 eller 4"
+          },
+          {
+            "code": "OBU7",
+            "description": "Omsorg for barn under 7 år - eget vedtak"
+          },
+          {
+            "code": "OBO6H",
+            "description": "Omsorg for barn over 6 år med hjelpestønad sats 3 eller 4"
+          },
+          {
+            "code": "OBU6",
+            "description": "Omsorg for barn under 6 år - eget vedtak"
+          }
+        ]
       },
       "vurdering": {
         "sakId": 23077283,

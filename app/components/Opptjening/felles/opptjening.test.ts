@@ -16,20 +16,18 @@ import { typeLabel } from './opptjeningstyper.utils'
 vi.mock('~/api/aktivitet-api', () => ({
   createAktivitetApi: vi.fn(),
 }))
-vi.mock('~/api/opptjeningstyper-api.server', () => ({
-  fetchOpptjeningstyper: vi.fn(),
-}))
 
 const { createAktivitetApi } = await import('~/api/aktivitet-api')
-const { fetchOpptjeningstyper } = await import('~/api/opptjeningstyper-api.server')
 const { hentOpptjeningLoaderData, lagreOpptjeningVurdering } = await import('./opptjening-api.server')
 
 const opptjeningstyper: OpptjeningstyperResponse = {
   omsorg: {
     typer: [
+      // Oppdiktet kode – testene trenger bare en vilkårlig kode med beskrivelse
       { code: 'OMS_BARN', description: 'Omsorg for barn' },
-      { code: 'OBU6', description: 'Omsorg for barn under 6 år' },
-      { code: 'OBU7', description: 'Omsorg for barn over 6 år' },
+      { code: 'OBU6', description: 'Omsorg for barn under 6 år - eget vedtak' },
+      { code: 'OBU7', description: 'Omsorg for barn under 7 år - eget vedtak' },
+      // Oppdiktet: ingen POPP-kode er prefiks av en annen, så lengste-treff-testen trenger et konstruert par
       { code: 'OBO', description: 'Omsorg for syke/eldre' },
       { code: 'OBO_PLEIE', description: 'Omsorg for pleietrengende' },
     ],
@@ -71,12 +69,11 @@ function lagre(request: Request, options: Partial<Parameters<typeof lagreOpptjen
 
 beforeEach(() => {
   vi.mocked(createAktivitetApi).mockReset()
-  vi.mocked(fetchOpptjeningstyper).mockReset().mockResolvedValue(opptjeningstyper)
 })
 
 describe('typeLabel', () => {
   it('returns description for known type code', () => {
-    expect(typeLabel(opptjeningstyper, 'OBU6')).toBe('Omsorg for barn under 6 år')
+    expect(typeLabel(opptjeningstyper, 'OBU6')).toBe('Omsorg for barn under 6 år - eget vedtak')
   })
 
   it('returns the code itself when unknown', () => {
@@ -87,12 +84,14 @@ describe('typeLabel', () => {
 describe('oversettKoderIMelding', () => {
   it('replaces a single known code embedded in a sentence', () => {
     const resultat = oversettKoderIMelding('Kan ikke slette OBU6 for 2010', opptjeningstyper)
-    expect(resultat).toBe('Kan ikke slette Omsorg for barn under 6 år (OBU6) for 2010')
+    expect(resultat).toBe('Kan ikke slette Omsorg for barn under 6 år - eget vedtak (OBU6) for 2010')
   })
 
   it('replaces multiple distinct codes in the same message', () => {
     const resultat = oversettKoderIMelding('Feil for OBU6 og OBU7', opptjeningstyper)
-    expect(resultat).toBe('Feil for Omsorg for barn under 6 år (OBU6) og Omsorg for barn over 6 år (OBU7)')
+    expect(resultat).toBe(
+      'Feil for Omsorg for barn under 6 år - eget vedtak (OBU6) og Omsorg for barn under 7 år - eget vedtak (OBU7)',
+    )
   })
 
   it('prefers the longest matching code over an overlapping prefix', () => {
@@ -229,10 +228,11 @@ describe('endringSummaryFraVurdering', () => {
 })
 
 describe('hentOpptjeningLoaderData', () => {
-  it('henter grunnlag og opptjeningstyper (happy path)', async () => {
+  it('henter grunnlag og leser opptjeningstyper fra grunnlaget (happy path)', async () => {
     const grunnlag: OppdaterOpptjeningGrunnlag = {
       saker: [],
       opptjeningsGrunnlagDto: { fnr: '123', omsorgListe: [] },
+      opptjeningstyper: [{ code: 'OBU6', description: 'Omsorg for barn under 6 år - eget vedtak' }],
     }
     const api = fakeApi({
       hentGrunnlagsdata: vi.fn().mockResolvedValue(grunnlag),
@@ -246,7 +246,9 @@ describe('hentOpptjeningLoaderData', () => {
     })
 
     expect(result.grunnlag).toBe(grunnlag)
-    expect(result.opptjeningstyper).toBe(opptjeningstyper)
+    expect(result.opptjeningstyper).toEqual({
+      omsorg: { typer: [{ code: 'OBU6', description: 'Omsorg for barn under 6 år - eget vedtak' }], subTyper: [] },
+    })
     expect(result.readOnly).toBe(false)
   })
 
@@ -264,6 +266,7 @@ describe('hentOpptjeningLoaderData', () => {
 
     expect(result.readOnly).toBe(true)
     expect(result.grunnlag).toEqual({})
+    expect(result.opptjeningstyper).toEqual({ omsorg: { typer: [], subTyper: [] } })
   })
 
   it('kaster videre feil som ikke er 403', async () => {

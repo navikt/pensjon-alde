@@ -16,6 +16,7 @@ export type OppdaterOpptjeningGrunnlag = {
     fnr: string | null
     omsorgListe?: OmsorgGrunnlagDTO[]
   }
+  opptjeningstyper?: { code?: string | null; description?: string | null }[] | null
 }
 
 export type OppdaterOpptjeningVurdering = {

@@ -66,7 +66,7 @@ test.describe('oppdater opptjening – attestering', () => {
     await expect(page.getByText('Endringene vil først bli gjeldende ved godkjenning.')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Omsorg' })).toBeVisible()
     await expect(page.getByText('Slettede linjer (1)')).toBeVisible()
-    await expect(page.getByText('Omsorg for barn under 6 år (2010) – omsorg for 01011012345')).toBeVisible()
+    await expect(page.getByText('Omsorg for barn under 6 år - eget vedtak (2010) – omsorg for 01011012345')).toBeVisible()
   })
 
   test('viser saksnummer fra vurderingen', async ({ page }) => {
