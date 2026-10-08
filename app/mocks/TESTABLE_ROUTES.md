@@ -25,6 +25,7 @@ Start the mock server with `pnpm dev:mock`.
 | ------- | ------------ | ------------------------ |
 | [/behandling/2000001/attestering](http://localhost:3001/behandling/2000001/attestering) (bruker har saksbehandlet → venter) | 2000001 | VENTER_ATTESTERING |
 | [/behandling/2000001/attestering-returnert-til-saksbehandler](http://localhost:3001/behandling/2000001/attestering-returnert-til-saksbehandler) | 2000001 | VENTER_ATTESTERING |
+| [/behandling/7000204](http://localhost:3001/behandling/7000204) (omsorg returnert av attestant → returnert-siden) | 7000204 | RETURNERT_TIL_SAKSBEHANDLER |
 | [/behandling/2000002/avbrutt-automatisk](http://localhost:3001/behandling/2000002/avbrutt-automatisk) | 2000002 | AUTOMATISK_TIL_MANUELL |
 | [/behandling/2000003/avbrutt-manuelt](http://localhost:3001/behandling/2000003/avbrutt-manuelt) | 2000003 | AVBRUTT_AV_BRUKER |
 | [/behandling/2000004/attestert-og-iverksatt](http://localhost:3001/behandling/2000004/attestert-og-iverksatt) | 2000004 | FULLFORT |
@@ -46,6 +47,7 @@ Start the mock server with `pnpm dev:mock`.
 | `behandling-6359437.json` | 6359437 | VENTER_ATTESTERING |
 | `behandling-7000201.json` | 7000201 | VENTER_SAKSBEHANDLER (omsorg) |
 | `behandling-7000202.json` | 7000202 | VENTER_ATTESTERING (omsorg) |
+| `behandling-7000204.json` | 7000204 | RETURNERT_TIL_SAKSBEHANDLER (omsorg) |
 
 ## Attesteringsdata
 

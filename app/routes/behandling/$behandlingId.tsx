@@ -44,6 +44,10 @@ export function getRedirectPath({
     return `/behandling/${behandlingId}/oppsummering`
   }
 
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.RETURNERT_TIL_SAKSBEHANDLER) {
+    return `/behandling/${behandlingId}/attestering-returnert-til-saksbehandler`
+  }
+
   if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL) {
     return `/behandling/${behandlingId}/avbrutt-automatisk`
   }

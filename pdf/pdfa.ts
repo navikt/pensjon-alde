@@ -35,12 +35,14 @@ function psAscii(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 }
 
-// Locate an sRGB ICC profile inside the container (Ghostscript ships one).
+// Locate an sRGB ICC profile shipped with Ghostscript (container or Homebrew).
 function locateIccProfile(): string {
   if (process.env.PDFA_ICC_PROFILE) return process.env.PDFA_ICC_PROFILE
 
-  const gsRoot = '/usr/share/ghostscript'
-  if (existsSync(gsRoot)) {
+  const gsRoots = ['/usr/share/ghostscript', '/opt/homebrew/share/ghostscript', '/usr/local/share/ghostscript']
+  for (const gsRoot of gsRoots.filter(existsSync)) {
+    const flat = join(gsRoot, 'iccprofiles', 'srgb.icc')
+    if (existsSync(flat)) return flat
     for (const version of readdirSync(gsRoot)) {
       const candidate = join(gsRoot, version, 'iccprofiles', 'srgb.icc')
       if (existsSync(candidate)) return candidate

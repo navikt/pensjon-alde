@@ -86,6 +86,13 @@ test.describe('oppdater opptjening – attestering', () => {
     await expect(page.getByText('Begrunnelse må fylles ut')).toBeVisible()
   })
 
+  test('returnert behandling sendes til returnert-siden, ikke oppsummering', async ({ page }) => {
+    await page.goto('/behandling/7000204')
+
+    await expect(page).toHaveURL(/\/behandling\/7000204\/attestering-returnert-til-saksbehandler$/)
+    await expect(page.getByRole('heading', { name: 'Returnert til saksbehandler' })).toBeVisible()
+  })
+
   test('godkjenning sender attestanten til kvittering', async ({ page }) => {
     await goto(page, ATTESTERING.omsorg)
 
