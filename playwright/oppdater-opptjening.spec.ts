@@ -105,4 +105,30 @@ test.describe('oppdater opptjening – attestering', () => {
 
     expect(warnings).toEqual([])
   })
+
+  test('beholder valgt begrunnelse når attesteringssiden rendres på nytt under innsending', async ({ page }) => {
+    let slippForesporsel = () => {}
+    const venter = new Promise<void>(resolve => {
+      slippForesporsel = resolve
+    })
+    await page.route('**/*.data*', async route => {
+      if (route.request().method() === 'POST') await venter
+      await route.continue()
+    })
+
+    await goto(page, ATTESTERING.omsorg)
+    await page.getByRole('radio', { name: 'Ikke godkjenn', exact: true }).check()
+    const begrunnelse = page.getByRole('radio', { name: 'Feil i vedtak', exact: true })
+    await begrunnelse.check()
+
+    const innsending = page.waitForRequest(request => request.method() === 'POST')
+    await page.getByRole('button', { name: 'Returner til saksbehandler' }).click()
+    await innsending
+    await expect(page.locator('form').filter({ hasText: 'Velg begrunnelse' }).getByRole('button')).toBeDisabled()
+
+    await expect(begrunnelse).toBeChecked()
+
+    slippForesporsel()
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+  })
 })
