@@ -11,6 +11,20 @@ export type OmsorgLinjeState = OmsorgGrunnlagDTO & {
 
 export const OMSORG_FELTER: (keyof OmsorgGrunnlagDTO)[] = ['omsorgType', 'ar', 'fnrOmsorgFor']
 
+export function grupperOmsorgLinjer(linjer: OmsorgLinjeState[]) {
+  const grupper = new Map<string | null, OmsorgLinjeState[]>()
+  for (const linje of [...linjer].sort((venstre, hoyre) => venstre.ar - hoyre.ar)) {
+    const fnr = linje.fnrOmsorgFor || null
+    const gruppe = grupper.get(fnr)
+    if (gruppe) {
+      gruppe.push(linje)
+    } else {
+      grupper.set(fnr, [linje])
+    }
+  }
+  return [...grupper.entries()]
+}
+
 export function omsorgLabel(l: OmsorgGrunnlagDTO, opptjeningstyper: OpptjeningstyperResponse): string {
   const omsorgFor = l.fnrOmsorgFor ? ` – omsorg for ${l.fnrOmsorgFor}` : ''
   return `${typeLabel(opptjeningstyper, l.omsorgType)} (${l.ar})${omsorgFor}`

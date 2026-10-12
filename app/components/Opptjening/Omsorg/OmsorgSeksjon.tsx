@@ -1,10 +1,10 @@
-import { BodyShort, Box, Heading, Table } from '@navikt/ds-react'
+import { BodyShort, Box, Heading, Table, VStack } from '@navikt/ds-react'
 import { useMemo } from 'react'
 import { Fnr } from '~/components/Fnr'
 import { HandlingKnapper } from '../felles/HandlingKnapper'
 import type { OpptjeningstyperResponse } from '../felles/opptjening-types'
 import { StatusTag } from '../felles/StatusTag'
-import type { OmsorgLinjeState } from './omsorg.utils'
+import { grupperOmsorgLinjer, type OmsorgLinjeState } from './omsorg.utils'
 
 interface OmsorgSeksjonProps {
   linjer: OmsorgLinjeState[]
@@ -15,56 +15,56 @@ interface OmsorgSeksjonProps {
 }
 
 export function OmsorgSeksjon({ linjer, opptjeningstyper, readOnly, onSlett, onGjenopprett }: OmsorgSeksjonProps) {
-  const sortert = useMemo(() => [...linjer].sort((a, b) => a.ar - b.ar), [linjer])
+  const grupper = useMemo(() => grupperOmsorgLinjer(linjer), [linjer])
 
   return (
     <Box>
-      <Heading size="small" level="3" spacing>
-        Omsorg
-      </Heading>
       {linjer.length === 0 ? (
         <BodyShort>Ingen omsorgslinjer registrert.</BodyShort>
       ) : (
-        <Box style={{ overflowX: 'auto' }}>
-          <Table size="small">
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell>Type</Table.HeaderCell>
-                <Table.HeaderCell>År</Table.HeaderCell>
-                <Table.HeaderCell>Omsorg for (fnr)</Table.HeaderCell>
-                {!readOnly && <Table.HeaderCell>Endring</Table.HeaderCell>}
-                {!readOnly && <Table.HeaderCell style={{ width: '14ch' }} />}
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {sortert.map(linje => {
-                const erSlettet = linje._status === 'deleted'
-                return (
-                  <Table.Row key={linje._id}>
-                    <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>
-                      {opptjeningstyper.omsorg.typer.find(t => t.code === linje.omsorgType)?.description ??
-                        linje.omsorgType}
-                    </Table.DataCell>
-                    <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>{linje.ar}</Table.DataCell>
-                    <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>
-                      {linje.fnrOmsorgFor ? <Fnr value={linje.fnrOmsorgFor} /> : '–'}
-                    </Table.DataCell>
-                    {!readOnly && (
-                      <Table.DataCell>
-                        <StatusTag status={linje._status} />
-                      </Table.DataCell>
-                    )}
-                    {!readOnly && (
-                      <Table.DataCell>
-                        <HandlingKnapper linje={linje} onSlett={onSlett} onGjenopprett={onGjenopprett} />
-                      </Table.DataCell>
-                    )}
+        <VStack gap="space-24">
+          {grupper.map(([fnr, omsorgLinjer]) => (
+            <Box key={fnr ?? 'ukjent'} style={{ overflowX: 'auto' }}>
+              <Heading size="xsmall" level="4" spacing>
+                Omsorg for {fnr ? <Fnr value={fnr} /> : 'ukjent person'}
+              </Heading>
+              <Table size="small" aria-label={`Omsorg for ${fnr ?? 'ukjent person'}`}>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>Type</Table.HeaderCell>
+                    <Table.HeaderCell>År</Table.HeaderCell>
+                    {!readOnly && <Table.HeaderCell>Endring</Table.HeaderCell>}
+                    {!readOnly && <Table.HeaderCell style={{ width: '14ch' }} />}
                   </Table.Row>
-                )
-              })}
-            </Table.Body>
-          </Table>
-        </Box>
+                </Table.Header>
+                <Table.Body>
+                  {omsorgLinjer.map(linje => {
+                    const erSlettet = linje._status === 'deleted'
+                    return (
+                      <Table.Row key={linje._id}>
+                        <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>
+                          {opptjeningstyper.omsorg.typer.find(t => t.code === linje.omsorgType)?.description ??
+                            linje.omsorgType}
+                        </Table.DataCell>
+                        <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>{linje.ar}</Table.DataCell>
+                        {!readOnly && (
+                          <Table.DataCell>
+                            <StatusTag status={linje._status} />
+                          </Table.DataCell>
+                        )}
+                        {!readOnly && (
+                          <Table.DataCell>
+                            <HandlingKnapper linje={linje} onSlett={onSlett} onGjenopprett={onGjenopprett} />
+                          </Table.DataCell>
+                        )}
+                      </Table.Row>
+                    )
+                  })}
+                </Table.Body>
+              </Table>
+            </Box>
+          ))}
+        </VStack>
       )}
     </Box>
   )
