@@ -31,6 +31,20 @@
               "ar": 2011,
               "omsorgType": "OBU6",
               "fnrOmsorgFor": "01011012345"
+            },
+            {
+              "omsorgId": 502059003,
+              "kilde": "PEN",
+              "ar": 2010,
+              "omsorgType": "OBO6H",
+              "fnrOmsorgFor": "01010254321"
+            },
+            {
+              "omsorgId": 502059004,
+              "kilde": "PEN",
+              "ar": 2011,
+              "omsorgType": "OBO6H",
+              "fnrOmsorgFor": "01010254321"
             }
           ]
         },

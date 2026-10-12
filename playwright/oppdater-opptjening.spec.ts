@@ -29,31 +29,39 @@ function collectControlledWarnings(page: Page) {
   return warnings
 }
 
-const oppsummering = (page: Page) => page.getByRole('heading', { name: 'Endringer som vil bli lagret' })
+const oppsummering = (page: Page) => page.getByRole('heading', { name: 'Oppsummering av endringer' })
 
 test.describe('oppdater opptjening – omsorg', () => {
-  test('viser omsorgslinjene som lesefelt uten mulighet for å legge til', async ({ page }) => {
+  test('viser omsorgslinjene gruppert per person uten mulighet for å legge til', async ({ page }) => {
     await goto(page, SKJEMA.omsorg)
     const main = page.getByRole('main')
 
     await expect(main.getByRole('heading', { name: 'Oppdater omsorg' })).toBeVisible()
-    await expect(main.getByRole('heading', { name: 'Omsorg', exact: true })).toBeVisible()
     await expect(main.getByRole('button', { name: /Legg til/ })).toBeHidden()
 
-    await expect(main.getByRole('row').filter({ hasText: 'Omsorg for barn' })).toHaveCount(2)
+    await expect(main.getByRole('table', { name: /^Omsorg for / })).toHaveCount(3)
+    await expect(
+      main
+        .getByRole('table', { name: 'Omsorg for 01011012345' })
+        .getByRole('row')
+        .filter({ hasText: 'Omsorg for barn under 6 år' }),
+    ).toHaveCount(2)
   })
 
   test('sletter en omsorgslinje og lar den gjenopprettes', async ({ page }) => {
     await goto(page, SKJEMA.omsorg)
 
+    await expect(oppsummering(page)).toBeVisible()
+    await expect(page.getByText('Ingen endringer', { exact: true })).toBeVisible()
+
     const rad = page.getByRole('row').filter({ hasText: 'Omsorg for barn' }).first()
     await rad.getByRole('button', { name: 'Slett' }).click()
 
     await expect(rad.getByText('Slettet', { exact: true })).toBeVisible()
-    await expect(oppsummering(page)).toBeVisible()
+    await expect(page.getByText('Slettede linjer (1)')).toBeVisible()
 
     await rad.getByRole('button', { name: 'Gjenopprett' }).click()
-    await expect(oppsummering(page)).toBeHidden()
+    await expect(page.getByText('Ingen endringer', { exact: true })).toBeVisible()
   })
 })
 
@@ -62,18 +70,23 @@ test.describe('oppdater opptjening – attestering', () => {
     await goto(page, ATTESTERING.omsorg)
 
     await expect(page.getByRole('heading', { name: 'Oppgaven er til attestering' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Oppsummering av endringene' })).toBeVisible()
-    await expect(page.getByText('Endringene vil først bli gjeldende ved godkjenning.')).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Omsorg' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Oppdater omsorg' })).toBeVisible()
+    await expect(oppsummering(page)).toBeVisible()
+    await expect(page.getByRole('table', { name: /^Omsorg for / })).toHaveCount(2)
+    await expect(
+      page.getByRole('table', { name: 'Omsorg for 01011012345' }).getByRole('cell', { name: 'Slettet' }),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('table', { name: 'Omsorg for 01010254321' }).getByRole('cell', { name: 'Slettet' }),
+    ).toHaveCount(0)
     await expect(page.getByText('Slettede linjer (1)')).toBeVisible()
     await expect(page.getByText('Omsorg for barn under 6 år - eget vedtak (2010) – omsorg for 01011012345')).toBeVisible()
   })
 
-  test('viser saksnummer fra vurderingen', async ({ page }) => {
+  test('viser valgt sak fra vurderingen', async ({ page }) => {
     await goto(page, ATTESTERING.omsorg)
 
-    await expect(page.getByText('Saksnummer:')).toBeVisible()
-    await expect(page.getByRole('button', { name: '23077283' })).toBeVisible()
+    await expect(page.getByRole('main').getByRole('combobox', { name: /Sak/ })).toHaveValue('23077283')
   })
 
   test('krever begrunnelse når attestanten ikke godkjenner', async ({ page }) => {
