@@ -1,7 +1,5 @@
 export { EndringsOppsummering } from './felles/EndringsOppsummering'
 export { HandlingKnapper } from './felles/HandlingKnapper'
-export { EndringstypeTag, OppdaterOpptjeningEndringer } from './felles/OppdaterOpptjeningEndringer'
-export { OpptjeningAktivitetComponent } from './felles/OpptjeningAktivitetComponent'
 export { OpptjeningSkjema } from './felles/OpptjeningSkjema'
 export * from './felles/opptjening.utils'
 export * from './felles/opptjening-types'

@@ -16,6 +16,7 @@ interface OmsorgSeksjonProps {
 
 export function OmsorgSeksjon({ linjer, opptjeningstyper, readOnly, onSlett, onGjenopprett }: OmsorgSeksjonProps) {
   const grupper = useMemo(() => grupperOmsorgLinjer(linjer), [linjer])
+  const visEndring = !readOnly || linjer.some(linje => linje._status !== 'original')
 
   return (
     <Box>
@@ -33,7 +34,7 @@ export function OmsorgSeksjon({ linjer, opptjeningstyper, readOnly, onSlett, onG
                   <Table.Row>
                     <Table.HeaderCell>Type</Table.HeaderCell>
                     <Table.HeaderCell>År</Table.HeaderCell>
-                    {!readOnly && <Table.HeaderCell>Endring</Table.HeaderCell>}
+                    {visEndring && <Table.HeaderCell>Endring</Table.HeaderCell>}
                     {!readOnly && <Table.HeaderCell style={{ width: '14ch' }} />}
                   </Table.Row>
                 </Table.Header>
@@ -47,7 +48,7 @@ export function OmsorgSeksjon({ linjer, opptjeningstyper, readOnly, onSlett, onG
                             linje.omsorgType}
                         </Table.DataCell>
                         <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>{linje.ar}</Table.DataCell>
-                        {!readOnly && (
+                        {visEndring && (
                           <Table.DataCell>
                             <StatusTag status={linje._status} />
                           </Table.DataCell>

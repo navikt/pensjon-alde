@@ -1,4 +1,4 @@
-import { medOmsorgGrunnlag, type OmsorgLinjeState, omsorgLabel } from '../Omsorg/omsorg.utils'
+import { type OmsorgLinjeState, omsorgLabel } from '../Omsorg/omsorg.utils'
 import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
@@ -92,21 +92,33 @@ export function harEndringer(summary: EndringSummary): boolean {
 }
 
 /**
- * Bygger samme oppsummering som redigeringsskjemaet, men fra en lagret vurdering.
- * `grunnlag` er opptjeningsgrunnlaget slik det var før endringene, og brukes til å
- * berike slettede omsorgslinjer med visningsfelter.
+ * Bygger omsorgslinjene fra grunnlaget og markerer linjene i en lagret vurdering som slettet,
+ * slik at skjemaet kan vises read-only i attestering og oppsummering.
+ * Slettinger som ikke finnes i grunnlaget legges til slutt med kun år og type.
  */
-export function endringSummaryFraVurdering(
-  vurdering: OppdaterOpptjeningVurdering | null | undefined,
+export function omsorgLinjerFraVurdering(
   grunnlag: OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto'] | null | undefined,
-  opptjeningstyper: OpptjeningstyperResponse,
-): EndringSummary {
-  const omsorg: OmsorgLinjeState[] = (vurdering?.omsorgTilSletting ?? []).map((dto, li) => ({
-    ...medOmsorgGrunnlag(dto, grunnlag?.omsorgListe),
-    _id: `omsorg-0-${li}`,
-    _status: 'deleted',
-    _original: null,
+  vurdering: OppdaterOpptjeningVurdering | null | undefined,
+): OmsorgLinjeState[] {
+  const omsorgListe = grunnlag?.omsorgListe ?? []
+  const tilSletting = vurdering?.omsorgTilSletting ?? []
+  const samme = (a: { ar: number; omsorgType: string }, b: { ar: number; omsorgType: string }) =>
+    a.ar === b.ar && a.omsorgType === b.omsorgType
+
+  const fraGrunnlag: OmsorgLinjeState[] = omsorgListe.map((dto, i) => ({
+    ...tilLinjeState(dto),
+    _id: `omsorg-${i}`,
+    _status: tilSletting.some(s => samme(s, dto)) ? 'deleted' : 'original',
   }))
 
-  return byggEndringSummary({ omsorg }, opptjeningstyper)
+  const utenforGrunnlag: OmsorgLinjeState[] = tilSletting
+    .filter(s => !omsorgListe.some(o => samme(o, s)))
+    .map((dto, i) => ({
+      ...dto,
+      _id: `omsorg-slettet-${i}`,
+      _status: 'deleted',
+      _original: null,
+    }))
+
+  return [...fraGrunnlag, ...utenforGrunnlag]
 }

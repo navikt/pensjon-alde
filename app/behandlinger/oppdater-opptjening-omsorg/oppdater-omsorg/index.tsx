@@ -1,23 +1,14 @@
-import { useMemo } from 'react'
-import {
-  byggEndringSummary,
-  byggOmsorgPayload,
-  OMSORG_FELTER,
-  type OmsorgGrunnlagDTO,
-  OmsorgSeksjon,
-  OpptjeningAktivitetComponent,
-  OpptjeningSkjema,
-  tilLinjeState,
-  useLinjeState,
-} from '~/components/Opptjening'
+import { useOutletContext } from 'react-router'
 import {
   hentOpptjeningLoaderData,
   lagreOpptjeningVurdering,
 } from '~/components/Opptjening/felles/opptjening-api.server'
 import { userContext } from '~/context/user-context'
 import { Features } from '~/features'
+import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
+import { OppdaterOmsorg } from './OppdaterOmsorg'
 
 export function meta() {
   return [{ title: 'Oppdater omsorg' }]
@@ -37,47 +28,23 @@ export async function action({ params, request }: Route.ActionArgs) {
   return lagreOpptjeningVurdering({ request, behandlingId, aktivitetId })
 }
 
-export const Component = OpptjeningAktivitetComponent
-
 export default function OppdaterOmsorgRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, opptjeningstyper, readOnly, visNotat } = loaderData
-  const { errors } = actionData || {}
-
-  const grunnlagDto = grunnlag.opptjeningsGrunnlagDto
-
-  const { linjer, slett, gjenopprett } = useLinjeState<OmsorgGrunnlagDTO>(
-    () => (grunnlagDto?.omsorgListe ?? []).map(tilLinjeState),
-    OMSORG_FELTER,
-  )
-
-  const endringSummary = useMemo(
-    () => byggEndringSummary({ omsorg: linjer }, opptjeningstyper),
-    [linjer, opptjeningstyper],
-  )
-
-  const payload = useMemo(
-    () => JSON.stringify(byggOmsorgPayload(linjer, grunnlagDto?.fnr ?? '')),
-    [linjer, grunnlagDto],
-  )
+  const { grunnlag, readOnly, visNotat } = loaderData
+  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
   return (
-    <OpptjeningSkjema
-      tittel="Oppdater omsorg"
-      grunnlag={grunnlag}
-      opptjeningstyper={opptjeningstyper}
+    <OppdaterOmsorg
       readOnly={readOnly}
-      errors={errors}
+      manglerTilgang={readOnly}
+      grunnlag={grunnlag}
+      vurdering={null}
+      aktivitet={aktivitet}
+      behandling={behandling}
+      avbrytAktivitet={avbrytAktivitet}
+      errors={actionData?.errors}
       visNotat={visNotat}
-      endringSummary={endringSummary}
-      payload={payload}
-    >
-      <OmsorgSeksjon
-        linjer={linjer}
-        opptjeningstyper={opptjeningstyper}
-        readOnly={readOnly}
-        onSlett={slett}
-        onGjenopprett={gjenopprett}
-      />
-    </OpptjeningSkjema>
+    />
   )
 }
+
+export const Component = OppdaterOmsorg

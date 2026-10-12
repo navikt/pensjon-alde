@@ -24,6 +24,13 @@
               "ar": 2010,
               "omsorgType": "OBU6",
               "fnrOmsorgFor": "01011012345"
+            },
+            {
+              "omsorgId": 502059002,
+              "kilde": "PEN",
+              "ar": 2011,
+              "omsorgType": "OBU6",
+              "fnrOmsorgFor": "01011012345"
             }
           ]
         },

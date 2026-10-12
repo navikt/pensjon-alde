@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   beregnStatus,
-  endringSummaryFraVurdering,
+  byggEndringSummary,
+  harEndringer,
+  omsorgLinjerFraVurdering,
   oppsummeringForKategori,
   oversettKoderIMelding,
   tilLinjeState,
@@ -193,22 +195,36 @@ describe('oppsummeringForKategori', () => {
   })
 })
 
-describe('endringSummaryFraVurdering', () => {
+describe('omsorgLinjerFraVurdering', () => {
   const grunnlag: NonNullable<OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto']> = {
     fnr: '12345678901',
-    omsorgListe: [{ omsorgId: 5, omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '10987654321' }],
+    omsorgListe: [
+      { omsorgId: 5, omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '10987654321' },
+      { omsorgId: 6, omsorgType: 'OBU6', ar: 2021, fnrOmsorgFor: '10987654321' },
+    ],
   }
 
-  it('viser slettet omsorg som slettet linje', () => {
+  it('gir uendrede linjer fra grunnlaget når det ikke finnes noen vurdering', () => {
+    const linjer = omsorgLinjerFraVurdering(grunnlag, null)
+
+    expect(linjer.map(l => l._status)).toEqual(['original', 'original'])
+    expect(harEndringer(byggEndringSummary({ omsorg: linjer }, opptjeningstyper))).toBe(false)
+  })
+
+  it('markerer linjene i vurderingen som slettet og beholder resten', () => {
     const vurdering: OppdaterOpptjeningVurdering = {
       omsorgTilSletting: [{ ar: 2020, omsorgType: 'OMS_BARN' }],
     }
 
-    const summary = endringSummaryFraVurdering(vurdering, grunnlag, opptjeningstyper)
+    const linjer = omsorgLinjerFraVurdering(grunnlag, vurdering)
 
-    expect(summary.slettede).toEqual([
+    expect(linjer.map(l => [l.omsorgType, l._status])).toEqual([
+      ['OMS_BARN', 'deleted'],
+      ['OBU6', 'original'],
+    ])
+    expect(byggEndringSummary({ omsorg: linjer }, opptjeningstyper).slettede).toEqual([
       {
-        id: 'omsorg-0-0',
+        id: 'omsorg-0',
         kategori: 'Omsorg',
         label: 'Omsorg for barn (2020) – omsorg for 10987654321',
         endringer: undefined,
@@ -216,14 +232,16 @@ describe('endringSummaryFraVurdering', () => {
     ])
   })
 
-  it('viser kun år og type når grunnlaget mangler', () => {
+  it('viser kun år og type når slettet linje mangler i grunnlaget', () => {
     const vurdering: OppdaterOpptjeningVurdering = {
       omsorgTilSletting: [{ ar: 2020, omsorgType: 'OMS_BARN' }],
     }
 
-    expect(endringSummaryFraVurdering(vurdering, undefined, opptjeningstyper).slettede[0].label).toBe(
-      'Omsorg for barn (2020)',
-    )
+    const linjer = omsorgLinjerFraVurdering(undefined, vurdering)
+
+    expect(linjer).toHaveLength(1)
+    expect(linjer[0]._status).toBe('deleted')
+    expect(byggEndringSummary({ omsorg: linjer }, opptjeningstyper).slettede[0].label).toBe('Omsorg for barn (2020)')
   })
 })
 
