@@ -40,13 +40,15 @@ export function OmsorgSeksjon({ linjer, opptjeningstyper, readOnly, onSlett, onG
               {sortert.map(linje => {
                 const erSlettet = linje._status === 'deleted'
                 return (
-                  <Table.Row key={linje._id} style={erSlettet ? { opacity: 0.45 } : undefined}>
-                    <Table.DataCell>
+                  <Table.Row key={linje._id}>
+                    <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>
                       {opptjeningstyper.omsorg.typer.find(t => t.code === linje.omsorgType)?.description ??
                         linje.omsorgType}
                     </Table.DataCell>
-                    <Table.DataCell>{linje.ar}</Table.DataCell>
-                    <Table.DataCell>{linje.fnrOmsorgFor ? <Fnr value={linje.fnrOmsorgFor} /> : '–'}</Table.DataCell>
+                    <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>{linje.ar}</Table.DataCell>
+                    <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>
+                      {linje.fnrOmsorgFor ? <Fnr value={linje.fnrOmsorgFor} /> : '–'}
+                    </Table.DataCell>
                     {!readOnly && (
                       <Table.DataCell>
                         <StatusTag status={linje._status} />
