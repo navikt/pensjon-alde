@@ -32,8 +32,8 @@ export function OmsorgSeksjon({ linjer, opptjeningstyper, readOnly, onSlett, onG
                 <Table.HeaderCell>Type</Table.HeaderCell>
                 <Table.HeaderCell>År</Table.HeaderCell>
                 <Table.HeaderCell>Omsorg for (fnr)</Table.HeaderCell>
-                {!readOnly && <Table.HeaderCell>Status</Table.HeaderCell>}
-                {!readOnly && <Table.HeaderCell />}
+                {!readOnly && <Table.HeaderCell>Endring</Table.HeaderCell>}
+                {!readOnly && <Table.HeaderCell style={{ width: '14ch' }} />}
               </Table.Row>
             </Table.Header>
             <Table.Body>

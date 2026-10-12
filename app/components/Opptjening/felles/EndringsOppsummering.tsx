@@ -1,5 +1,5 @@
 import { VStack } from '@navikt/ds-react'
-import type { EndringSummary } from './opptjening.utils'
+import { type EndringSummary, harEndringer } from './opptjening.utils'
 
 interface EndringsOppsummeringProps {
   summary: EndringSummary
@@ -7,14 +7,13 @@ interface EndringsOppsummeringProps {
 
 export const EndringsOppsummering = ({ summary }: EndringsOppsummeringProps) => (
   <VStack gap="space-12">
+    {harEndringer(summary) || <div>Ingen endringer</div>}
     {summary.nye.length > 0 && (
       <div>
         <strong>Nye linjer ({summary.nye.length})</strong>
         <ul>
           {summary.nye.map(item => (
-            <li key={item.id}>
-              {item.kategori}: {item.label}
-            </li>
+            <li key={item.id}>{item.label}</li>
           ))}
         </ul>
       </div>
@@ -26,7 +25,7 @@ export const EndringsOppsummering = ({ summary }: EndringsOppsummeringProps) => 
         <ul>
           {summary.endrede.map(item => (
             <li key={item.id}>
-              {item.kategori}: {item.label}
+              {item.label}
               {item.endringer && item.endringer.length > 0 && (
                 <ul>
                   {item.endringer.map(e => (
@@ -45,9 +44,7 @@ export const EndringsOppsummering = ({ summary }: EndringsOppsummeringProps) => 
         <strong>Slettede linjer ({summary.slettede.length})</strong>
         <ul>
           {summary.slettede.map(item => (
-            <li key={item.id}>
-              {item.kategori}: {item.label}
-            </li>
+            <li key={item.id}>{item.label}</li>
           ))}
         </ul>
       </div>

@@ -113,16 +113,14 @@ export function OpptjeningSkjema({
 
               {children}
 
-              {harEndringer && (
-                <InfoCard data-color="info">
-                  <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
-                    <InfoCard.Title>Endringer som vil bli lagret</InfoCard.Title>
-                  </InfoCard.Header>
-                  <InfoCard.Content>
-                    <EndringsOppsummering summary={endringSummary} />
-                  </InfoCard.Content>
-                </InfoCard>
-              )}
+              <InfoCard data-color="info">
+                <InfoCard.Header icon={<InformationSquareIcon aria-hidden />}>
+                  <InfoCard.Title>Oppsummering av endringer</InfoCard.Title>
+                </InfoCard.Header>
+                <InfoCard.Content>
+                  <EndringsOppsummering summary={endringSummary} />
+                </InfoCard.Content>
+              </InfoCard>
 
               {visNotat && <BegrunnelseField />}
 

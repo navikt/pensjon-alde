@@ -11,19 +11,13 @@ interface HandlingKnapperProps {
 export function HandlingKnapper({ linje, onSlett, onGjenopprett }: HandlingKnapperProps) {
   if (linje._status === 'deleted') {
     return (
-      <Button type="button" variant="tertiary" size="small" onClick={() => onGjenopprett(linje._id)}>
+      <Button type="button" variant="secondary" size="small" onClick={() => onGjenopprett(linje._id)}>
         Gjenopprett
       </Button>
     )
   }
   return (
-    <Button
-      type="button"
-      variant="tertiary-neutral"
-      size="small"
-      icon={<TrashIcon aria-hidden />}
-      onClick={() => onSlett(linje._id)}
-    >
+    <Button type="button" variant="secondary" size="small" onClick={() => onSlett(linje._id)}>
       Slett
     </Button>
   )
