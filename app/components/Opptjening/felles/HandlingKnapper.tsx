@@ -1,4 +1,3 @@
-import { TrashIcon } from '@navikt/aksel-icons'
 import { Button } from '@navikt/ds-react'
 import type { LinjeStatus } from './opptjening.utils'
 
