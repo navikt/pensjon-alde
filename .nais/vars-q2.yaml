@@ -22,7 +22,6 @@ psak:
 
 verdande:
   links_enabled: true
-  aktivitet_url: 'https://pensjon-verdande-q2.{subdomain}.dev.nav.no/aktivitet/{behandlingId}/{aktivitetId}'
   behandling_url: 'https://pensjon-verdande-q2.{subdomain}.dev.nav.no/behandling/{behandlingId}'
 
 kafka:

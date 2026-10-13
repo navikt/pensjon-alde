@@ -50,8 +50,6 @@ spec:
       value: "{{ psak.oppgaveoversikt }}"
     - name: "PENNY_JOURNALPOST_URL_TEMPLATE"
       value: "{{ psak.penny_journalpost_url_template }}"
-    - name: "VERDANDE_AKTIVITET_URL"
-      value: "{{{ verdande.aktivitet_url }}}"
     - name: "VERDANDE_BEHANDLING_URL"
       value: "{{{ verdande.behandling_url }}}"
     - name: "VERDANDE_LINKS_ENABLED"
