@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { Consumer, MessagesStreamModes, stringDeserializers } from '@platformatic/kafka'
 import type { BehandlingDTO } from '~/types/behandling'
+import { createLogger } from '~/utils/logger.server'
 
 type Subscription = { onEvent: (event: BehandlingDTO) => void; onClose: () => void }
 type Status = 'disconnected' | 'connecting' | 'connected'
@@ -24,7 +25,7 @@ globalThis.__behandlingEvents ??= {
 }
 const state = globalThis.__behandlingEvents
 
-const log = (message: string, ...args: unknown[]) => console.log(`[behandling-events] ${message}`, ...args)
+const log = createLogger('behandling-events')
 
 export function connections() {
   const perBehandling = Object.fromEntries(
@@ -48,7 +49,7 @@ function dispatch(event: BehandlingDTO) {
     try {
       subscription.onEvent(event)
     } catch (error) {
-      console.error('[behandling-events] Subscriber failed', { behandlingId: event.behandlingId }, error)
+      log.error('Subscriber failed', { behandlingId: event.behandlingId }, error)
     }
   }
 }
@@ -56,12 +57,12 @@ function dispatch(event: BehandlingDTO) {
 function closeAllSubscriptions() {
   const subscriptions = [...state.subscriptions.values()].flatMap(set => [...set])
   state.subscriptions.clear()
-  log('Closing all subscriptions', { count: subscriptions.length })
+  log.info('Closing all subscriptions', { count: subscriptions.length })
   for (const subscription of subscriptions) {
     try {
       subscription.onClose()
     } catch (error) {
-      console.error('[behandling-events] Failed to close subscription', error)
+      log.error('Failed to close subscription', {}, error)
     }
   }
 }
@@ -77,7 +78,7 @@ async function startConsumer() {
   const groupId = `pensjon-alde-${state.instanceId}`
   const brokers = KAFKA_BROKERS.split(',')
 
-  log('Connecting to Kafka', {
+  log.info('Connecting to Kafka', {
     brokers,
     topic: BEHANDLING_KAFKA_TOPIC,
     groupId,
@@ -110,7 +111,7 @@ async function startConsumer() {
   }
 
   state.status = 'connected'
-  log('Connected to Kafka, consuming from latest offset', { topic: BEHANDLING_KAFKA_TOPIC, groupId })
+  log.info('Connected to Kafka, consuming from latest offset', { topic: BEHANDLING_KAFKA_TOPIC, groupId })
 
   void (async () => {
     try {
@@ -118,17 +119,17 @@ async function startConsumer() {
         const position = { partition: message.partition, offset: String(message.offset), key: message.key }
 
         if (!message.value) {
-          log('Skipping message without value', position)
+          log.warn('Skipping message without value', position)
           continue
         }
 
         const event = parseEvent(message.value)
         if (!event) {
-          log('Skipping unparseable message', { ...position, value: message.value })
+          log.warn('Skipping unparseable message', { ...position, value: message.value })
           continue
         }
 
-        log('Received message', {
+        log.info('Received message', {
           ...position,
           behandlingId: event.behandlingId,
           status: event.status,
@@ -137,9 +138,9 @@ async function startConsumer() {
         })
         dispatch(event)
       }
-      log('Kafka stream ended')
+      log.info('Kafka stream ended')
     } catch (error) {
-      console.error('[behandling-events] Consumer failed', error)
+      log.error('Consumer failed', {}, error)
     } finally {
       state.status = 'disconnected'
       await consumer.close().catch(() => {})
