@@ -1,5 +1,8 @@
 import { connect, connections, subscribe } from '~/behandling-events/behandling-events.server'
+import { createLogger } from '~/utils/logger.server'
 import type { Route } from './+types/behandling-events'
+
+const log = createLogger('behandling-events')
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const behandlingId = Number(params.behandlingId)
@@ -11,10 +14,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   try {
     await connect()
   } catch (error) {
-    console.warn('[behandling-events] Rejected client, Kafka not connected', {
-      behandlingId,
-      error: error instanceof Error ? error.message : String(error),
-    })
+    log.warn('Rejected client, Kafka not connected', { behandlingId }, error)
     return new Response('Kafka not connected', { status: 503 })
   }
 
@@ -32,14 +32,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       })
       const ping = setInterval(() => send('event: ping\ndata: {}\n\n'), 20_000)
 
-      console.log('[behandling-events] Client connected', { behandlingId, connections: connections() })
+      log.info('Client connected', { behandlingId, connections: connections() })
 
       cleanup = () => {
         if (closed) return
         closed = true
         clearInterval(ping)
         unsubscribe()
-        console.log('[behandling-events] Client disconnected', { behandlingId, connections: connections() })
+        log.info('Client disconnected', { behandlingId, connections: connections() })
       }
 
       const close = () => {
