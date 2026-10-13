@@ -13,3 +13,9 @@
   -moz-user-select: none;
   -ms-user-select: none;
 }
+
+@media print {
+  .copyButton {
+    display: none;
+  }
+}
