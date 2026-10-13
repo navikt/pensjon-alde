@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
-import { finnAktivitetUnderBehandling, getNesteAktivitetPathFraEvent, skalPolle, vurderEvent } from './$behandlingId'
+import {
+  finnAktivitetUnderBehandling,
+  getNesteAktivitetPathFraEvent,
+  harEndretStatus,
+  skalPolle,
+  vurderEvent,
+} from './$behandlingId'
 
 const aktivitet = (overrides: Partial<AktivitetDTO>): AktivitetDTO => ({
   aktivitetId: 1,
@@ -168,5 +174,28 @@ describe('skalPolle', () => {
 
   it('poller med Kafka-strøm når sikkerhetsintervallet har gått', () => {
     expect(skalPolle({ live: true, sistRevalidert: 0, now: 10_000 })).toBe(true)
+  })
+})
+
+describe('harEndretStatus', () => {
+  const venterAttestering = event({ aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING })
+
+  it('er false når statusene er like', () => {
+    expect(harEndretStatus(venterAttestering, venterAttestering)).toBe(false)
+  })
+
+  it('er true når aldeBehandlingStatus er endret', () => {
+    expect(
+      harEndretStatus(event({ aldeBehandlingStatus: AldeBehandlingStatus.VENTER_SAKSBEHANDLER }), venterAttestering),
+    ).toBe(true)
+  })
+
+  it('er true når status er endret', () => {
+    expect(
+      harEndretStatus(
+        event({ aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING, status: BehandlingStatus.FEILENDE }),
+        venterAttestering,
+      ),
+    ).toBe(true)
   })
 })

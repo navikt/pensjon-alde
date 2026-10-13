@@ -15,7 +15,7 @@ import { createBehandlingApi } from '~/api/behandling-api'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
-import { BehandlingEventsContext, useBehandlingEvents } from '~/hooks/use-behandling-events'
+import { BehandlingEventsContext, LIVE_POLL_INTERVAL_MS, useBehandlingEvents } from '~/hooks/use-behandling-events'
 import {
   type AktivitetDTO,
   AktivitetStatus,
@@ -28,7 +28,6 @@ import behandlingStyles from './$behandlingId.module.css'
 
 const POLL_INTERVAL_MS = 1500
 const POLL_MAX_MS = 120_000
-const LIVE_POLL_INTERVAL_MS = 10_000
 
 /**
  * Poller hvert POLL_INTERVAL_MS uten Kafka-strøm. Med strøm polles det sjeldnere som et sikkerhetsnett,
@@ -40,6 +39,10 @@ export function skalPolle({ live, sistRevalidert, now }: { live: boolean; sistRe
 
 export function skalViseFeilende(behandling: BehandlingDTO): boolean {
   return behandling.status === BehandlingStatus.FEILENDE
+}
+
+export function harEndretStatus(event: BehandlingDTO, behandling: BehandlingDTO): boolean {
+  return event.aldeBehandlingStatus !== behandling.aldeBehandlingStatus || event.status !== behandling.status
 }
 
 export function finnAktivitetSomSkalVises(aktiviteter: AktivitetDTO[]): AktivitetDTO | undefined {
@@ -267,9 +270,10 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   // Mens maskinen jobber: naviger direkte til neste aktivitet når Kafka-meldingen sier
   // at behandlingen venter på saksbehandler. Revalider kun når maskinen har stoppet uten en
   // aktivitet vi kan navigere til. Ellers brukes meldingen bare til å vise fremdrift.
+  // Når maskinen ikke jobber (f.eks. venter på attestering) revalideres det når statusen endres.
   const { live: sseLive, lastEvent } = useBehandlingEvents(behandling.behandlingId, {
     onEvent: event => {
-      if (!isLoadingRef.current) return false
+      if (!isLoadingRef.current) return harEndretStatus(event, behandling)
 
       const handling = vurderEvent(event, justCompletedId)
       if (handling.type === 'naviger') {
