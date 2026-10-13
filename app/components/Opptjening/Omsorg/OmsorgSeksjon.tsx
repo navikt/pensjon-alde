@@ -26,7 +26,7 @@ export function OmsorgSeksjon({ linjer, opptjeningstyper, readOnly, onSlett, onG
         <VStack gap="space-24">
           {grupper.map(([fnr, omsorgLinjer]) => (
             <Box key={fnr ?? 'ukjent'} style={{ overflowX: 'auto' }}>
-              <Heading size="xsmall" level="4" spacing>
+              <Heading size="xsmall" level="3" spacing>
                 Omsorg for {fnr ? <Fnr value={fnr} /> : 'ukjent person'}
               </Heading>
               <Table size="small" aria-label={`Omsorg for ${fnr ?? 'ukjent person'}`}>
