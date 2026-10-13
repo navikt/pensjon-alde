@@ -68,7 +68,6 @@ complete_step
   echo PENNY_JOURNALPOST_URL_TEMPLATE='https://pensjon-penny-q2.{subdomain}.dev.nav.no/psak/api/bff/dokument/dokumentoversikt/dokument/{journalpostId}.pdf'
   echo MODIA_PERSONOVERSIKT='https://modiapersonoversikt.ansatt.dev.nav.no/person/{fnr}'
   echo VERDANDE_BEHANDLING_URL="'http://localhost:3000/behandling/{behandlingId}'"
-  echo VERDANDE_AKTIVITET_URL="'http://localhost:3000/behandling/{behandlingId}/aktivitet/{aktivitetId}'"
   echo VERDANDE_LINKS_ENABLED="'true'"
   echo TELEMETRY_URL="https://telemetry.ekstern.dev.nav.no/collect"
   echo TELEMETRY_ENVIRONMENT="local"
