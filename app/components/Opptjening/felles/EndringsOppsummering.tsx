@@ -1,4 +1,4 @@
-import { VStack } from '@navikt/ds-react'
+import { BodyShort, VStack } from '@navikt/ds-react'
 import { type EndringSummary, harEndringer } from './opptjening.utils'
 
 interface EndringsOppsummeringProps {
@@ -7,7 +7,7 @@ interface EndringsOppsummeringProps {
 
 export const EndringsOppsummering = ({ summary }: EndringsOppsummeringProps) => (
   <VStack gap="space-12">
-    {harEndringer(summary) || <div>Ingen endringer</div>}
+    {harEndringer(summary) || <BodyShort>Ingen endringer</BodyShort>}
     {summary.nye.length > 0 && (
       <div>
         <strong>Nye linjer ({summary.nye.length})</strong>
