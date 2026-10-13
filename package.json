@@ -10,6 +10,7 @@
     "build": "react-router build",
     "dev": "NODE_ENV=development node --experimental-strip-types server.ts",
     "dev:pdf": "node --experimental-strip-types pdf/server.ts",
+    "dev:q2": "PEN_URL=https://pensjon-pen-q2.dev.adeo.no react-router dev",
     "dev:mock": "NODE_ENV=mock react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "lint": "biome lint .",
@@ -59,7 +60,7 @@
     "react-router": "^8.3.1",
     "remix-auth": "^4.2.0",
     "remix-auth-oauth2": "^3.4.1",
-    "unleash-client": "^6.12.1",
+    "unleash-client": "^6.12.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {
