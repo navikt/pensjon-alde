@@ -62,6 +62,10 @@ export async function lagreOpptjeningVurdering({ request, behandlingId, aktivite
     return data({ errors: { _form: 'Ugyldig sakId' } as ActionErrors }, { status: 400 })
   }
 
+  if (!Array.isArray(payload.omsorgTilSletting) || payload.omsorgTilSletting.length === 0) {
+    return data({ errors: { _form: 'Ingen endringer er registrert' } as ActionErrors }, { status: 400 })
+  }
+
   const vurdering: OppdaterOpptjeningVurdering = {
     ...payload,
     sakId,
