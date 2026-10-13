@@ -1,7 +1,10 @@
-import type { LinjeStatus } from '../felles/opptjening.utils'
-import type { OppdaterOpptjeningVurdering, OpptjeningstyperResponse } from '../felles/opptjening-types'
-import { typeLabel } from '../felles/opptjeningstyper.utils'
-import type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from './omsorg-types'
+import type { LinjeStatus } from '~/components/Opptjening/felles/opptjening.utils'
+import type {
+  OppdaterOpptjeningVurdering,
+  OpptjeningstyperResponse,
+} from '~/components/Opptjening/felles/opptjening-types'
+import { typeLabel } from '~/components/Opptjening/felles/opptjeningstyper.utils'
+import type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from './omsorg.types'
 
 export type OmsorgLinjeState = OmsorgGrunnlagDTO & {
   _id: string

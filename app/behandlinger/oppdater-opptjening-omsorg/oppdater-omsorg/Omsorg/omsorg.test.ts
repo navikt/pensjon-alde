@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { tilLinjeState } from '../felles/opptjening.utils'
-import type { OpptjeningstyperResponse } from '../felles/opptjening-types'
+import { tilLinjeState } from '~/components/Opptjening/felles/opptjening.utils'
+import type { OpptjeningstyperResponse } from '~/components/Opptjening/felles/opptjening-types'
+import type { OmsorgGrunnlagDTO } from './omsorg.types'
 import {
   byggOmsorgPayload,
   grupperOmsorgLinjer,
@@ -8,7 +9,6 @@ import {
   omsorgLabel,
   toOmsorgTilSletting,
 } from './omsorg.utils'
-import type { OmsorgGrunnlagDTO } from './omsorg-types'
 
 const opptjeningstyper: OpptjeningstyperResponse = {
   // Oppdiktet kode – testene trenger bare en vilkårlig kode med beskrivelse
@@ -57,7 +57,7 @@ describe('omsorgLabel', () => {
 })
 
 describe('toOmsorgTilSletting', () => {
-  it('sender kun år og type, som er det backend identifiserer omsorg med', () => {
+  it('sender kun år og type, som det backend identifiserer omsorg med', () => {
     const linje = tilLinjeState({ ar: 2020, omsorgType: 'OMS_BARN', fnrOmsorgFor: '10987654321' })
 
     expect(toOmsorgTilSletting(linje)).toEqual({ ar: 2020, omsorgType: 'OMS_BARN' })

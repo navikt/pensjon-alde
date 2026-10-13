@@ -1,8 +1,14 @@
 export type { OpptjeningstyperKategori, OpptjeningstyperResponse, OpptjeningTypeKode } from '../Opptjening.types'
 
-import type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from '../Omsorg/omsorg-types'
+import type {
+  OmsorgGrunnlagDTO,
+  OmsorgTilSlettingDTO,
+} from '~/behandlinger/oppdater-opptjening-omsorg/oppdater-omsorg/Omsorg/omsorg.types'
 
-export type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from '../Omsorg/omsorg-types'
+export type {
+  OmsorgGrunnlagDTO,
+  OmsorgTilSlettingDTO,
+} from '~/behandlinger/oppdater-opptjening-omsorg/oppdater-omsorg/Omsorg/omsorg.types'
 
 export type OppdaterPgiSakValg = {
   sakId: number

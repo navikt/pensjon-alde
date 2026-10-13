@@ -1,4 +1,7 @@
-import { type OmsorgLinjeState, omsorgLabel } from '../Omsorg/omsorg.utils'
+import {
+  type OmsorgLinjeState,
+  omsorgLabel,
+} from '~/behandlinger/oppdater-opptjening-omsorg/oppdater-omsorg/Omsorg/omsorg.utils'
 import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,

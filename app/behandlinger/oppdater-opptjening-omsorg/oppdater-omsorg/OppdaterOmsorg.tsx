@@ -2,18 +2,17 @@ import { useMemo } from 'react'
 import {
   type ActionErrors,
   byggEndringSummary,
-  byggOmsorgPayload,
-  OMSORG_FELTER,
-  type OmsorgGrunnlagDTO,
-  OmsorgSeksjon,
   type OppdaterOpptjeningGrunnlag,
   type OppdaterOpptjeningVurdering,
   OpptjeningSkjema,
-  omsorgLinjerFraVurdering,
   useLinjeState,
 } from '~/components/Opptjening'
+import { omsorgLinjerFraVurdering } from '~/components/Opptjening/felles/opptjening.utils'
 import { opptjeningstyperFraGrunnlag } from '~/components/Opptjening/felles/opptjeningstyper.utils'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
+import { OmsorgSeksjon } from './Omsorg/OmsorgSeksjon'
+import type { OmsorgGrunnlagDTO } from './Omsorg/omsorg.types'
+import { byggOmsorgPayload, OMSORG_FELTER } from './Omsorg/omsorg.utils'
 
 type OppdaterOmsorgProps = Omit<
   AktivitetComponentProps<OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering>,
