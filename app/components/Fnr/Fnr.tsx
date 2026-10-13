@@ -24,7 +24,7 @@ export const Fnr = ({ value }: FnrProps) => {
         </span>
         <span>{suffix}</span>
       </span>
-      <CopyButton className={styles.copyButton} size="small" data-color="accent" copyText={fnrString} />
+      <CopyButton data-print-hidden size="small" data-color="accent" copyText={fnrString} />
     </span>
   )
 }

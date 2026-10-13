@@ -15,7 +15,7 @@
 }
 
 @media print {
-  .copyButton {
+  [data-print-hidden] {
     display: none;
   }
 }
