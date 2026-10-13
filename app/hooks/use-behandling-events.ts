@@ -5,6 +5,7 @@ import type { BehandlingDTO } from '~/types/behandling'
 const PING_TIMEOUT_MS = 45_000
 const WATCHDOG_INTERVAL_MS = 5_000
 const RECONNECT_DELAY_MS = 15_000
+export const LIVE_POLL_INTERVAL_MS = 10_000
 
 export const BehandlingEventsContext = createContext(false)
 
