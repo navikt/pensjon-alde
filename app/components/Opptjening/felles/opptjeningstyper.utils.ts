@@ -1,4 +1,4 @@
-import type { OpptjeningstyperResponse, OpptjeningTypeKode } from '~/types/opptjeningstyper'
+import type { OpptjeningstyperResponse, OpptjeningTypeKode } from '../Opptjening.types'
 import type { OppdaterOpptjeningGrunnlag } from './opptjening-types'
 
 export function typeLabel(opptjeningstyper: OpptjeningstyperResponse, code: string): string {

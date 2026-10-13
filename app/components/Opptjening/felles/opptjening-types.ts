@@ -1,4 +1,4 @@
-export type { OpptjeningstyperKategori, OpptjeningstyperResponse, OpptjeningTypeKode } from '~/types/opptjeningstyper'
+export type { OpptjeningstyperKategori, OpptjeningstyperResponse, OpptjeningTypeKode } from '../Opptjening.types'
 
 import type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from '../Omsorg/omsorg-types'
 
