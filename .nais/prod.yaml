@@ -21,8 +21,11 @@ psak:
 
 verdande:
   links_enabled: true
-  aktivitet_url: 'https://pensjon-verdande.intern.nav.no/aktivitet/{behandlingId}/{aktivitetId}'
   behandling_url: 'https://pensjon-verdande.intern.nav.no/behandling/{behandlingId}'
+
+kafka:
+  pool: nav-prod
+  behandling_topic: pensjondeployer.alde-behandling
 
 modia:
   oversikt: 'https://modiapersonoversikt.intern.nav.no/person/{fnr}'

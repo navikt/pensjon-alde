@@ -14,6 +14,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  type ShouldRevalidateFunctionArgs,
   useLoaderData,
   useLocation,
   useParams,
@@ -43,6 +44,10 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
 
 export const middleware: MiddlewareFunction[] = [settingsMiddleware, userMiddleware]
 
+export function shouldRevalidate({ currentParams, nextParams }: ShouldRevalidateFunctionArgs) {
+  return currentParams.behandlingId !== nextParams.behandlingId
+}
+
 export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
   const me: UserContext = context.get(userContext)
 
@@ -60,15 +65,6 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
   const { kladdemodus } = context.get(settingsContext)
 
   const behandlingId = params.behandlingId ? +params.behandlingId : undefined
-  const aktivitetId = params.aktivitetId ? +params.aktivitetId : undefined
-
-  const verdandeAktivitetUrl =
-    isVerdandeLinksEnabled && behandlingId && aktivitetId
-      ? buildUrl(env.verdandeAktivitetUrl, request, {
-          behandlingId: behandlingId,
-          aktivitetId: aktivitetId,
-        })
-      : undefined
 
   const verdandeBehandlingUrl =
     isVerdandeLinksEnabled && behandlingId
@@ -81,7 +77,6 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
     darkmode: darkmode === 'true' || darkmode === true,
     me,
     sketchmode: kladdemodus === true,
-    verdandeAktivitetUrl,
     verdandeBehandlingUrl,
     serverNowIso: new Date().toISOString(),
     telemetry,

@@ -42,7 +42,6 @@ export const env = loadEnv({
   pennyJournalpostUrlTemplate: 'PENNY_JOURNALPOST_URL_TEMPLATE',
 
   verdandeBehandlingUrl: 'VERDANDE_BEHANDLING_URL',
-  verdandeAktivitetUrl: 'VERDANDE_AKTIVITET_URL',
   telemetryUrl: 'TELEMETRY_URL',
   modia: 'MODIA_PERSONOVERSIKT',
   unleashUrl: 'UNLEASH_SERVER_API_URL',
