@@ -45,6 +45,9 @@ function fakeApi(overrides: Partial<Record<'hentGrunnlagsdata' | 'lagreVurdering
   }
 }
 
+const omsorgTilSletting = [{ ar: 2020, omsorgType: 'OMS_BARN' }]
+const gyldigPayload = JSON.stringify({ fnr: '12345678901', omsorgTilSletting })
+
 function requestMedFormData(fields: Record<string, string>): Request {
   const formData = new FormData()
   for (const [key, value] of Object.entries({ sakId: '999', ...fields })) {
@@ -324,11 +327,29 @@ describe('lagreOpptjeningVurdering', () => {
     expect(result.init?.status).toBe(400)
   })
 
+  it.each([
+    ['tomt objekt', {}],
+    ['tom omsorgTilSletting-liste', { fnr: '12345678901', omsorgTilSletting: [] }],
+    ['null', null],
+    ['array', []],
+    ['tall', 42],
+    ['streng', 'tekst'],
+  ])('returnerer _form-feil uten å lagre når payload er %s', async (_beskrivelse, payload) => {
+    const api = fakeApi()
+    vi.mocked(createAktivitetApi).mockReturnValue(api as never)
+
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify(payload) })))
+
+    expect(result.data.errors._form).toBe('Ingen endringer er registrert')
+    expect(result.init?.status).toBe(400)
+    expect(api.lagreVurdering).not.toHaveBeenCalled()
+  })
+
   it('inkluderer sakId i vurderingen når det er sendt inn', async () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    await lagre(requestMedFormData({ payload: JSON.stringify({}), sakId: '999' }))
+    await lagre(requestMedFormData({ payload: gyldigPayload, sakId: '999' }))
 
     expect(api.lagreVurdering).toHaveBeenCalledWith(expect.objectContaining({ sakId: 999 }))
   })
@@ -337,7 +358,7 @@ describe('lagreOpptjeningVurdering', () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = await lagre(requestMedFormData({ payload: JSON.stringify({ fnr: '12345678901' }), sakId: '' }))
+    const result = await lagre(requestMedFormData({ payload: gyldigPayload, sakId: '' }))
 
     expect(assertDataResult(result)).toMatchObject({ data: { errors: { _form: 'Mangler sakId' } } })
     expect(api.lagreVurdering).not.toHaveBeenCalled()
@@ -366,27 +387,30 @@ describe('lagreOpptjeningVurdering', () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    await lagre(
-      requestMedFormData({ payload: JSON.stringify({ fnr: '12345678901' }), begrunnelse: '  Feilregistrert  ' }),
-    )
+    await lagre(requestMedFormData({ payload: gyldigPayload, begrunnelse: '  Feilregistrert  ' }))
 
-    expect(api.lagreVurdering).toHaveBeenCalledWith({ sakId: 999, fnr: '12345678901', begrunnelse: 'Feilregistrert' })
+    expect(api.lagreVurdering).toHaveBeenCalledWith({
+      sakId: 999,
+      fnr: '12345678901',
+      omsorgTilSletting,
+      begrunnelse: 'Feilregistrert',
+    })
   })
 
   it('utelater tom begrunnelse', async () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    await lagre(requestMedFormData({ payload: JSON.stringify({ fnr: '12345678901' }), begrunnelse: '   ' }))
+    await lagre(requestMedFormData({ payload: gyldigPayload, begrunnelse: '   ' }))
 
-    expect(api.lagreVurdering).toHaveBeenCalledWith({ sakId: 999, fnr: '12345678901' })
+    expect(api.lagreVurdering).toHaveBeenCalledWith({ sakId: 999, fnr: '12345678901', omsorgTilSletting })
   })
 
   it('redirecter til behandlingssiden etter vellykket lagring', async () => {
     const api = fakeApi()
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = await lagre(requestMedFormData({ payload: JSON.stringify({}) }))
+    const result = await lagre(requestMedFormData({ payload: gyldigPayload }))
 
     expect(result).toBeInstanceOf(Response)
     expect((result as Response).status).toBe(302)
@@ -401,7 +425,7 @@ describe('lagreOpptjeningVurdering', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: gyldigPayload })))
 
     expect(result.data.errors._server).toEqual(['Feil A', 'Feil B'])
     expect(result.init?.status).toBe(400)
@@ -415,7 +439,7 @@ describe('lagreOpptjeningVurdering', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: gyldigPayload })))
 
     expect(result.data.errors._server).toEqual(['Noe gikk galt'])
   })
@@ -426,7 +450,7 @@ describe('lagreOpptjeningVurdering', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: gyldigPayload })))
 
     expect(result.data.errors._server).toEqual(['POPP-validering feilet'])
   })
@@ -435,7 +459,7 @@ describe('lagreOpptjeningVurdering', () => {
     const api = fakeApi({ lagreVurdering: vi.fn().mockRejectedValue(new Error('Nettverksfeil')) })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: gyldigPayload })))
 
     expect(result.data.errors._server).toEqual(['Det oppstod en feil ved lagring'])
     expect(result.init?.status).toBe(500)
@@ -447,7 +471,7 @@ describe('lagreOpptjeningVurdering', () => {
     })
     vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 
-    const result = assertDataResult(await lagre(requestMedFormData({ payload: JSON.stringify({}) })))
+    const result = assertDataResult(await lagre(requestMedFormData({ payload: gyldigPayload })))
 
     expect(result.data.errors._server?.[0]).toContain('Spesial PGI')
     expect(result.init?.status).toBe(403)

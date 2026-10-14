@@ -6,6 +6,14 @@ import { opptjeningstyperFraGrunnlag } from './opptjeningstyper.utils'
 
 const MANGLER_ROLLE = 'Mangler rolle tilgang. Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan lagre endringer.'
 
+function erVurderingMedSletting(payload: unknown): payload is OppdaterOpptjeningVurdering {
+  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+    return false
+  }
+  const { omsorgTilSletting } = payload as Partial<OppdaterOpptjeningVurdering>
+  return Array.isArray(omsorgTilSletting) && omsorgTilSletting.length > 0
+}
+
 interface AktivitetRef {
   request: Request
   behandlingId?: string
@@ -45,7 +53,7 @@ export async function lagreOpptjeningVurdering({ request, behandlingId, aktivite
     return data({ errors: { _form: 'Mangler skjemadata' } as ActionErrors }, { status: 400 })
   }
 
-  let payload: OppdaterOpptjeningVurdering
+  let payload: unknown
 
   try {
     payload = JSON.parse(payloadRaw)
@@ -62,7 +70,7 @@ export async function lagreOpptjeningVurdering({ request, behandlingId, aktivite
     return data({ errors: { _form: 'Ugyldig sakId' } as ActionErrors }, { status: 400 })
   }
 
-  if (!Array.isArray(payload.omsorgTilSletting) || payload.omsorgTilSletting.length === 0) {
+  if (!erVurderingMedSletting(payload)) {
     return data({ errors: { _form: 'Ingen endringer er registrert' } as ActionErrors }, { status: 400 })
   }
 
