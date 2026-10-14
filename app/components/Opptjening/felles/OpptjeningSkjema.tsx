@@ -137,7 +137,7 @@ export function OpptjeningSkjema({
             </LocalAlert>
           )}
 
-          {sakIdFeil && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
+          {sakIdFeil && !visSakvalg && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
 
           <HStack gap="space-8">
             <Button type="submit" variant="primary" size="small" loading={isSubmitting} disabled={harKlientFeil}>

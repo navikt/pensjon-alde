@@ -63,6 +63,19 @@ test.describe('oppdater opptjening – omsorg', () => {
     await rad.getByRole('button', { name: 'Gjenopprett' }).click()
     await expect(page.getByText('Ingen endringer', { exact: true })).toBeVisible()
   })
+
+  test('viser feilmeldingen for manglende sak kun én gang', async ({ page }) => {
+    await goto(page, SKJEMA.omsorg)
+
+    const rad = page.getByRole('row').filter({ hasText: 'Omsorg for barn' }).first()
+    await rad.getByRole('button', { name: 'Slett' }).click()
+    await page.getByRole('button', { name: 'Lagre og gå videre' }).click()
+
+    await expect(page.getByText('Du må velge en sak før du kan lagre')).toHaveCount(1)
+    await expect(page.getByRole('combobox', { name: 'Sak' })).toHaveAccessibleDescription(
+      'Du må velge en sak før du kan lagre',
+    )
+  })
 })
 
 test.describe('oppdater opptjening – attestering', () => {
