@@ -7,13 +7,13 @@ import styles from '~/common.module.css'
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import { EndringsOppsummering } from './EndringsOppsummering'
-import { type EndringSummary, harEndringer as harEndringerISummary, oversettKoderIMelding } from './opptjening.utils'
 import type {
   ActionErrors,
   OppdaterOpptjeningGrunnlag,
   OppdaterPgiSakValg,
   OpptjeningstyperResponse,
-} from './opptjening-types'
+} from './opptjening.types'
+import { type EndringSummary, harEndringer as harEndringerISummary, oversettKoderIMelding } from './opptjening.utils'
 
 interface OpptjeningSkjemaProps {
   tittel: string

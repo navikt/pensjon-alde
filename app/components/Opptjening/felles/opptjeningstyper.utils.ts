@@ -1,5 +1,4 @@
-import type { OpptjeningstyperResponse, OpptjeningTypeKode } from '../Opptjening.types'
-import type { OppdaterOpptjeningGrunnlag } from './opptjening-types'
+import type { OppdaterOpptjeningGrunnlag, OpptjeningstyperResponse, OpptjeningTypeKode } from './opptjening.types'
 
 export function typeLabel(opptjeningstyper: OpptjeningstyperResponse, code: string): string {
   return opptjeningstyper.omsorg.typer.find(t => t.code === code)?.description ?? code

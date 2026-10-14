@@ -1,18 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { OppdaterOpptjeningGrunnlag, OpptjeningstyperResponse } from './opptjening.types'
 import {
   beregnStatus,
   byggEndringSummary,
   harEndringer,
-  omsorgLinjerFraVurdering,
   oppsummeringForKategori,
   oversettKoderIMelding,
   tilLinjeState,
 } from './opptjening.utils'
-import type {
-  OppdaterOpptjeningGrunnlag,
-  OppdaterOpptjeningVurdering,
-  OpptjeningstyperResponse,
-} from './opptjening-types'
 import { typeLabel } from './opptjeningstyper.utils'
 
 vi.mock('~/api/aktivitet-api', () => ({
@@ -198,53 +193,29 @@ describe('oppsummeringForKategori', () => {
   })
 })
 
-describe('omsorgLinjerFraVurdering', () => {
-  const grunnlag: NonNullable<OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto']> = {
-    fnr: '12345678901',
-    omsorgListe: [
-      { omsorgId: 5, omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '10987654321' },
-      { omsorgId: 6, omsorgType: 'OBU6', ar: 2021, fnrOmsorgFor: '10987654321' },
+describe('byggEndringSummary', () => {
+  const kategori = oppsummeringForKategori(
+    'Kategori',
+    [
+      { _id: 'a', _status: 'new' as const },
+      { _id: 'b', _status: 'modified' as const },
+      { _id: 'c', _status: 'deleted' as const },
+      { _id: 'd', _status: 'original' as const },
     ],
-  }
+    { label: l => l._id },
+  )
 
-  it('gir uendrede linjer fra grunnlaget når det ikke finnes noen vurdering', () => {
-    const linjer = omsorgLinjerFraVurdering(grunnlag, null)
+  it('samler nye, endrede og slettede linjer fra alle kategorier', () => {
+    const summary = byggEndringSummary([kategori, kategori])
 
-    expect(linjer.map(l => l._status)).toEqual(['original', 'original'])
-    expect(harEndringer(byggEndringSummary({ omsorg: linjer }, opptjeningstyper))).toBe(false)
+    expect(summary.nye.map(i => i.id)).toEqual(['a', 'a'])
+    expect(summary.endrede.map(i => i.id)).toEqual(['b', 'b'])
+    expect(summary.slettede.map(i => i.id)).toEqual(['c', 'c'])
+    expect(harEndringer(summary)).toBe(true)
   })
 
-  it('markerer linjene i vurderingen som slettet og beholder resten', () => {
-    const vurdering: OppdaterOpptjeningVurdering = {
-      omsorgTilSletting: [{ ar: 2020, omsorgType: 'OMS_BARN' }],
-    }
-
-    const linjer = omsorgLinjerFraVurdering(grunnlag, vurdering)
-
-    expect(linjer.map(l => [l.omsorgType, l._status])).toEqual([
-      ['OMS_BARN', 'deleted'],
-      ['OBU6', 'original'],
-    ])
-    expect(byggEndringSummary({ omsorg: linjer }, opptjeningstyper).slettede).toEqual([
-      {
-        id: 'omsorg-0',
-        kategori: 'Omsorg',
-        label: 'Omsorg for barn (2020) – omsorg for 10987654321',
-        endringer: undefined,
-      },
-    ])
-  })
-
-  it('viser kun år og type når slettet linje mangler i grunnlaget', () => {
-    const vurdering: OppdaterOpptjeningVurdering = {
-      omsorgTilSletting: [{ ar: 2020, omsorgType: 'OMS_BARN' }],
-    }
-
-    const linjer = omsorgLinjerFraVurdering(undefined, vurdering)
-
-    expect(linjer).toHaveLength(1)
-    expect(linjer[0]._status).toBe('deleted')
-    expect(byggEndringSummary({ omsorg: linjer }, opptjeningstyper).slettede[0].label).toBe('Omsorg for barn (2020)')
+  it('har ingen endringer uten kategorier', () => {
+    expect(harEndringer(byggEndringSummary([]))).toBe(false)
   })
 })
 

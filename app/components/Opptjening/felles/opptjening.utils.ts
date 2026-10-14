@@ -1,12 +1,4 @@
-import {
-  type OmsorgLinjeState,
-  omsorgLabel,
-} from '~/behandlinger/oppdater-opptjening-omsorg/oppdater-omsorg/Omsorg/omsorg.utils'
-import type {
-  OppdaterOpptjeningGrunnlag,
-  OppdaterOpptjeningVurdering,
-  OpptjeningstyperResponse,
-} from './opptjening-types'
+import type { OpptjeningstyperResponse } from './opptjening.types'
 
 export type LinjeStatus = 'original' | 'new' | 'modified' | 'deleted'
 
@@ -56,7 +48,7 @@ export function oppsummeringForKategori<T extends { _id: string; _status: LinjeS
     kortLabel?: (linje: T) => string
     endringer?: (linje: T) => string[]
   },
-): (status: LinjeStatus) => EndringSummaryItem[] {
+): KategoriOppsummering {
   return status =>
     linjer
       .filter(linje => linje._status === status)
@@ -68,21 +60,9 @@ export function oppsummeringForKategori<T extends { _id: string; _status: LinjeS
       }))
 }
 
-export type OpptjeningLinjer = {
-  omsorg?: OmsorgLinjeState[]
-}
+export type KategoriOppsummering = (status: LinjeStatus) => EndringSummaryItem[]
 
-export function byggEndringSummary(
-  linjer: OpptjeningLinjer,
-  opptjeningstyper: OpptjeningstyperResponse,
-): EndringSummary {
-  // Omsorgslinjer kan kun slettes, derfor ingen kortLabel/endringer.
-  const kategorier = [
-    oppsummeringForKategori('Omsorg', linjer.omsorg ?? [], {
-      label: l => omsorgLabel(l, opptjeningstyper),
-    }),
-  ]
-
+export function byggEndringSummary(kategorier: KategoriOppsummering[]): EndringSummary {
   return {
     nye: kategorier.flatMap(oppsummer => oppsummer('new')),
     endrede: kategorier.flatMap(oppsummer => oppsummer('modified')),
@@ -92,36 +72,4 @@ export function byggEndringSummary(
 
 export function harEndringer(summary: EndringSummary): boolean {
   return summary.nye.length + summary.endrede.length + summary.slettede.length > 0
-}
-
-/**
- * Bygger omsorgslinjene fra grunnlaget og markerer linjene i en lagret vurdering som slettet,
- * slik at skjemaet kan vises read-only i attestering og oppsummering.
- * Slettinger som ikke finnes i grunnlaget legges til slutt med kun år og type.
- */
-export function omsorgLinjerFraVurdering(
-  grunnlag: OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto'] | null | undefined,
-  vurdering: OppdaterOpptjeningVurdering | null | undefined,
-): OmsorgLinjeState[] {
-  const omsorgListe = grunnlag?.omsorgListe ?? []
-  const tilSletting = vurdering?.omsorgTilSletting ?? []
-  const samme = (a: { ar: number; omsorgType: string }, b: { ar: number; omsorgType: string }) =>
-    a.ar === b.ar && a.omsorgType === b.omsorgType
-
-  const fraGrunnlag: OmsorgLinjeState[] = omsorgListe.map((dto, i) => ({
-    ...tilLinjeState(dto),
-    _id: `omsorg-${i}`,
-    _status: tilSletting.some(s => samme(s, dto)) ? 'deleted' : 'original',
-  }))
-
-  const utenforGrunnlag: OmsorgLinjeState[] = tilSletting
-    .filter(s => !omsorgListe.some(o => samme(o, s)))
-    .map((dto, i) => ({
-      ...dto,
-      _id: `omsorg-slettet-${i}`,
-      _status: 'deleted',
-      _original: null,
-    }))
-
-  return [...fraGrunnlag, ...utenforGrunnlag]
 }

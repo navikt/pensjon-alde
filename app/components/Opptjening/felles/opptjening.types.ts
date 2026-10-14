@@ -1,5 +1,3 @@
-export type { OpptjeningstyperKategori, OpptjeningstyperResponse, OpptjeningTypeKode } from '../Opptjening.types'
-
 import type {
   OmsorgGrunnlagDTO,
   OmsorgTilSlettingDTO,
@@ -9,6 +7,20 @@ export type {
   OmsorgGrunnlagDTO,
   OmsorgTilSlettingDTO,
 } from '~/behandlinger/oppdater-opptjening-omsorg/oppdater-omsorg/Omsorg/omsorg.types'
+
+export type OpptjeningTypeKode = {
+  code: string
+  description: string
+}
+
+export type OpptjeningstyperKategori = {
+  typer: OpptjeningTypeKode[]
+  subTyper: OpptjeningTypeKode[]
+}
+
+export type OpptjeningstyperResponse = {
+  omsorg: OpptjeningstyperKategori
+}
 
 export type OppdaterPgiSakValg = {
   sakId: number

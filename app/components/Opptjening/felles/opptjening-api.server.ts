@@ -1,7 +1,7 @@
 import { data, redirect } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { isApiError } from '~/api/error.types'
-import type { ActionErrors, OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering } from './opptjening-types'
+import type { ActionErrors, OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering } from './opptjening.types'
 import { opptjeningstyperFraGrunnlag } from './opptjeningstyper.utils'
 
 const MANGLER_ROLLE = 'Mangler rolle tilgang. Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan lagre endringer.'

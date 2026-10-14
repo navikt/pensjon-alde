@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { tilLinjeState } from '~/components/Opptjening/felles/opptjening.utils'
-import type { OpptjeningstyperResponse } from '~/components/Opptjening/felles/opptjening-types'
+import type {
+  OppdaterOpptjeningGrunnlag,
+  OppdaterOpptjeningVurdering,
+  OpptjeningstyperResponse,
+} from '~/components/Opptjening/felles/opptjening.types'
+import { harEndringer, tilLinjeState } from '~/components/Opptjening/felles/opptjening.utils'
 import type { OmsorgGrunnlagDTO } from './omsorg.types'
 import {
+  byggOmsorgEndringSummary,
   byggOmsorgPayload,
   grupperOmsorgLinjer,
   medOmsorgGrunnlag,
   omsorgLabel,
+  omsorgLinjerFraVurdering,
   toOmsorgTilSletting,
 } from './omsorg.utils'
 
@@ -94,5 +100,55 @@ describe('medOmsorgGrunnlag', () => {
       ar: 2020,
       omsorgType: 'OMS_BARN',
     })
+  })
+})
+
+describe('omsorgLinjerFraVurdering', () => {
+  const grunnlag: NonNullable<OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto']> = {
+    fnr: '12345678901',
+    omsorgListe: [
+      { omsorgId: 5, omsorgType: 'OMS_BARN', ar: 2020, fnrOmsorgFor: '10987654321' },
+      { omsorgId: 6, omsorgType: 'OBU6', ar: 2021, fnrOmsorgFor: '10987654321' },
+    ],
+  }
+
+  it('gir uendrede linjer fra grunnlaget når det ikke finnes noen vurdering', () => {
+    const linjer = omsorgLinjerFraVurdering(grunnlag, null)
+
+    expect(linjer.map(l => l._status)).toEqual(['original', 'original'])
+    expect(harEndringer(byggOmsorgEndringSummary(linjer, opptjeningstyper))).toBe(false)
+  })
+
+  it('markerer linjene i vurderingen som slettet og beholder resten', () => {
+    const vurdering: OppdaterOpptjeningVurdering = {
+      omsorgTilSletting: [{ ar: 2020, omsorgType: 'OMS_BARN' }],
+    }
+
+    const linjer = omsorgLinjerFraVurdering(grunnlag, vurdering)
+
+    expect(linjer.map(l => [l.omsorgType, l._status])).toEqual([
+      ['OMS_BARN', 'deleted'],
+      ['OBU6', 'original'],
+    ])
+    expect(byggOmsorgEndringSummary(linjer, opptjeningstyper).slettede).toEqual([
+      {
+        id: 'omsorg-0',
+        kategori: 'Omsorg',
+        label: 'Omsorg for barn (2020) – omsorg for 10987654321',
+        endringer: undefined,
+      },
+    ])
+  })
+
+  it('viser kun år og type når slettet linje mangler i grunnlaget', () => {
+    const vurdering: OppdaterOpptjeningVurdering = {
+      omsorgTilSletting: [{ ar: 2020, omsorgType: 'OMS_BARN' }],
+    }
+
+    const linjer = omsorgLinjerFraVurdering(undefined, vurdering)
+
+    expect(linjer).toHaveLength(1)
+    expect(linjer[0]._status).toBe('deleted')
+    expect(byggOmsorgEndringSummary(linjer, opptjeningstyper).slettede[0].label).toBe('Omsorg for barn (2020)')
   })
 })

@@ -1,18 +1,21 @@
 import { useMemo } from 'react'
 import {
   type ActionErrors,
-  byggEndringSummary,
   type OppdaterOpptjeningGrunnlag,
   type OppdaterOpptjeningVurdering,
   OpptjeningSkjema,
   useLinjeState,
 } from '~/components/Opptjening'
-import { omsorgLinjerFraVurdering } from '~/components/Opptjening/felles/opptjening.utils'
 import { opptjeningstyperFraGrunnlag } from '~/components/Opptjening/felles/opptjeningstyper.utils'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import { OmsorgSeksjon } from './Omsorg/OmsorgSeksjon'
 import type { OmsorgGrunnlagDTO } from './Omsorg/omsorg.types'
-import { byggOmsorgPayload, OMSORG_FELTER } from './Omsorg/omsorg.utils'
+import {
+  byggOmsorgEndringSummary,
+  byggOmsorgPayload,
+  OMSORG_FELTER,
+  omsorgLinjerFraVurdering,
+} from './Omsorg/omsorg.utils'
 
 type OppdaterOmsorgProps = Omit<
   AktivitetComponentProps<OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering>,
@@ -41,10 +44,7 @@ export function OppdaterOmsorg({
     OMSORG_FELTER,
   )
 
-  const endringSummary = useMemo(
-    () => byggEndringSummary({ omsorg: linjer }, opptjeningstyper),
-    [linjer, opptjeningstyper],
-  )
+  const endringSummary = useMemo(() => byggOmsorgEndringSummary(linjer, opptjeningstyper), [linjer, opptjeningstyper])
 
   const payload = useMemo(
     () => JSON.stringify(byggOmsorgPayload(linjer, grunnlagDto?.fnr ?? '')),

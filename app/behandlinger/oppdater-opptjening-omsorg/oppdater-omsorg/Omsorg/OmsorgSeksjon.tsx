@@ -2,7 +2,7 @@ import { BodyShort, Box, Heading, Table, VStack } from '@navikt/ds-react'
 import { useMemo } from 'react'
 import { Fnr } from '~/components/Fnr'
 import { HandlingKnapper } from '~/components/Opptjening/felles/HandlingKnapper'
-import type { OpptjeningstyperResponse } from '~/components/Opptjening/felles/opptjening-types'
+import type { OpptjeningstyperResponse } from '~/components/Opptjening/felles/opptjening.types'
 import { StatusTag } from '~/components/Opptjening/felles/StatusTag'
 import { grupperOmsorgLinjer, type OmsorgLinjeState } from './omsorg.utils'
 

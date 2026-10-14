@@ -1,8 +1,15 @@
-import type { LinjeStatus } from '~/components/Opptjening/felles/opptjening.utils'
 import type {
+  OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
-} from '~/components/Opptjening/felles/opptjening-types'
+} from '~/components/Opptjening/felles/opptjening.types'
+import {
+  byggEndringSummary,
+  type EndringSummary,
+  type LinjeStatus,
+  oppsummeringForKategori,
+  tilLinjeState,
+} from '~/components/Opptjening/felles/opptjening.utils'
 import { typeLabel } from '~/components/Opptjening/felles/opptjeningstyper.utils'
 import type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from './omsorg.types'
 
@@ -31,6 +38,46 @@ export function grupperOmsorgLinjer(linjer: OmsorgLinjeState[]) {
 export function omsorgLabel(l: OmsorgGrunnlagDTO, opptjeningstyper: OpptjeningstyperResponse): string {
   const omsorgFor = l.fnrOmsorgFor ? ` – omsorg for ${l.fnrOmsorgFor}` : ''
   return `${typeLabel(opptjeningstyper, l.omsorgType)} (${l.ar})${omsorgFor}`
+}
+
+export function byggOmsorgEndringSummary(
+  linjer: OmsorgLinjeState[],
+  opptjeningstyper: OpptjeningstyperResponse,
+): EndringSummary {
+  return byggEndringSummary([
+    oppsummeringForKategori('Omsorg', linjer, { label: l => omsorgLabel(l, opptjeningstyper) }),
+  ])
+}
+
+/**
+ * Bygger omsorgslinjene fra grunnlaget og markerer linjene i en lagret vurdering som slettet,
+ * slik at skjemaet kan vises read-only i attestering og oppsummering.
+ * Slettinger som ikke finnes i grunnlaget legges til slutt med kun år og type.
+ */
+export function omsorgLinjerFraVurdering(
+  grunnlag: OppdaterOpptjeningGrunnlag['opptjeningsGrunnlagDto'] | null | undefined,
+  vurdering: OppdaterOpptjeningVurdering | null | undefined,
+): OmsorgLinjeState[] {
+  const omsorgListe = grunnlag?.omsorgListe ?? []
+  const tilSletting = vurdering?.omsorgTilSletting ?? []
+  const samme = (a: OmsorgTilSlettingDTO, b: OmsorgTilSlettingDTO) => a.ar === b.ar && a.omsorgType === b.omsorgType
+
+  const fraGrunnlag: OmsorgLinjeState[] = omsorgListe.map((dto, i) => ({
+    ...tilLinjeState(dto),
+    _id: `omsorg-${i}`,
+    _status: tilSletting.some(s => samme(s, dto)) ? 'deleted' : 'original',
+  }))
+
+  const utenforGrunnlag: OmsorgLinjeState[] = tilSletting
+    .filter(s => !omsorgListe.some(o => samme(o, s)))
+    .map((dto, i) => ({
+      ...dto,
+      _id: `omsorg-slettet-${i}`,
+      _status: 'deleted',
+      _original: null,
+    }))
+
+  return [...fraGrunnlag, ...utenforGrunnlag]
 }
 
 export function toOmsorgTilSletting(l: OmsorgLinjeState): OmsorgTilSlettingDTO {
