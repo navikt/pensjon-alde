@@ -124,7 +124,7 @@ const KontrollerInntektsopplysningerForEPS: React.FC<KontrollerInntektsopplysnin
   visNotat,
 }) => {
   const isSubmitting = useIsSubmitting()
-  const defaultValue = vurdering ? (vurdering.epsInntektOver2G ? 'over2G' : 'under2G') : undefined
+  const defaultValue = vurdering ? (vurdering.epsInntektOver2G ? 'over2G' : 'under2G') : ''
   const [selectedValue, setSelectedValue] = useState(defaultValue)
   const oppgittInntektNum = parseFloat(grunnlag.oppgittInntekt)
   const grunnbelopNum = parseFloat(grunnlag.grunnbelop)

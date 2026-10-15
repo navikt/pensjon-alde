@@ -16,10 +16,10 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
   if (
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_ATTESTERING ||
     behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL ||
-    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL ||
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.RETURNERT_TIL_SAKSBEHANDLER
   ) {
     return {
-      oppsummeringUrl: `/behandling/${behandling.behandlingId}/oppsummering`,
       status: behandling.aldeBehandlingStatus,
     }
   } else {
@@ -62,7 +62,7 @@ const AttesteringReturnertTilSaksbehandler = ({ loaderData }: Route.ComponentPro
           <PersonCheckmarkIcon fontSize="6rem" style={{ color: 'var(--ax-text-success-decoration)' }} />
         </Box>
         <Heading size="medium" level="1">
-          Kravet er returnert til saksbehandler
+          Returnert til saksbehandler
         </Heading>
 
         <HStack gap="space-8" justify="center">

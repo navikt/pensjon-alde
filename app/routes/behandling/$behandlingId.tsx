@@ -44,6 +44,10 @@ export function getRedirectPath({
     return `/behandling/${behandlingId}/oppsummering`
   }
 
+  if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.RETURNERT_TIL_SAKSBEHANDLER) {
+    return `/behandling/${behandlingId}/attestering-returnert-til-saksbehandler`
+  }
+
   if (behandling.aldeBehandlingStatus === AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL) {
     return `/behandling/${behandlingId}/avbrutt-automatisk`
   }
@@ -343,7 +347,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
       <Modal ref={ref} header={{ heading: 'Vil du avbryte del-automatisk behandling?' }}>
         <Form method="post">
-          <input type="hidden" name="aktivitetId" value={aktivitetId} />
+          {aktivitetId && <input type="hidden" name="aktivitetId" value={aktivitetId} />}
           <Modal.Body>
             <VStack gap="space-16">
               <BodyLong>Saksbehandlingen vil fortsettes som manuell kravbehandling.</BodyLong>
