@@ -25,6 +25,7 @@ node_modules/
 /playwright/playwright-report/
 /playwright/blob-report/
 /playwright/.cache/
+/.playwright-mcp/
 
 # Screenshots
 /screenshots/

@@ -108,6 +108,11 @@ describe('oversettKoderIMelding', () => {
     const resultat = oversettKoderIMelding('Generell feilmelding uten koder', opptjeningstyper)
     expect(resultat).toBe('Generell feilmelding uten koder')
   })
+
+  it('accepts a flat list of type codes', () => {
+    const resultat = oversettKoderIMelding('Ugyldig FastlandPgi', [{ code: 'FastlandPgi', description: 'Fastland' }])
+    expect(resultat).toBe('Ugyldig Fastland (FastlandPgi)')
+  })
 })
 
 describe('tilLinjeState', () => {
@@ -333,6 +338,18 @@ describe('lagreOpptjeningVurdering', () => {
 
     expect(assertDataResult(result)).toMatchObject({ data: { errors: { _form: 'Mangler sakId' } } })
     expect(api.lagreVurdering).not.toHaveBeenCalled()
+  })
+
+  it('bruker egendefinert endringssjekk når den er oppgitt', async () => {
+    const api = fakeApi()
+    vi.mocked(createAktivitetApi).mockReturnValue(api as never)
+    const inntektPayload = { fnr: '12345678901', inntekterPerAr: [{ inntektAr: 2020 }] }
+
+    await lagre(requestMedFormData({ payload: JSON.stringify(inntektPayload) }), {
+      harEndringer: payload => Array.isArray((payload as { inntekterPerAr?: unknown }).inntekterPerAr),
+    })
+
+    expect(api.lagreVurdering).toHaveBeenCalledWith({ ...inntektPayload, sakId: 999 })
   })
 
   it('sender Omsorg-data i lagreVurdering med sakId, fnr og flat omsorgTilSletting-liste', async () => {

@@ -20,14 +20,22 @@ interface AktivitetRef {
   aktivitetId?: string
 }
 
-export async function hentOpptjeningLoaderData({ request, behandlingId, aktivitetId }: AktivitetRef) {
+interface LagreAktivitetRef extends AktivitetRef {
+  harEndringer?: (payload: unknown) => boolean
+}
+
+export async function hentOpptjeningLoaderData<G extends OppdaterOpptjeningGrunnlag = OppdaterOpptjeningGrunnlag>({
+  request,
+  behandlingId,
+  aktivitetId,
+}: AktivitetRef) {
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
 
-  let grunnlag: OppdaterOpptjeningGrunnlag = {}
+  let grunnlag = {} as G
   let readOnly = false
 
   try {
-    grunnlag = (await api.hentGrunnlagsdata<OppdaterOpptjeningGrunnlag>()) ?? {}
+    grunnlag = (await api.hentGrunnlagsdata<G>()) ?? ({} as G)
   } catch (error) {
     if (isApiError(error) && error.data.status === 403) {
       readOnly = true
@@ -41,7 +49,12 @@ export async function hentOpptjeningLoaderData({ request, behandlingId, aktivite
   return { grunnlag, opptjeningstyper, readOnly }
 }
 
-export async function lagreOpptjeningVurdering({ request, behandlingId, aktivitetId }: AktivitetRef) {
+export async function lagreOpptjeningVurdering({
+  request,
+  behandlingId,
+  aktivitetId,
+  harEndringer = erVurderingMedSletting,
+}: LagreAktivitetRef) {
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
 
   const formData = await request.formData()
@@ -70,12 +83,12 @@ export async function lagreOpptjeningVurdering({ request, behandlingId, aktivite
     return data({ errors: { _form: 'Ugyldig sakId' } as ActionErrors }, { status: 400 })
   }
 
-  if (!erVurderingMedSletting(payload)) {
+  if (!harEndringer(payload)) {
     return data({ errors: { _form: 'Ingen endringer er registrert' } as ActionErrors }, { status: 400 })
   }
 
-  const vurdering: OppdaterOpptjeningVurdering = {
-    ...payload,
+  const vurdering = {
+    ...(payload as object),
     sakId,
   }
 

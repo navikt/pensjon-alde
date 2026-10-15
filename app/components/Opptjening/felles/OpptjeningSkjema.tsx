@@ -12,13 +12,14 @@ import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterPgiSakValg,
   OpptjeningstyperResponse,
+  OpptjeningTypeKode,
 } from './opptjening.types'
 import { type EndringSummary, harEndringer as harEndringerISummary, oversettKoderIMelding } from './opptjening.utils'
 
 interface OpptjeningSkjemaProps {
   tittel: string
-  grunnlag: OppdaterOpptjeningGrunnlag
-  opptjeningstyper: OpptjeningstyperResponse
+  grunnlag: Pick<OppdaterOpptjeningGrunnlag, 'saker'>
+  opptjeningstyper: OpptjeningstyperResponse | OpptjeningTypeKode[]
   readOnly: boolean
   manglerTilgang?: boolean
   errors?: ActionErrors
@@ -28,6 +29,7 @@ interface OpptjeningSkjemaProps {
   begrunnelse?: string
   avbrytAktivitet?: () => void
   harKlientFeil?: boolean
+  onInnsendingsforsok?: () => void
   visNotat?: boolean
   children: ReactNode
 }
@@ -45,6 +47,7 @@ export function OpptjeningSkjema({
   begrunnelse,
   avbrytAktivitet,
   harKlientFeil = false,
+  onInnsendingsforsok,
   visNotat = false,
   children,
 }: OpptjeningSkjemaProps) {
@@ -139,8 +142,12 @@ export function OpptjeningSkjema({
 
           {sakIdFeil && !visSakvalg && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
 
+          {hasAttemptedSubmit && harKlientFeil && (
+            <InlineMessage status="error">Rett feilene i skjemaet før du lagrer.</InlineMessage>
+          )}
+
           <HStack gap="space-8">
-            <Button type="submit" variant="primary" size="small" loading={isSubmitting} disabled={harKlientFeil}>
+            <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
               Lagre og gå videre
             </Button>
             <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
@@ -186,7 +193,8 @@ export function OpptjeningSkjema({
             method="post"
             onSubmit={e => {
               setHasAttemptedSubmit(true)
-              if (manglerSak || !harEndringer) e.preventDefault()
+              onInnsendingsforsok?.()
+              if (manglerSak || !harEndringer || harKlientFeil) e.preventDefault()
             }}
           >
             {innhold}
