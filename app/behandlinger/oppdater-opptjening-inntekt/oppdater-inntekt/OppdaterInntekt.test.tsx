@@ -61,15 +61,22 @@ function render(readOnly: boolean, vurderingTilVisning: OppdaterInntektVurdering
 }
 
 describe('OppdaterInntekt', () => {
-  it('grupperer per inntektsår med én tabell per kategori og beløpsfeltene som kolonner', () => {
+  it('viser bare inntektsår som er valgt i comboboxen', () => {
     const html = render(false, null)
+    expect(html).toContain('Inntektsår')
+    expect(html).toContain('Skriv et nytt år og trykk Enter for å legge det til.')
+    expect(html).not.toContain('Inntektsår 2020')
+    expect(html).not.toContain('Legg til pensjonsgivende inntekt')
+    expect(html).not.toContain('Åpne alle år')
+    expect(html).not.toContain('Legg til inntektsår')
+    expect(html).not.toContain('Uten inntektsår')
+  })
+
+  it('grupperer per inntektsår med én tabell per kategori og beløpsfeltene som kolonner', () => {
+    const html = render(false, vurdering)
     expect(html).toContain('Inntektsår 2020')
+    expect(html).toMatch(/<h3[^>]*>Inntektsår 2020<\/h3>/)
     expect(html).not.toContain('PGI-beløp')
-    expect(html).toContain('Nytt inntektsår')
-    expect(html).toContain('Legg til inntektsår')
-    expect(html).toContain('Åpne alle år')
-    expect(html).toContain('aria-expanded="false"')
-    expect(html).not.toContain('aria-expanded="true"')
     expect(html.indexOf('Inntektsår 2020')).toBeLessThan(html.indexOf('Pensjonsgivende inntekt'))
     expect(html).toContain('Pensjonsgivende inntekt')
     expect(html).toContain('Inntekt fra fil')
@@ -93,12 +100,12 @@ describe('OppdaterInntekt', () => {
     const html = render(true, vurdering)
     expect(html).toContain('Oppdater inntekt')
     expect(html).toContain('Inntektsår 2020')
-    expect(html).toContain('aria-expanded="true"')
-    expect(html).toContain('Lukk alle år')
+    expect(html).toContain('Velg årene du vil se eller endre.')
+    expect(html).not.toContain('Lukk alle år')
     expect(html).not.toContain('Nytt inntektsår')
     expect(html).toContain('Endrede linjer (1)')
     expect(html).toContain('Lønn: 500 000 kr → 510 000 kr')
-    expect(html).toContain('Var: 500 000 kr')
+    expect(html).toContain('Tidligere: 500 000 kr')
     expect(html).toContain('Slettede linjer (1)')
     expect(html).toContain('Innenlandsinntekt (2020) – Lønn: 480 000 kr')
     expect(html).not.toContain('opacity')

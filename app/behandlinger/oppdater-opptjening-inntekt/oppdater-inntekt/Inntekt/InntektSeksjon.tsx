@@ -1,5 +1,16 @@
 import { PlusIcon } from '@navikt/aksel-icons'
-import { Accordion, BodyShort, Box, Button, Heading, HStack, Tag, TextField, VStack } from '@navikt/ds-react'
+import {
+  BodyLong,
+  BodyShort,
+  Box,
+  Button,
+  Heading,
+  HStack,
+  Modal,
+  Tag,
+  UNSAFE_Combobox,
+  VStack,
+} from '@navikt/ds-react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { InntektTabell } from './InntektTabell'
 import type { InntektFeil, InntektFeilFelt, InntektFelt, InntektKategori } from './inntekt.types'
@@ -44,11 +55,11 @@ export function InntektSeksjon({
   const [redigerer, setRedigerer] = useState<Set<string>>(() => new Set())
   const [berort, setBerort] = useState<Set<string>>(() => new Set())
   const [ekstraAr, setEkstraAr] = useState<string[]>([])
-  const [nyttAr, setNyttAr] = useState('')
-  const [nyttArFeil, setNyttArFeil] = useState<string>()
-  const [fokusAr, setFokusAr] = useState<string | null>(null)
+  const [sok, setSok] = useState('')
+  const [arFeil, setArFeil] = useState<string>()
+  const [arTilForkasting, setArTilForkasting] = useState<string | null>(null)
   const idPrefix = useId()
-  const nyttArHeadingId = `${idPrefix}-nytt-ar`
+  const utenArHeadingId = `${idPrefix}-uten-ar`
   const headerId = (inntektAr: string) => `${idPrefix}-ar-${inntektAr}`
   const visAlleFeil = innsendingsforsok > 0
   const visEndring = !readOnly || harEndring(linjer)
@@ -62,7 +73,7 @@ export function InntektSeksjon({
     .filter(({ linjer: linjerForAr }) => linjerForAr.some(linje => feil[linje._id]))
     .map(({ inntektAr }) => inntektAr)
 
-  const [aapneAr, setAapneAr] = useState<Set<string>>(
+  const [valgteAr, setValgteAr] = useState<Set<string>>(
     () =>
       new Set(
         grupperInntektLinjerPerAr(linjer)
@@ -73,26 +84,57 @@ export function InntektSeksjon({
   const [handtertForsok, setHandtertForsok] = useState(innsendingsforsok)
   if (handtertForsok !== innsendingsforsok) {
     setHandtertForsok(innsendingsforsok)
-    if (arMedFeil.length > 0) setAapneAr(forrige => new Set([...forrige, ...arMedFeil]))
+    if (arMedFeil.length > 0) setValgteAr(forrige => new Set([...forrige, ...arMedFeil]))
   }
 
-  const alleAapne = arGrupper.length > 0 && arGrupper.every(({ inntektAr }) => aapneAr.has(inntektAr))
+  const alleAr = arGrupper.map(({ inntektAr }) => inntektAr)
+  const linjerIAr = (inntektAr: string) => arGrupper.find(gruppe => gruppe.inntektAr === inntektAr)?.linjer ?? []
+  const filtrerteAr = alleAr.filter(inntektAr => inntektAr.startsWith(sok.trim()))
+  const viste = arGrupper.filter(({ inntektAr }) => valgteAr.has(inntektAr))
 
-  const settApen = (inntektAr: string, apen: boolean) =>
-    setAapneAr(forrige => {
+  const velgAr = (inntektAr: string, valgt: boolean) =>
+    setValgteAr(forrige => {
       const neste = new Set(forrige)
-      if (apen) neste.add(inntektAr)
+      if (valgt) neste.add(inntektAr)
       else neste.delete(inntektAr)
       return neste
     })
 
-  useEffect(() => {
-    if (!fokusAr) return
-    const header = document.getElementById(headerId(fokusAr))
-    header?.scrollIntoView({ block: 'center' })
-    header?.focus()
-    setFokusAr(null)
-  })
+  const onToggleAr = (verdi: string, valgt: boolean) => {
+    const inntektAr = verdi.trim()
+    setSok('')
+    if (!valgt && !readOnly && harEndring(linjerIAr(inntektAr))) {
+      setArTilForkasting(inntektAr)
+      return
+    }
+    if (!valgt || alleAr.includes(inntektAr)) {
+      setArFeil(undefined)
+      velgAr(inntektAr, valgt)
+      return
+    }
+    if (!erGyldigInntektAr(inntektAr)) {
+      setArFeil('År må ha fire siffer')
+      return
+    }
+    setArFeil(undefined)
+    setEkstraAr(forrige => [...forrige, inntektAr])
+    velgAr(inntektAr, true)
+  }
+
+  const forkastAr = (inntektAr: string) => {
+    const ider = new Set<string>()
+    for (const linje of linjerIAr(inntektAr)) {
+      ider.add(linje._id)
+      if (linje._status === 'new') onSlett(linje._id)
+      if (linje._status === 'deleted') onGjenopprett(linje._id)
+      if (linje._status === 'deleted' || linje._status === 'modified') onTilbakestill(linje._id)
+    }
+    setRedigerer(forrige => new Set([...forrige].filter(id => !ider.has(id))))
+    setBerort(forrige => new Set([...forrige].filter(nokkel => !ider.has(nokkel.split('|')[0]))))
+    setEkstraAr(forrige => forrige.filter(ar => ar !== inntektAr))
+    velgAr(inntektAr, false)
+    setArTilForkasting(null)
+  }
 
   const kjenteLinjer = useRef(new Set(linjer.map(linje => linje._id)))
   useEffect(() => {
@@ -100,19 +142,6 @@ export function InntektSeksjon({
     kjenteLinjer.current = new Set(linjer.map(linje => linje._id))
     if (nyLinje) document.getElementById(inntektFeltId(nyLinje._id, 'inntektAr'))?.focus()
   }, [linjer])
-
-  const leggTilAr = () => {
-    const inntektAr = nyttAr.trim()
-    if (!erGyldigInntektAr(inntektAr)) {
-      setNyttArFeil('År må ha fire siffer')
-      return
-    }
-    setNyttArFeil(undefined)
-    setNyttAr('')
-    if (!arGrupper.some(gruppe => gruppe.inntektAr === inntektAr)) setEkstraAr(forrige => [...forrige, inntektAr])
-    settApen(inntektAr, true)
-    setFokusAr(inntektAr)
-  }
 
   const erIRedigering = (linje: InntektLinjeState) =>
     linje._status === 'new' || redigerer.has(linje._id) || !!feil[linje._id]
@@ -188,91 +217,82 @@ export function InntektSeksjon({
 
   return (
     <VStack gap="space-32">
-      {arGrupper.length > 0 && (
-        <VStack gap="space-8">
-          <HStack justify="end">
-            <Button
-              type="button"
-              variant="tertiary"
-              size="small"
-              onClick={() => setAapneAr(alleAapne ? new Set() : new Set(arGrupper.map(({ inntektAr }) => inntektAr)))}
-            >
-              {alleAapne ? 'Lukk alle år' : 'Åpne alle år'}
-            </Button>
-          </HStack>
-          <Accordion size="small" aria-label="Inntekt per år">
-            {arGrupper.map(({ inntektAr, linjer: linjerForAr }) => (
-              <Accordion.Item
-                key={inntektAr}
-                open={aapneAr.has(inntektAr)}
-                onOpenChange={apen => settApen(inntektAr, apen)}
-              >
-                <Accordion.Header id={headerId(inntektAr)}>
-                  <HStack as="span" gap="space-8" align="center">
-                    <span>Inntektsår {inntektAr}</span>
-                    {harEndring(linjerForAr) && (
-                      <Tag variant="warning" size="xsmall">
-                        Endret
-                      </Tag>
-                    )}
-                    {visAlleFeil && arMedFeil.includes(inntektAr) && (
-                      <Tag variant="error" size="xsmall">
-                        Feil
-                      </Tag>
-                    )}
-                  </HStack>
-                </Accordion.Header>
-                <Accordion.Content>
-                  <VStack gap="space-24">
-                    {linjerForAr.length === 0 && <BodyShort>Ingen inntekter registrert for året.</BodyShort>}
-                    {tabeller(linjerForAr, '3', `inntektsår ${inntektAr}`)}
-                    {leggTilKnapper(inntektAr)}
-                  </VStack>
-                </Accordion.Content>
-              </Accordion.Item>
-            ))}
-          </Accordion>
-        </VStack>
+      {(!readOnly || arGrupper.length > 0) && (
+        <Box style={{ maxWidth: '32rem' }}>
+          <UNSAFE_Combobox
+            label="Inntektsår"
+            description="Velg årene du vil se eller endre. Skriv et nytt år og trykk Enter for å legge det til."
+            size="small"
+            isMultiSelect
+            allowNewValues={true}
+            readOnly={readOnly}
+            inputMode="numeric"
+            options={alleAr}
+            filteredOptions={filtrerteAr}
+            selectedOptions={alleAr.filter(inntektAr => valgteAr.has(inntektAr))}
+            value={sok}
+            onChange={verdi => {
+              setSok(verdi)
+              if (verdi) setArFeil(undefined)
+            }}
+            onToggleSelected={onToggleAr}
+            error={arFeil}
+          />
+        </Box>
       )}
-      {(!readOnly || linjerUtenAr.length > 0) && (
-        <Box as="section" aria-labelledby={nyttArHeadingId}>
-          <Heading id={nyttArHeadingId} size="small" level="3" spacing>
-            Nytt inntektsår
-          </Heading>
-          <VStack gap="space-24">
-            {tabeller(linjerUtenAr, '4', 'nytt inntektsår')}
-            {!readOnly && (
-              <HStack gap="space-8" align="end">
-                <TextField
-                  label="År"
-                  size="small"
-                  inputMode="numeric"
-                  value={nyttAr}
-                  error={nyttArFeil}
-                  onChange={e => {
-                    setNyttAr(e.target.value)
-                    setNyttArFeil(undefined)
-                  }}
-                  onKeyDown={e => {
-                    if (e.key !== 'Enter') return
-                    e.preventDefault()
-                    leggTilAr()
-                  }}
-                  style={{ width: '6rem' }}
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="small"
-                  icon={<PlusIcon aria-hidden />}
-                  onClick={leggTilAr}
-                >
-                  Legg til inntektsår
-                </Button>
-              </HStack>
-            )}
+      {viste.map(({ inntektAr, linjer: linjerForAr }) => (
+        <Box as="section" key={inntektAr} aria-labelledby={headerId(inntektAr)}>
+          <VStack gap="space-16">
+            <HStack gap="space-8" align="center">
+              <Heading id={headerId(inntektAr)} size="small" level="3">
+                Inntektsår {inntektAr}
+              </Heading>
+              {harEndring(linjerForAr) && (
+                <Tag variant="warning" size="xsmall">
+                  Endret
+                </Tag>
+              )}
+              {visAlleFeil && arMedFeil.includes(inntektAr) && (
+                <Tag variant="error" size="xsmall">
+                  Feil
+                </Tag>
+              )}
+            </HStack>
+            {linjerForAr.length === 0 && <BodyShort>Ingen inntekter registrert for året.</BodyShort>}
+            {tabeller(linjerForAr, '4', `inntektsår ${inntektAr}`)}
+            {leggTilKnapper(inntektAr)}
           </VStack>
         </Box>
+      ))}
+      {linjerUtenAr.length > 0 && (
+        <Box as="section" aria-labelledby={utenArHeadingId}>
+          <Heading id={utenArHeadingId} size="small" level="3" spacing>
+            Uten inntektsår
+          </Heading>
+          <VStack gap="space-24">{tabeller(linjerUtenAr, '4', 'uten inntektsår')}</VStack>
+        </Box>
+      )}
+      {!readOnly && (
+        <Modal
+          open={arTilForkasting !== null}
+          onClose={() => setArTilForkasting(null)}
+          header={{ heading: `Fjerne inntektsår ${arTilForkasting ?? ''}?` }}
+          size="small"
+        >
+          <Modal.Body>
+            <BodyLong>
+              Endringene du har gjort for inntektsår {arTilForkasting} blir forkastet hvis du fjerner året.
+            </BodyLong>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button type="button" variant="danger" onClick={() => arTilForkasting && forkastAr(arTilForkasting)}>
+              Fjern og forkast endringer
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setArTilForkasting(null)}>
+              Behold året
+            </Button>
+          </Modal.Footer>
+        </Modal>
       )}
     </VStack>
   )

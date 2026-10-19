@@ -132,7 +132,7 @@ export function InntektTabell({
                   <VStack gap="space-0">
                     <span>{verdi}</span>
                     <Detail as="span" textColor="subtle">
-                      {`Var: ${opprinnelig || '–'}`}
+                      {`Tidligere: ${opprinnelig || '–'}`}
                     </Detail>
                   </VStack>
                 )
