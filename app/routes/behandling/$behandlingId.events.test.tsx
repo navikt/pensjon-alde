@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
-import {
-  finnAktivitetUnderBehandling,
-  getNesteAktivitetPathFraEvent,
-  harEndretStatus,
-  skalPolle,
-  vurderEvent,
-} from './$behandlingId'
+import { getNesteAktivitetPathFraEvent, harEndretStatus, skalPolle, vurderEvent } from './$behandlingId'
 
 const aktivitet = (overrides: Partial<AktivitetDTO>): AktivitetDTO => ({
   aktivitetId: 1,
@@ -126,40 +120,6 @@ describe('vurderEvent', () => {
     AldeBehandlingStatus.AVBRUTT_AV_BRUKER,
   ])('revaliderer ved %s', aldeBehandlingStatus => {
     expect(vurderEvent(event({ aldeBehandlingStatus }), null, now)).toEqual({ type: 'revalider' })
-  })
-})
-
-describe('finnAktivitetUnderBehandling', () => {
-  it('returns friendly name of aktivitet UNDER_BEHANDLING', () => {
-    expect(
-      finnAktivitetUnderBehandling([
-        aktivitet({ status: AktivitetStatus.FULLFORT, friendlyName: 'Ferdig' }),
-        aktivitet({ status: AktivitetStatus.UNDER_BEHANDLING, friendlyName: '' }),
-        aktivitet({ status: AktivitetStatus.UNDER_BEHANDLING, friendlyName: 'Beregner' }),
-      ]),
-    ).toBe('Beregner')
-  })
-
-  it('falls back to OPPRETTET when none is UNDER_BEHANDLING', () => {
-    expect(
-      finnAktivitetUnderBehandling([
-        aktivitet({ status: AktivitetStatus.FULLFORT, friendlyName: 'Ferdig' }),
-        aktivitet({ status: AktivitetStatus.OPPRETTET, friendlyName: 'Neste' }),
-      ]),
-    ).toBe('Neste')
-  })
-
-  it('prefers UNDER_BEHANDLING over OPPRETTET', () => {
-    expect(
-      finnAktivitetUnderBehandling([
-        aktivitet({ status: AktivitetStatus.OPPRETTET, friendlyName: 'Neste' }),
-        aktivitet({ status: AktivitetStatus.UNDER_BEHANDLING, friendlyName: 'Beregner' }),
-      ]),
-    ).toBe('Beregner')
-  })
-
-  it('returns null when none is UNDER_BEHANDLING or OPPRETTET', () => {
-    expect(finnAktivitetUnderBehandling([aktivitet({ status: AktivitetStatus.FULLFORT })])).toBeNull()
   })
 })
 

@@ -115,17 +115,6 @@ export function vurderEvent(event: BehandlingDTO, justCompletedId: string | null
   return { type: 'revalider' }
 }
 
-/**
- * Friendly name på aktiviteten som maskinen jobber med nå.
- * Foretrekker UNDER_BEHANDLING, faller tilbake på OPPRETTET.
- */
-export function finnAktivitetUnderBehandling(aktiviteter: AktivitetDTO[]): string | null {
-  const finnMedStatus = (status: AktivitetStatus) =>
-    aktiviteter.find(aktivitet => aktivitet.status === status && aktivitet.friendlyName)?.friendlyName
-
-  return finnMedStatus(AktivitetStatus.UNDER_BEHANDLING) ?? finnMedStatus(AktivitetStatus.OPPRETTET) ?? null
-}
-
 export function getRedirectPath({
   pathname,
   behandlingId,
@@ -292,7 +281,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     lastEvent && lastEvent.sisteKjoringDato >= behandling.sisteKjoringDato
       ? lastEvent.aktiviteter
       : behandling.aktiviteter
-  const aktivitetUnderBehandling = finnAktivitetUnderBehandling(sisteAktiviteter)
 
   function retry() {
     ventetPaKjoringRef.current = kjoringUuid
@@ -460,7 +448,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
         <main className={behandlingStyles.mainContent}>
           {isLoading ? (
-            <AldeLoader aktivitetNavn={aktivitetUnderBehandling} />
+            <AldeLoader />
           ) : behandlingFeiler ? (
             <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
           ) : (
