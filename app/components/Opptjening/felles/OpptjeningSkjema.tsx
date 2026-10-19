@@ -1,7 +1,19 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
-import { Button, Heading, HStack, InfoCard, InlineMessage, LocalAlert, Page, Select, VStack } from '@navikt/ds-react'
+import {
+  Button,
+  ErrorSummary,
+  Heading,
+  HStack,
+  InfoCard,
+  InlineMessage,
+  List,
+  LocalAlert,
+  Page,
+  Select,
+  VStack,
+} from '@navikt/ds-react'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Form } from 'react-router'
 import styles from '~/common.module.css'
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
@@ -16,6 +28,8 @@ import type {
 } from './opptjening.types'
 import { type EndringSummary, harEndringer as harEndringerISummary, oversettKoderIMelding } from './opptjening.utils'
 
+const SAK_FELT_ID = 'opptjening-sak'
+
 interface OpptjeningSkjemaProps {
   tittel: string
   grunnlag: Pick<OppdaterOpptjeningGrunnlag, 'saker'>
@@ -29,6 +43,7 @@ interface OpptjeningSkjemaProps {
   begrunnelse?: string
   avbrytAktivitet?: () => void
   harKlientFeil?: boolean
+  feiloppsummering?: { href: string; melding: string }[]
   onInnsendingsforsok?: () => void
   visNotat?: boolean
   children: ReactNode
@@ -47,6 +62,7 @@ export function OpptjeningSkjema({
   begrunnelse,
   avbrytAktivitet,
   harKlientFeil = false,
+  feiloppsummering = [],
   onInnsendingsforsok,
   visNotat = false,
   children,
@@ -55,6 +71,14 @@ export function OpptjeningSkjema({
 
   const [selectedSakId, setSelectedSakId] = useState(sakId != null ? String(sakId) : '')
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+  const [avvisteForsok, setAvvisteForsok] = useState(0)
+  const errorSummaryRef = useRef<HTMLDivElement>(null)
+  const skjemaFeilRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (avvisteForsok === 0) return
+    ;(errorSummaryRef.current ?? skjemaFeilRef.current)?.focus()
+  }, [avvisteForsok])
 
   const saker: OppdaterPgiSakValg[] =
     sakId != null && !(grunnlag.saker ?? []).some(sak => sak.sakId === sakId)
@@ -74,10 +98,21 @@ export function OpptjeningSkjema({
   const visOppsummering = !readOnly || harEndringer
   const visBegrunnelse = visNotat && (!readOnly || !!begrunnelse)
 
+  const oppsummerteFeil = hasAttemptedSubmit
+    ? [
+        ...(sakIdFeil && visSakvalg ? [{ href: `#${SAK_FELT_ID}`, melding: sakIdFeil }] : []),
+        ...(harKlientFeil ? feiloppsummering : []),
+      ]
+    : []
+  const visIngenEndringer = hasAttemptedSubmit && !harEndringer
+  const visSakFeilUtenFelt = !!sakIdFeil && !visSakvalg
+  const visGenerellKlientFeil = hasAttemptedSubmit && harKlientFeil && feiloppsummering.length === 0
+
   const innhold = (
     <VStack gap="space-24">
       {visSakvalg && (
         <Select
+          id={SAK_FELT_ID}
           label="Sak"
           name="sakId"
           size="small"
@@ -117,33 +152,48 @@ export function OpptjeningSkjema({
         <>
           <input type="hidden" name="payload" value={payload} />
 
-          {hasAttemptedSubmit && !harEndringer && (
-            <InlineMessage status="error">
-              Ingen endringer er registrert. Gjør minst én endring før du lagrer.
-            </InlineMessage>
-          )}
-
           {errors?._server && errors._server.length > 0 && (
             <LocalAlert status="error">
               <LocalAlert.Header>
-                <LocalAlert.Title>Vennligst sjekk følgende feil</LocalAlert.Title>
+                <LocalAlert.Title>Sjekk følgende feil</LocalAlert.Title>
               </LocalAlert.Header>
               <LocalAlert.Content>
-                <VStack gap="space-4">
-                  <ul>
-                    {Array.from(new Set(errors._server)).map(melding => (
-                      <li key={melding}>{oversettKoderIMelding(melding, opptjeningstyper)}</li>
-                    ))}
-                  </ul>
-                </VStack>
+                <List size="small">
+                  {Array.from(new Set(errors._server)).map(melding => (
+                    <List.Item key={melding}>{oversettKoderIMelding(melding, opptjeningstyper)}</List.Item>
+                  ))}
+                </List>
               </LocalAlert.Content>
             </LocalAlert>
           )}
 
-          {sakIdFeil && !visSakvalg && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
+          {oppsummerteFeil.length > 0 && (
+            <ErrorSummary
+              ref={errorSummaryRef}
+              size="small"
+              heading="Rett disse feilene før du lagrer:"
+              headingTag="h3"
+            >
+              {oppsummerteFeil.map(({ href, melding }) => (
+                <ErrorSummary.Item key={`${href}-${melding}`} href={href}>
+                  {melding}
+                </ErrorSummary.Item>
+              ))}
+            </ErrorSummary>
+          )}
 
-          {hasAttemptedSubmit && harKlientFeil && (
-            <InlineMessage status="error">Rett feilene i skjemaet før du lagrer.</InlineMessage>
+          {(visIngenEndringer || visSakFeilUtenFelt || visGenerellKlientFeil) && (
+            <VStack ref={skjemaFeilRef} tabIndex={-1} gap="space-8">
+              {visIngenEndringer && (
+                <InlineMessage status="error">
+                  Ingen endringer er registrert. Gjør minst én endring før du lagrer.
+                </InlineMessage>
+              )}
+              {visSakFeilUtenFelt && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
+              {visGenerellKlientFeil && (
+                <InlineMessage status="error">Rett feilene i skjemaet før du lagrer.</InlineMessage>
+              )}
+            </VStack>
           )}
 
           <HStack gap="space-8">
@@ -169,7 +219,7 @@ export function OpptjeningSkjema({
         {manglerTilgang && (
           <LocalAlert status="warning">
             <LocalAlert.Header>
-              <LocalAlert.Title>Mangler rolle tilgang</LocalAlert.Title>
+              <LocalAlert.Title>Mangler rolletilgang</LocalAlert.Title>
             </LocalAlert.Header>
             <LocalAlert.Content>
               Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan gjøre endringer i Opptjeningsregisteret.
@@ -194,7 +244,10 @@ export function OpptjeningSkjema({
             onSubmit={e => {
               setHasAttemptedSubmit(true)
               onInnsendingsforsok?.()
-              if (manglerSak || !harEndringer || harKlientFeil) e.preventDefault()
+              if (manglerSak || !harEndringer || harKlientFeil) {
+                e.preventDefault()
+                setAvvisteForsok(forsok => forsok + 1)
+              }
             }}
           >
             {innhold}

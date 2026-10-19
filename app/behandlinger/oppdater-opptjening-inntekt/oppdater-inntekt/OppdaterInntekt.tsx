@@ -5,12 +5,14 @@ import { InntektSeksjon } from './Inntekt/InntektSeksjon'
 import type { InntektLinje, OppdaterInntektGrunnlag, OppdaterInntektVurdering } from './Inntekt/inntekt.types'
 import {
   byggInntektEndringSummary,
+  byggInntektFeiloppsummering,
   byggInntektPayload,
   endreInntektFelt,
   finnInntektFeil,
   INNTEKT_FELTER,
   inntektLinjerFraVurdering,
   inntektstyperPerKategori,
+  ledigInntektstype,
   nyInntektLinje,
   tilbakestillInntektLinje,
 } from './Inntekt/inntekt.utils'
@@ -42,7 +44,8 @@ export function OppdaterInntekt({
   )
 
   const feil = useMemo(() => finnInntektFeil(linjer), [linjer])
-  const [visAlleFeil, setVisAlleFeil] = useState(false)
+  const feiloppsummering = useMemo(() => byggInntektFeiloppsummering(linjer, feil, typer), [linjer, feil, typer])
+  const [innsendingsforsok, setInnsendingsforsok] = useState(0)
 
   const endringSummary = useMemo(() => byggInntektEndringSummary(linjer, typer), [linjer, typer])
 
@@ -66,15 +69,18 @@ export function OppdaterInntekt({
       begrunnelse={begrunnelse}
       avbrytAktivitet={avbrytAktivitet}
       harKlientFeil={Object.keys(feil).length > 0}
-      onInnsendingsforsok={() => setVisAlleFeil(true)}
+      feiloppsummering={feiloppsummering}
+      onInnsendingsforsok={() => setInnsendingsforsok(forsok => forsok + 1)}
     >
       <InntektSeksjon
         linjer={linjer}
         typer={typer}
         feil={feil}
         readOnly={readOnly}
-        visAlleFeil={visAlleFeil}
-        onLeggTil={kategori => leggTil(nyInntektLinje(kategori, typer[kategori][0]?.code ?? ''))}
+        innsendingsforsok={innsendingsforsok}
+        onLeggTil={(kategori, inntektAr) =>
+          leggTil(nyInntektLinje(kategori, ledigInntektstype(linjer, typer[kategori], kategori, inntektAr), inntektAr))
+        }
         onSlett={slett}
         onGjenopprett={gjenopprett}
         onTilbakestill={id => oppdater(id, tilbakestillInntektLinje)}

@@ -27,18 +27,22 @@ export type InntektLinjeState = InntektLinje & {
   _id: string
   _status: LinjeStatus
   _original: InntektLinje | null
+  _gruppeAr?: string
 }
+
+export type InntektArGruppe = { inntektAr: string | null; linjer: InntektLinjeState[] }
 
 export type InntektstyperPerKategori = Record<InntektKategori, OpptjeningTypeKode[]>
 
-export const BELOP_FELTER: Record<InntektKategori, { felt: BelopFelt; label: string }[]> = {
+export const BELOP_FELTER: Record<InntektKategori, { felt: BelopFelt; label: string; kortLabel?: string }[]> = {
   pgi: [
     { felt: 'belopLoennsinntekt', label: 'Lønn' },
-    { felt: 'belopLoennsinntektBarePensjonsdel', label: 'Lønn, bare pensjonsdel' },
+    { felt: 'belopLoennsinntektBarePensjonsdel', label: 'Lønn, bare pensjonsdel', kortLabel: 'Pensjonsdel' },
     { felt: 'belopNaeringsinntekt', label: 'Næring' },
     {
       felt: 'belopNaeringsinntektFraFiskeFangstEllerFamiliebarnehage',
       label: 'Næring fra fiske, fangst eller familiebarnehage',
+      kortLabel: 'Næring, fiske mv.',
     },
   ],
   filformat: [
@@ -84,6 +88,10 @@ export function inntektTypeLabel(typer: OpptjeningTypeKode[], kode: string): str
 function parseAr(verdi: string): number | null {
   const trimmet = verdi.trim()
   return AR_REGEX.test(trimmet) ? Number(trimmet) : null
+}
+
+export function erGyldigInntektAr(verdi: string): boolean {
+  return parseAr(verdi) !== null
 }
 
 function parseBelop(verdi: string | undefined): number | null {
@@ -156,19 +164,46 @@ export function inntektLinjerFraVurdering(
     return { ...linje, _status: beregnStatus(linje, INNTEKT_FELTER) }
   })
 
-  const nye = [...erstattet.values()]
-    .flat()
-    .map((linje, i): InntektLinjeState => ({ ...linje, _id: `inntekt-ny-${i}`, _status: 'new', _original: null }))
+  const nye = [...erstattet.values()].flat().map(
+    (linje, i): InntektLinjeState => ({
+      ...linje,
+      _id: `inntekt-ny-${i}`,
+      _status: 'new',
+      _original: null,
+      _gruppeAr: linje.inntektAr,
+    }),
+  )
 
   return [...fraGrunnlag, ...nye]
 }
 
-export function nyInntektLinje(kategori: InntektKategori, inntektsType: string): InntektLinjeState {
-  const linje: InntektLinje = { kategori, inntektAr: '', inntektsType }
+export function nyInntektLinje(kategori: InntektKategori, inntektsType: string, inntektAr = ''): InntektLinjeState {
+  const linje: InntektLinje = { kategori, inntektAr, inntektsType }
   for (const { felt } of BELOP_FELTER[kategori]) {
     linje[felt] = ''
   }
-  return { ...linje, _id: crypto.randomUUID(), _status: 'new', _original: null }
+  return {
+    ...linje,
+    _id: crypto.randomUUID(),
+    _status: 'new',
+    _original: null,
+    ...(inntektAr ? { _gruppeAr: inntektAr } : {}),
+  }
+}
+
+/** Velger første inntektstype som ikke allerede er i bruk for året og kategorien, ellers første type. */
+export function ledigInntektstype(
+  linjer: InntektLinjeState[],
+  typer: OpptjeningTypeKode[],
+  kategori: InntektKategori,
+  inntektAr: string,
+): string {
+  const brukte = new Set(
+    linjer
+      .filter(linje => linje.kategori === kategori && linje._status !== 'deleted' && linje.inntektAr === inntektAr)
+      .map(linje => linje.inntektsType),
+  )
+  return (inntektAr ? typer.find(t => t.code && !brukte.has(t.code))?.code : undefined) ?? typer[0]?.code ?? ''
 }
 
 export function endreInntektFelt(linje: InntektLinjeState, felt: InntektFelt, verdi: string): InntektLinjeState {
@@ -189,6 +224,65 @@ export function sorterInntektLinjer(linjer: InntektLinjeState[]): InntektLinjeSt
       return arA - arB || (a._original?.inntektsType ?? '').localeCompare(b._original?.inntektsType ?? '')
     })
   return [...eksisterende, ...linjer.filter(linje => !linje._original)]
+}
+
+/**
+ * Grupperer linjene på opprinnelig år (eller året en ny linje ble lagt til for), slik at rader ikke bytter gruppe
+ * mens de redigeres. År i `ekstraAr` får en gruppe selv uten linjer. Nye linjer uten år samles i en egen gruppe til slutt.
+ */
+export function grupperInntektLinjerPerAr(linjer: InntektLinjeState[], ekstraAr: string[] = []): InntektArGruppe[] {
+  const grupper = new Map<string | null, InntektLinjeState[]>(ekstraAr.map(inntektAr => [inntektAr, []]))
+  for (const linje of sorterInntektLinjer(linjer)) {
+    const inntektAr = linje._original?.inntektAr || linje._gruppeAr || null
+    grupper.set(inntektAr, [...(grupper.get(inntektAr) ?? []), linje])
+  }
+  return [...grupper.entries()]
+    .map(([inntektAr, linjerForAr]) => ({ inntektAr, linjer: linjerForAr }))
+    .sort((a, b) => {
+      if (a.inntektAr === null) return 1
+      if (b.inntektAr === null) return -1
+      return Number(a.inntektAr) - Number(b.inntektAr)
+    })
+}
+
+export function inntektFeltId(linjeId: string, felt: InntektFelt): string {
+  return `inntekt-felt-${linjeId}-${felt}`
+}
+
+export function inntektLinjeBeskrivelse(linje: InntektLinjeState, typer: InntektstyperPerKategori): string {
+  const type = linje.inntektsType ? inntektTypeLabel(typer[linje.kategori], linje.inntektsType) : ''
+  const kategori = INNTEKT_KATEGORIER.find(({ kategori }) => kategori === linje.kategori)?.tittel.toLowerCase() ?? ''
+  return [linje.inntektAr.trim(), type || kategori].filter(Boolean).join(' ')
+}
+
+const FEIL_REKKEFOLGE: InntektFeilFelt[] = ['inntektAr', 'inntektsType', '_duplikat']
+
+function feltForFeil(linje: InntektLinjeState, felt: InntektFeilFelt): InntektFelt {
+  if (felt === '_duplikat') return 'inntektAr'
+  if (felt === '_belop') return BELOP_FELTER[linje.kategori][0].felt
+  return felt
+}
+
+export function byggInntektFeiloppsummering(
+  linjer: InntektLinjeState[],
+  feil: Record<string, InntektFeil>,
+  typer: InntektstyperPerKategori,
+): { href: string; melding: string }[] {
+  const kategoriIndeks = (kategori: InntektKategori) => INNTEKT_KATEGORIER.findIndex(k => k.kategori === kategori)
+  const iVisningsrekkefolge = grupperInntektLinjerPerAr(linjer).flatMap(({ linjer: linjerForAr }) =>
+    [...linjerForAr].sort((a, b) => kategoriIndeks(a.kategori) - kategoriIndeks(b.kategori)),
+  )
+  return iVisningsrekkefolge.flatMap(linje => {
+    const linjeFeil = feil[linje._id]
+    if (!linjeFeil) return []
+    const rekkefolge = [...FEIL_REKKEFOLGE, ...BELOP_FELTER[linje.kategori].map(({ felt }) => felt), '_belop' as const]
+    const beskrivelse = inntektLinjeBeskrivelse(linje, typer)
+    return rekkefolge.flatMap(felt => {
+      const melding = linjeFeil[felt]
+      if (!melding) return []
+      return [{ href: `#${inntektFeltId(linje._id, feltForFeil(linje, felt))}`, melding: `${beskrivelse}: ${melding}` }]
+    })
+  })
 }
 
 export function finnInntektFeil(linjer: InntektLinjeState[]): Record<string, InntektFeil> {
