@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { type ActionErrors, OpptjeningSkjema, useLinjeState } from '~/components/Opptjening'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import { InntektSeksjon } from './Inntekt/InntektSeksjon'
 import type { InntektLinje, OppdaterInntektGrunnlag, OppdaterInntektVurdering } from './Inntekt/inntekt.types'
@@ -16,6 +15,9 @@ import {
   nyInntektLinje,
   tilbakestillInntektLinje,
 } from './Inntekt/inntekt.utils'
+import { OpptjeningSkjema } from './Inntekt/OpptjeningSkjema'
+import type { ActionErrors } from './Inntekt/opptjening.types'
+import { useLinjeState } from './Inntekt/use-linje-state'
 
 type OppdaterInntektProps = Omit<
   AktivitetComponentProps<OppdaterInntektGrunnlag, OppdaterInntektVurdering>,

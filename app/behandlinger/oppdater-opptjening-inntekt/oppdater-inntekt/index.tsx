@@ -1,8 +1,4 @@
 import { useOutletContext } from 'react-router'
-import {
-  hentOpptjeningLoaderData,
-  lagreOpptjeningVurdering,
-} from '~/components/Opptjening/felles/opptjening-api.server'
 import { userContext } from '~/context/user-context'
 import { Features } from '~/features'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -10,6 +6,7 @@ import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
 import type { OppdaterInntektGrunnlag } from './Inntekt/inntekt.types'
 import { harInntektEndringer } from './Inntekt/inntekt.utils'
+import { hentOpptjeningLoaderData, lagreOpptjeningVurdering } from './Inntekt/opptjening-api.server'
 import { OppdaterInntekt } from './OppdaterInntekt'
 
 export function meta() {

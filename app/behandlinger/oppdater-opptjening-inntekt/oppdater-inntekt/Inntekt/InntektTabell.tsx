@@ -12,12 +12,12 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import type { CSSProperties } from 'react'
-import { HandlingKnapper } from '~/components/Opptjening/felles/HandlingKnapper'
-import type { OpptjeningTypeKode } from '~/components/Opptjening/felles/opptjening.types'
-import { StatusTag } from '~/components/Opptjening/felles/StatusTag'
+import { HandlingKnapper } from './HandlingKnapper'
 import styles from './InntektSeksjon.module.css'
 import type { BelopFelt, InntektFeil, InntektFeilFelt, InntektFelt, InntektKategori } from './inntekt.types'
 import { BELOP_FELTER, formaterBelop, type InntektLinjeState, inntektFeltId, inntektTypeLabel } from './inntekt.utils'
+import type { OpptjeningTypeKode } from './opptjening.types'
+import { StatusTag } from './StatusTag'
 
 const SLETTET_STIL: CSSProperties = { color: 'var(--ax-text-neutral-subtle)' }
 

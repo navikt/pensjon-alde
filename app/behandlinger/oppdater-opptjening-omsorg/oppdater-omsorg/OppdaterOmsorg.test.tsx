@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import type { OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering } from '~/components/Opptjening'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
+import type { OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering } from './Omsorg/opptjening.types'
 import { OppdaterOmsorg } from './OppdaterOmsorg'
 
 const grunnlag: OppdaterOpptjeningGrunnlag = {

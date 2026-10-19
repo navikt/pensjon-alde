@@ -1,10 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import type {
-  OppdaterOpptjeningGrunnlag,
-  OppdaterOpptjeningVurdering,
-  OpptjeningstyperResponse,
-} from '~/components/Opptjening/felles/opptjening.types'
-import { harEndringer, tilLinjeState } from '~/components/Opptjening/felles/opptjening.utils'
 import type { OmsorgGrunnlagDTO } from './omsorg.types'
 import {
   byggOmsorgEndringSummary,
@@ -15,6 +9,12 @@ import {
   omsorgLinjerFraVurdering,
   toOmsorgTilSletting,
 } from './omsorg.utils'
+import type {
+  OppdaterOpptjeningGrunnlag,
+  OppdaterOpptjeningVurdering,
+  OpptjeningstyperResponse,
+} from './opptjening.types'
+import { harEndringer, tilLinjeState } from './opptjening.utils'
 
 const opptjeningstyper: OpptjeningstyperResponse = {
   // Oppdiktet kode – testene trenger bare en vilkårlig kode med beskrivelse

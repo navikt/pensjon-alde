@@ -1,13 +1,10 @@
 import { useOutletContext } from 'react-router'
-import {
-  hentOpptjeningLoaderData,
-  lagreOpptjeningVurdering,
-} from '~/components/Opptjening/felles/opptjening-api.server'
 import { userContext } from '~/context/user-context'
 import { Features } from '~/features'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { isFeatureEnabled } from '~/utils/unleash.server'
 import type { Route } from './+types'
+import { hentOpptjeningLoaderData, lagreOpptjeningVurdering } from './Omsorg/opptjening-api.server'
 import { OppdaterOmsorg } from './OppdaterOmsorg'
 
 export function meta() {

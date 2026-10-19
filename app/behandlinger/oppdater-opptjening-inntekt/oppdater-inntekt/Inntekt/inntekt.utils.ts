@@ -1,11 +1,3 @@
-import type { OpptjeningTypeKode } from '~/components/Opptjening/felles/opptjening.types'
-import {
-  beregnStatus,
-  byggEndringSummary,
-  type EndringSummary,
-  type LinjeStatus,
-  oppsummeringForKategori,
-} from '~/components/Opptjening/felles/opptjening.utils'
 import { formatCurrencyNok } from '~/utils/currency'
 import type {
   BelopFelt,
@@ -22,6 +14,14 @@ import type {
   OppdaterInntektVurdering,
   PensjonsgivendeInntektDTO,
 } from './inntekt.types'
+import type { OpptjeningTypeKode } from './opptjening.types'
+import {
+  beregnStatus,
+  byggEndringSummary,
+  type EndringSummary,
+  type LinjeStatus,
+  oppsummeringForKategori,
+} from './opptjening.utils'
 
 export type InntektLinjeState = InntektLinje & {
   _id: string

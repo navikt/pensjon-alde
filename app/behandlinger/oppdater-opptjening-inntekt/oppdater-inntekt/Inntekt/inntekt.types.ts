@@ -1,4 +1,4 @@
-import type { OppdaterPgiSakValg, OpptjeningTypeKode } from '~/components/Opptjening/felles/opptjening.types'
+import type { OppdaterPgiSakValg, OpptjeningTypeKode } from './opptjening.types'
 
 export type InntektFraFilDTO = {
   inntektsType: string
