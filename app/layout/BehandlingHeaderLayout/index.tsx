@@ -35,7 +35,7 @@ export default function BehandlingHeaderLayout({ loaderData }: Route.ComponentPr
   const root = useRouteLoaderData<typeof rootLoader>('root')
   if (!root) throw new Error('Root loader data not found')
 
-  const { me, verdandeAktivitetUrl, verdandeBehandlingUrl, telemetry } = root
+  const { me, verdandeBehandlingUrl, telemetry } = root
   const { setDarkmode, isDarkmode } = useOutletContext<RootOutletContext>()
 
   return (
@@ -47,7 +47,6 @@ export default function BehandlingHeaderLayout({ loaderData }: Route.ComponentPr
         psakPensjonsoversiktUrl={psakPensjonsoversiktUrl}
         psakOppgaveoversiktUrl={psakOppgaveoversiktUrl}
         environment={telemetry.environment}
-        verdandeAktivitetUrl={verdandeAktivitetUrl}
         verdandeBehandlingUrl={verdandeBehandlingUrl}
       />
       <Box asChild>

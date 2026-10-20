@@ -11,7 +11,6 @@ interface Props {
   setDarkmode: (darkmode: boolean) => void
   psakOppgaveoversiktUrl: string | undefined
   psakPensjonsoversiktUrl: string | undefined
-  verdandeAktivitetUrl: string | undefined
   verdandeBehandlingUrl: string | undefined
 }
 
@@ -22,7 +21,6 @@ export const Header = ({
   setDarkmode,
   psakOppgaveoversiktUrl,
   psakPensjonsoversiktUrl,
-  verdandeAktivitetUrl,
   verdandeBehandlingUrl,
 }: Props) => {
   const location = useLocation()
@@ -93,13 +91,6 @@ export const Header = ({
                   Gå til behandling
                   <ExternalLinkIcon aria-hidden />
                 </Dropdown.Menu.GroupedList.Item>
-
-                {verdandeAktivitetUrl && (
-                  <Dropdown.Menu.GroupedList.Item as="a" target="_blank" href={verdandeAktivitetUrl}>
-                    Gå til aktivitet
-                    <ExternalLinkIcon aria-hidden />
-                  </Dropdown.Menu.GroupedList.Item>
-                )}
               </Dropdown.Menu.GroupedList>
             </>
           )}

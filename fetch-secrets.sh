@@ -42,12 +42,23 @@ fetch_nais_secret "$team" "dev-gcp" "alde-unleash-api-token" write_env "$secrets
     "UNLEASH_SERVER_API_ENV"
 complete_step
 
+
 start_step "PidEncryptionKey"
 fetch_nais_secret "$team" "dev-gcp" "psak-pid-encryption-key" write_env "$secrets_file" \
     "PSAK_PID_ENCRYPTION_KEY"
 complete_step
 
+start_step "Kafka"
+kafka_secret_name=$(secret_name_from_env "$app" "$team" "dev-gcp" "KAFKA_BROKERS") || exit 1
+fetch_nais_secret "$team" "dev-gcp" "$kafka_secret_name" write_env "$secrets_file" \
+    "KAFKA_BROKERS" \
+    "KAFKA_CERTIFICATE" \
+    "KAFKA_PRIVATE_KEY" \
+    "KAFKA_CA"
+complete_step
+
 {
+  echo BEHANDLING_KAFKA_TOPIC='pensjon-q2.alde-behandling'
   echo IS_LOCAL_ENV="'true'"
   echo PEN_SCOPE="'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'"
   echo PEN_URL="'http://localhost:8089'"
@@ -57,7 +68,6 @@ complete_step
   echo PENNY_JOURNALPOST_URL_TEMPLATE='https://pensjon-penny-q2.{subdomain}.dev.nav.no/psak/api/bff/dokument/dokumentoversikt/dokument/{journalpostId}.pdf'
   echo MODIA_PERSONOVERSIKT='https://modiapersonoversikt.ansatt.dev.nav.no/person/{fnr}'
   echo VERDANDE_BEHANDLING_URL="'http://localhost:3000/behandling/{behandlingId}'"
-  echo VERDANDE_AKTIVITET_URL="'http://localhost:3000/behandling/{behandlingId}/aktivitet/{aktivitetId}'"
   echo VERDANDE_LINKS_ENABLED="'true'"
   echo TELEMETRY_URL="https://telemetry.ekstern.dev.nav.no/collect"
   echo TELEMETRY_ENVIRONMENT="local"

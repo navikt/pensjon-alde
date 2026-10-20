@@ -12,6 +12,7 @@
   "opprettet": "2025-03-10T10:25:00.000000",
   "stoppet": null,
   "status": "UNDER_BEHANDLING",
+  "totaltAntallGangerKjort": 2,
   "aktiviteter": [
     {
       "aktivitetId": 8010001,

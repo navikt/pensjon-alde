@@ -12,6 +12,7 @@
   "status": "UNDER_BEHANDLING",
   "saksbehandletAv": ["Z990000"],
   "processName": "Alderspensjon søknad",
+  "totaltAntallGangerKjort": 2,
   "aktiviteter": [
     {
       "aktivitetId": 8020942,

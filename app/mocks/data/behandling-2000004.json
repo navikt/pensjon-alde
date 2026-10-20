@@ -12,6 +12,7 @@
   "stoppet": null,
   "status": "FULLFORT",
   "processName": "Alderspensjon søknad",
+  "totaltAntallGangerKjort": 2,
   "aktiviteter": [
     {
       "aktivitetId": 9020942,

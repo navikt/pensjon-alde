@@ -13,6 +13,9 @@ spec:
         - host: "login.microsoftonline.com"
         - host: "{{{ pen.host }}}"
         - host: "teampensjon-unleash-api.nav.cloud.nais.io"
+  kafka:
+    pool: "{{{ kafka.pool }}}"
+
   envFrom:
     - secret: alde-unleash-api-token
     - secret: psak-pid-encryption-key
@@ -47,8 +50,6 @@ spec:
       value: "{{ psak.oppgaveoversikt }}"
     - name: "PENNY_JOURNALPOST_URL_TEMPLATE"
       value: "{{ psak.penny_journalpost_url_template }}"
-    - name: "VERDANDE_AKTIVITET_URL"
-      value: "{{{ verdande.aktivitet_url }}}"
     - name: "VERDANDE_BEHANDLING_URL"
       value: "{{{ verdande.behandling_url }}}"
     - name: "VERDANDE_LINKS_ENABLED"
@@ -59,6 +60,8 @@ spec:
       value: "{{{ telemetry.environment }}}"
     - name: "MODIA_PERSONOVERSIKT"
       value: "{{{ modia.oversikt }}}"
+    - name: "BEHANDLING_KAFKA_TOPIC"
+      value: "{{{ kafka.behandling_topic }}}"
 
   image: "{{{ image }}}"
   ingresses:
