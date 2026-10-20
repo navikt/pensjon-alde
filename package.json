@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.0",
     "@react-router/dev": "^8.4.0",
     "@storybook/addon-vitest": "^10.6.1",
     "@storybook/react": "^10.6.1",
@@ -80,7 +80,7 @@
     "glob": "^13.0.6",
     "lefthook": "^2.2.1",
     "msw": "^2.15.0",
-    "playwright": "1.63.0",
+    "playwright": "1.64.0",
     "react-router-devtools": "^6.2.3",
     "storybook": "^10.6.1",
     "tsx": "^4.23.15",
