@@ -35,8 +35,8 @@
     "prepare": "lefthook install"
   },
   "dependencies": {
-    "@conform-to/react": "^1.21.1",
-    "@conform-to/zod": "^1.21.1",
+    "@conform-to/react": "^1.21.2",
+    "@conform-to/zod": "^1.21.2",
     "@grafana/faro-web-sdk": "^2.12.1",
     "@grafana/faro-web-tracing": "^2.12.1",
     "@navikt/aksel-icons": "^8.19.2",
@@ -51,7 +51,7 @@
     "clsx": "^2.1.1",
     "compression": "^1.8.2",
     "date-fns": "^4.4.0",
-    "dotenv": "^18.0.5",
+    "dotenv": "^18.0.7",
     "express": "^5.3.0",
     "isbot": "^5.2.2",
     "node-cache": "^5.1.2",
