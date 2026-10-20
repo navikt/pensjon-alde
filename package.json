@@ -61,7 +61,7 @@
     "remix-auth": "^4.2.0",
     "remix-auth-oauth2": "^3.4.1",
     "unleash-client": "^6.12.2",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
@@ -78,7 +78,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitest/coverage-v8": "5.0.3",
     "glob": "^13.0.6",
-    "lefthook": "^2.1.17",
+    "lefthook": "^2.2.1",
     "msw": "^2.15.0",
     "playwright": "1.63.0",
     "react-router-devtools": "^6.2.3",
