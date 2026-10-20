@@ -58,6 +58,7 @@ export interface BehandlingDTO {
   opprettet: string // LocalDateTime as ISO string
   stoppet: string | null // LocalDateTime as ISO string
   status: BehandlingStatus
+  totaltAntallGangerKjort: number
   aktiviteter: AktivitetDTO[]
 }
 

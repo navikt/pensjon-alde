@@ -23,6 +23,7 @@ const baseBehandling: BehandlingDTO = {
     stackTrace: null,
   },
   sisteKjoringDato: '2026-01-15T10:00:01',
+  totaltAntallGangerKjort: 1,
   utsattTil: '2026-01-15T11:00:00',
   opprettet: '2026-01-10T08:00:00',
   stoppet: null,

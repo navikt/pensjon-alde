@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { Consumer, MessagesStreamModes, stringDeserializers } from '@platformatic/kafka'
 import type { BehandlingDTO } from '~/types/behandling'
 import { createLogger } from '~/utils/logger.server'
+import { parseBehandlingEvent } from './parse-behandling-event'
 
 type Subscription = { onEvent: (event: BehandlingDTO) => void; onClose: () => void }
 type Status = 'disconnected' | 'connecting' | 'connected'
@@ -33,15 +34,6 @@ export function connections() {
   )
   const total = Object.values(perBehandling).reduce((sum, count) => sum + count, 0)
   return { status: state.status, total, perBehandling }
-}
-
-function parseEvent(value: string): BehandlingDTO | undefined {
-  try {
-    const event = JSON.parse(value) as BehandlingDTO
-    return Number.isSafeInteger(event?.behandlingId) && Array.isArray(event.aktiviteter) ? event : undefined
-  } catch {
-    return undefined
-  }
 }
 
 function dispatch(event: BehandlingDTO) {
@@ -123,7 +115,7 @@ async function startConsumer() {
           continue
         }
 
-        const event = parseEvent(message.value)
+        const event = parseBehandlingEvent(message.value)
         if (!event) {
           log.warn('Skipping unparseable message', { ...position, value: message.value })
           continue
@@ -133,6 +125,7 @@ async function startConsumer() {
           ...position,
           behandlingId: event.behandlingId,
           status: event.status,
+          totaltAntallGangerKjort: event.totaltAntallGangerKjort,
           aldeBehandlingStatus: event.aldeBehandlingStatus,
           subscribers: state.subscriptions.get(event.behandlingId)?.size ?? 0,
         })

@@ -15,7 +15,12 @@ import { createBehandlingApi } from '~/api/behandling-api'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
-import { BehandlingEventsContext, LIVE_POLL_INTERVAL_MS, useBehandlingEvents } from '~/hooks/use-behandling-events'
+import {
+  BehandlingEventsContext,
+  erUtdatert,
+  LIVE_POLL_INTERVAL_MS,
+  useBehandlingEvents,
+} from '~/hooks/use-behandling-events'
 import {
   type AktivitetDTO,
   AktivitetStatus,
@@ -272,13 +277,14 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       return handling.type === 'revalider'
     },
     onOpen: () => isLoadingRef.current,
+    totaltAntallGangerKjort: behandling.totaltAntallGangerKjort,
   })
   const sseLiveRef = useRef(sseLive)
   sseLiveRef.current = sseLive
 
   // Bruk Kafka-meldingen om den er nyere enn data fra loaderen
   const sisteAktiviteter =
-    lastEvent && lastEvent.sisteKjoringDato >= behandling.sisteKjoringDato
+    lastEvent && !erUtdatert(lastEvent, behandling.totaltAntallGangerKjort)
       ? lastEvent.aktiviteter
       : behandling.aktiviteter
 

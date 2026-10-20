@@ -11,6 +11,7 @@
   "opprettet": "2025-01-15T16:49:29.7398",
   "stoppet": null,
   "status": "TIL_ATTESTERING",
+  "totaltAntallGangerKjort": 6,
   "aktiviteter": [
     {
       "aktivitetId": 6020942,

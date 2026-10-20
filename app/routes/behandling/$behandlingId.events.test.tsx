@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { erUtdatert } from '~/hooks/use-behandling-events'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { AktivitetStatus, AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
 import { getNesteAktivitetPathFraEvent, harEndretStatus, skalPolle, vurderEvent } from './$behandlingId'
@@ -25,6 +26,7 @@ const event = (overrides: Partial<BehandlingDTO>): BehandlingDTO => ({
   friendlyName: 'Alderspensjon søknad',
   processName: null,
   sisteKjoringDato: '2026-10-02T12:00:00',
+  totaltAntallGangerKjort: 1,
   utsattTil: null,
   opprettet: '2026-10-02T12:00:00',
   stoppet: null,
@@ -157,5 +159,19 @@ describe('harEndretStatus', () => {
         venterAttestering,
       ),
     ).toBe(true)
+  })
+})
+
+describe('erUtdatert', () => {
+  it('forkaster melding med lavere totaltAntallGangerKjort', () => {
+    expect(erUtdatert(event({ totaltAntallGangerKjort: 4 }), 5)).toBe(true)
+  })
+
+  it('godtar melding med lik totaltAntallGangerKjort', () => {
+    expect(erUtdatert(event({ totaltAntallGangerKjort: 5 }), 5)).toBe(false)
+  })
+
+  it('godtar melding med høyere totaltAntallGangerKjort', () => {
+    expect(erUtdatert(event({ totaltAntallGangerKjort: 6 }), 5)).toBe(false)
   })
 })

@@ -12,6 +12,7 @@
   "stoppet": null,
   "status": "UNDER_BEHANDLING",
   "processName": "Alderspensjon søknad",
+  "totaltAntallGangerKjort": 0,
   "aktiviteter": [],
   "fnr": "12345678901",
   "sakId": 23077283,

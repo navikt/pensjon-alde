@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useRevalidator } from 'react-router'
+import { parseBehandlingEvent } from '~/behandling-events/parse-behandling-event'
 import type { BehandlingDTO } from '~/types/behandling'
 
 const PING_TIMEOUT_MS = 45_000
@@ -23,21 +24,19 @@ type Options = {
    * mellom loaderen og tilkoblingen ikke går tapt. Etter fallback til polling revalideres det alltid.
    */
   onOpen?: () => boolean | undefined
+  /**
+   * totaltAntallGangerKjort fra data vi allerede har (f.eks. loaderen). Meldinger med lavere verdi forkastes.
+   */
+  totaltAntallGangerKjort?: number
 }
 
-function parseEvent(data: unknown): BehandlingDTO | undefined {
-  if (typeof data !== 'string') return undefined
-  try {
-    const event = JSON.parse(data) as BehandlingDTO
-    return Number.isSafeInteger(event?.behandlingId) && Array.isArray(event.aktiviteter) ? event : undefined
-  } catch {
-    return undefined
-  }
+export function erUtdatert(event: BehandlingDTO, totaltAntallGangerKjort: number): boolean {
+  return event.totaltAntallGangerKjort < totaltAntallGangerKjort
 }
 
 export function useBehandlingEvents(
   behandlingId: number | string,
-  { onEvent, onOpen }: Options = {},
+  { onEvent, onOpen, totaltAntallGangerKjort }: Options = {},
 ): { live: boolean; lastEvent: BehandlingDTO | undefined } {
   const revalidator = useRevalidator()
   const revalidatorRef = useRef(revalidator)
@@ -46,6 +45,8 @@ export function useBehandlingEvents(
   onEventRef.current = onEvent
   const onOpenRef = useRef(onOpen)
   onOpenRef.current = onOpen
+  const totaltAntallGangerKjortRef = useRef(totaltAntallGangerKjort)
+  totaltAntallGangerKjortRef.current = totaltAntallGangerKjort
 
   const [live, setLive] = useState(false)
   const [lastEvent, setLastEvent] = useState<BehandlingDTO>()
@@ -56,6 +57,7 @@ export function useBehandlingEvents(
     let hasFallenBack = false
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined
     let disposed = false
+    let hoyesteTotaltAntallGangerKjort = 0
 
     setLastEvent(undefined)
 
@@ -90,8 +92,12 @@ export function useBehandlingEvents(
       source.addEventListener('ping', markAlive)
       source.onmessage = message => {
         markAlive()
-        const event = parseEvent(message.data)
+        const event = parseBehandlingEvent(message.data)
         if (!event) return
+
+        const gjeldende = Math.max(hoyesteTotaltAntallGangerKjort, totaltAntallGangerKjortRef.current ?? 0)
+        if (erUtdatert(event, gjeldende)) return
+        hoyesteTotaltAntallGangerKjort = event.totaltAntallGangerKjort
 
         setLastEvent(event)
         if (onEventRef.current?.(event)) revalidate()

@@ -254,6 +254,7 @@ const handlers = [
         aldeBehandlingStatus: 'VENTER_SAKSBEHANDLER',
         utsattTil: null,
         sisteKjoringDato: naa,
+        totaltAntallGangerKjort: mockData.totaltAntallGangerKjort + 1,
         sisteKjoring: {
           ...mockData.sisteKjoring,
           uuid: randomUUID(),
