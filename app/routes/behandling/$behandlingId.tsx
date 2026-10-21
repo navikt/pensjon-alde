@@ -1,11 +1,21 @@
 import { BugIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
 import { BodyLong, BodyShort, Box, Button, HStack, Modal, Process, Show, Textarea, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef, useState } from 'react'
-import { Form, Outlet, redirect, useFetcher, useNavigate, useParams, useRevalidator } from 'react-router'
+import {
+  Form,
+  Outlet,
+  redirect,
+  useFetcher,
+  useNavigate,
+  useParams,
+  useRevalidator,
+  useSearchParams,
+} from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
+import { BehandlingEventsContext, useBehandlingEvents } from '~/hooks/use-behandling-events'
 import {
   type AktivitetDTO,
   AktivitetStatus,
@@ -18,9 +28,99 @@ import behandlingStyles from './$behandlingId.module.css'
 
 const POLL_INTERVAL_MS = 1500
 const POLL_MAX_MS = 120_000
+const LIVE_POLL_INTERVAL_MS = 10_000
+
+/**
+ * Poller hvert POLL_INTERVAL_MS uten Kafka-strøm. Med strøm polles det sjeldnere som et sikkerhetsnett,
+ * i tilfelle en melding går tapt eller Kafka-consumeren stopper uten at strømmen lukkes.
+ */
+export function skalPolle({ live, sistRevalidert, now }: { live: boolean; sistRevalidert: number; now: number }) {
+  return !live || now - sistRevalidert >= LIVE_POLL_INTERVAL_MS
+}
 
 export function skalViseFeilende(behandling: BehandlingDTO): boolean {
   return behandling.status === BehandlingStatus.FEILENDE
+}
+
+export function finnAktivitetSomSkalVises(aktiviteter: AktivitetDTO[]): AktivitetDTO | undefined {
+  const erAktivOgVenter = (aktivitet: AktivitetDTO) =>
+    !aktivitet.behandletFerdigMaskinelt &&
+    (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING ||
+      aktivitet.status === AktivitetStatus.FEILET ||
+      aktivitet.status === AktivitetStatus.OPPRETTET)
+
+  return (
+    aktiviteter.find(aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName && aktivitet.friendlyName) ??
+    aktiviteter.find(aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName)
+  )
+}
+
+function aktivitetPath(behandlingId: string | number, aktivitet: AktivitetDTO) {
+  return aktivitet.handlerName === 'attestering'
+    ? `/behandling/${behandlingId}/attestering`
+    : `/behandling/${behandlingId}/aktivitet/${aktivitet.aktivitetId}`
+}
+
+export function getNesteAktivitetPathFraEvent(event: BehandlingDTO, justCompletedId: string | null): string | null {
+  if (
+    event.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER ||
+    event.status === BehandlingStatus.FEILENDE
+  ) {
+    return null
+  }
+
+  const aktivitet = finnAktivitetSomSkalVises(event.aktiviteter)
+  if (!aktivitet || aktivitet.aktivitetId.toString() === justCompletedId) {
+    return null
+  }
+
+  return aktivitetPath(event.behandlingId, aktivitet)
+}
+
+export type EventHandling = { type: 'naviger'; path: string } | { type: 'revalider' } | { type: 'ignorer' }
+
+/**
+ * Avgjør hva vi gjør med en Kafka-melding mens maskinen jobber:
+ * - naviger: neste aktivitet for saksbehandler er kjent, gå direkte dit
+ * - revalider: maskinen har stoppet uten en aktivitet vi kan navigere til (feil, attestering, fullført osv.),
+ *   så loaderen må avgjøre hvor vi skal
+ * - ignorer: maskinen jobber fortsatt
+ */
+export function vurderEvent(event: BehandlingDTO, justCompletedId: string | null, now = new Date()): EventHandling {
+  const path = getNesteAktivitetPathFraEvent(event, justCompletedId)
+  if (path) {
+    return { type: 'naviger', path }
+  }
+
+  if (event.status === BehandlingStatus.FEILENDE) {
+    return { type: 'revalider' }
+  }
+
+  if (event.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_MASKINELL) {
+    const utsatt = event.utsattTil !== null && new Date(event.utsattTil) >= now
+    return utsatt ? { type: 'revalider' } : { type: 'ignorer' }
+  }
+
+  if (event.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER) {
+    const aktivitet = finnAktivitetSomSkalVises(event.aktiviteter)
+    // Gammel melding om aktiviteten vi nettopp fullførte
+    if (aktivitet && aktivitet.aktivitetId.toString() === justCompletedId) {
+      return { type: 'ignorer' }
+    }
+  }
+
+  return { type: 'revalider' }
+}
+
+/**
+ * Friendly name på aktiviteten som maskinen jobber med nå.
+ * Foretrekker UNDER_BEHANDLING, faller tilbake på OPPRETTET.
+ */
+export function finnAktivitetUnderBehandling(aktiviteter: AktivitetDTO[]): string | null {
+  const finnMedStatus = (status: AktivitetStatus) =>
+    aktiviteter.find(aktivitet => aktivitet.status === status && aktivitet.friendlyName)?.friendlyName
+
+  return finnMedStatus(AktivitetStatus.UNDER_BEHANDLING) ?? finnMedStatus(AktivitetStatus.OPPRETTET) ?? null
 }
 
 export function getRedirectPath({
@@ -60,33 +160,18 @@ export function getRedirectPath({
     return `/behandling/${behandlingId}/attestering`
   }
 
-  if (behandling.aktiviteter.length > 0) {
-    const erAktivOgVenter = (aktivitet: AktivitetDTO) =>
-      !aktivitet.behandletFerdigMaskinelt &&
-      (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING ||
-        aktivitet.status === AktivitetStatus.FEILET ||
-        aktivitet.status === AktivitetStatus.OPPRETTET)
-
-    let aktivitetSomSkalVises = behandling.aktiviteter.find(
-      aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName && aktivitet.friendlyName,
-    )
-    if (!aktivitetSomSkalVises) {
-      aktivitetSomSkalVises = behandling.aktiviteter.find(
-        aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName,
-      )
-    }
-    if (aktivitetSomSkalVises?.handlerName === 'attestering') {
-      return `/behandling/${behandlingId}/attestering`
-    }
-    const shouldRefetchAfterCompletion =
-      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
-    if (
-      aktivitetSomSkalVises &&
-      !shouldRefetchAfterCompletion &&
-      behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER
-    ) {
-      return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
-    }
+  const aktivitetSomSkalVises = finnAktivitetSomSkalVises(behandling.aktiviteter)
+  if (aktivitetSomSkalVises?.handlerName === 'attestering') {
+    return aktivitetPath(behandlingId, aktivitetSomSkalVises)
+  }
+  const shouldRefetchAfterCompletion =
+    aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
+  if (
+    aktivitetSomSkalVises &&
+    !shouldRefetchAfterCompletion &&
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER
+  ) {
+    return aktivitetPath(behandlingId, aktivitetSomSkalVises)
   }
   return null
 }
@@ -174,6 +259,37 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const revalidatorRef = useRef(revalidator)
   revalidatorRef.current = revalidator
 
+  const [searchParams] = useSearchParams()
+  const justCompletedId = searchParams.get('justCompleted')
+  const isLoadingRef = useRef(isLoading)
+  isLoadingRef.current = isLoading
+
+  // Mens maskinen jobber: naviger direkte til neste aktivitet når Kafka-meldingen sier
+  // at behandlingen venter på saksbehandler. Revalider kun når maskinen har stoppet uten en
+  // aktivitet vi kan navigere til. Ellers brukes meldingen bare til å vise fremdrift.
+  const { live: sseLive, lastEvent } = useBehandlingEvents(behandling.behandlingId, {
+    onEvent: event => {
+      if (!isLoadingRef.current) return false
+
+      const handling = vurderEvent(event, justCompletedId)
+      if (handling.type === 'naviger') {
+        navigate(handling.path, { replace: true })
+        return false
+      }
+      return handling.type === 'revalider'
+    },
+    onOpen: () => isLoadingRef.current,
+  })
+  const sseLiveRef = useRef(sseLive)
+  sseLiveRef.current = sseLive
+
+  // Bruk Kafka-meldingen om den er nyere enn data fra loaderen
+  const sisteAktiviteter =
+    lastEvent && lastEvent.sisteKjoringDato >= behandling.sisteKjoringDato
+      ? lastEvent.aktiviteter
+      : behandling.aktiviteter
+  const aktivitetUnderBehandling = finnAktivitetUnderBehandling(sisteAktiviteter)
+
   function retry() {
     ventetPaKjoringRef.current = kjoringUuid
     setVenterPaRetry(true)
@@ -191,14 +307,15 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
   const avbrytAktivitet = () => ref.current?.showModal()
 
-  // Prepare the visible aktiviteter (sorted and filtered)
+  // Prepare the visible aktiviteter (sorted and filtered).
+  // Bruker sisteAktiviteter slik at stepperen oppdateres fra Kafka-meldinger uten revalidering.
   const visibleAktiviteter = React.useMemo(
     () =>
-      behandling.aktiviteter
+      sisteAktiviteter
         .slice()
         .sort((a, b) => a.opprettet.localeCompare(b.opprettet))
         .filter(aktivitet => aktivitet.friendlyName),
-    [behandling.aktiviteter],
+    [sisteAktiviteter],
   )
 
   // Create steps with redirect URLs
@@ -256,6 +373,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     if (!isLoading) return
 
     const startedAt = Date.now()
+    let sistRevalidert = startedAt
     const intervalId = setInterval(() => {
       if (Date.now() - startedAt > POLL_MAX_MS) {
         clearInterval(intervalId)
@@ -263,7 +381,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         return
       }
 
-      if (revalidatorRef.current.state === 'idle') {
+      const now = Date.now()
+      if (revalidatorRef.current.state === 'idle' && skalPolle({ live: sseLiveRef.current, sistRevalidert, now })) {
+        sistRevalidert = now
         revalidatorRef.current.revalidate()
       }
     }, POLL_INTERVAL_MS)
@@ -336,11 +456,13 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
         <main className={behandlingStyles.mainContent}>
           {isLoading ? (
-            <AldeLoader />
+            <AldeLoader aktivitetNavn={aktivitetUnderBehandling} />
           ) : behandlingFeiler ? (
             <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
           ) : (
-            <Outlet context={{ behandling, avbrytAktivitet }} />
+            <BehandlingEventsContext value={sseLive}>
+              <Outlet context={{ behandling, avbrytAktivitet }} />
+            </BehandlingEventsContext>
           )}
         </main>
       </HStack>
