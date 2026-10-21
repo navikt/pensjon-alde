@@ -14,6 +14,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  type ShouldRevalidateFunctionArgs,
   useLoaderData,
   useLocation,
   useParams,
@@ -42,6 +43,10 @@ if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
 }
 
 export const middleware: MiddlewareFunction[] = [settingsMiddleware, userMiddleware]
+
+export function shouldRevalidate({ currentParams, nextParams }: ShouldRevalidateFunctionArgs) {
+  return currentParams.behandlingId !== nextParams.behandlingId
+}
 
 export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
   const me: UserContext = context.get(userContext)
