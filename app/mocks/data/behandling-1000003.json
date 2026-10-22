@@ -25,7 +25,7 @@
       "utsattTil": null
     },
     {
-      "aktivitetId": 6020943,
+      "aktivitetId": 6020953,
       "type": "FleksibelApSakA200VurderSamboerAktivitet",
       "opprettet": "2025-01-15T16:49:34.364857",
       "handlerName": "vurder-samboer",
@@ -37,12 +37,7 @@
       "feilmeldinger": [
         {
           "melding": "Fra og med-dato for samboerskap kan ikke være etter virkningstidspunktet",
-          "felt": "samboerFraOgMed",
-          "tidspunkt": "2025-01-16T09:12:04.118"
-        },
-        {
-          "melding": "Begrunnelse må fylles ut når samboerskap er vurdert etter § 1-5",
-          "felt": "begrunnelse",
+          "felt": "samboerFra",
           "tidspunkt": "2025-01-16T09:12:04.118"
         }
       ]

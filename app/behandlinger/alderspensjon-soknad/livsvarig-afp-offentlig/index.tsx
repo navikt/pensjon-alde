@@ -18,6 +18,7 @@ import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import { Features } from '~/features'
+import { useAktivitetFeil } from '~/hooks/use-aktivitet-feil'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import { useBehandlingHeaderData } from '~/layout/BehandlingHeaderLayout/use-behandling-header-data'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
@@ -291,8 +292,9 @@ export async function action({ params, request }: Route.ActionArgs) {
 export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { grunnlag, vurdering, readOnly, psakOppgaveoversiktUrl, visMedMulighetForVurdering } = loaderData
   const { psakPensjonsoversiktUrl } = useBehandlingHeaderData()
-  const { errors } = actionData || {}
+  const { errors: actionErrors } = actionData || {}
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
+  const errors = useAktivitetFeil(actionErrors)
 
   if (visMedMulighetForVurdering) {
     return (

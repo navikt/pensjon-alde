@@ -5,9 +5,11 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
 import { AktivitetFeilmeldinger } from '~/components/shared/AktivitetFeilmeldinger'
+import { AktivitetFeilProvider, useAktivitetFeilState } from '~/hooks/use-aktivitet-feil'
 import type { AktivitetDTO } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
+import styles from './aktivitet.module.css'
 
 export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Aktivitet ${params.aktivitetId}` }, { name: 'description', content: 'Aktivitet detaljer' }]
@@ -93,17 +95,18 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   const { behandling, aktivitet, debug, showDebug } = loaderData
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
+  const feilState = useAktivitetFeilState(aktivitet.feilmeldinger)
 
   return (
     <Page.Block className="aktivitet">
-      {aktivitet.feilmeldinger?.length ? (
-        <Page.Block gutters>
-          <Box paddingBlock="space-16 space-0">
-            <AktivitetFeilmeldinger feilmeldinger={aktivitet.feilmeldinger} />
-          </Box>
-        </Page.Block>
+      {feilState.gjeldendeFeilmeldinger.length ? (
+        <Box className={styles.feilmeldinger}>
+          <AktivitetFeilmeldinger feilmeldinger={feilState.gjeldendeFeilmeldinger} />
+        </Box>
       ) : null}
-      <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
+      <AktivitetFeilProvider value={feilState}>
+        <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
+      </AktivitetFeilProvider>
       {!outlet && (
         <Page.Block gutters>
           <InfoCard data-color="info" as="section" aria-label="Aktivitet ikke implementert enda">
