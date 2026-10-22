@@ -1,5 +1,6 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
 import { BodyShort, Box, InfoCard, Page } from '@navikt/ds-react'
+import { useRef } from 'react'
 import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
@@ -95,10 +96,11 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   const { behandling, aktivitet, debug, showDebug } = loaderData
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
-  const feilState = useAktivitetFeilState(aktivitet.feilmeldinger)
+  const aktivitetRef = useRef<HTMLDivElement>(null)
+  const feilState = useAktivitetFeilState(aktivitet.aktivitetId, aktivitet.feilmeldinger, aktivitetRef)
 
   return (
-    <Page.Block className="aktivitet">
+    <Page.Block className="aktivitet" ref={aktivitetRef}>
       {feilState.gjeldendeFeilmeldinger.length ? (
         <Box className={styles.feilmeldinger}>
           <AktivitetFeilmeldinger feilmeldinger={feilState.gjeldendeFeilmeldinger} />
