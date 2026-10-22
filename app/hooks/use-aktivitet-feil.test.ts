@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { feltfeilFraFeilmeldinger, gjeldendeFeilmeldinger, lesFeltverdi } from './use-aktivitet-feil'
+import {
+  feilmeldingerNokkel,
+  feltfeilFraFeilmeldinger,
+  feltnavnFraNokkel,
+  gjeldendeFeilmeldinger,
+  lesFeltverdi,
+} from './use-aktivitet-feil'
 
 const tidspunkt = '2026-10-20T10:15:00.000'
 const feilmeldinger = [
@@ -39,12 +45,12 @@ describe('gjeldendeFeilmeldinger', () => {
 })
 
 describe('lesFeltverdi', () => {
-  const dokument = (elementer: Record<string, object[]>) => ({
-    getElementsByName: (navn: string) => (elementer[navn] ?? []) as unknown as NodeListOf<HTMLElement>,
+  const rot = (elementer: Record<string, object[]>) => ({
+    querySelectorAll: (selector: string) => elementer[/name="(.*)"/.exec(selector)?.[1] ?? ''] ?? [],
   })
 
   it('leser verdien til vanlige felt', () => {
-    expect(lesFeltverdi('fom', dokument({ fom: [{ type: 'text', value: '01.06.2025' }] }))).toBe('01.06.2025')
+    expect(lesFeltverdi('fom', rot({ fom: [{ type: 'text', value: '01.06.2025' }] }))).toBe('01.06.2025')
   })
 
   it('leser bare valgte radioknapper', () => {
@@ -52,10 +58,39 @@ describe('lesFeltverdi', () => {
       { type: 'radio', value: 'A', checked: false },
       { type: 'radio', value: 'B', checked: true },
     ]
-    expect(lesFeltverdi('valg', dokument({ valg: radio }))).toBe('|B')
+    expect(lesFeltverdi('valg', rot({ valg: radio }))).toBe('|B')
   })
 
   it('gir tom streng når feltet ikke finnes', () => {
-    expect(lesFeltverdi('mangler', dokument({}))).toBe('')
+    expect(lesFeltverdi('mangler', rot({}))).toBe('')
+  })
+
+  it('leser bare felt innenfor aktiviteten, ikke felt med samme navn andre steder på siden', () => {
+    const aktivitet = rot({ begrunnelse: [{ value: 'Vurderingens begrunnelse' }] })
+    const avbrytDialog = rot({ begrunnelse: [{ value: 'Tilbakemelding ved avbrudd' }] })
+
+    const start = lesFeltverdi('begrunnelse', aktivitet)
+    lesFeltverdi('begrunnelse', avbrytDialog)
+
+    expect(lesFeltverdi('begrunnelse', aktivitet)).toBe(start)
+  })
+})
+
+describe('feilmeldingerNokkel', () => {
+  it('er lik når samme valideringsresultat hentes på nytt', () => {
+    const hentetPaNytt = feilmeldinger.map(feil => ({ ...feil }))
+    expect(feilmeldingerNokkel(1, hentetPaNytt)).toBe(feilmeldingerNokkel(1, feilmeldinger))
+  })
+
+  it('endres når aktiviteten eller valideringsresultatet endres', () => {
+    const nyAvvisning = feilmeldinger.map(feil => ({ ...feil, tidspunkt: '2026-10-21T08:00:00.000' }))
+    expect(feilmeldingerNokkel(2, feilmeldinger)).not.toBe(feilmeldingerNokkel(1, feilmeldinger))
+    expect(feilmeldingerNokkel(1, nyAvvisning)).not.toBe(feilmeldingerNokkel(1, feilmeldinger))
+  })
+})
+
+describe('feltnavnFraNokkel', () => {
+  it('gir unike feltnavn og hopper over meldinger uten felt', () => {
+    expect(feltnavnFraNokkel(feilmeldingerNokkel(1, feilmeldinger))).toEqual(['fom', 'belop'])
   })
 })
