@@ -1,4 +1,4 @@
-import { BugIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
+import { BugIcon, ExclamationmarkTriangleIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
 import { BodyLong, BodyShort, Box, Button, HStack, Modal, Process, Show, Textarea, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { Form, Outlet, redirect, useFetcher, useNavigate, useParams, useRevalidator } from 'react-router'
@@ -218,6 +218,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           redirectUrl: null,
           behandletFerdigMaskinelt: undefined,
           handlerName: undefined,
+          feilmeldinger: undefined,
         },
       ]
     }
@@ -227,6 +228,8 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   function finnProcessIcon(step: (typeof allSteps)[0]) {
     if (!step.handlerName) {
       return <BugIcon />
+    } else if (step.feilmeldinger?.length) {
+      return <ExclamationmarkTriangleIcon title="Vurderingen må rettes" />
     } else if (step.behandletFerdigMaskinelt) {
       return <RobotSmileIcon />
     } else if (step.status === AktivitetStatus.FULLFORT) {

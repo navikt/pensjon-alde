@@ -1,9 +1,10 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
-import { BodyShort, InfoCard, Page } from '@navikt/ds-react'
+import { BodyShort, Box, InfoCard, Page } from '@navikt/ds-react'
 import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
+import { AktivitetFeilmeldinger } from '~/components/shared/AktivitetFeilmeldinger'
 import type { AktivitetDTO } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
@@ -95,6 +96,13 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
 
   return (
     <Page.Block className="aktivitet">
+      {aktivitet.feilmeldinger?.length ? (
+        <Page.Block gutters>
+          <Box paddingBlock="space-16 space-0">
+            <AktivitetFeilmeldinger feilmeldinger={aktivitet.feilmeldinger} />
+          </Box>
+        </Page.Block>
+      ) : null}
       <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
       {!outlet && (
         <Page.Block gutters>
