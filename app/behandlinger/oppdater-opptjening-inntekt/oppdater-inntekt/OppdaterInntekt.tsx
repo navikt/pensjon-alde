@@ -49,7 +49,7 @@ export function OppdaterInntekt({
   const feiloppsummering = useMemo(() => byggInntektFeiloppsummering(linjer, feil, typer), [linjer, feil, typer])
   const [innsendingsforsok, setInnsendingsforsok] = useState(0)
 
-  const endringSummary = useMemo(() => byggInntektEndringSummary(linjer, typer), [linjer, typer])
+  const endringSummary = useMemo(() => byggInntektEndringSummary(linjer, typer, feil), [linjer, typer, feil])
 
   const payload = useMemo(
     () => JSON.stringify(byggInntektPayload(linjer, grunnlag?.inntektsoversikt?.fnr ?? '')),
@@ -80,9 +80,10 @@ export function OppdaterInntekt({
         feil={feil}
         readOnly={readOnly}
         innsendingsforsok={innsendingsforsok}
-        onLeggTil={(kategori, inntektAr) =>
-          leggTil(nyInntektLinje(kategori, ledigInntektstype(linjer, typer[kategori], kategori, inntektAr), inntektAr))
-        }
+        onLeggTil={(kategori, inntektAr) => {
+          const inntektsType = ledigInntektstype(linjer, typer[kategori], kategori, inntektAr)
+          if (inntektsType !== null) leggTil(nyInntektLinje(kategori, inntektsType, inntektAr))
+        }}
         onSlett={slett}
         onGjenopprett={gjenopprett}
         onTilbakestill={id => oppdater(id, tilbakestillInntektLinje)}

@@ -15,6 +15,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { InntektTabell } from './InntektTabell'
 import type { InntektFeil, InntektFeilFelt, InntektFelt, InntektKategori } from './inntekt.types'
 import {
+  brukteInntektstyper,
   erGyldigInntektAr,
   erRedigerbar,
   grupperInntektLinjerPerAr,
@@ -23,6 +24,7 @@ import {
   type InntektstyperPerKategori,
   inntektFeltId,
   inntektLinjeBeskrivelse,
+  ledigInntektstype,
 } from './inntekt.utils'
 
 interface InntektSeksjonProps {
@@ -140,7 +142,7 @@ export function InntektSeksjon({
   useEffect(() => {
     const nyLinje = linjer.find(linje => linje._status === 'new' && !kjenteLinjer.current.has(linje._id))
     kjenteLinjer.current = new Set(linjer.map(linje => linje._id))
-    if (nyLinje) document.getElementById(inntektFeltId(nyLinje._id, 'inntektAr'))?.focus()
+    if (nyLinje) document.getElementById(inntektFeltId(nyLinje._id, 'inntektsType'))?.focus()
   }, [linjer])
 
   const erIRedigering = (linje: InntektLinjeState) =>
@@ -183,6 +185,7 @@ export function InntektSeksjon({
           redigerbar={!readOnly && erRedigerbar(kategori)}
           visEndring={visEndring && erRedigerbar(kategori)}
           beskrivLinje={linje => inntektLinjeBeskrivelse(linje, typer)}
+          brukteTyper={linje => brukteInntektstyper(linjer, linje.kategori, linje.inntektAr, linje._id)}
           erIRedigering={erIRedigering}
           visFeil={visFeil}
           onBerort={onBerort}
@@ -205,6 +208,7 @@ export function InntektSeksjon({
             variant="secondary"
             size="small"
             icon={<PlusIcon aria-hidden />}
+            disabled={ledigInntektstype(linjer, typer[kategori], kategori, inntektAr) === null}
             onClick={() => onLeggTil(kategori, inntektAr)}
           >
             Legg til {tittel.toLowerCase()}

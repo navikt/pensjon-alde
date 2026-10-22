@@ -191,19 +191,40 @@ export function nyInntektLinje(kategori: InntektKategori, inntektsType: string, 
   }
 }
 
-/** Velger første inntektstype som ikke allerede er i bruk for året og kategorien, ellers første type. */
+export function brukteInntektstyper(
+  linjer: InntektLinjeState[],
+  kategori: InntektKategori,
+  inntektAr: string,
+  unntattId?: string,
+): Set<string> {
+  const ar = parseAr(inntektAr)
+  if (ar === null) return new Set()
+  return new Set(
+    linjer
+      .filter(
+        linje =>
+          linje._id !== unntattId &&
+          linje.kategori === kategori &&
+          linje._status !== 'deleted' &&
+          parseAr(linje.inntektAr) === ar,
+      )
+      .map(linje => linje.inntektsType),
+  )
+}
+
+/**
+ * Velger første inntektstype som ikke allerede er i bruk for året og kategorien. Returnerer `null` når alle typer
+ * er i bruk for året. Uten gyldig år velges første type.
+ */
 export function ledigInntektstype(
   linjer: InntektLinjeState[],
   typer: OpptjeningTypeKode[],
   kategori: InntektKategori,
   inntektAr: string,
-): string {
-  const brukte = new Set(
-    linjer
-      .filter(linje => linje.kategori === kategori && linje._status !== 'deleted' && linje.inntektAr === inntektAr)
-      .map(linje => linje.inntektsType),
-  )
-  return (inntektAr ? typer.find(t => t.code && !brukte.has(t.code))?.code : undefined) ?? typer[0]?.code ?? ''
+): string | null {
+  if (!erGyldigInntektAr(inntektAr)) return typer[0]?.code ?? ''
+  const brukte = brukteInntektstyper(linjer, kategori, inntektAr)
+  return typer.find(t => t.code && !brukte.has(t.code))?.code ?? null
 }
 
 export function endreInntektFelt(linje: InntektLinjeState, felt: InntektFelt, verdi: string): InntektLinjeState {
@@ -258,7 +279,7 @@ export function inntektLinjeBeskrivelse(linje: InntektLinjeState, typer: Inntekt
 const FEIL_REKKEFOLGE: InntektFeilFelt[] = ['inntektAr', 'inntektsType', '_duplikat']
 
 function feltForFeil(linje: InntektLinjeState, felt: InntektFeilFelt): InntektFelt {
-  if (felt === '_duplikat') return 'inntektAr'
+  if (felt === '_duplikat' || felt === 'inntektAr') return 'inntektsType'
   if (felt === '_belop') return BELOP_FELTER[linje.kategori][0].felt
   return felt
 }
@@ -303,6 +324,9 @@ export function finnInntektFeil(linjer: InntektLinjeState[]): Record<string, Inn
     for (const { felt, label } of felter) {
       const verdi = (linje[felt] ?? '').replace(/\s/g, '')
       if (verdi && !BELOP_REGEX.test(verdi)) settFeil(linje._id, felt, `${label} må være et helt kronebeløp`)
+      else if (parseBelop(verdi) === 0 && linje[felt] !== linje._original?.[felt]) {
+        settFeil(linje._id, felt, `${label} kan ikke være 0`)
+      }
     }
     if (felter.every(({ felt }) => parseBelop(linje[felt]) === null)) {
       settFeil(linje._id, '_belop', 'Fyll ut minst ett beløp')
@@ -404,12 +428,13 @@ export function inntektEndringer(linje: InntektLinjeState, typer: InntektstyperP
 export function byggInntektEndringSummary(
   linjer: InntektLinjeState[],
   typer: InntektstyperPerKategori,
+  feil: Record<string, InntektFeil> = {},
 ): EndringSummary {
   return byggEndringSummary(
     INNTEKT_KATEGORIER.filter(({ redigerbar }) => redigerbar).map(({ kategori, tittel }) =>
       oppsummeringForKategori(
         tittel,
-        linjer.filter(linje => linje.kategori === kategori),
+        linjer.filter(linje => linje.kategori === kategori && !feil[linje._id]),
         {
           label: linje => inntektLabel(linje, typer),
           kortLabel: linje => inntektKortLabel(linje, typer),

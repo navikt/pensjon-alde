@@ -32,6 +32,7 @@ interface InntektTabellProps {
   redigerbar: boolean
   visEndring: boolean
   beskrivLinje: (linje: InntektLinjeState) => string
+  brukteTyper: (linje: InntektLinjeState) => Set<string>
   erIRedigering: (linje: InntektLinjeState) => boolean
   visFeil: (id: string, felt: InntektFeilFelt) => boolean
   onBerort: (id: string, felter: InntektFeilFelt[]) => void
@@ -53,6 +54,7 @@ export function InntektTabell({
   redigerbar,
   visEndring,
   beskrivLinje,
+  brukteTyper,
   erIRedigering,
   visFeil,
   onBerort,
@@ -70,7 +72,7 @@ export function InntektTabell({
     ...belopFelter.map(({ felt }) => felt),
     '_belop',
   ]
-  const antallKolonner = 2 + belopFelter.length + (visEndring ? 1 : 0) + (redigerbar ? 1 : 0)
+  const antallKolonner = 1 + belopFelter.length + (visEndring ? 1 : 0) + (redigerbar ? 1 : 0)
   const tabellNavn = `${tittel}, ${kontekst}`
 
   return (
@@ -82,7 +84,6 @@ export function InntektTabell({
         <Table size="small" aria-label={tabellNavn}>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>År</Table.HeaderCell>
               <Table.HeaderCell>Type</Table.HeaderCell>
               {belopFelter.map(({ felt, label, kortLabel }) => (
                 <Table.HeaderCell key={felt} align="right">
@@ -140,27 +141,10 @@ export function InntektTabell({
               const typeValg = typer.some(t => t.code === linje.inntektsType)
                 ? typer
                 : [...typer, { code: linje.inntektsType, description: linje.inntektsType }]
+              const opptatteTyper = redigerer ? brukteTyper(linje) : new Set<string>()
 
               const rad = (
                 <Table.Row key={linje._id}>
-                  <Table.DataCell style={celleStil}>
-                    {redigerer ? (
-                      <TextField
-                        id={inntektFeltId(linje._id, 'inntektAr')}
-                        label="År"
-                        hideLabel
-                        size="small"
-                        inputMode="numeric"
-                        value={linje.inntektAr}
-                        {...feilProps(harFeil('inntektAr') || harFeil('_duplikat'))}
-                        onChange={e => onOppdater(linje._id, 'inntektAr', e.target.value)}
-                        onBlur={() => onBerort(linje._id, ['inntektAr', '_duplikat'])}
-                        style={{ width: '5.5rem' }}
-                      />
-                    ) : (
-                      visVerdi(linje.inntektAr, original?.inntektAr)
-                    )}
-                  </Table.DataCell>
                   <Table.DataCell style={celleStil}>
                     {redigerer ? (
                       <Select
@@ -169,7 +153,7 @@ export function InntektTabell({
                         hideLabel
                         size="small"
                         value={linje.inntektsType}
-                        {...feilProps(harFeil('inntektsType') || harFeil('_duplikat'))}
+                        {...feilProps(harFeil('inntektAr') || harFeil('inntektsType') || harFeil('_duplikat'))}
                         onChange={e => onOppdater(linje._id, 'inntektsType', e.target.value)}
                         onBlur={() => onBerort(linje._id, ['inntektsType', '_duplikat'])}
                         style={{ minWidth: '12rem' }}
@@ -178,7 +162,11 @@ export function InntektTabell({
                         {typeValg
                           .filter(t => t.code)
                           .map(t => (
-                            <option key={t.code} value={t.code}>
+                            <option
+                              key={t.code}
+                              value={t.code}
+                              disabled={t.code !== linje.inntektsType && opptatteTyper.has(t.code)}
+                            >
                               {t.description}
                             </option>
                           ))}

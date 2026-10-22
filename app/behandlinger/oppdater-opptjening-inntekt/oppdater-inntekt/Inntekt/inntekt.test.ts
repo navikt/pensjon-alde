@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { OppdaterInntektGrunnlag } from './inntekt.types'
 import {
+  brukteInntektstyper,
   byggInntektEndringSummary,
   byggInntektFeiloppsummering,
   byggInntektPayload,
@@ -194,6 +195,20 @@ describe('finnInntektFeil', () => {
     expect(finnInntektFeil([ny])).toEqual({})
   })
 
+  it('avviser 0 som beløp', () => {
+    const ny = { ...nyInntektLinje('pgi', 'FastlandPgi', '2023'), belopLoennsinntekt: '0', belopNaeringsinntekt: '-0' }
+    expect(finnInntektFeil([ny])).toEqual({
+      [ny._id]: { belopLoennsinntekt: 'Lønn kan ikke være 0', belopNaeringsinntekt: 'Næring kan ikke være 0' },
+    })
+  })
+
+  it('godtar uendret 0 fra eksisterende linje', () => {
+    const [original] = inntektLinjerFraVurdering(grunnlag, null)
+    const medNull = { ...original, _original: { ...original, belopNaeringsinntekt: '0' }, belopNaeringsinntekt: '0' }
+    const endret = endreInntektFelt(medNull, 'belopLoennsinntekt', '1')
+    expect(finnInntektFeil([{ ...endret, _status: 'modified' }])).toEqual({})
+  })
+
   it('avviser samme type to ganger i samme år og kategori', () => {
     const ny = { ...nyInntektLinje('pgi', 'FastlandPgi'), inntektAr: '2020', belopLoennsinntekt: '1' }
     const feil = finnInntektFeil([...inntektLinjerFraVurdering(grunnlag, null), ny])
@@ -224,10 +239,10 @@ describe('byggInntektFeiloppsummering', () => {
 
     expect(byggInntektFeiloppsummering(linjer, finnInntektFeil(linjer), typer)).toEqual([
       {
-        href: `#${inntektFeltId(duplikat._id, 'inntektAr')}`,
+        href: `#${inntektFeltId(duplikat._id, 'inntektsType')}`,
         melding: '2020 Fastland: Inntektstypen er allerede registrert for dette året',
       },
-      { href: `#${inntektFeltId(tom._id, 'inntektAr')}`, melding: 'Fastland: År må ha fire siffer' },
+      { href: `#${inntektFeltId(tom._id, 'inntektsType')}`, melding: 'Fastland: År må ha fire siffer' },
       { href: `#${inntektFeltId(tom._id, 'belopLoennsinntekt')}`, melding: 'Fastland: Fyll ut minst ett beløp' },
     ])
   })
@@ -250,6 +265,16 @@ describe('byggInntektEndringSummary', () => {
     expect(utenNbsp(summary.endrede[0].endringer?.[0] ?? '')).toBe('Lønn: 500 000 kr → 510 000 kr')
     expect(utenNbsp(summary.slettede[0].label)).toBe('Innenlands (2020) – Lønn: 480 000 kr, Næring: 10 000 kr')
     expect(summary.nye).toEqual([])
+  })
+
+  it('utelater linjer med valideringsfeil', () => {
+    const gyldig = { ...nyInntektLinje('pgi', 'SvalbardPgi', '2020'), belopLoennsinntekt: '1' }
+    const ugyldig = { ...nyInntektLinje('pgi', 'FastlandPgi', '2023'), belopLoennsinntekt: '0' }
+    const linjer = [gyldig, ugyldig]
+
+    const summary = byggInntektEndringSummary(linjer, typer, finnInntektFeil(linjer))
+
+    expect(summary.nye.map(item => item.id)).toEqual([gyldig._id])
   })
 })
 
@@ -332,10 +357,34 @@ describe('ledigInntektstype', () => {
     expect(ledigInntektstype(linjer, pgiTyper, 'pgi', '2022')).toBe('FastlandPgi')
   })
 
-  it('faller tilbake til første type når alle er i bruk eller året mangler', () => {
+  it('returnerer null når alle typer er i bruk for året', () => {
     const linjer = inntektLinjerFraVurdering(grunnlag, null)
-    expect(ledigInntektstype(linjer, pgiTyper.slice(0, 1), 'pgi', '2020')).toBe('FastlandPgi')
+    expect(ledigInntektstype(linjer, pgiTyper.slice(0, 1), 'pgi', '2020')).toBeNull()
+  })
+
+  it('faller tilbake til første type når året mangler', () => {
+    const linjer = inntektLinjerFraVurdering(grunnlag, null)
     expect(ledigInntektstype(linjer, pgiTyper, 'pgi', '')).toBe('FastlandPgi')
+  })
+
+  it('regner med nye linjer og ignorerer slettede', () => {
+    const linjer = inntektLinjerFraVurdering(grunnlag, null)
+    const nyForAr = nyInntektLinje('pgi', 'SvalbardPgi', '2020')
+    expect(ledigInntektstype([...linjer, nyForAr], pgiTyper, 'pgi', '2020')).toBeNull()
+    const slettet = { ...nyForAr, _status: 'deleted' as const }
+    expect(ledigInntektstype([...linjer, slettet], pgiTyper, 'pgi', '2020')).toBe('SvalbardPgi')
+  })
+})
+
+describe('brukteInntektstyper', () => {
+  it('finner typer i bruk for året og kategorien, unntatt gitt linje', () => {
+    const a = nyInntektLinje('pgi', 'FastlandPgi', '2030')
+    const b = nyInntektLinje('pgi', 'SvalbardPgi', '2030')
+    const annenKategori = nyInntektLinje('filformat', 'Innenlandsinntekt', '2030')
+    const linjer = [a, b, annenKategori]
+    expect(brukteInntektstyper(linjer, 'pgi', '2030')).toEqual(new Set(['FastlandPgi', 'SvalbardPgi']))
+    expect(brukteInntektstyper(linjer, 'pgi', '2030', a._id)).toEqual(new Set(['SvalbardPgi']))
+    expect(brukteInntektstyper(linjer, 'pgi', '20')).toEqual(new Set())
   })
 })
 

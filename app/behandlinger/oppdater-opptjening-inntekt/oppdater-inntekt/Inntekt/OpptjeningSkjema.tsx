@@ -104,7 +104,7 @@ export function OpptjeningSkjema({
         ...(harKlientFeil ? feiloppsummering : []),
       ]
     : []
-  const visIngenEndringer = hasAttemptedSubmit && !harEndringer
+  const visIngenEndringer = hasAttemptedSubmit && !harEndringer && !harKlientFeil
   const visSakFeilUtenFelt = !!sakIdFeil && !visSakvalg
   const visGenerellKlientFeil = hasAttemptedSubmit && harKlientFeil && feiloppsummering.length === 0
 
