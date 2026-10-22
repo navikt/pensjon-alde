@@ -1,0 +1,80 @@
+{
+  "behandlingId": 1000003,
+  "type": "FleksibelApSakBehandling",
+  "handlerName": "alderspensjon-soknad",
+  "friendlyName": "Førstegangsbehandling av alderspensjonssøknad",
+  "processName": "Alderspensjon søknad",
+  "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
+  "saksbehandletAv": [],
+  "sisteKjoring": null,
+  "sisteKjoringDato": "2025-01-15T16:49:34.37642",
+  "utsattTil": null,
+  "opprettet": "2025-01-15T16:49:29.7398",
+  "stoppet": null,
+  "status": "UNDER_BEHANDLING",
+  "aktiviteter": [
+    {
+      "aktivitetId": 6020942,
+      "type": "FleksibelApSakA203VurderInntektForEpsAktivitet",
+      "handlerName": "kontroller-inntektsopplysninger-for-eps",
+      "friendlyName": "Kontroller inntektsopplysninger for EPS",
+      "opprettet": "2025-01-15T16:49:34.364857",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-01-15T16:49:34.380546",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 6020943,
+      "type": "FleksibelApSakA200VurderSamboerAktivitet",
+      "opprettet": "2025-01-15T16:49:34.364857",
+      "handlerName": "vurder-samboer",
+      "friendlyName": "Vurder samboer",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-01-16T09:12:04.118",
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": null,
+      "feilmeldinger": [
+        {
+          "melding": "Fra og med-dato for samboerskap kan ikke være etter virkningstidspunktet",
+          "felt": "samboerFraOgMed",
+          "tidspunkt": "2025-01-16T09:12:04.118"
+        },
+        {
+          "melding": "Begrunnelse må fylles ut når samboerskap er vurdert etter § 1-5",
+          "felt": "begrunnelse",
+          "tidspunkt": "2025-01-16T09:12:04.118"
+        }
+      ]
+    },
+    {
+      "aktivitetId": 6020941,
+      "type": "FleksibelApSakA202FinnSamboerInformasjonAktivitet",
+      "opprettet": "2025-01-15T16:49:34.297346",
+      "handlerName": null,
+      "friendlyName": "Finn samboer informasjon",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-01-15T16:49:34.312694",
+      "status": "FULLFORT",
+      "utsattTil": null
+    },
+    {
+      "aktivitetId": 6020940,
+      "type": "FleksibelApSakA201SettBrukPaRettPersongrunnlagAktivitet",
+      "opprettet": "2025-01-15T16:49:34.071661",
+      "handlerName": null,
+      "friendlyName": "Sett bruk på rett persongrunnlag",
+      "antallGangerKjort": 1,
+      "sisteAktiveringsdato": "2025-01-15T16:49:34.271477",
+      "status": "FULLFORT",
+      "utsattTil": null
+    }
+  ],
+  "fnr": "12345678901",
+  "sakId": 23077283,
+  "kravId": 46365419,
+  "fornavn": "Ola",
+  "mellomnavn": null,
+  "etternavn": "Nordmann",
+  "fodselsdato": "1962-03-15"
+}
