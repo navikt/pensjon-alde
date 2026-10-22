@@ -79,7 +79,10 @@ export function getRedirectPath({
       return `/behandling/${behandlingId}/attestering`
     }
     const shouldRefetchAfterCompletion =
-      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
+      aktivitetSomSkalVises &&
+      justCompletedId &&
+      aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId &&
+      !aktivitetSomSkalVises.feilmeldinger?.length
     if (
       aktivitetSomSkalVises &&
       !shouldRefetchAfterCompletion &&
