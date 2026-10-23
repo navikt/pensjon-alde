@@ -129,7 +129,7 @@ function VurdereSamboerComponent({
   const { samboer, sokersBostedsadresser, soknad, kravOnsketVirkningsdato } = grunnlag
 
   const normalisertVurdering = normaliserSamboerVurdering(vurdering)
-  const gjeldendeSaker = samboer.gjeldendeSaker ?? []
+  const { gjeldendeSak } = samboer
 
   const [form, fields] = useForm<SamboerVurderingInput>({
     lastResult,
@@ -295,16 +295,15 @@ function VurdereSamboerComponent({
               )}
             </VStack>
 
-            {gjeldendeSaker.length > 0 && (
+            {gjeldendeSak && (
               <VStack gap="space-4">
                 <Heading size="xsmall" level="3">
-                  Samboer fra og med i {gjeldendeSaker.length > 1 ? 'berørte saker' : 'berørt sak'}
+                  Samboer fra og med i berørt sak
                 </Heading>
-                {gjeldendeSaker.map(sak => (
-                  <HStack key={`${sak.saktype}-${sak.samboerFra}`} gap="space-4">
-                    {sak.saktype}: <BodyShort weight="semibold">{formatDateToNorwegian(sak.samboerFra)}</BodyShort>
-                  </HStack>
-                ))}
+                <HStack gap="space-4">
+                  {gjeldendeSak.saktype}:{' '}
+                  <BodyShort weight="semibold">{formatDateToNorwegian(gjeldendeSak.samboerFra)}</BodyShort>
+                </HStack>
               </VStack>
             )}
           </VStack>
