@@ -34,12 +34,10 @@
       "etternavn": "Hansen",
       "forkortetNavn": "Hansen Kari"
     },
-    "gjeldendeSaker": [
-      {
-        "saktype": "Alderspensjon",
-        "samboerFra": "2021-06-01"
-      }
-    ],
+    "gjeldendeSak": {
+      "saktype": "Alderspensjon",
+      "samboerFra": "2021-06-01"
+    },
     "bostedsadresser": [
       {
         "adressenavn": "Storgata",
