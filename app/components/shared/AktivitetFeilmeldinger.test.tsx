@@ -7,9 +7,10 @@ describe('AktivitetFeilmeldinger', () => {
     const html = renderToStaticMarkup(
       <AktivitetFeilmeldinger
         feilmeldinger={[
-          { melding: 'Fom-dato mangler', felt: 'fom', tidspunkt: '2026-10-20T10:15:00.000' },
-          { melding: 'Begrunnelse mangler', felt: null, tidspunkt: '2026-10-20T10:15:00.000' },
+          { melding: 'Fom-dato mangler', felt: 'fom' },
+          { melding: 'Begrunnelse mangler', felt: null },
         ]}
+        tidspunkt="2026-10-20T10:15:00"
       />,
     )
 

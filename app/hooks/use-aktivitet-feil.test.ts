@@ -7,13 +7,13 @@ import {
   lesFeltverdi,
 } from './use-aktivitet-feil'
 
-const tidspunkt = '2026-10-20T10:15:00.000'
 const feilmeldinger = [
-  { melding: 'Fom-dato mangler', felt: 'fom', tidspunkt },
-  { melding: 'Fom-dato er ugyldig', felt: 'fom', tidspunkt },
-  { melding: 'Beløp mangler', felt: 'belop', tidspunkt },
-  { melding: 'Hele vurderingen er ugyldig', felt: null, tidspunkt },
+  { melding: 'Fom-dato mangler', felt: 'fom' },
+  { melding: 'Fom-dato er ugyldig', felt: 'fom' },
+  { melding: 'Beløp mangler', felt: 'belop' },
+  { melding: 'Hele vurderingen er ugyldig', felt: null },
 ]
+const valideringsfeil = { tidspunkt: '2026-10-20T10:15:00', feil: feilmeldinger }
 
 describe('feltfeilFraFeilmeldinger', () => {
   it('gir første melding per felt og hopper over meldinger uten felt', () => {
@@ -78,19 +78,19 @@ describe('lesFeltverdi', () => {
 
 describe('feilmeldingerNokkel', () => {
   it('er lik når samme valideringsresultat hentes på nytt', () => {
-    const hentetPaNytt = feilmeldinger.map(feil => ({ ...feil }))
-    expect(feilmeldingerNokkel(1, hentetPaNytt)).toBe(feilmeldingerNokkel(1, feilmeldinger))
+    const hentetPaNytt = { ...valideringsfeil, feil: feilmeldinger.map(feil => ({ ...feil })) }
+    expect(feilmeldingerNokkel(1, hentetPaNytt)).toBe(feilmeldingerNokkel(1, valideringsfeil))
   })
 
   it('endres når aktiviteten eller valideringsresultatet endres', () => {
-    const nyAvvisning = feilmeldinger.map(feil => ({ ...feil, tidspunkt: '2026-10-21T08:00:00.000' }))
-    expect(feilmeldingerNokkel(2, feilmeldinger)).not.toBe(feilmeldingerNokkel(1, feilmeldinger))
-    expect(feilmeldingerNokkel(1, nyAvvisning)).not.toBe(feilmeldingerNokkel(1, feilmeldinger))
+    const nyAvvisning = { ...valideringsfeil, tidspunkt: '2026-10-21T08:00:00' }
+    expect(feilmeldingerNokkel(2, valideringsfeil)).not.toBe(feilmeldingerNokkel(1, valideringsfeil))
+    expect(feilmeldingerNokkel(1, nyAvvisning)).not.toBe(feilmeldingerNokkel(1, valideringsfeil))
   })
 })
 
 describe('feltnavnFraNokkel', () => {
   it('gir unike feltnavn og hopper over meldinger uten felt', () => {
-    expect(feltnavnFraNokkel(feilmeldingerNokkel(1, feilmeldinger))).toEqual(['fom', 'belop'])
+    expect(feltnavnFraNokkel(feilmeldingerNokkel(1, valideringsfeil))).toEqual(['fom', 'belop'])
   })
 })

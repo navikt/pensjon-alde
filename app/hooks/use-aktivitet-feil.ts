@@ -1,10 +1,10 @@
 import { createContext, type RefObject, useContext, useEffect, useMemo, useState } from 'react'
 import type { FormErrors } from '~/types/aktivitet-component'
-import type { AktivitetFeilmeldingDTO } from '~/types/behandling'
+import type { Valideringsfeil, ValideringsfeilDTO } from '~/types/behandling'
 
 const ENDRINGSHENDELSER = ['input', 'change', 'click', 'keyup', 'focusout'] as const
 
-export function feltfeilFraFeilmeldinger(feilmeldinger: AktivitetFeilmeldingDTO[] | undefined): Record<string, string> {
+export function feltfeilFraFeilmeldinger(feilmeldinger: Valideringsfeil[] | undefined): Record<string, string> {
   const feltfeil: Record<string, string> = {}
   for (const { felt, melding } of feilmeldinger ?? []) {
     if (felt && !feltfeil[felt]) feltfeil[felt] = melding
@@ -27,16 +27,17 @@ export function lesFeltverdi(navn: string, rot: Feltrot): string {
 
 export function feilmeldingerNokkel(
   aktivitetId: number | string | null,
-  feilmeldinger: AktivitetFeilmeldingDTO[] | undefined,
+  valideringsfeil: ValideringsfeilDTO | null | undefined,
 ) {
   return JSON.stringify([
     String(aktivitetId),
-    (feilmeldinger ?? []).map(({ felt, melding, tidspunkt }) => [felt, melding, tidspunkt]),
+    valideringsfeil?.tidspunkt ?? null,
+    (valideringsfeil?.feil ?? []).map(({ felt, melding }) => [felt, melding]),
   ])
 }
 
 export function feltnavnFraNokkel(nokkel: string): string[] {
-  const [, feilmeldinger] = JSON.parse(nokkel) as [string, [string | null, string, string][]]
+  const [, , feilmeldinger] = JSON.parse(nokkel) as [string, string | null, [string | null, string][]]
   return [...new Set(feilmeldinger.flatMap(([felt]) => (felt ? [felt] : [])))]
 }
 
@@ -73,7 +74,7 @@ function useEndredeFelter(nokkel: string, rotRef: RefObject<HTMLElement | null>)
 
 type AktivitetFeilState = {
   feltfeil: Record<string, string>
-  gjeldendeFeilmeldinger: AktivitetFeilmeldingDTO[]
+  gjeldendeFeilmeldinger: Valideringsfeil[]
 }
 
 const AktivitetFeilContext = createContext<AktivitetFeilState>({ feltfeil: {}, gjeldendeFeilmeldinger: [] })
@@ -81,18 +82,19 @@ const AktivitetFeilContext = createContext<AktivitetFeilState>({ feltfeil: {}, g
 export const AktivitetFeilProvider = AktivitetFeilContext.Provider
 
 export function gjeldendeFeilmeldinger(
-  feilmeldinger: AktivitetFeilmeldingDTO[] | undefined,
+  feilmeldinger: Valideringsfeil[] | undefined,
   endredeFelter: ReadonlySet<string>,
-): AktivitetFeilmeldingDTO[] {
+): Valideringsfeil[] {
   return (feilmeldinger ?? []).filter(({ felt }) => !felt || !endredeFelter.has(felt))
 }
 
 export function useAktivitetFeilState(
   aktivitetId: number | string | null,
-  feilmeldinger: AktivitetFeilmeldingDTO[] | undefined,
+  valideringsfeil: ValideringsfeilDTO | null | undefined,
   rotRef: RefObject<HTMLElement | null>,
 ): AktivitetFeilState {
-  const endredeFelter = useEndredeFelter(feilmeldingerNokkel(aktivitetId, feilmeldinger), rotRef)
+  const endredeFelter = useEndredeFelter(feilmeldingerNokkel(aktivitetId, valideringsfeil), rotRef)
+  const feilmeldinger = valideringsfeil?.feil
   return useMemo(() => {
     const gjeldende = gjeldendeFeilmeldinger(feilmeldinger, endredeFelter)
     return { feltfeil: feltfeilFraFeilmeldinger(gjeldende), gjeldendeFeilmeldinger: gjeldende }

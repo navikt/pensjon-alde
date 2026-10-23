@@ -41,15 +41,19 @@ export interface AktivitetDTO {
 
   behandletFerdigMaskinelt: boolean
 
-  /** Valideringsfeil i vurderingen som saksbehandler må rette. Tom med mindre aktiviteten venter på saksbehandler. */
-  feilmeldinger?: AktivitetFeilmeldingDTO[]
+  /** Siste validering som feilet og som saksbehandler må rette. Null med mindre aktiviteten venter på saksbehandler. */
+  valideringsfeil?: ValideringsfeilDTO | null
 }
 
-export interface AktivitetFeilmeldingDTO {
+export interface ValideringsfeilDTO {
+  tidspunkt: string // LocalDateTime as ISO string
+  feil: Valideringsfeil[]
+}
+
+export interface Valideringsfeil {
   melding: string
   /** Feltet i vurderingen feilen gjelder, eller null hvis den gjelder hele vurderingen. */
   felt: string | null
-  tidspunkt: string // LocalDateTime as ISO string
 }
 
 export interface BehandlingDTO {

@@ -34,13 +34,15 @@
       "sisteAktiveringsdato": "2025-01-16T09:12:04.118",
       "status": "UNDER_BEHANDLING",
       "utsattTil": null,
-      "feilmeldinger": [
-        {
-          "melding": "Fra og med-dato for samboerskap kan ikke være etter virkningstidspunktet",
-          "felt": "samboerFra",
-          "tidspunkt": "2025-01-16T09:12:04.118"
-        }
-      ]
+      "valideringsfeil": {
+        "tidspunkt": "2025-01-16T09:12:04.118",
+        "feil": [
+          {
+            "melding": "Fra og med-dato for samboerskap kan ikke være etter virkningstidspunktet",
+            "felt": "samboerFra"
+          }
+        ]
+      }
     },
     {
       "aktivitetId": 6020941,

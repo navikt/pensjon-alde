@@ -97,13 +97,16 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
   const aktivitetRef = useRef<HTMLDivElement>(null)
-  const feilState = useAktivitetFeilState(aktivitet.aktivitetId, aktivitet.feilmeldinger, aktivitetRef)
+  const feilState = useAktivitetFeilState(aktivitet.aktivitetId, aktivitet.valideringsfeil, aktivitetRef)
 
   return (
     <Page.Block className="aktivitet" ref={aktivitetRef}>
       {feilState.gjeldendeFeilmeldinger.length ? (
         <Box className={styles.feilmeldinger}>
-          <AktivitetFeilmeldinger feilmeldinger={feilState.gjeldendeFeilmeldinger} />
+          <AktivitetFeilmeldinger
+            feilmeldinger={feilState.gjeldendeFeilmeldinger}
+            tidspunkt={aktivitet.valideringsfeil?.tidspunkt}
+          />
         </Box>
       ) : null}
       <AktivitetFeilProvider value={feilState}>

@@ -1,12 +1,13 @@
 import { Detail, List, LocalAlert } from '@navikt/ds-react'
-import type { AktivitetFeilmeldingDTO } from '~/types/behandling'
+import type { Valideringsfeil } from '~/types/behandling'
 import { formatDateToNorwegian } from '~/utils/date/formatDateToNorwegian'
 
 interface AktivitetFeilmeldingerProps {
-  feilmeldinger?: AktivitetFeilmeldingDTO[]
+  feilmeldinger?: Valideringsfeil[]
+  tidspunkt?: string
 }
 
-export function AktivitetFeilmeldinger({ feilmeldinger }: AktivitetFeilmeldingerProps) {
+export function AktivitetFeilmeldinger({ feilmeldinger, tidspunkt }: AktivitetFeilmeldingerProps) {
   if (!feilmeldinger?.length) return null
 
   return (
@@ -20,7 +21,7 @@ export function AktivitetFeilmeldinger({ feilmeldinger }: AktivitetFeilmeldinger
             <List.Item key={`${feil.felt ?? ''}:${feil.melding}`}>{feil.melding}</List.Item>
           ))}
         </List>
-        <Detail>Validert {formatDateToNorwegian(feilmeldinger[0].tidspunkt, { showTime: true })}</Detail>
+        {tidspunkt ? <Detail>Validert {formatDateToNorwegian(tidspunkt, { showTime: true })}</Detail> : null}
       </LocalAlert.Content>
     </LocalAlert>
   )
