@@ -185,10 +185,7 @@ describe('getRedirectPath', () => {
             sisteAktiveringsdato: '2024-01-01T10:00:00Z',
             utsattTil: null,
             behandletFerdigMaskinelt: false,
-            valideringsfeil: {
-              tidspunkt: '2024-01-01T10:05:00',
-              feil: [{ melding: 'Begrunnelse mangler', felt: null }],
-            },
+            harValideringsfeil: true,
           },
         ],
       },

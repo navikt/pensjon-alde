@@ -1,6 +1,6 @@
 import { createContext, type RefObject, useContext, useEffect, useMemo, useState } from 'react'
 import type { FormErrors } from '~/types/aktivitet-component'
-import type { Valideringsfeil, ValideringsfeilDTO } from '~/types/behandling'
+import type { Valideringsfeil } from '~/types/vurdering'
 
 const ENDRINGSHENDELSER = ['input', 'change', 'click', 'keyup', 'focusout'] as const
 
@@ -25,14 +25,16 @@ export function lesFeltverdi(navn: string, rot: Feltrot): string {
     .join('|')
 }
 
+/** Endres ved hver ny vurdering, også når valideringen gir de samme feilene som sist. */
 export function feilmeldingerNokkel(
   aktivitetId: number | string | null,
-  valideringsfeil: ValideringsfeilDTO | null | undefined,
+  vurdertTidspunkt: string | null | undefined,
+  feilmeldinger: Valideringsfeil[] | null | undefined,
 ) {
   return JSON.stringify([
     String(aktivitetId),
-    valideringsfeil?.tidspunkt ?? null,
-    (valideringsfeil?.feil ?? []).map(({ felt, melding }) => [felt, melding]),
+    vurdertTidspunkt ?? null,
+    (feilmeldinger ?? []).map(({ felt, melding }) => [felt, melding]),
   ])
 }
 
@@ -82,7 +84,7 @@ const AktivitetFeilContext = createContext<AktivitetFeilState>({ feltfeil: {}, g
 export const AktivitetFeilProvider = AktivitetFeilContext.Provider
 
 export function gjeldendeFeilmeldinger(
-  feilmeldinger: Valideringsfeil[] | undefined,
+  feilmeldinger: Valideringsfeil[] | null | undefined,
   endredeFelter: ReadonlySet<string>,
 ): Valideringsfeil[] {
   return (feilmeldinger ?? []).filter(({ felt }) => !felt || !endredeFelter.has(felt))
@@ -90,11 +92,11 @@ export function gjeldendeFeilmeldinger(
 
 export function useAktivitetFeilState(
   aktivitetId: number | string | null,
-  valideringsfeil: ValideringsfeilDTO | null | undefined,
+  feilmeldinger: Valideringsfeil[] | null | undefined,
+  vurdertTidspunkt: string | null | undefined,
   rotRef: RefObject<HTMLElement | null>,
 ): AktivitetFeilState {
-  const endredeFelter = useEndredeFelter(feilmeldingerNokkel(aktivitetId, valideringsfeil), rotRef)
-  const feilmeldinger = valideringsfeil?.feil
+  const endredeFelter = useEndredeFelter(feilmeldingerNokkel(aktivitetId, vurdertTidspunkt, feilmeldinger), rotRef)
   return useMemo(() => {
     const gjeldende = gjeldendeFeilmeldinger(feilmeldinger, endredeFelter)
     return { feltfeil: feltfeilFraFeilmeldinger(gjeldende), gjeldendeFeilmeldinger: gjeldende }

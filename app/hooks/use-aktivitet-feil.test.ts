@@ -13,7 +13,7 @@ const feilmeldinger = [
   { melding: 'Beløp mangler', felt: 'belop' },
   { melding: 'Hele vurderingen er ugyldig', felt: null },
 ]
-const valideringsfeil = { tidspunkt: '2026-10-20T10:15:00', feil: feilmeldinger }
+const vurdertTidspunkt = '2026-10-20T10:15:00'
 
 describe('feltfeilFraFeilmeldinger', () => {
   it('gir første melding per felt og hopper over meldinger uten felt', () => {
@@ -78,19 +78,21 @@ describe('lesFeltverdi', () => {
 
 describe('feilmeldingerNokkel', () => {
   it('er lik når samme valideringsresultat hentes på nytt', () => {
-    const hentetPaNytt = { ...valideringsfeil, feil: feilmeldinger.map(feil => ({ ...feil })) }
-    expect(feilmeldingerNokkel(1, hentetPaNytt)).toBe(feilmeldingerNokkel(1, valideringsfeil))
+    const hentetPaNytt = feilmeldinger.map(feil => ({ ...feil }))
+    expect(feilmeldingerNokkel(1, vurdertTidspunkt, hentetPaNytt)).toBe(
+      feilmeldingerNokkel(1, vurdertTidspunkt, feilmeldinger),
+    )
   })
 
-  it('endres når aktiviteten eller valideringsresultatet endres', () => {
-    const nyAvvisning = { ...valideringsfeil, tidspunkt: '2026-10-21T08:00:00' }
-    expect(feilmeldingerNokkel(2, valideringsfeil)).not.toBe(feilmeldingerNokkel(1, valideringsfeil))
-    expect(feilmeldingerNokkel(1, nyAvvisning)).not.toBe(feilmeldingerNokkel(1, valideringsfeil))
+  it('endres når aktiviteten endres eller vurderingen sendes inn på nytt med samme feil', () => {
+    const forrige = feilmeldingerNokkel(1, vurdertTidspunkt, feilmeldinger)
+    expect(feilmeldingerNokkel(2, vurdertTidspunkt, feilmeldinger)).not.toBe(forrige)
+    expect(feilmeldingerNokkel(1, '2026-10-21T08:00:00', feilmeldinger)).not.toBe(forrige)
   })
 })
 
 describe('feltnavnFraNokkel', () => {
   it('gir unike feltnavn og hopper over meldinger uten felt', () => {
-    expect(feltnavnFraNokkel(feilmeldingerNokkel(1, valideringsfeil))).toEqual(['fom', 'belop'])
+    expect(feltnavnFraNokkel(feilmeldingerNokkel(1, vurdertTidspunkt, feilmeldinger))).toEqual(['fom', 'belop'])
   })
 })

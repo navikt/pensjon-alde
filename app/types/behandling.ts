@@ -41,19 +41,8 @@ export interface AktivitetDTO {
 
   behandletFerdigMaskinelt: boolean
 
-  /** Siste validering som feilet og som saksbehandler må rette. Null med mindre aktiviteten venter på saksbehandler. */
-  valideringsfeil?: ValideringsfeilDTO | null
-}
-
-export interface ValideringsfeilDTO {
-  tidspunkt: string // LocalDateTime as ISO string
-  feil: Valideringsfeil[]
-}
-
-export interface Valideringsfeil {
-  melding: string
-  /** Feltet i vurderingen feilen gjelder, eller null hvis den gjelder hele vurderingen. */
-  felt: string | null
+  /** Om aktiviteten venter på at saksbehandler retter valideringsfeil. Selve feilene hentes sammen med vurderingen. */
+  harValideringsfeil?: boolean
 }
 
 export interface BehandlingDTO {

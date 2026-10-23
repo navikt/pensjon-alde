@@ -1,5 +1,5 @@
 import { Detail, List, LocalAlert } from '@navikt/ds-react'
-import type { Valideringsfeil } from '~/types/behandling'
+import type { Valideringsfeil } from '~/types/vurdering'
 import { formatDateToNorwegian } from '~/utils/date/formatDateToNorwegian'
 
 interface AktivitetFeilmeldingerProps {

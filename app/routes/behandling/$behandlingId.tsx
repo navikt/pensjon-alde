@@ -82,7 +82,7 @@ export function getRedirectPath({
       aktivitetSomSkalVises &&
       justCompletedId &&
       aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId &&
-      !aktivitetSomSkalVises.valideringsfeil?.feil.length
+      !aktivitetSomSkalVises.harValideringsfeil
     if (
       aktivitetSomSkalVises &&
       !shouldRefetchAfterCompletion &&
@@ -221,7 +221,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           redirectUrl: null,
           behandletFerdigMaskinelt: undefined,
           handlerName: undefined,
-          valideringsfeil: undefined,
+          harValideringsfeil: undefined,
         },
       ]
     }
@@ -231,7 +231,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   function finnProcessIcon(step: (typeof allSteps)[0]) {
     if (!step.handlerName) {
       return <BugIcon />
-    } else if (step.valideringsfeil?.feil.length) {
+    } else if (step.harValideringsfeil) {
       return <ExclamationmarkTriangleIcon title="Vurderingen må rettes" />
     } else if (step.behandletFerdigMaskinelt) {
       return <RobotSmileIcon />
