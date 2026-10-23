@@ -1,0 +1,75 @@
+{
+  "sokersBostedsadresser": [
+    {
+      "adressenavn": "Storgata",
+      "husnummer": "1",
+      "husbokstav": null,
+      "postnummer": "0182",
+      "poststed": "Oslo",
+      "tilleggsnavn": null,
+      "kommunenummer": "0301",
+      "bruksenhetsnummer": null,
+      "bydelsnummer": null,
+      "koordinater": null,
+      "matrikkelId": null,
+      "adresseString": "Storgata 1, 0182 Oslo",
+      "adresselinjer": ["Storgata 1", "0182 Oslo"],
+      "adresseTilleggsdata": {
+        "angittFlyttedato": "2020-06-01",
+        "gyldigFraOgMed": "2020-06-01",
+        "gyldigTilOgMed": null,
+        "coAdressenavn": null,
+        "oppholdAnnetSted": null,
+        "type": null
+      },
+      "id": null,
+      "type": "VegadresseModel"
+    }
+  ],
+  "samboer": {
+    "fnr": "98765432100",
+    "navn": {
+      "fornavn": "Kari",
+      "mellomnavn": null,
+      "etternavn": "Hansen",
+      "forkortetNavn": "Hansen Kari"
+    },
+    "bostedsadresser": [
+      {
+        "adressenavn": "Storgata",
+        "husnummer": "1",
+        "husbokstav": null,
+        "postnummer": "0182",
+        "poststed": "Oslo",
+        "tilleggsnavn": null,
+        "kommunenummer": "0301",
+        "bruksenhetsnummer": null,
+        "bydelsnummer": null,
+        "koordinater": null,
+        "matrikkelId": null,
+        "adresseString": "Storgata 1, 0182 Oslo",
+        "adresselinjer": ["Storgata 1", "0182 Oslo"],
+        "adresseTilleggsdata": {
+          "angittFlyttedato": "2020-06-01",
+          "gyldigFraOgMed": "2020-06-01",
+          "gyldigTilOgMed": null,
+          "coAdressenavn": null,
+          "oppholdAnnetSted": null,
+          "type": null
+        },
+        "id": null,
+        "type": "VegadresseModel"
+      }
+    ],
+    "fodselsdatoEldsteBarn": "2018-05-12",
+    "harEllerHarHattFellesBarn": true,
+    "tidligereEktefelle": false
+  },
+  "soknad": {
+    "datoForSamboerskap": "2019-01-15",
+    "harEllerHarHattFellesBarn": true,
+    "tidligereEktefelle": false
+  },
+  "kravOnsketVirkningsdato": "2025-04-01",
+  "sokerSivilstand": "UGIFT"
+}

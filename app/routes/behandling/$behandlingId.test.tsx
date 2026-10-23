@@ -167,6 +167,34 @@ describe('getRedirectPath', () => {
     expect(result).toBeNull()
   })
 
+  it('redirects back to aktivitet when justCompleted aktivitet failed validation', () => {
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        aktiviteter: [
+          {
+            aktivitetId: 456,
+            handlerName: 'vurder-samboer',
+            friendlyName: 'Vurder samboer',
+            status: AktivitetStatus.UNDER_BEHANDLING,
+            type: 'AKTIVITET',
+            opprettet: '2024-01-01T10:00:00Z',
+            antallGangerKjort: 1,
+            sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+            utsattTil: null,
+            behandletFerdigMaskinelt: false,
+            harValideringsfeil: true,
+          },
+        ],
+      },
+      justCompletedId: '456',
+    })
+
+    expect(result).toBe('/behandling/123/aktivitet/456')
+  })
+
   it('finds aktivitet with FEILET status', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123',
