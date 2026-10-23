@@ -72,6 +72,10 @@ export type SamboerInformasjon = {
   fodselsdatoEldsteBarn?: string | null
   harEllerHarHattFellesBarn: boolean
   tidligereEktefelle: boolean
+  gjeldendeSak?: {
+    saktype: string
+    samboerFra: string
+  } | null
 }
 
 export type SamboerType = 'SAMBOER_1_5' | 'SAMBOER_3_2' | 'IKKE_SAMBOER'

@@ -130,6 +130,7 @@ function VurdereSamboerComponent({
   const { samboer, sokersBostedsadresser, soknad, kravOnsketVirkningsdato } = grunnlag
 
   const normalisertVurdering = normaliserSamboerVurdering(vurdering)
+  const { gjeldendeSak } = samboer
 
   const [form, fields] = useForm<SamboerVurderingInput>({
     lastResult,
@@ -272,28 +273,42 @@ function VurdereSamboerComponent({
             )}
           </VStack>
 
-          <VStack gap="space-4">
-            <Heading size="xsmall" level="2">
-              Opplysninger fra vårt register
-            </Heading>
-            <HStack gap="space-4">
-              Tidligere gift med hverandre:{' '}
-              <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
-            </HStack>
-            <HStack gap="space-4">
-              Felles barn:{' '}
-              <BodyShort weight="semibold">
-                {samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}
-                {samboer.harEllerHarHattFellesBarn &&
-                  samboer.fodselsdatoEldsteBarn &&
-                  `, første født ${formatDateToNorwegian(samboer.fodselsdatoEldsteBarn)}`}
-              </BodyShort>
-            </HStack>
-
-            {grunnlag.sokerSivilstand && (
+          <VStack gap="space-16">
+            <VStack gap="space-4">
+              <Heading size="xsmall" level="2">
+                Opplysninger fra vårt register
+              </Heading>
               <HStack gap="space-4">
-                Søkers sivilstand: <BodyShort weight="semibold">{grunnlag.sokerSivilstand}</BodyShort>
+                Tidligere gift med hverandre:{' '}
+                <BodyShort weight="semibold">{samboer.tidligereEktefelle ? 'Ja' : 'Nei'}</BodyShort>
               </HStack>
+              <HStack gap="space-4">
+                Felles barn:{' '}
+                <BodyShort weight="semibold">
+                  {samboer.harEllerHarHattFellesBarn ? 'Ja' : 'Nei'}
+                  {samboer.harEllerHarHattFellesBarn &&
+                    samboer.fodselsdatoEldsteBarn &&
+                    `, første født ${formatDateToNorwegian(samboer.fodselsdatoEldsteBarn)}`}
+                </BodyShort>
+              </HStack>
+
+              {grunnlag.sokerSivilstand && (
+                <HStack gap="space-4">
+                  Søkers sivilstand: <BodyShort weight="semibold">{grunnlag.sokerSivilstand}</BodyShort>
+                </HStack>
+              )}
+            </VStack>
+
+            {gjeldendeSak && (
+              <VStack gap="space-4">
+                <Heading size="xsmall" level="3">
+                  Samboer fra og med i berørt sak
+                </Heading>
+                <HStack gap="space-4">
+                  {gjeldendeSak.saktype}:{' '}
+                  <BodyShort weight="semibold">{formatDateToNorwegian(gjeldendeSak.samboerFra)}</BodyShort>
+                </HStack>
+              </VStack>
             )}
           </VStack>
         </HStack>
