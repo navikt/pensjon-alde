@@ -8,14 +8,14 @@ import AktivitetDebug from '~/components/AktivitetDebug'
 import { AktivitetFeilmeldinger } from '~/components/shared/AktivitetFeilmeldinger'
 import { AktivitetFeilProvider, useAktivitetFeilState } from '~/hooks/use-aktivitet-feil'
 import type { AktivitetDTO } from '~/types/behandling'
-import type { Valideringsfeil } from '~/types/vurdering'
+import type { Validering } from '~/types/vurdering'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 import styles from './aktivitet.module.css'
 
 type VurderingMedValideringsfeil = Record<string, unknown> & {
   vurdertTidspunkt?: string | null
-  valideringsfeil?: Valideringsfeil[] | null
+  validering?: Validering | null
 }
 
 export function meta({ params }: Route.MetaArgs) {
@@ -71,7 +71,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return {
     behandling,
     aktivitet,
-    valideringsfeil: vurdering?.valideringsfeil ?? null,
+    valideringsfeil: vurdering?.validering?.feil ?? null,
     vurdertTidspunkt: vurdering?.vurdertTidspunkt ?? null,
     debug: { grunnlag, vurdering: showDebug ? vurdering : null },
     showDebug,

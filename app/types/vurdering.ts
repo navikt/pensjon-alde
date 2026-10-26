@@ -3,9 +3,14 @@ export interface VurderingBase {
 }
 
 /**
- * En feil fra siste validering som saksbehandler må rette. Feilene kommer som en liste med vurderingen,
- * og listen er null med mindre aktiviteten venter på saksbehandler.
+ * Resultatet av siste validering. Kommer som `validering` med vurderingen,
+ * og er null med mindre aktiviteten venter på saksbehandler.
  */
+export interface Validering {
+  feil: Valideringsfeil[]
+}
+
+/** En feil fra siste validering som saksbehandler må rette. */
 export interface Valideringsfeil {
   melding: string
   /** Feltet i vurderingen feilen gjelder, eller null hvis den gjelder hele vurderingen. */
