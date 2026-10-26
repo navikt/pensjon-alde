@@ -1,28 +1,28 @@
-import { Detail, List, LocalAlert } from '@navikt/ds-react'
+import { Detail, ErrorSummary, VStack } from '@navikt/ds-react'
+import type { Ref } from 'react'
 import type { Valideringsfeil } from '~/types/vurdering'
 import { formatDateToNorwegian } from '~/utils/date/formatDateToNorwegian'
 
 interface AktivitetFeilmeldingerProps {
   feilmeldinger?: Valideringsfeil[]
   tidspunkt?: string
+  ref?: Ref<HTMLDivElement>
 }
 
-export function AktivitetFeilmeldinger({ feilmeldinger, tidspunkt }: AktivitetFeilmeldingerProps) {
+/** Lenkene forutsetter at feltet i aktiviteten har `id` lik `felt`. */
+export function AktivitetFeilmeldinger({ feilmeldinger, tidspunkt, ref }: AktivitetFeilmeldingerProps) {
   if (!feilmeldinger?.length) return null
 
   return (
-    <LocalAlert status="error">
-      <LocalAlert.Header>
-        <LocalAlert.Title>Vurderingen må rettes</LocalAlert.Title>
-      </LocalAlert.Header>
-      <LocalAlert.Content>
-        <List as="ul" size="small">
-          {feilmeldinger.map(feil => (
-            <List.Item key={`${feil.felt ?? ''}:${feil.melding}`}>{feil.melding}</List.Item>
-          ))}
-        </List>
-        {tidspunkt ? <Detail>Validert {formatDateToNorwegian(tidspunkt, { showTime: true })}</Detail> : null}
-      </LocalAlert.Content>
-    </LocalAlert>
+    <VStack gap="space-8">
+      <ErrorSummary ref={ref} size="small" heading="Du må rette disse feilene før du kan lagre vurderingen:">
+        {feilmeldinger.map(feil => (
+          <ErrorSummary.Item key={`${feil.felt ?? ''}:${feil.melding}`} href={feil.felt ? `#${feil.felt}` : undefined}>
+            {feil.melding}
+          </ErrorSummary.Item>
+        ))}
+      </ErrorSummary>
+      {tidspunkt ? <Detail>Validert {formatDateToNorwegian(tidspunkt, { showTime: true })}</Detail> : null}
+    </VStack>
   )
 }

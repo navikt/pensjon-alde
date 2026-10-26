@@ -174,7 +174,9 @@ function VurdereSamboerComponent({
               size="small"
               error={feil.samboerType}
             >
-              <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
+              <Radio id={fields.samboerType.name} value="SAMBOER_3_2">
+                § 3-2 samboer
+              </Radio>
               <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
               <Radio value="IKKE_SAMBOER">Ikke samboer (§ 3-2 samboer frem i tid)</Radio>
             </RadioGroup>
@@ -185,6 +187,7 @@ function VurdereSamboerComponent({
                 size="small"
                 readOnly={readOnly}
                 label="Fra og med"
+                id={fields.samboerFra.name}
                 name={fields.samboerFra.name}
                 error={feil.samboerFra}
               />

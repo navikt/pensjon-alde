@@ -1,6 +1,6 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
 import { BodyShort, Box, InfoCard, Page } from '@navikt/ds-react'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
@@ -94,12 +94,20 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
   const aktivitetRef = useRef<HTMLDivElement>(null)
   const feilState = useAktivitetFeilState(aktivitet.aktivitetId, valideringsfeil, vurdertTidspunkt, aktivitetRef)
+  const feilmeldingerRef = useRef<HTMLDivElement>(null)
+
+  // Fokuserer bare når en ny vurdering gir feil, ikke når en feil dukker opp igjen mens saksbehandler retter.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Skal kjøres på nytt for hver vurdering
+  useEffect(() => {
+    feilmeldingerRef.current?.focus()
+  }, [aktivitet.aktivitetId, vurdertTidspunkt])
 
   return (
     <Page.Block className="aktivitet" ref={aktivitetRef}>
       {feilState.gjeldendeFeilmeldinger.length ? (
         <Box className={styles.feilmeldinger}>
           <AktivitetFeilmeldinger
+            ref={feilmeldingerRef}
             feilmeldinger={feilState.gjeldendeFeilmeldinger}
             tidspunkt={vurdertTidspunkt ?? undefined}
           />

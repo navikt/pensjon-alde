@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { AktivitetFeilmeldinger } from './AktivitetFeilmeldinger'
 
 describe('AktivitetFeilmeldinger', () => {
-  it('viser alle feilmeldingene', () => {
+  it('viser alle feilmeldingene og lenker til feltet feilen gjelder', () => {
     const html = renderToStaticMarkup(
       <AktivitetFeilmeldinger
         feilmeldinger={[
@@ -16,6 +16,8 @@ describe('AktivitetFeilmeldinger', () => {
 
     expect(html).toContain('Fom-dato mangler')
     expect(html).toContain('Begrunnelse mangler')
+    expect(html).toContain('href="#fom"')
+    expect(html.match(/href=/g)).toHaveLength(1)
   })
 
   it('viser ingenting uten feilmeldinger', () => {

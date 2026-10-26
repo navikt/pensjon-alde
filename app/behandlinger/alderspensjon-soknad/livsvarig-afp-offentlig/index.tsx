@@ -441,7 +441,9 @@ function AfpLivsvarigVurdering(
                   size="small"
                   error={errors?.utfall}
                 >
-                  <Radio value="innvilget">Innvilget</Radio>
+                  <Radio id="utfall" value="innvilget">
+                    Innvilget
+                  </Radio>
                   <Radio value="ingen">Avslått</Radio>
                 </RadioGroup>
 
@@ -450,6 +452,7 @@ function AfpLivsvarigVurdering(
                     {soknadTpLeverandorer.length > 1 && (
                       <Select
                         label="Velg søknad"
+                        id="tpLeverandor"
                         name="tpLeverandor"
                         defaultValue={vurdering?.utfall === 'innvilget' ? vurdering.tpNummer.toString() : ''}
                         size="small"
@@ -470,6 +473,7 @@ function AfpLivsvarigVurdering(
 
                     <TextField
                       label="Beløp per måned (kr)"
+                      id="belop"
                       name="belop"
                       type="number"
                       size="small"
@@ -484,6 +488,7 @@ function AfpLivsvarigVurdering(
                     {sortedGrunnbelop.length > 1 ? (
                       <Select
                         label="Sist regulert"
+                        id="sistRegulert"
                         name="sistRegulert"
                         defaultValue={defaultSistRegulert}
                         size="small"
@@ -511,6 +516,7 @@ function AfpLivsvarigVurdering(
                     ) : (
                       <TextField
                         label="Sist regulert"
+                        id="sistRegulert"
                         name="sistRegulert"
                         type="number"
                         size="small"
@@ -524,6 +530,7 @@ function AfpLivsvarigVurdering(
                         {...inputProps}
                         size="small"
                         label="Virkningsdato (f.o.m.)"
+                        id="virkFom"
                         name="virkFom"
                         error={errors?.virkFom}
                       />
