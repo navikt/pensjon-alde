@@ -1,12 +1,4 @@
 import { useMemo } from 'react'
-import {
-  type ActionErrors,
-  type OppdaterOpptjeningGrunnlag,
-  type OppdaterOpptjeningVurdering,
-  OpptjeningSkjema,
-  useLinjeState,
-} from '~/components/Opptjening'
-import { opptjeningstyperFraGrunnlag } from '~/components/Opptjening/felles/opptjeningstyper.utils'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import { OmsorgSeksjon } from './Omsorg/OmsorgSeksjon'
 import type { OmsorgGrunnlagDTO } from './Omsorg/omsorg.types'
@@ -16,6 +8,14 @@ import {
   OMSORG_FELTER,
   omsorgLinjerFraVurdering,
 } from './Omsorg/omsorg.utils'
+import { OpptjeningSkjema } from './Opptjening/OpptjeningSkjema'
+import type {
+  ActionErrors,
+  OppdaterOpptjeningGrunnlag,
+  OppdaterOpptjeningVurdering,
+} from './Opptjening/opptjening.types'
+import { opptjeningstyperFraGrunnlag } from './Opptjening/opptjeningstyper.utils'
+import { useLinjeState } from './Opptjening/use-linje-state'
 
 type OppdaterOmsorgProps = Omit<
   AktivitetComponentProps<OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering>,
