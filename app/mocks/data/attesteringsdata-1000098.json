@@ -1,0 +1,73 @@
+{
+  "brukerKanAttestere": true,
+  "aktiviter": [
+    {
+      "aktivitetId": 7020998,
+      "vurdertTidspunkt": "2026-10-27T09:45:00.000000",
+      "vurdertAvBrukerId": "A123456",
+      "vurdertAvBrukerNavn": "Siri Saksbehandler",
+      "begrunnelse": "Dagpengene for 2024 gjelder fiske, og 2022 er registrert feil.",
+      "grunnlag": {
+        "saker": [{ "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" }],
+        "dagpengertyper": [
+          { "code": "DP", "description": "Dagpenger" },
+          { "code": "DP_FF", "description": "Dagpenger fiskere og fangstmenn" }
+        ],
+        "dagpengerListe": [
+          {
+            "dagpengerId": 11,
+            "ar": 2022,
+            "dagpengerType": "DP",
+            "kilde": "POPP",
+            "utbetalteDagpenger": 90000,
+            "uavkortetDagpengegrunnlag": 250000,
+            "ferietillegg": 9000,
+            "barnetillegg": 0
+          },
+          {
+            "dagpengerId": 12,
+            "ar": 2023,
+            "dagpengerType": "DP",
+            "kilde": "POPP",
+            "utbetalteDagpenger": 120000,
+            "uavkortetDagpengegrunnlag": 300000,
+            "ferietillegg": 12000,
+            "barnetillegg": 5000
+          },
+          {
+            "dagpengerId": 13,
+            "ar": 2024,
+            "dagpengerType": "DP",
+            "kilde": "POPP",
+            "utbetalteDagpenger": 150000,
+            "uavkortetDagpengegrunnlag": 350000,
+            "barnetillegg": 0
+          }
+        ]
+      },
+      "vurdering": {
+        "sakId": 23077283,
+        "fnr": "12345678901",
+        "dagpengerTilLagring": [
+          {
+            "ar": 2023,
+            "dagpengerType": "DP",
+            "utbetalteDagpenger": 125000,
+            "barnetillegg": 5000,
+            "uavkortetDagpengegrunnlag": 300000,
+            "ferietillegg": 12500
+          },
+          { "ar": 2024, "dagpengerType": "DP_FF", "utbetalteDagpenger": 150000, "barnetillegg": 0 },
+          {
+            "ar": 2025,
+            "dagpengerType": "DP",
+            "utbetalteDagpenger": 80000,
+            "barnetillegg": 0,
+            "uavkortetDagpengegrunnlag": 200000
+          }
+        ],
+        "dagpengerTilSletting": [{ "ar": 2022, "dagpengerType": "DP" }, { "ar": 2024, "dagpengerType": "DP" }]
+      }
+    }
+  ]
+}
