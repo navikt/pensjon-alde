@@ -2,15 +2,15 @@ import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
-} from '~/components/Opptjening/felles/opptjening.types'
+} from '../Opptjening/opptjening.types'
 import {
   byggEndringSummary,
   type EndringSummary,
   type LinjeStatus,
   oppsummeringForKategori,
   tilLinjeState,
-} from '~/components/Opptjening/felles/opptjening.utils'
-import { typeLabel } from '~/components/Opptjening/felles/opptjeningstyper.utils'
+} from '../Opptjening/opptjening.utils'
+import { typeLabel } from '../Opptjening/opptjeningstyper.utils'
 import type { OmsorgGrunnlagDTO, OmsorgTilSlettingDTO } from './omsorg.types'
 
 export type OmsorgLinjeState = OmsorgGrunnlagDTO & {
