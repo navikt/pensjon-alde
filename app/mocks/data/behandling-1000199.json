@@ -1,0 +1,35 @@
+{
+  "behandlingId": 1000199,
+  "type": "OppdaterOpptjeningsgrunnlagForstegangstjeneste",
+  "handlerName": "oppdater-opptjening-forstegangstjeneste",
+  "friendlyName": "Oppdater opptjeningsgrunnlag førstegangstjeneste",
+  "processName": "Oppdater opptjeningsgrunnlag førstegangstjeneste",
+  "aldeBehandlingStatus": "VENTER_SAKSBEHANDLER",
+  "saksbehandletAv": [],
+  "sisteKjoring": null,
+  "sisteKjoringDato": "2026-10-27T09:00:00",
+  "utsattTil": null,
+  "opprettet": "2026-10-27T09:00:00",
+  "stoppet": null,
+  "status": "UNDER_BEHANDLING",
+  "fnr": "12345678901",
+  "sakId": 23077283,
+  "sakType": "ALDER",
+  "fornavn": "Ola",
+  "etternavn": "Nordmann",
+  "fodselsdato": "1962-03-15",
+  "aktiviteter": [
+    {
+      "aktivitetId": 7021999,
+      "type": "OppdaterOpptjeningsgrunnlagForstegangstjenesteA100OppdaterOpptjeningsgrunnlagForstegangstjenesteAktivitet",
+      "handlerName": "oppdater-forstegangstjeneste",
+      "friendlyName": "Oppdater opptjeningsgrunnlag førstegangstjeneste",
+      "opprettet": "2026-10-27T09:00:00",
+      "antallGangerKjort": 0,
+      "sisteAktiveringsdato": "2026-10-27T09:00:00",
+      "status": "UNDER_BEHANDLING",
+      "utsattTil": null,
+      "behandletFerdigMaskinelt": false
+    }
+  ]
+}
