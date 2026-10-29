@@ -5,7 +5,7 @@ import type { OppdaterInntektGrunnlag } from './inntekt.types'
 import { harInntektEndringer } from './inntekt.utils'
 import type { ActionErrors } from './opptjening.types'
 
-const MANGLER_ROLLE = 'Mangler rolle tilgang. Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan lagre endringer.'
+const MANGLER_ROLLE = 'Mangler rolletilgang. Kun saksbehandlere med tilleggsrolle «Spesial PGI» kan lagre endringer.'
 
 interface AktivitetRef {
   request: Request

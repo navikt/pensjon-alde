@@ -127,7 +127,13 @@ export function InntektTabell({
               const beskrivelse = beskrivLinje(linje)
               const original = linje._status === 'modified' ? linje._original : null
               const visVerdi = (tekst: string, opprinnelig?: string) => {
-                const verdi = !tekst ? '–' : erSlettet ? <span className={styles.slettet}>{tekst}</span> : tekst
+                const verdi = !tekst ? (
+                  '–'
+                ) : erSlettet ? (
+                  <span style={{ textDecoration: 'line-through' }}>{tekst}</span>
+                ) : (
+                  tekst
+                )
                 if (opprinnelig === undefined || opprinnelig === tekst) return verdi
                 return (
                   <VStack gap="space-0">

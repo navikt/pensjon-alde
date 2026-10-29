@@ -2,10 +2,6 @@
   overflow-x: auto;
 }
 
-.slettet {
-  text-decoration: line-through;
-}
-
 .nowrap {
   white-space: nowrap;
 }

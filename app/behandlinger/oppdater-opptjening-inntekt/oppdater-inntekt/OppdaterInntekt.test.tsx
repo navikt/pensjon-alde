@@ -87,6 +87,7 @@ describe('OppdaterInntekt', () => {
     expect(html).toContain('Lønn: 500 000 kr → 510 000 kr')
     expect(html).toContain('Tidligere: 500 000 kr')
     expect(html).toContain('Slettede linjer (1)')
+    expect(html).toMatch(/<span style="text-decoration:line-through">480 000 kr<\/span>/)
     expect(html).toContain('Innenlandsinntekt (2020) – Lønn: 480 000 kr')
     expect(html).toMatch(/<option[^>]*selected[^>]*>23077283 – ALDER \(LOPENDE\)/)
     expect(html).toContain('Feil lønn fra arbeidsgiver')
