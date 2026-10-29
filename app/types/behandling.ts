@@ -40,6 +40,9 @@ export interface AktivitetDTO {
   utsattTil: string | null // LocalDateTime as ISO string
 
   behandletFerdigMaskinelt: boolean
+
+  /** Om aktiviteten venter på at saksbehandler retter valideringsfeil. Selve feilene hentes sammen med vurderingen. */
+  harValideringsfeil?: boolean
 }
 
 export interface BehandlingDTO {

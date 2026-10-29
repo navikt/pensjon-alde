@@ -23,6 +23,7 @@ import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayo
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { userContext } from '~/context/user-context'
 import { Features } from '~/features'
+import { useAktivitetFeil } from '~/hooks/use-aktivitet-feil'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -155,6 +156,9 @@ function VurdereSamboerComponent({
   })
 
   const skjulteFeil = [...(form.errors ?? []), ...(fields.samboerFnr.errors ?? [])]
+  const feil = useAktivitetFeil<SamboerVurderingInput>(
+    Object.fromEntries(Object.entries(form.allErrors).map(([felt, meldinger]) => [felt, meldinger[0]])),
+  )
 
   const sidebar = (
     <div>
@@ -168,9 +172,11 @@ function VurdereSamboerComponent({
               defaultValue={fields.samboerType.initialValue}
               readOnly={readOnly}
               size="small"
-              error={fields.samboerType.errors?.[0]}
+              error={feil.samboerType}
             >
-              <Radio value="SAMBOER_3_2">§ 3-2 samboer</Radio>
+              <Radio id={fields.samboerType.name} value="SAMBOER_3_2">
+                § 3-2 samboer
+              </Radio>
               <Radio value="SAMBOER_1_5">§ 1-5 samboer</Radio>
               <Radio value="IKKE_SAMBOER">Ikke samboer (§ 3-2 samboer frem i tid)</Radio>
             </RadioGroup>
@@ -181,8 +187,9 @@ function VurdereSamboerComponent({
                 size="small"
                 readOnly={readOnly}
                 label="Fra og med"
+                id={fields.samboerFra.name}
                 name={fields.samboerFra.name}
-                error={fields.samboerFra.errors?.[0]}
+                error={feil.samboerFra}
               />
             </DatePicker>
 

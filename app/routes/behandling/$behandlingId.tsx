@@ -1,4 +1,4 @@
-import { BugIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
+import { BugIcon, ExclamationmarkTriangleIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
 import { BodyLong, BodyShort, Box, Button, HStack, Modal, Process, Show, Textarea, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { Form, Outlet, redirect, useFetcher, useNavigate, useParams, useRevalidator } from 'react-router'
@@ -79,7 +79,10 @@ export function getRedirectPath({
       return `/behandling/${behandlingId}/attestering`
     }
     const shouldRefetchAfterCompletion =
-      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
+      aktivitetSomSkalVises &&
+      justCompletedId &&
+      aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId &&
+      !aktivitetSomSkalVises.harValideringsfeil
     if (
       aktivitetSomSkalVises &&
       !shouldRefetchAfterCompletion &&
@@ -218,6 +221,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           redirectUrl: null,
           behandletFerdigMaskinelt: undefined,
           handlerName: undefined,
+          harValideringsfeil: undefined,
         },
       ]
     }
@@ -227,6 +231,8 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   function finnProcessIcon(step: (typeof allSteps)[0]) {
     if (!step.handlerName) {
       return <BugIcon />
+    } else if (step.harValideringsfeil) {
+      return <ExclamationmarkTriangleIcon title="Vurderingen må rettes" />
     } else if (step.behandletFerdigMaskinelt) {
       return <RobotSmileIcon />
     } else if (step.status === AktivitetStatus.FULLFORT) {

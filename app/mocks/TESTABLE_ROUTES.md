@@ -8,6 +8,7 @@ Start the mock server with `pnpm dev:mock`.
 | ------- | ------------ | -------- |
 | [/behandling/1000001/aktivitet/6020943/alderspensjon-soknad/vurder-samboer](http://localhost:3001/behandling/1000001/aktivitet/6020943/alderspensjon-soknad/vurder-samboer) | 1000001 | Aktiv aktivitet |
 | [/behandling/1000002/aktivitet/7020942/alderspensjon-soknad/kontroller-inntektsopplysninger-for-eps](http://localhost:3001/behandling/1000002/aktivitet/7020942/alderspensjon-soknad/kontroller-inntektsopplysninger-for-eps) | 1000002 | Aktiv aktivitet |
+| [/behandling/1000003/aktivitet/6020953/alderspensjon-soknad/vurder-samboer](http://localhost:3001/behandling/1000003/aktivitet/6020953/alderspensjon-soknad/vurder-samboer) | 1000003 | Aktiv aktivitet med valideringsfeil |
 | [/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering](http://localhost:3001/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering) | 3000001 | Aktiv aktivitet |
 | [/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig](http://localhost:3001/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig) | 3000002 | Aktiv aktivitet |
 | [/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg](http://localhost:3001/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg) | 7000201 | Aktiv aktivitet |
@@ -37,6 +38,7 @@ Start the mock server with `pnpm dev:mock`.
 | ----- | ------------ | ------------------------ |
 | `behandling-1000001.json` | 1000001 | UNDER_BEHANDLING |
 | `behandling-1000002.json` | 1000002 | UNDER_BEHANDLING |
+| `behandling-1000003.json` | 1000003 | UNDER_BEHANDLING (valideringsfeil) |
 | `behandling-2000001.json` | 2000001 | VENTER_ATTESTERING |
 | `behandling-2000002.json` | 2000002 | AUTOMATISK_TIL_MANUELL |
 | `behandling-2000003.json` | 2000003 | AVBRUTT_AV_BRUKER |
