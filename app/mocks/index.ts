@@ -58,7 +58,7 @@ export async function startMocking() {
     server = mswServer
 
     server.listen({
-      onUnhandledRequest: 'bypass', // Allow real network requests for non-mocked endpoints
+      onUnhandledFrame: 'bypass', // Allow real network requests for non-mocked endpoints
     })
 
     console.log('🔧 MSW server started - API mocking enabled')
