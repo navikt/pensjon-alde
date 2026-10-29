@@ -1,0 +1,130 @@
+{
+  "saker": [
+    {
+      "sakId": 23077283,
+      "sakType": "ALDER",
+      "sakStatus": "LOPENDE"
+    },
+    {
+      "sakId": 23077284,
+      "sakType": "UFOREP",
+      "sakStatus": "OPPRETTET"
+    }
+  ],
+  "inntektsoversikt": {
+    "fnr": "12345678901",
+    "inntekterPerAr": [
+      {
+        "inntektAr": 2019,
+        "inntekterFilformat": [
+          {
+            "inntektsType": "Innenlandsinntekt",
+            "belopLoenn": 455000,
+            "belopNaering": null,
+            "belopJsf": null
+          }
+        ],
+        "inntekterPgi": [
+          {
+            "inntektsType": "FastlandPgi",
+            "belopLoennsinntekt": 455000,
+            "belopLoennsinntektBarePensjonsdel": null,
+            "belopNaeringsinntekt": null,
+            "belopNaeringsinntektFraFiskeFangstEllerFamiliebarnehage": null
+          }
+        ],
+        "inntekterAnnet": []
+      },
+      {
+        "inntektAr": 2020,
+        "inntekterFilformat": [
+          {
+            "inntektsType": "Innenlandsinntekt",
+            "belopLoenn": 480000,
+            "belopNaering": 25000,
+            "belopJsf": null
+          }
+        ],
+        "inntekterPgi": [
+          {
+            "inntektsType": "FastlandPgi",
+            "belopLoennsinntekt": 480000,
+            "belopLoennsinntektBarePensjonsdel": null,
+            "belopNaeringsinntekt": 25000,
+            "belopNaeringsinntektFraFiskeFangstEllerFamiliebarnehage": null
+          },
+          {
+            "inntektsType": "SvalbardPgi",
+            "belopLoennsinntekt": 60000,
+            "belopLoennsinntektBarePensjonsdel": null,
+            "belopNaeringsinntekt": null,
+            "belopNaeringsinntektFraFiskeFangstEllerFamiliebarnehage": null
+          }
+        ],
+        "inntekterAnnet": [
+          {
+            "inntektsType": "Dagpenger",
+            "belop": 32000
+          }
+        ]
+      },
+      {
+        "inntektAr": 2021,
+        "inntekterFilformat": [
+          {
+            "inntektsType": "Innenlandsinntekt",
+            "belopLoenn": 512000,
+            "belopNaering": null,
+            "belopJsf": 15000
+          }
+        ],
+        "inntekterPgi": [
+          {
+            "inntektsType": "FastlandPgi",
+            "belopLoennsinntekt": 512000,
+            "belopLoennsinntektBarePensjonsdel": null,
+            "belopNaeringsinntekt": null,
+            "belopNaeringsinntektFraFiskeFangstEllerFamiliebarnehage": 15000
+          }
+        ],
+        "inntekterAnnet": []
+      }
+    ]
+  },
+  "inntektstyper": {
+    "pensjonsgivendeInntekt": [
+      {
+        "code": "FastlandPgi",
+        "description": "Pensjonsgivende inntekt, Fastland"
+      },
+      {
+        "code": "SvalbardPgi",
+        "description": "Pensjonsgivende inntekt, Svalbard"
+      },
+      {
+        "code": "KildeskattPaaLoennPgi",
+        "description": "Pensjonsgivende inntekt, kildeskatt på lønn"
+      }
+    ],
+    "inntektFraFil": [
+      {
+        "code": "Innenlandsinntekt",
+        "description": "Innenlandsinntekt"
+      },
+      {
+        "code": "Utenlandsinntekt",
+        "description": "Utenlandsinntekt"
+      }
+    ],
+    "annenInntekt": [
+      {
+        "code": "Dagpenger",
+        "description": "Dagpenger"
+      },
+      {
+        "code": "Forstegangstjeneste",
+        "description": "Førstegangstjeneste"
+      }
+    ]
+  }
+}
