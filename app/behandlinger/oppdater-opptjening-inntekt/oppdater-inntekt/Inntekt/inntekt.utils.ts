@@ -1,0 +1,463 @@
+import { formatCurrencyNok } from '~/utils/currency'
+import type {
+  BelopFelt,
+  ErstattInntektPerArDTO,
+  InntektFeil,
+  InntektFeilFelt,
+  InntektFelt,
+  InntektFraFilDTO,
+  InntektKategori,
+  InntektLinje,
+  InntektsoversiktDTO,
+  Inntektstyper,
+  OppdaterInntektGrunnlag,
+  OppdaterInntektVurdering,
+  PensjonsgivendeInntektDTO,
+} from './inntekt.types'
+import type { OpptjeningTypeKode } from './opptjening.types'
+import {
+  beregnStatus,
+  byggEndringSummary,
+  type EndringSummary,
+  type LinjeStatus,
+  oppsummeringForKategori,
+} from './opptjening.utils'
+
+export type InntektLinjeState = InntektLinje & {
+  _id: string
+  _status: LinjeStatus
+  _original: InntektLinje | null
+  _gruppeAr?: string
+}
+
+export type InntektArGruppe = { inntektAr: string | null; linjer: InntektLinjeState[] }
+
+export type InntektstyperPerKategori = Record<InntektKategori, OpptjeningTypeKode[]>
+
+export const BELOP_FELTER: Record<InntektKategori, { felt: BelopFelt; label: string; kortLabel?: string }[]> = {
+  pgi: [
+    { felt: 'belopLoennsinntekt', label: 'Lønn' },
+    { felt: 'belopLoennsinntektBarePensjonsdel', label: 'Lønn, bare pensjonsdel', kortLabel: 'Pensjonsdel' },
+    { felt: 'belopNaeringsinntekt', label: 'Næring' },
+    {
+      felt: 'belopNaeringsinntektFraFiskeFangstEllerFamiliebarnehage',
+      label: 'Næring fra fiske, fangst eller familiebarnehage',
+      kortLabel: 'Næring, fiske mv.',
+    },
+  ],
+  filformat: [
+    { felt: 'belopLoenn', label: 'Lønn' },
+    { felt: 'belopNaering', label: 'Næring' },
+    { felt: 'belopJsf', label: 'Jord-, skog- og fiskebruk' },
+  ],
+  annet: [{ felt: 'belop', label: 'Beløp' }],
+}
+
+export const INNTEKT_KATEGORIER: { kategori: InntektKategori; tittel: string; redigerbar: boolean }[] = [
+  { kategori: 'pgi', tittel: 'Pensjonsgivende inntekt', redigerbar: true },
+  { kategori: 'filformat', tittel: 'Inntekt fra fil', redigerbar: true },
+  { kategori: 'annet', tittel: 'Annen inntekt', redigerbar: false },
+]
+
+const ALLE_BELOP_FELTER = new Set<keyof InntektLinje>(
+  Object.values(BELOP_FELTER).flatMap(felter => felter.map(({ felt }) => felt)),
+)
+
+export const INNTEKT_FELTER: (keyof InntektLinje)[] = ['kategori', 'inntektAr', 'inntektsType', ...ALLE_BELOP_FELTER]
+
+const AR_REGEX = /^\d{4}$/
+const BELOP_REGEX = /^-?\d+$/
+
+export function erRedigerbar(kategori: InntektKategori): boolean {
+  return kategori !== 'annet'
+}
+
+export function inntektstyperPerKategori(inntektstyper: Inntektstyper | null | undefined): InntektstyperPerKategori {
+  return {
+    pgi: inntektstyper?.pensjonsgivendeInntekt ?? [],
+    filformat: inntektstyper?.inntektFraFil ?? [],
+    annet: inntektstyper?.annenInntekt ?? [],
+  }
+}
+
+export function inntektTypeLabel(typer: OpptjeningTypeKode[], kode: string): string {
+  return typer.find(t => t.code === kode)?.description ?? kode
+}
+
+function parseAr(verdi: string): number | null {
+  const trimmet = verdi.trim()
+  return AR_REGEX.test(trimmet) ? Number(trimmet) : null
+}
+
+export function erGyldigInntektAr(verdi: string): boolean {
+  return parseAr(verdi) !== null
+}
+
+function parseBelop(verdi: string | undefined): number | null {
+  const trimmet = (verdi ?? '').replace(/\s/g, '')
+  return trimmet === '' ? null : Number(trimmet)
+}
+
+function kanoniskBelop(verdi: string | undefined): number | string | null {
+  const trimmet = (verdi ?? '').replace(/\s/g, '')
+  if (trimmet === '') return null
+  const belop = Number(trimmet)
+  return BELOP_REGEX.test(trimmet) && Number.isSafeInteger(belop) ? belop : trimmet
+}
+
+export function normaliserInntektFelt(felt: keyof InntektLinje, verdi: string | undefined): unknown {
+  if (ALLE_BELOP_FELTER.has(felt)) return kanoniskBelop(verdi)
+  if (felt === 'inntektAr') return (verdi ?? '').trim()
+  return verdi ?? null
+}
+
+export function beregnInntektStatus(linje: InntektLinjeState): LinjeStatus {
+  return beregnStatus(linje, INNTEKT_FELTER, normaliserInntektFelt)
+}
+
+export function formaterBelop(verdi: string | undefined): string {
+  const belop = parseBelop(verdi)
+  if (belop === null) return ''
+  return Number.isNaN(belop) ? (verdi ?? '') : formatCurrencyNok(belop)
+}
+
+function tilLinje(kategori: InntektKategori, inntektAr: number, dto: { inntektsType: string }): InntektLinje {
+  const belop = dto as Partial<Record<BelopFelt, number | null>>
+  const linje: InntektLinje = { kategori, inntektAr: String(inntektAr), inntektsType: dto.inntektsType }
+  for (const { felt } of BELOP_FELTER[kategori]) {
+    linje[felt] = belop[felt] == null ? '' : String(belop[felt])
+  }
+  return linje
+}
+
+function tilDto(linje: InntektLinje): { inntektsType: string } & Partial<Record<BelopFelt, number | null>> {
+  const dto: { inntektsType: string } & Partial<Record<BelopFelt, number | null>> = {
+    inntektsType: linje.inntektsType,
+  }
+  for (const { felt } of BELOP_FELTER[linje.kategori]) {
+    dto[felt] = parseBelop(linje[felt])
+  }
+  return dto
+}
+
+function linjerFraOversikt(oversikt: InntektsoversiktDTO | null | undefined): InntektLinje[] {
+  return (oversikt?.inntekterPerAr ?? []).flatMap(ar => [
+    ...(ar.inntekterPgi ?? []).map(dto => tilLinje('pgi', ar.inntektAr, dto)),
+    ...(ar.inntekterFilformat ?? []).map(dto => tilLinje('filformat', ar.inntektAr, dto)),
+    ...(ar.inntekterAnnet ?? []).map(dto => tilLinje('annet', ar.inntektAr, dto)),
+  ])
+}
+
+function linjerFraErstatning(ar: ErstattInntektPerArDTO): InntektLinje[] {
+  return [
+    ...(ar.inntekterPgi ?? []).map(dto => tilLinje('pgi', ar.inntektAr, dto)),
+    ...(ar.inntekterFilformat ?? []).map(dto => tilLinje('filformat', ar.inntektAr, dto)),
+  ]
+}
+
+/**
+ * Bygger inntektslinjene fra inntektsoversikten. Når en lagret vurdering finnes, erstattes årene i vurderingen:
+ * linjer med samme kategori og type regnes som endret, linjer som mangler som slettet og resten som nye.
+ */
+export function inntektLinjerFraVurdering(
+  grunnlag: OppdaterInntektGrunnlag | null | undefined,
+  vurdering: OppdaterInntektVurdering | null | undefined,
+): InntektLinjeState[] {
+  const erstattet = new Map((vurdering?.inntekterPerAr ?? []).map(ar => [ar.inntektAr, linjerFraErstatning(ar)]))
+
+  const fraGrunnlag = linjerFraOversikt(grunnlag?.inntektsoversikt).map((original, i): InntektLinjeState => {
+    const felles = { _id: `inntekt-${i}`, _original: original }
+    const nyeForAr = erRedigerbar(original.kategori) ? erstattet.get(Number(original.inntektAr)) : undefined
+    if (!nyeForAr) return { ...original, ...felles, _status: 'original' }
+
+    const treff = nyeForAr.findIndex(
+      linje => linje.kategori === original.kategori && linje.inntektsType === original.inntektsType,
+    )
+    if (treff === -1) return { ...original, ...felles, _status: 'deleted' }
+
+    const [ny] = nyeForAr.splice(treff, 1)
+    const linje: InntektLinjeState = { ...ny, ...felles, _status: 'original' }
+    return { ...linje, _status: beregnInntektStatus(linje) }
+  })
+
+  const nye = [...erstattet.values()].flat().map(
+    (linje, i): InntektLinjeState => ({
+      ...linje,
+      _id: `inntekt-ny-${i}`,
+      _status: 'new',
+      _original: null,
+      _gruppeAr: linje.inntektAr,
+    }),
+  )
+
+  return [...fraGrunnlag, ...nye]
+}
+
+export function nyInntektLinje(kategori: InntektKategori, inntektsType: string, inntektAr = ''): InntektLinjeState {
+  const linje: InntektLinje = { kategori, inntektAr, inntektsType }
+  for (const { felt } of BELOP_FELTER[kategori]) {
+    linje[felt] = ''
+  }
+  return {
+    ...linje,
+    _id: crypto.randomUUID(),
+    _status: 'new',
+    _original: null,
+    ...(inntektAr ? { _gruppeAr: inntektAr } : {}),
+  }
+}
+
+export function brukteInntektstyper(
+  linjer: InntektLinjeState[],
+  kategori: InntektKategori,
+  inntektAr: string,
+  unntattId?: string,
+): Set<string> {
+  const ar = parseAr(inntektAr)
+  if (ar === null) return new Set()
+  return new Set(
+    linjer
+      .filter(
+        linje =>
+          linje._id !== unntattId &&
+          linje.kategori === kategori &&
+          linje._status !== 'deleted' &&
+          parseAr(linje.inntektAr) === ar,
+      )
+      .map(linje => linje.inntektsType),
+  )
+}
+
+/**
+ * Velger første inntektstype som ikke allerede er i bruk for året og kategorien. Returnerer `null` når alle typer
+ * er i bruk for året. Uten gyldig år velges første type.
+ */
+export function ledigInntektstype(
+  linjer: InntektLinjeState[],
+  typer: OpptjeningTypeKode[],
+  kategori: InntektKategori,
+  inntektAr: string,
+): string | null {
+  if (!erGyldigInntektAr(inntektAr)) return typer[0]?.code ?? ''
+  const brukte = brukteInntektstyper(linjer, kategori, inntektAr)
+  return typer.find(t => t.code && !brukte.has(t.code))?.code ?? null
+}
+
+export function endreInntektFelt(linje: InntektLinjeState, felt: InntektFelt, verdi: string): InntektLinjeState {
+  return { ...linje, [felt]: verdi }
+}
+
+export function tilbakestillInntektLinje(linje: InntektLinjeState): InntektLinjeState {
+  return linje._original ? { ...linje, ...linje._original } : linje
+}
+
+/** Sorterer eksisterende linjer på opprinnelig år og type, slik at rader ikke flytter seg mens de redigeres. */
+function sorterInntektLinjer(linjer: InntektLinjeState[]): InntektLinjeState[] {
+  const eksisterende = linjer
+    .filter(linje => linje._original)
+    .sort((a, b) => {
+      const arA = Number(a._original?.inntektAr)
+      const arB = Number(b._original?.inntektAr)
+      return arA - arB || (a._original?.inntektsType ?? '').localeCompare(b._original?.inntektsType ?? '')
+    })
+  return [...eksisterende, ...linjer.filter(linje => !linje._original)]
+}
+
+/**
+ * Grupperer linjene på opprinnelig år (eller året en ny linje ble lagt til for), slik at rader ikke bytter gruppe
+ * mens de redigeres. År i `ekstraAr` får en gruppe selv uten linjer. Nye linjer uten år samles i en egen gruppe til slutt.
+ */
+export function grupperInntektLinjerPerAr(linjer: InntektLinjeState[], ekstraAr: string[] = []): InntektArGruppe[] {
+  const grupper = new Map<string | null, InntektLinjeState[]>(ekstraAr.map(inntektAr => [inntektAr, []]))
+  for (const linje of sorterInntektLinjer(linjer)) {
+    const inntektAr = linje._original?.inntektAr || linje._gruppeAr || null
+    grupper.set(inntektAr, [...(grupper.get(inntektAr) ?? []), linje])
+  }
+  return [...grupper.entries()]
+    .map(([inntektAr, linjerForAr]) => ({ inntektAr, linjer: linjerForAr }))
+    .sort((a, b) => {
+      if (a.inntektAr === null) return 1
+      if (b.inntektAr === null) return -1
+      return Number(a.inntektAr) - Number(b.inntektAr)
+    })
+}
+
+export function inntektFeltId(linjeId: string, felt: InntektFelt): string {
+  return `inntekt-felt-${linjeId}-${felt}`
+}
+
+export function inntektLinjeBeskrivelse(linje: InntektLinjeState, typer: InntektstyperPerKategori): string {
+  const type = linje.inntektsType ? inntektTypeLabel(typer[linje.kategori], linje.inntektsType) : ''
+  const kategori = INNTEKT_KATEGORIER.find(({ kategori }) => kategori === linje.kategori)?.tittel.toLowerCase() ?? ''
+  return [linje.inntektAr.trim(), type || kategori].filter(Boolean).join(' ')
+}
+
+const FEIL_REKKEFOLGE: InntektFeilFelt[] = ['inntektAr', 'inntektsType', '_duplikat']
+
+function feltForFeil(linje: InntektLinjeState, felt: InntektFeilFelt): InntektFelt {
+  if (felt === '_duplikat' || felt === 'inntektAr') return 'inntektsType'
+  if (felt === '_belop') return BELOP_FELTER[linje.kategori][0].felt
+  return felt
+}
+
+export function byggInntektFeiloppsummering(
+  linjer: InntektLinjeState[],
+  feil: Record<string, InntektFeil>,
+  typer: InntektstyperPerKategori,
+): { href: string; melding: string }[] {
+  const kategoriIndeks = (kategori: InntektKategori) => INNTEKT_KATEGORIER.findIndex(k => k.kategori === kategori)
+  const iVisningsrekkefolge = grupperInntektLinjerPerAr(linjer).flatMap(({ linjer: linjerForAr }) =>
+    [...linjerForAr].sort((a, b) => kategoriIndeks(a.kategori) - kategoriIndeks(b.kategori)),
+  )
+  return iVisningsrekkefolge.flatMap(linje => {
+    const linjeFeil = feil[linje._id]
+    if (!linjeFeil) return []
+    const rekkefolge = [...FEIL_REKKEFOLGE, ...BELOP_FELTER[linje.kategori].map(({ felt }) => felt), '_belop' as const]
+    const beskrivelse = inntektLinjeBeskrivelse(linje, typer)
+    return rekkefolge.flatMap(felt => {
+      const melding = linjeFeil[felt]
+      if (!melding) return []
+      return [{ href: `#${inntektFeltId(linje._id, feltForFeil(linje, felt))}`, melding: `${beskrivelse}: ${melding}` }]
+    })
+  })
+}
+
+export function finnInntektFeil(linjer: InntektLinjeState[]): Record<string, InntektFeil> {
+  const feil: Record<string, InntektFeil> = {}
+  const settFeil = (id: string, felt: InntektFeilFelt, melding: string) => {
+    feil[id] = { ...feil[id], [felt]: melding }
+  }
+
+  const aktive = linjer.filter(linje => erRedigerbar(linje.kategori) && linje._status !== 'deleted')
+
+  for (const linje of aktive) {
+    if (linje._status === 'original') continue
+
+    if (parseAr(linje.inntektAr) === null) settFeil(linje._id, 'inntektAr', 'År må ha fire siffer')
+    if (!linje.inntektsType) settFeil(linje._id, 'inntektsType', 'Velg inntektstype')
+
+    const felter = BELOP_FELTER[linje.kategori]
+    for (const { felt, label } of felter) {
+      const verdi = (linje[felt] ?? '').replace(/\s/g, '')
+      if (verdi && !BELOP_REGEX.test(verdi)) settFeil(linje._id, felt, `${label} må være et helt kronebeløp`)
+      else if (verdi && !Number.isSafeInteger(Number(verdi))) settFeil(linje._id, felt, `${label} har for mange siffer`)
+      else if (parseBelop(verdi) === 0 && kanoniskBelop(linje[felt]) !== kanoniskBelop(linje._original?.[felt])) {
+        settFeil(linje._id, felt, `${label} kan ikke være 0`)
+      }
+    }
+    if (felter.every(({ felt }) => parseBelop(linje[felt]) === null)) {
+      settFeil(linje._id, '_belop', 'Fyll ut minst ett beløp')
+    }
+  }
+
+  const grupper = new Map<string, InntektLinjeState[]>()
+  for (const linje of aktive) {
+    const inntektAr = parseAr(linje.inntektAr)
+    if (inntektAr === null || !linje.inntektsType) continue
+    const nokkel = `${linje.kategori}|${inntektAr}|${linje.inntektsType}`
+    grupper.set(nokkel, [...(grupper.get(nokkel) ?? []), linje])
+  }
+  for (const gruppe of grupper.values()) {
+    if (gruppe.length < 2) continue
+    for (const linje of gruppe) {
+      if (linje._status !== 'original') {
+        settFeil(linje._id, '_duplikat', 'Inntektstypen er allerede registrert for dette året')
+      }
+    }
+  }
+
+  return feil
+}
+
+/**
+ * POPP erstatter alle inntekter fra fil og PGI for et år. Derfor sendes hele året for alle år som er berørt
+ * av en endring – inkludert det opprinnelige året når en linje er flyttet til et annet år.
+ */
+export function byggInntektPayload(linjer: InntektLinjeState[], fnr: string): OppdaterInntektVurdering {
+  const redigerbare = linjer.filter(linje => erRedigerbar(linje.kategori))
+
+  const berorteAr = new Set<number>()
+  for (const linje of redigerbare) {
+    if (linje._status === 'original') continue
+    const opprinneligAr = linje._original ? parseAr(linje._original.inntektAr) : null
+    const gjeldendeAr = linje._status === 'deleted' ? null : parseAr(linje.inntektAr)
+    if (opprinneligAr !== null) berorteAr.add(opprinneligAr)
+    if (gjeldendeAr !== null) berorteAr.add(gjeldendeAr)
+  }
+
+  const inntekterPerAr = [...berorteAr]
+    .sort((a, b) => a - b)
+    .map((inntektAr): ErstattInntektPerArDTO => {
+      const aktive = redigerbare.filter(linje => linje._status !== 'deleted' && parseAr(linje.inntektAr) === inntektAr)
+      return {
+        inntektAr,
+        inntekterFilformat: aktive.filter(linje => linje.kategori === 'filformat').map(tilDto) as InntektFraFilDTO[],
+        inntekterPgi: aktive.filter(linje => linje.kategori === 'pgi').map(tilDto) as PensjonsgivendeInntektDTO[],
+      }
+    })
+
+  return { fnr, inntekterPerAr }
+}
+
+export function harInntektEndringer(payload: unknown): boolean {
+  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) return false
+  const { inntekterPerAr } = payload as Partial<OppdaterInntektVurdering>
+  return Array.isArray(inntekterPerAr) && inntekterPerAr.length > 0
+}
+
+function belopOppsummering(linje: InntektLinje): string {
+  return BELOP_FELTER[linje.kategori]
+    .filter(({ felt }) => parseBelop(linje[felt]) !== null)
+    .map(({ felt, label }) => `${label}: ${formaterBelop(linje[felt])}`)
+    .join(', ')
+}
+
+export function inntektKortLabel(linje: InntektLinje, typer: InntektstyperPerKategori): string {
+  return `${inntektTypeLabel(typer[linje.kategori], linje.inntektsType)} (${linje.inntektAr.trim() || 'uten år'})`
+}
+
+export function inntektLabel(linje: InntektLinje, typer: InntektstyperPerKategori): string {
+  const belop = belopOppsummering(linje)
+  return `${inntektKortLabel(linje, typer)}${belop ? ` – ${belop}` : ''}`
+}
+
+export function inntektEndringer(linje: InntektLinjeState, typer: InntektstyperPerKategori): string[] {
+  const original = linje._original
+  if (!original) return []
+  const endringer: string[] = []
+  if (linje.inntektAr.trim() !== original.inntektAr.trim()) {
+    endringer.push(`År: ${original.inntektAr} → ${linje.inntektAr}`)
+  }
+  if (linje.inntektsType !== original.inntektsType) {
+    const kategoriTyper = typer[linje.kategori]
+    endringer.push(
+      `Type: ${inntektTypeLabel(kategoriTyper, original.inntektsType)} → ${inntektTypeLabel(kategoriTyper, linje.inntektsType)}`,
+    )
+  }
+  for (const { felt, label } of BELOP_FELTER[linje.kategori]) {
+    if (kanoniskBelop(linje[felt]) !== kanoniskBelop(original[felt])) {
+      endringer.push(`${label}: ${formaterBelop(original[felt]) || '–'} → ${formaterBelop(linje[felt]) || '–'}`)
+    }
+  }
+  return endringer
+}
+
+export function byggInntektEndringSummary(
+  linjer: InntektLinjeState[],
+  typer: InntektstyperPerKategori,
+  feil: Record<string, InntektFeil> = {},
+): EndringSummary {
+  return byggEndringSummary(
+    INNTEKT_KATEGORIER.filter(({ redigerbar }) => redigerbar).map(({ kategori, tittel }) =>
+      oppsummeringForKategori(
+        tittel,
+        linjer.filter(linje => linje.kategori === kategori && !feil[linje._id]),
+        {
+          label: linje => inntektLabel(linje, typer),
+          kortLabel: linje => inntektKortLabel(linje, typer),
+          endringer: linje => inntektEndringer(linje, typer),
+        },
+      ),
+    ),
+  )
+}
