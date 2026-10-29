@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/nodejs24-debian13
+FROM gcr.io/distroless/nodejs26-debian13
 
 ENV TZ="Europe/Oslo"
 
