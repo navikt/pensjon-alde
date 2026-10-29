@@ -5,6 +5,9 @@
 #   docker build -f pdf/Dockerfile -t alde-pdf .
 FROM mcr.microsoft.com/playwright:v1.64.1-noble
 
+# The Playwright image ships Node 24; override with the Node version from .nvmrc.
+COPY --from=node:26.13.0-trixie-slim /usr/local/bin/node /usr/local/bin/node
+
 ENV TZ="Europe/Oslo"
 ENV PDF_PORT=8090
 # Chromium is preinstalled in the base image here:
@@ -18,13 +21,12 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends ghostscript \
   && rm -rf /var/lib/apt/lists/*
 
-RUN corepack enable
-
 # Install dependencies (incl. vite — the service resolves modules at runtime).
 # --ignore-scripts skips the repo's `prepare` (lefthook, needs git) and browser
 # re-download; platform binaries come from optional deps.
-COPY package.json pnpm-lock.yaml .pnpmfile.cjs ./
-RUN pnpm install --frozen-lockfile --ignore-scripts
+COPY package.json pnpm-lock.yaml .pnpmfile.cjs .npmrc ./
+RUN npm install -g "$(node -p "require('./package.json').packageManager")" \
+  && pnpm install --frozen-lockfile --ignore-scripts
 
 # Source needed by the runtime Vite SSR + component discovery.
 COPY tsconfig.json ./
