@@ -24,3 +24,7 @@
     border-right-style: solid;
   }
 }
+
+.medAktivitetVelger {
+  grid-template-rows: auto 1fr;
+}

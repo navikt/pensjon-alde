@@ -3,6 +3,7 @@ import { BodyLong, BodyShort, Box, Button, HStack, Modal, Process, Show, Textare
 import React, { useEffect, useRef, useState } from 'react'
 import { Form, Outlet, redirect, useFetcher, useNavigate, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
+import AktivitetVelger from '~/components/AktivitetVelger'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
@@ -13,6 +14,7 @@ import {
   type BehandlingDTO,
   BehandlingStatus,
 } from '~/types/behandling'
+import { erAapenAktivitet, finnAapneAktiviteterForSaksbehandler } from '~/utils/aapne-aktiviteter'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
@@ -61,20 +63,14 @@ export function getRedirectPath({
   }
 
   if (behandling.aktiviteter.length > 0) {
-    const erAktivOgVenter = (aktivitet: AktivitetDTO) =>
-      !aktivitet.behandletFerdigMaskinelt &&
-      (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING ||
-        aktivitet.status === AktivitetStatus.FEILET ||
-        aktivitet.status === AktivitetStatus.OPPRETTET)
+    const aapneAktiviteter = behandling.aktiviteter.filter(erAapenAktivitet)
+    const erIkkeNettoppFullfort = (aktivitet: AktivitetDTO) => aktivitet.aktivitetId?.toString() !== justCompletedId
 
-    let aktivitetSomSkalVises = behandling.aktiviteter.find(
-      aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName && aktivitet.friendlyName,
-    )
-    if (!aktivitetSomSkalVises) {
-      aktivitetSomSkalVises = behandling.aktiviteter.find(
-        aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName,
-      )
-    }
+    const aktivitetSomSkalVises =
+      aapneAktiviteter.find(aktivitet => aktivitet.friendlyName && erIkkeNettoppFullfort(aktivitet)) ??
+      aapneAktiviteter.find(erIkkeNettoppFullfort) ??
+      aapneAktiviteter.find(aktivitet => aktivitet.friendlyName) ??
+      aapneAktiviteter[0]
     if (aktivitetSomSkalVises?.handlerName === 'attestering') {
       return `/behandling/${behandlingId}/attestering`
     }
@@ -201,7 +197,14 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     [behandling.aktiviteter],
   )
 
-  // Create steps with redirect URLs
+  const aapneAktiviteter = React.useMemo(
+    () => finnAapneAktiviteterForSaksbehandler(behandling.aktiviteter),
+    [behandling.aktiviteter],
+  )
+
+  const visAktivitetVelger =
+    Boolean(currentAktivitetId) && aapneAktiviteter.length > 1 && !isLoading && !behandlingFeiler
+
   const allSteps = React.useMemo(() => {
     const aktivitetSteps = visibleAktiviteter.map(aktivitet => ({
       ...aktivitet,
@@ -321,7 +324,8 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                         status={finnStatus(step)}
                         title={step.friendlyName}
                         onClick={() => {
-                          if (!showStepper || !step.redirectUrl) return
+                          if (!step.redirectUrl) return
+                          if (!showStepper && !aapneAktiviteter.some(it => it.aktivitetId === step.aktivitetId)) return
 
                           navigate(step.redirectUrl)
                         }}
@@ -334,13 +338,20 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           </Box>
         </Show>
 
-        <main className={behandlingStyles.mainContent}>
+        <main
+          className={`${behandlingStyles.mainContent} ${visAktivitetVelger ? behandlingStyles.medAktivitetVelger : ''}`}
+        >
           {isLoading ? (
             <AldeLoader />
           ) : behandlingFeiler ? (
             <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
           ) : (
-            <Outlet context={{ behandling, avbrytAktivitet }} />
+            <>
+              {visAktivitetVelger && currentAktivitetId && (
+                <AktivitetVelger aktiviteter={aapneAktiviteter} valgtAktivitetId={currentAktivitetId} />
+              )}
+              <Outlet context={{ behandling, avbrytAktivitet }} />
+            </>
           )}
         </main>
       </HStack>
