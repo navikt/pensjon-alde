@@ -27,6 +27,7 @@ export default function OppdaterForstegangstjenesteRoute({ loaderData, actionDat
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
   return (
     <OppdaterForstegangstjeneste
+      key={aktivitet.aktivitetId}
       {...loaderData}
       manglerTilgang={loaderData.readOnly}
       vurdering={null}
