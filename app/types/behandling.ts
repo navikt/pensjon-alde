@@ -26,6 +26,12 @@ export enum AktivitetStatus {
   UNDER_BEHANDLING = 'UNDER_BEHANDLING',
 }
 
+export enum AktivitetGruppe {
+  USORTET = 'USORTET',
+  KLARGJORING = 'KLARGJORING',
+  GRUNNLAGSVURDERNG = 'GRUNNLAGSVURDERNG',
+}
+
 export interface AktivitetDTO {
   aktivitetId: number
   type: string
@@ -33,6 +39,7 @@ export interface AktivitetDTO {
 
   handlerName: string
   friendlyName: string
+  gruppe?: AktivitetGruppe | string | null
 
   antallGangerKjort: number
   sisteAktiveringsdato: string // LocalDateTime as ISO string
