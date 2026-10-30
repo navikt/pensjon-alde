@@ -9,7 +9,6 @@ import {
   List,
   LocalAlert,
   Page,
-  Select,
   VStack,
 } from '@navikt/ds-react'
 import type { ReactNode } from 'react'
@@ -19,27 +18,17 @@ import styles from '~/common.module.css'
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import { EndringsOppsummering } from './EndringsOppsummering'
-import type {
-  ActionErrors,
-  OppdaterOpptjeningGrunnlag,
-  OppdaterPgiSakValg,
-  OpptjeningstyperResponse,
-  OpptjeningTypeKode,
-} from './opptjening.types'
+import type { ActionErrors, OpptjeningstyperResponse, OpptjeningTypeKode } from './opptjening.types'
 import { type EndringSummary, harEndringer as harEndringerISummary, oversettKoderIMelding } from './opptjening.utils'
-
-const SAK_FELT_ID = 'opptjening-sak'
 
 interface OpptjeningSkjemaProps {
   tittel: string
-  grunnlag: Pick<OppdaterOpptjeningGrunnlag, 'saker'>
   opptjeningstyper: OpptjeningstyperResponse | OpptjeningTypeKode[]
   readOnly: boolean
   manglerTilgang?: boolean
   errors?: ActionErrors
   endringSummary: EndringSummary
   payload: string
-  sakId?: number
   begrunnelse?: string
   avbrytAktivitet?: () => void
   harKlientFeil?: boolean
@@ -51,14 +40,12 @@ interface OpptjeningSkjemaProps {
 
 export function OpptjeningSkjema({
   tittel,
-  grunnlag,
   opptjeningstyper,
   readOnly,
   manglerTilgang = false,
   errors,
   endringSummary,
   payload,
-  sakId,
   begrunnelse,
   avbrytAktivitet,
   harKlientFeil = false,
@@ -69,7 +56,6 @@ export function OpptjeningSkjema({
 }: OpptjeningSkjemaProps) {
   const isSubmitting = useIsSubmitting()
 
-  const [selectedSakId, setSelectedSakId] = useState(sakId != null ? String(sakId) : '')
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
   const [avvisteForsok, setAvvisteForsok] = useState(0)
   const errorSummaryRef = useRef<HTMLDivElement>(null)
@@ -80,59 +66,17 @@ export function OpptjeningSkjema({
     ;(errorSummaryRef.current ?? skjemaFeilRef.current)?.focus()
   }, [avvisteForsok])
 
-  const saker: OppdaterPgiSakValg[] =
-    sakId != null && !(grunnlag.saker ?? []).some(sak => sak.sakId === sakId)
-      ? [...(grunnlag.saker ?? []), { sakId }]
-      : (grunnlag.saker ?? [])
-
-  const manglerSak = !selectedSakId
-  const sakIdFeil =
-    hasAttemptedSubmit && manglerSak
-      ? saker.length > 0
-        ? 'Du må velge en sak før du kan lagre'
-        : 'Ingen saker er tilgjengelige for lagring'
-      : undefined
   const harEndringer = harEndringerISummary(endringSummary)
 
-  const visSakvalg = readOnly ? !manglerSak : saker.length > 0
   const visOppsummering = !readOnly || harEndringer
   const visBegrunnelse = visNotat && (!readOnly || !!begrunnelse)
 
-  const oppsummerteFeil = hasAttemptedSubmit
-    ? [
-        ...(sakIdFeil && visSakvalg ? [{ href: `#${SAK_FELT_ID}`, melding: sakIdFeil }] : []),
-        ...(harKlientFeil ? feiloppsummering : []),
-      ]
-    : []
+  const oppsummerteFeil = hasAttemptedSubmit && harKlientFeil ? feiloppsummering : []
   const visIngenEndringer = hasAttemptedSubmit && !harEndringer && !harKlientFeil
-  const visSakFeilUtenFelt = !!sakIdFeil && !visSakvalg
   const visGenerellKlientFeil = hasAttemptedSubmit && harKlientFeil && feiloppsummering.length === 0
 
   const innhold = (
     <VStack gap="space-24">
-      {visSakvalg && (
-        <Select
-          id={SAK_FELT_ID}
-          label="Sak"
-          name="sakId"
-          size="small"
-          value={selectedSakId}
-          onChange={e => setSelectedSakId(e.target.value)}
-          readOnly={readOnly}
-          error={sakIdFeil}
-          style={{ maxWidth: '20rem' }}
-        >
-          <option value="">Velg sak</option>
-          {saker.map(sak => (
-            <option key={sak.sakId} value={sak.sakId}>
-              {sak.sakId}
-              {sak.sakType ? ` – ${sak.sakType}` : ''}
-              {sak.sakStatus ? ` (${sak.sakStatus})` : ''}
-            </option>
-          ))}
-        </Select>
-      )}
-
       {children}
 
       {visOppsummering && (
@@ -182,14 +126,13 @@ export function OpptjeningSkjema({
             </ErrorSummary>
           )}
 
-          {(visIngenEndringer || visSakFeilUtenFelt || visGenerellKlientFeil) && (
+          {(visIngenEndringer || visGenerellKlientFeil) && (
             <VStack ref={skjemaFeilRef} tabIndex={-1} gap="space-8">
               {visIngenEndringer && (
                 <InlineMessage status="error">
                   Ingen endringer er registrert. Gjør minst én endring før du lagrer.
                 </InlineMessage>
               )}
-              {visSakFeilUtenFelt && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
               {visGenerellKlientFeil && (
                 <InlineMessage status="error">Rett feilene i skjemaet før du lagrer.</InlineMessage>
               )}
@@ -244,7 +187,7 @@ export function OpptjeningSkjema({
             onSubmit={e => {
               setHasAttemptedSubmit(true)
               onInnsendingsforsok?.()
-              if (manglerSak || !harEndringer || harKlientFeil) {
+              if (!harEndringer || harKlientFeil) {
                 e.preventDefault()
                 setAvvisteForsok(forsok => forsok + 1)
               }

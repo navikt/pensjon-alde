@@ -6,7 +6,6 @@ import type { OppdaterInntektGrunnlag, OppdaterInntektVurdering } from './Inntek
 import { OppdaterInntekt } from './OppdaterInntekt'
 
 const grunnlag: OppdaterInntektGrunnlag = {
-  saker: [{ sakId: 23077283, sakType: 'ALDER', sakStatus: 'LOPENDE' }],
   inntektsoversikt: {
     fnr: '12345678901',
     inntekterPerAr: [
@@ -29,8 +28,6 @@ const grunnlag: OppdaterInntektGrunnlag = {
 }
 
 const vurdering: OppdaterInntektVurdering = {
-  sakId: 23077283,
-  fnr: '12345678901',
   inntekterPerAr: [
     {
       inntektAr: 2020,
@@ -89,7 +86,6 @@ describe('OppdaterInntekt', () => {
     expect(html).toContain('Slettede linjer (1)')
     expect(html).toMatch(/<span style="text-decoration:line-through">480 000 kr<\/span>/)
     expect(html).toContain('Innenlandsinntekt (2020) – Lønn: 480 000 kr')
-    expect(html).toMatch(/<option[^>]*selected[^>]*>23077283 – ALDER \(LOPENDE\)/)
     expect(html).toContain('Feil lønn fra arbeidsgiver')
     expect(html).not.toContain('Lagre og gå videre')
     expect(html).not.toContain('Legg til')

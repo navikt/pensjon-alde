@@ -36,7 +36,6 @@ export async function lagreOpptjeningVurdering({ request, behandlingId, aktivite
   const api = createAktivitetApi({ request, behandlingId, aktivitetId })
 
   const formData = await request.formData()
-  const sakIdRaw = formData.get('sakId')
   const payloadRaw = formData.get('payload')
   const begrunnelse = formData.get('begrunnelse')?.toString().trim()
 
@@ -52,26 +51,12 @@ export async function lagreOpptjeningVurdering({ request, behandlingId, aktivite
     return data({ errors: { _form: 'Ugyldig skjemadata' } as ActionErrors }, { status: 400 })
   }
 
-  if (typeof sakIdRaw !== 'string' || sakIdRaw.trim() === '') {
-    return data({ errors: { _form: 'Mangler sakId' } as ActionErrors }, { status: 400 })
-  }
-
-  const sakId = Number(sakIdRaw)
-  if (!Number.isInteger(sakId)) {
-    return data({ errors: { _form: 'Ugyldig sakId' } as ActionErrors }, { status: 400 })
-  }
-
   if (!harInntektEndringer(payload)) {
     return data({ errors: { _form: 'Ingen endringer er registrert' } as ActionErrors }, { status: 400 })
   }
 
-  const vurdering = {
-    ...(payload as object),
-    sakId,
-  }
-
   try {
-    await api.lagreVurdering({ ...vurdering, ...(begrunnelse ? { begrunnelse } : {}) })
+    await api.lagreVurdering({ ...(payload as object), ...(begrunnelse ? { begrunnelse } : {}) })
     return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
   } catch (error) {
     if (isApiError(error)) {

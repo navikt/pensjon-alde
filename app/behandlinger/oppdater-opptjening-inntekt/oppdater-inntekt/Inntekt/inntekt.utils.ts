@@ -373,7 +373,7 @@ export function finnInntektFeil(linjer: InntektLinjeState[]): Record<string, Inn
  * POPP erstatter alle inntekter fra fil og PGI for et år. Derfor sendes hele året for alle år som er berørt
  * av en endring – inkludert det opprinnelige året når en linje er flyttet til et annet år.
  */
-export function byggInntektPayload(linjer: InntektLinjeState[], fnr: string): OppdaterInntektVurdering {
+export function byggInntektPayload(linjer: InntektLinjeState[]): OppdaterInntektVurdering {
   const redigerbare = linjer.filter(linje => erRedigerbar(linje.kategori))
 
   const berorteAr = new Set<number>()
@@ -396,7 +396,7 @@ export function byggInntektPayload(linjer: InntektLinjeState[], fnr: string): Op
       }
     })
 
-  return { fnr, inntekterPerAr }
+  return { inntekterPerAr }
 }
 
 export function harInntektEndringer(payload: unknown): boolean {

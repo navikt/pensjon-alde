@@ -53,15 +53,11 @@ export function OppdaterInntekt({
 
   const endringSummary = useMemo(() => byggInntektEndringSummary(linjer, typer, feil), [linjer, typer, feil])
 
-  const payload = useMemo(
-    () => JSON.stringify(byggInntektPayload(linjer, grunnlag?.inntektsoversikt?.fnr ?? '')),
-    [linjer, grunnlag],
-  )
+  const payload = useMemo(() => JSON.stringify(byggInntektPayload(linjer)), [linjer])
 
   return (
     <OpptjeningSkjema
       tittel="Oppdater inntekt"
-      grunnlag={grunnlag ?? {}}
       opptjeningstyper={kodebeskrivelser}
       readOnly={readOnly}
       manglerTilgang={manglerTilgang}
@@ -69,7 +65,6 @@ export function OppdaterInntekt({
       visNotat={visNotat}
       endringSummary={endringSummary}
       payload={payload}
-      sakId={vurdering?.sakId}
       begrunnelse={begrunnelse}
       avbrytAktivitet={avbrytAktivitet}
       harKlientFeil={Object.keys(feil).length > 0}

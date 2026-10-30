@@ -9,7 +9,6 @@ const { lagreOpptjeningVurdering } = await import('./opptjening-api.server')
 
 function lagre(payload: unknown) {
   const formData = new FormData()
-  formData.set('sakId', '999')
   formData.set('payload', JSON.stringify(payload))
   formData.set('begrunnelse', ' Feil lønn ')
   const request = new Request('http://localhost/aktivitet', { method: 'POST', body: formData })
@@ -24,21 +23,20 @@ beforeEach(() => {
 })
 
 describe('lagreOpptjeningVurdering for inntekt', () => {
-  it('sender de berørte årene med sakId og begrunnelse', async () => {
+  it('sender de berørte årene med begrunnelse', async () => {
     const payload = {
-      fnr: '12345678901',
       inntekterPerAr: [{ inntektAr: 2020, inntekterPgi: [], inntekterFilformat: [] }],
     }
 
     const result = await lagre(payload)
 
-    expect(api.lagreVurdering).toHaveBeenCalledWith({ ...payload, sakId: 999, begrunnelse: 'Feil lønn' })
+    expect(api.lagreVurdering).toHaveBeenCalledWith({ ...payload, begrunnelse: 'Feil lønn' })
     expect(result).toBeInstanceOf(Response)
   })
 
   it.each([
-    ['ingen berørte år', { fnr: '12345678901', inntekterPerAr: [] }],
-    ['omsorg-payload', { fnr: '12345678901', omsorgTilSletting: [{ ar: 2020, omsorgType: 'OBU6' }] }],
+    ['ingen berørte år', { inntekterPerAr: [] }],
+    ['omsorg-payload', { omsorgTilSletting: [{ ar: 2020, omsorgType: 'OBU6' }] }],
   ])('lagrer ikke når payload har %s', async (_beskrivelse, payload) => {
     const result = await lagre(payload)
 

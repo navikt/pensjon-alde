@@ -1,4 +1,4 @@
-import type { OppdaterPgiSakValg, OpptjeningTypeKode } from './opptjening.types'
+import type { OpptjeningTypeKode } from './opptjening.types'
 
 export type InntektFraFilDTO = {
   inntektsType: string
@@ -39,7 +39,6 @@ export type Inntektstyper = {
 }
 
 export type OppdaterInntektGrunnlag = {
-  saker?: OppdaterPgiSakValg[]
   inntektsoversikt?: InntektsoversiktDTO | null
   inntektstyper?: Inntektstyper | null
 }
@@ -51,8 +50,6 @@ export type ErstattInntektPerArDTO = {
 }
 
 export type OppdaterInntektVurdering = {
-  sakId?: number
-  fnr?: string
   inntekterPerAr?: ErstattInntektPerArDTO[]
 }
 

@@ -1,16 +1,4 @@
 {
-  "saker": [
-    {
-      "sakId": 23077283,
-      "sakType": "ALDER",
-      "sakStatus": "LOPENDE"
-    },
-    {
-      "sakId": 23077284,
-      "sakType": "UFOREP",
-      "sakStatus": "OPPRETTET"
-    }
-  ],
   "inntektsoversikt": {
     "fnr": "12345678901",
     "inntekterPerAr": [

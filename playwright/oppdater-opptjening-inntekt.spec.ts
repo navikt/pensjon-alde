@@ -127,7 +127,6 @@ test.describe('oppdater opptjening – inntekt', () => {
     await expect(ny.getByRole('textbox', { name: 'År' })).toHaveCount(0)
     await expect(fil.getByText('Fyll ut minst ett beløp')).toBeHidden()
 
-    await main.getByRole('combobox', { name: 'Sak' }).selectOption('23077283')
     await main.getByRole('button', { name: 'Lagre og gå videre' }).click()
 
     await expect(page.getByRole('link', { name: /Fyll ut minst ett beløp/ })).toBeVisible()
@@ -178,15 +177,12 @@ test.describe('oppdater opptjening – inntekt', () => {
     const ny = tabell(page, 'Pensjonsgivende inntekt', '2022').getByRole('row').filter({ hasText: 'Ny' })
     await ny.getByRole('textbox', { name: 'Lønn', exact: true }).fill('530 000')
 
-    await main.getByRole('combobox', { name: 'Sak' }).selectOption('23077283')
-
     const innsending = page.waitForRequest(request => request.method() === 'POST')
     await main.getByRole('button', { name: 'Lagre og gå videre' }).click()
     const skjema = new URLSearchParams((await innsending).postData() ?? '')
 
-    expect(skjema.get('sakId')).toBe('23077283')
+    expect(skjema.has('sakId')).toBe(false)
     expect(JSON.parse(skjema.get('payload') ?? '{}')).toEqual({
-      fnr: '12345678901',
       inntekterPerAr: [
         {
           inntektAr: 2020,

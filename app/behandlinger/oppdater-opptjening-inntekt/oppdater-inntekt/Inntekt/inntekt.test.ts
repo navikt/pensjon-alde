@@ -20,7 +20,6 @@ import {
 } from './inntekt.utils'
 
 const grunnlag: OppdaterInntektGrunnlag = {
-  saker: [{ sakId: 1 }],
   inntektsoversikt: {
     fnr: '12345678901',
     inntekterPerAr: [
@@ -80,8 +79,6 @@ describe('inntektLinjerFraVurdering', () => {
 
   it('markerer endrede, slettede og nye linjer for årene i vurderingen', () => {
     const linjer = inntektLinjerFraVurdering(grunnlag, {
-      sakId: 1,
-      fnr: '12345678901',
       inntekterPerAr: [
         {
           inntektAr: 2020,
@@ -106,7 +103,7 @@ describe('inntektLinjerFraVurdering', () => {
 
 describe('byggInntektPayload', () => {
   it('sender ingen år når ingenting er endret', () => {
-    expect(byggInntektPayload(inntektLinjerFraVurdering(grunnlag, null), '123').inntekterPerAr).toEqual([])
+    expect(byggInntektPayload(inntektLinjerFraVurdering(grunnlag, null)).inntekterPerAr).toEqual([])
   })
 
   it('sender hele året med alle aktive fil- og PGI-linjer når én linje endres', () => {
@@ -116,8 +113,7 @@ describe('byggInntektPayload', () => {
         : l,
     )
 
-    expect(byggInntektPayload(linjer, '12345678901')).toEqual({
-      fnr: '12345678901',
+    expect(byggInntektPayload(linjer)).toEqual({
       inntekterPerAr: [
         {
           inntektAr: 2020,
@@ -143,7 +139,7 @@ describe('byggInntektPayload', () => {
       l.inntektAr === '2021' ? medStatus(l, 'deleted') : l,
     )
 
-    expect(byggInntektPayload(linjer, '123').inntekterPerAr).toEqual([
+    expect(byggInntektPayload(linjer).inntekterPerAr).toEqual([
       { inntektAr: 2021, inntekterFilformat: [], inntekterPgi: [] },
     ])
   })
@@ -155,7 +151,7 @@ describe('byggInntektPayload', () => {
         : l,
     )
 
-    const payload = byggInntektPayload(linjer, '123')
+    const payload = byggInntektPayload(linjer)
     expect(payload.inntekterPerAr?.map(ar => ar.inntektAr)).toEqual([2021, 2022])
     expect(payload.inntekterPerAr?.[0].inntekterPgi).toEqual([])
     expect(payload.inntekterPerAr?.[1].inntekterPgi).toHaveLength(1)
@@ -165,7 +161,7 @@ describe('byggInntektPayload', () => {
     const ny = { ...nyInntektLinje('filformat', 'Innenlandsinntekt'), inntektAr: '2020', belopJsf: '5000' }
     const linjer = [...inntektLinjerFraVurdering(grunnlag, null), ny]
 
-    const [ar2020] = byggInntektPayload(linjer, '123').inntekterPerAr ?? []
+    const [ar2020] = byggInntektPayload(linjer).inntekterPerAr ?? []
     expect(ar2020.inntekterFilformat).toHaveLength(2)
     expect(ar2020).not.toHaveProperty('inntekterAnnet')
   })
