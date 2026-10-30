@@ -53,7 +53,7 @@ describe('OppdaterOmsorg (attestering og oppsummering)', () => {
     expect(html).toContain('23077283 – ALDER (LOPENDE)')
     expect(html).toContain('Registrert på feil forelder')
     expect(html).not.toContain('Lagre og gå videre')
-    expect(html).not.toContain('Mangler rolle tilgang')
+    expect(html).not.toContain('Mangler rolletilgang')
     expect(html).not.toContain('<form')
   })
 
