@@ -25,6 +25,7 @@
   }
 }
 
-.medAktivitetVelger {
-  grid-template-rows: auto 1fr;
+.stepLenke {
+  font-size: var(--ax-font-size-heading-xsmall);
+  font-weight: var(--ax-font-weight-bold);
 }

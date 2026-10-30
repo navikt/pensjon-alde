@@ -1,20 +1,33 @@
 import { BugIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
-import { BodyLong, BodyShort, Box, Button, HStack, Modal, Process, Show, Textarea, VStack } from '@navikt/ds-react'
+import {
+  BodyLong,
+  BodyShort,
+  Box,
+  Button,
+  HStack,
+  Link,
+  Modal,
+  Process,
+  Show,
+  Textarea,
+  VStack,
+} from '@navikt/ds-react'
 import React, { useEffect, useRef, useState } from 'react'
-import { Form, Outlet, redirect, useFetcher, useNavigate, useParams, useRevalidator } from 'react-router'
+import { Form, Outlet, Link as RouterLink, redirect, useFetcher, useParams, useRevalidator } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
-import AktivitetVelger from '~/components/AktivitetVelger'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import {
   type AktivitetDTO,
+  AktivitetGruppe,
   AktivitetStatus,
   AldeBehandlingStatus,
   type BehandlingDTO,
   BehandlingStatus,
 } from '~/types/behandling'
 import { erAapenAktivitet, finnAapneAktiviteterForSaksbehandler } from '~/utils/aapne-aktiviteter'
+import { grupperAktiviteter } from '~/utils/aktivitet-grupper'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
@@ -164,7 +177,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const ventetPaKjoringRef = useRef<string | null>(null)
   const params = useParams()
   const currentAktivitetId = params.aktivitetId
-  const navigate = useNavigate()
   const stepperContainerRef = useRef<HTMLDivElement>(null)
   const revalidator = useRevalidator()
   const revalidatorRef = useRef(revalidator)
@@ -187,13 +199,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
   const avbrytAktivitet = () => ref.current?.showModal()
 
-  // Prepare the visible aktiviteter (sorted and filtered)
+  // Rekkefølgen kommer fra backend (sortert på gruppe og orden)
   const visibleAktiviteter = React.useMemo(
-    () =>
-      behandling.aktiviteter
-        .slice()
-        .sort((a, b) => a.opprettet.localeCompare(b.opprettet))
-        .filter(aktivitet => aktivitet.friendlyName),
+    () => behandling.aktiviteter.filter(aktivitet => aktivitet.friendlyName),
     [behandling.aktiviteter],
   )
 
@@ -201,9 +209,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     () => finnAapneAktiviteterForSaksbehandler(behandling.aktiviteter),
     [behandling.aktiviteter],
   )
-
-  const visAktivitetVelger =
-    Boolean(currentAktivitetId) && aapneAktiviteter.length > 1 && !isLoading && !behandlingFeiler
 
   const allSteps = React.useMemo(() => {
     const aktivitetSteps = visibleAktiviteter.map(aktivitet => ({
@@ -221,11 +226,24 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
           redirectUrl: null,
           behandletFerdigMaskinelt: undefined,
           handlerName: undefined,
+          gruppe: aktivitetSteps.at(-1)?.gruppe,
         },
       ]
     }
     return aktivitetSteps
   }, [visibleAktiviteter, behandlingJobber])
+
+  const stepGrupper = React.useMemo(
+    () => grupperAktiviteter(allSteps.filter(it => showStepper || it.handlerName)),
+    [allSteps, showStepper],
+  )
+
+  function finnLenke(step: (typeof allSteps)[0]): string | null {
+    if (!step.redirectUrl) return null
+    if (currentAktivitetId === step.aktivitetId.toString()) return null
+    if (!showStepper && !aapneAktiviteter.some(it => it.aktivitetId === step.aktivitetId)) return null
+    return step.redirectUrl
+  }
 
   function finnProcessIcon(step: (typeof allSteps)[0]) {
     if (!step.handlerName) {
@@ -313,45 +331,54 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
                 </BodyShort>
               </Box>
 
-              <Box paddingBlock="space-24" paddingInline="space-44">
-                <Process hideStatusText={true}>
-                  {allSteps
-                    .filter(it => showStepper || it.handlerName)
-                    .map((step, _index) => (
-                      <Process.Event
-                        className={behandlingStyles.xsmall}
-                        key={step.aktivitetId}
-                        status={finnStatus(step)}
-                        title={step.friendlyName}
-                        onClick={() => {
-                          if (!step.redirectUrl) return
-                          if (!showStepper && !aapneAktiviteter.some(it => it.aktivitetId === step.aktivitetId)) return
-
-                          navigate(step.redirectUrl)
-                        }}
-                        bullet={finnProcessIcon(step)}
-                      ></Process.Event>
-                    ))}
-                </Process>
+              <Box paddingBlock="space-24" paddingInline="space-44" as="nav" aria-label="Aktiviteter">
+                <VStack gap="space-24">
+                  {stepGrupper.map(gruppe => {
+                    const headingId = `aktivitet-gruppe-${gruppe.gruppe}`
+                    const visHeading = stepGrupper.length > 1 || gruppe.gruppe !== AktivitetGruppe.USORTET
+                    return (
+                      <VStack gap="space-16" key={gruppe.gruppe}>
+                        {visHeading && (
+                          <BodyShort as="h3" id={headingId} size="small" weight="semibold" textColor="subtle">
+                            {gruppe.navn}
+                          </BodyShort>
+                        )}
+                        <Process hideStatusText={true} aria-labelledby={visHeading ? headingId : undefined}>
+                          {gruppe.aktiviteter.map(step => {
+                            const lenke = finnLenke(step)
+                            return (
+                              <Process.Event
+                                className={behandlingStyles.xsmall}
+                                key={step.aktivitetId}
+                                status={finnStatus(step)}
+                                title={lenke ? undefined : step.friendlyName}
+                                bullet={finnProcessIcon(step)}
+                              >
+                                {lenke && (
+                                  <Link as={RouterLink} to={lenke} className={behandlingStyles.stepLenke}>
+                                    {step.friendlyName}
+                                  </Link>
+                                )}
+                              </Process.Event>
+                            )
+                          })}
+                        </Process>
+                      </VStack>
+                    )
+                  })}
+                </VStack>
               </Box>
             </VStack>
           </Box>
         </Show>
 
-        <main
-          className={`${behandlingStyles.mainContent} ${visAktivitetVelger ? behandlingStyles.medAktivitetVelger : ''}`}
-        >
+        <main className={behandlingStyles.mainContent}>
           {isLoading ? (
             <AldeLoader />
           ) : behandlingFeiler ? (
             <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
           ) : (
-            <>
-              {visAktivitetVelger && currentAktivitetId && (
-                <AktivitetVelger aktiviteter={aapneAktiviteter} valgtAktivitetId={currentAktivitetId} />
-              )}
-              <Outlet context={{ behandling, avbrytAktivitet }} />
-            </>
+            <Outlet context={{ behandling, avbrytAktivitet }} />
           )}
         </main>
       </HStack>
