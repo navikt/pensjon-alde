@@ -1,4 +1,4 @@
-import { BugIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
+import { BugIcon, CheckmarkHeavyIcon, RobotSmileIcon } from '@navikt/aksel-icons'
 import {
   BodyLong,
   BodyShort,
@@ -111,6 +111,20 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
 
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
+  // TODO: fjern debug-logging
+  console.log(
+    `[behandling ${behandlingId}] aktiviteter:`,
+    behandling.aktiviteter.map(
+      ({ aktivitetId, handlerName, friendlyName, gruppe, status, behandletFerdigMaskinelt }) => ({
+        aktivitetId,
+        handlerName,
+        friendlyName,
+        gruppe,
+        status,
+        behandletFerdigMaskinelt,
+      }),
+    ),
+  )
 
   const isOppsummering = url.pathname.includes('/oppsummering')
   const isAttestering = url.pathname.includes('/attestering')
@@ -241,17 +255,18 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   function finnLenke(step: (typeof allSteps)[0]): string | null {
     if (!step.redirectUrl) return null
     if (currentAktivitetId === step.aktivitetId.toString()) return null
+    if (step.status === AktivitetStatus.FULLFORT && step.handlerName) return step.redirectUrl
     if (!showStepper && !aapneAktiviteter.some(it => it.aktivitetId === step.aktivitetId)) return null
     return step.redirectUrl
   }
 
   function finnProcessIcon(step: (typeof allSteps)[0]) {
-    if (!step.handlerName) {
+    if (step.status === AktivitetStatus.FULLFORT) {
+      return <CheckmarkHeavyIcon />
+    } else if (!step.handlerName) {
       return <BugIcon />
     } else if (step.behandletFerdigMaskinelt) {
       return <RobotSmileIcon />
-    } else if (step.status === AktivitetStatus.FULLFORT) {
-      return <PersonCircleIcon />
     }
   }
 
