@@ -7,6 +7,7 @@ import {
   nyDagpengerLinje,
   tilbakestillDagpengerLinje,
 } from './dagpenger.utils'
+import { gjenopprettLinje, slettLinje } from './use-linje-state'
 
 const original = { ar: 2024, dagpengerType: 'DP', utbetalteDagpenger: 10000, barnetillegg: 500, kilde: 'POPP' }
 
@@ -85,6 +86,34 @@ describe('dagpenger', () => {
     const angret = tilbakestillDagpengerLinje(fiskere)
     expect(angret.ferietillegg).toBe(12000)
     expect(angret).not.toHaveProperty('_skjulteVerdier')
+  })
+
+  it('undoes a value entered in an optional field that POPP did not have', () => {
+    const [linje] = dagpengerLinjerFraVurdering({ dagpengerListe: [original] }, null)
+    const endret = { ...endreDagpengerFelt(linje, 'ferietillegg', 5000), _status: 'modified' as const }
+    const angret = tilbakestillDagpengerLinje(endret)
+    expect(angret.ferietillegg ?? null).toBeNull()
+    expect(byggDagpengerPayload([{ ...angret, _status: 'original' }])).toEqual({
+      dagpengerTilLagring: [],
+      dagpengerTilSletting: [],
+    })
+  })
+
+  it('shows the values from POPP on a deleted row and restores the edits', () => {
+    const felter = ['ar', 'dagpengerType', 'utbetalteDagpenger', 'barnetillegg'] as const
+    const [linje] = dagpengerLinjerFraVurdering({ dagpengerListe: [original] }, null)
+    const endret = { ...linje, dagpengerType: 'DP_FF', utbetalteDagpenger: 1, _status: 'modified' as const }
+    const slettet = slettLinje(endret)
+    expect(slettet).toMatchObject({ _status: 'deleted', dagpengerType: 'DP', utbetalteDagpenger: 10000 })
+    expect(byggDagpengerPayload([slettet])).toEqual({
+      dagpengerTilLagring: [],
+      dagpengerTilSletting: [{ ar: 2024, dagpengerType: 'DP' }],
+    })
+    expect(gjenopprettLinje(slettet, [...felter])).toMatchObject({
+      _status: 'modified',
+      dagpengerType: 'DP_FF',
+      utbetalteDagpenger: 1,
+    })
   })
 
   it('does not submit unchanged rows', () => {

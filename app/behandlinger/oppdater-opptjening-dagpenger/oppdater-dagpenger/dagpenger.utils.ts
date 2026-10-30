@@ -94,8 +94,7 @@ export function nyDagpengerLinje(type: string): DagpengerLinje {
 
 export function tilbakestillDagpengerLinje(linje: DagpengerLinje): DagpengerLinje {
   if (!linje._original) return linje
-  const { _skjulteVerdier, ...uten } = linje
-  return { ...uten, ...linje._original }
+  return { ...linje._original, _id: linje._id, _status: linje._status, _original: linje._original }
 }
 
 // Dagpenger for fiskere og fangstmenn har ikke uavkortet dagpengegrunnlag eller ferietillegg

@@ -152,6 +152,7 @@ test.describe('oppdater opptjening – dagpenger', () => {
     await page.getByRole('radio', { name: 'Godkjenn', exact: true }).check()
     await page.getByRole('button', { name: 'Attester og iverksett' }).click()
     await expect(page).toHaveURL(/attestert-og-iverksatt/)
+    await expect(page.getByRole('heading', { name: 'Attestert og iverksatt' })).toBeVisible()
   })
 })
 
@@ -178,14 +179,5 @@ test.describe('oppdater opptjening – dagpenger attestering', () => {
     await expect(main.getByRole('textbox', { name: /Begrunnelse/ })).toHaveValue(
       'Dagpengene for 2024 gjelder fiske, og 2022 er registrert feil.',
     )
-  })
-
-  test('godkjenning sender attestanten til kvittering', async ({ page }) => {
-    await goto(page, ATTESTERING)
-
-    await page.getByRole('radio', { name: 'Godkjenn', exact: true }).check()
-    await page.getByRole('button', { name: 'Attester og iverksett' }).click()
-
-    await expect(page).toHaveURL(/attestert-og-iverksatt/)
   })
 })
