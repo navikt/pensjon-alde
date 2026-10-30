@@ -31,6 +31,7 @@ export default function OppdaterInntektRoute({ loaderData, actionData }: Route.C
 
   return (
     <OppdaterInntekt
+      key={aktivitet.aktivitetId}
       readOnly={readOnly}
       manglerTilgang={readOnly}
       grunnlag={grunnlag}
