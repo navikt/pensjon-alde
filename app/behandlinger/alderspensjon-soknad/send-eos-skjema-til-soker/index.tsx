@@ -1,4 +1,4 @@
-import { Alert, BodyShort, Box, Button, Heading, VStack } from '@navikt/ds-react'
+import { Alert, Button, Heading, VStack } from '@navikt/ds-react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
@@ -6,6 +6,8 @@ import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import type { Route } from './+types'
+import PensjonsbeholdningTabell from './PensjonsbeholdningTabell'
+import PensjonspoengTabell from './PensjonspoengTabell'
 import type { SendEosSkjemaTilSokerGrunnlag, SendEosSkjemaTilSokerVurdering } from './types'
 
 export function meta() {
@@ -76,7 +78,6 @@ type SendEosSkjemaTilSokerProps = AktivitetComponentProps<
 
 function SendEosSkjemaTilSoker({
   grunnlag,
-  vurdering,
   aktivitet,
   readOnly,
   avbrytAktivitet,
@@ -115,23 +116,15 @@ function SendEosSkjemaTilSoker({
     <AktivitetVurderingLayout aktivitet={aktivitet} sidebar={sidebar}>
       <VStack gap="space-16">
         <Heading level="2" size="small">
-          Grunnlag
+          Pensjonspoeng
         </Heading>
-        <Box background="neutral-soft" padding="space-16" borderRadius="8">
-          <BodyShort as="pre" size="small">
-            {JSON.stringify(grunnlag, null, 2)}
-          </BodyShort>
-        </Box>
+        <PensjonspoengTabell pensjonspoeng={grunnlag?.pensjonspoeng ?? []} />
       </VStack>
       <VStack gap="space-16">
         <Heading level="2" size="small">
-          Vurdering
+          Pensjonsbeholdning
         </Heading>
-        <Box background="neutral-soft" padding="space-16" borderRadius="8">
-          <BodyShort as="pre" size="small">
-            {JSON.stringify(vurdering, null, 2)}
-          </BodyShort>
-        </Box>
+        <PensjonsbeholdningTabell beholdninger={grunnlag?.beholdning ?? []} />
       </VStack>
     </AktivitetVurderingLayout>
   )
