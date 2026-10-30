@@ -24,7 +24,6 @@ import {
 import { HandlingKnapper } from './HandlingKnapper'
 import { StatusTag } from './StatusTag'
 
-const SLETTET_STIL: CSSProperties = { opacity: 0.45 }
 const FELT_STIL: CSSProperties = { width: '100%', minWidth: 0 }
 const BELOP_STIL: CSSProperties = { ...FELT_STIL, textAlign: 'right' }
 const FEIL_REKKEFOLGE: DagpengerFeilFelt[] = ['ar', 'dagpengerType', ...BELOPSFELTER.map(([felt]) => felt)]
@@ -119,7 +118,6 @@ export function DagpengerSeksjon({
                 const feltFeil = (felt: DagpengerFeilFelt) =>
                   synligeFeil.includes(felt) ? { error: true, 'aria-describedby': feilId } : {}
                 const kantStil: CSSProperties = meldinger.length > 0 ? { borderBottom: 'none' } : {}
-                const celleStil: CSSProperties = erSlettet ? { ...kantStil, ...SLETTET_STIL } : kantStil
                 const visVerdi = (tekst: string, opprinnelig?: string) => {
                   if (opprinnelig === undefined || opprinnelig === tekst) return tekst || '–'
                   return (
@@ -139,7 +137,7 @@ export function DagpengerSeksjon({
 
                 const rad = (
                   <Table.Row key={linje._id}>
-                    <Table.DataCell style={celleStil}>
+                    <Table.DataCell style={kantStil}>
                       {redigerer && linje._status === 'new' ? (
                         <TextField
                           label="År"
@@ -159,7 +157,7 @@ export function DagpengerSeksjon({
                         visVerdi(String(linje.ar ?? ''), original ? String(original.ar ?? '') : undefined)
                       )}
                     </Table.DataCell>
-                    <Table.DataCell style={celleStil}>
+                    <Table.DataCell style={kantStil}>
                       {redigerer ? (
                         <Select
                           label="Type"
@@ -190,7 +188,7 @@ export function DagpengerSeksjon({
                       )}
                     </Table.DataCell>
                     {BELOPSFELTER.map(([felt, label]) => (
-                      <Table.DataCell key={felt} align="right" style={celleStil}>
+                      <Table.DataCell key={felt} align="right" style={kantStil}>
                         {redigerer ? (
                           <TextField
                             label={label}

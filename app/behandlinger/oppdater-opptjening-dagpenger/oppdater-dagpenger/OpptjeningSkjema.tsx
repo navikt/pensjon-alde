@@ -150,6 +150,8 @@ export function OpptjeningSkjema({
         ) : (
           <Form
             method="post"
+            // Valideringen gjøres i appen, så nettleserens min/max/step ikke stopper innsendingsforsøket
+            noValidate
             onSubmit={e => {
               setHasAttemptedSubmit(true)
               onInnsendingsforsok?.()

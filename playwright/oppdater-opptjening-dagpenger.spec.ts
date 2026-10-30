@@ -93,12 +93,16 @@ test.describe('oppdater opptjening – dagpenger', () => {
 
   test('markerer feltene som er feil når brukeren prøver å lagre', async ({ page }) => {
     await goto(page, SKJEMA)
-    const lagret = page.waitForRequest(request => request.method() === 'POST', { timeout: 1000 }).catch(() => null)
+    const innsendinger: Request[] = []
+    page.on('request', request => {
+      if (request.method() === 'POST') innsendinger.push(request)
+    })
 
     await page.getByRole('button', { name: 'Legg til dagpenger' }).click()
     const rad = nyRad(page)
     await rad.getByRole('combobox', { name: 'Type' }).selectOption('DP')
     await rad.getByRole('spinbutton', { name: 'År', exact: true }).fill('2023')
+    await belop(rad, 'Utbetalte dagpenger').fill('1.5')
     await page.getByRole('button', { name: 'Lagre og gå videre' }).click()
 
     await expect(rad.getByRole('spinbutton', { name: 'År', exact: true })).toHaveAttribute('aria-invalid', 'true')
@@ -107,7 +111,8 @@ test.describe('oppdater opptjening – dagpenger', () => {
     await expect(belop(rad, 'Barnetillegg')).not.toHaveAttribute('aria-invalid', 'true')
     await expect(page.getByText('Det finnes allerede dagpenger med samme år og type.')).toBeVisible()
     await expect(page.getByText('Rett feilene i tabellen før du lagrer.')).toBeVisible()
-    expect(await lagret).toBeNull()
+    await expect(page).toHaveURL(new RegExp(`${SKJEMA}$`))
+    expect(innsendinger).toHaveLength(0)
   })
 
   test('sletter en linje og lar den gjenopprettes', async ({ page }) => {
