@@ -3,8 +3,8 @@ import { DataGrid } from '@navikt/ds-react/PREVIEW'
 import { useMemo, useState } from 'react'
 import { formatCurrencyNok } from '~/utils/currency'
 import { formatDateToNorwegian } from '~/utils/date'
+import { sorterRader } from '~/utils/sorter-rader'
 import { type PensjonspoengRad, tilPensjonspoengRader } from './pensjonspoeng-rader'
-import { sorterRader } from './sorter-rader'
 import type { Pensjonspoeng } from './types'
 
 const poengFormat = new Intl.NumberFormat('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })

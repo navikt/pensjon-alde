@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { sorterRader } from '~/utils/sorter-rader'
 import { tilPensjonspoengRader } from './pensjonspoeng-rader'
-import { sorterRader } from './sorter-rader'
 import type { OpptjeningChangeStamp, Pensjonspoeng } from './types'
 
 function stempel(createdDate: string, updatedDate: string | null = null): OpptjeningChangeStamp {
