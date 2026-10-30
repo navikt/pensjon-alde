@@ -1,0 +1,22 @@
+{
+  "forstegangstjeneste": {
+    "forstegangstjenesteId": 31,
+    "rapportType": "FORST",
+    "kilde": "POPP",
+    "tjenestestartDato": "1982-01-04",
+    "dimitteringDato": "1982-12-17",
+    "forstegangstjenestePeriodeListe": [
+      { "periodeType": "NORMAL", "tjenesteType": "MIL", "fomDato": "1982-01-04", "tomDato": "1982-05-31" },
+      { "periodeType": "PERM", "tjenesteType": "MIL", "fomDato": "1982-06-01", "tomDato": "1982-06-14" },
+      { "periodeType": "NORMAL", "tjenesteType": "MIL", "fomDato": "1982-06-15", "tomDato": "1982-12-17" }
+    ]
+  },
+  "tjenestetyper": [
+    { "code": "MIL", "description": "Militær tjeneste" },
+    { "code": "SIVIL", "description": "Sivil tjeneste" }
+  ],
+  "periodetyper": [
+    { "code": "NORMAL", "description": "Ordinær tjeneste" },
+    { "code": "PERM", "description": "Permisjon" }
+  ]
+}
