@@ -15,7 +15,10 @@ export function aktivitetApi(fetch: Fetcher) {
 
   const hentVurdering = async <T>() => {
     try {
-      return await fetch<T>(`/vurdering`, { method: 'GET' })
+      const respons = await fetch<{ vurdering: T | null; begrunnelse: string | null }>(`/vurdering`, {
+        method: 'GET',
+      })
+      return respons?.vurdering ? { ...respons.vurdering, begrunnelse: respons.begrunnelse } : null
     } catch (error) {
       if (isApiError(error) && error.data.status === 404) {
         // Returner 404 dersom ikke vurdering er gjort
@@ -23,6 +26,14 @@ export function aktivitetApi(fetch: Fetcher) {
       }
       throw error
     }
+  }
+
+  const lagreForeløpigVurdering = <T extends object>(payload: T) => {
+    const { begrunnelse = null, ...data } = payload as VurderingBase & Record<string, unknown>
+    return fetch(`/vurdering`, {
+      method: 'POST',
+      body: JSON.stringify({ data, begrunnelse: begrunnelse || null, foreløpig: true }),
+    })
   }
 
   const lagreVurdering = <T extends object>(payload: T) => {
@@ -47,5 +58,6 @@ export function aktivitetApi(fetch: Fetcher) {
     retryGrunnlagsdata,
     lagreAttestering,
     lagreVurdering,
+    lagreForeløpigVurdering,
   }
 }

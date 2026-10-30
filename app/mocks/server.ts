@@ -216,12 +216,24 @@ const handlers = [
       const mockData = loadMockData(`aktivitet/${aktivitetId}-vurdering.json`)
       if (mockData) {
         console.log(`📄 Returning vurdering for aktivitet ${aktivitetId}`)
-        return HttpResponse.json(mockData)
+        const { begrunnelse = null, ...vurdering } = mockData
+        return HttpResponse.json({
+          vurdering,
+          vurdertTidspunkt: null,
+          vurdertAvBrukerId: null,
+          vurdertAvBrukerNavn: null,
+          begrunnelse,
+        })
       }
 
-      // Return null for no existing vurdering (not 404, as the API returns null)
-      console.log(`📄 No vurdering for aktivitet ${aktivitetId}, returning null`)
-      return HttpResponse.json(null)
+      console.log(`📄 No vurdering for aktivitet ${aktivitetId}, returning empty vurdering`)
+      return HttpResponse.json({
+        vurdering: null,
+        vurdertTidspunkt: null,
+        vurdertAvBrukerId: null,
+        vurdertAvBrukerNavn: null,
+        begrunnelse: null,
+      })
     },
   ),
 

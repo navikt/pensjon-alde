@@ -37,7 +37,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const vurdering = await api.hentVurdering<GenererNotatVurdering>()
 
   return {
-    readOnly: false,
     grunnlag,
     vurdering,
   }
@@ -95,9 +94,9 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function GenererNotatRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, readOnly } = loaderData
+  const { grunnlag, vurdering } = loaderData
   const { errors } = actionData || {}
-  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
+  const { aktivitet, behandling, avbrytAktivitet, readOnly } = useOutletContext<AktivitetOutletContext>()
 
   return (
     <GenererNotatComponent

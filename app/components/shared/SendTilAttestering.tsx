@@ -8,9 +8,16 @@ type SendTilAttesteringProps = {
   submitLabel: string
   cancelLabel: string
   onAvbryt: () => void
+  readOnly?: boolean
 }
 
-export function SendTilAttestering({ heading, submitLabel, cancelLabel, onAvbryt }: SendTilAttesteringProps) {
+export function SendTilAttestering({
+  heading,
+  submitLabel,
+  cancelLabel,
+  onAvbryt,
+  readOnly = false,
+}: SendTilAttesteringProps) {
   const isSubmitting = useIsSubmitting()
 
   return (
@@ -20,17 +27,19 @@ export function SendTilAttestering({ heading, submitLabel, cancelLabel, onAvbryt
           {heading}
         </Heading>
 
-        <Form method="post">
-          <VStack gap="space-8" align="center">
-            <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
-              {submitLabel}
-            </Button>
+        {!readOnly && (
+          <Form method="post">
+            <VStack gap="space-8" align="center">
+              <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
+                {submitLabel}
+              </Button>
 
-            <Button type="button" variant="tertiary" size="small" onClick={onAvbryt} disabled={isSubmitting}>
-              {cancelLabel}
-            </Button>
-          </VStack>
-        </Form>
+              <Button type="button" variant="tertiary" size="small" onClick={onAvbryt} disabled={isSubmitting}>
+                {cancelLabel}
+              </Button>
+            </VStack>
+          </Form>
+        )}
       </VStack>
     </Page.Block>
   )

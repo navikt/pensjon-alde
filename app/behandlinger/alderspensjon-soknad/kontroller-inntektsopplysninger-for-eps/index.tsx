@@ -89,12 +89,12 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.ComponentProps) => {
-  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
+  const { aktivitet, behandling, avbrytAktivitet, readOnly } = useOutletContext<AktivitetOutletContext>()
   const { grunnlag, vurdering, modiaUrl, visNotat } = loaderData
 
   return (
     <KontrollerInntektsopplysningerForEPS
-      readOnly={false}
+      readOnly={readOnly}
       grunnlag={grunnlag}
       modiaUrl={modiaUrl}
       vurdering={vurdering}
