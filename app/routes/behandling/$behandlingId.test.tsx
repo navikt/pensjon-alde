@@ -369,6 +369,33 @@ describe('getRedirectPath', () => {
 
     expect(result).toBeNull()
   })
+
+  it('redirects to the next open aktivitet when the just completed one is still open', () => {
+    const lagAktivitet = (aktivitetId: number, handlerName: string) => ({
+      aktivitetId,
+      handlerName,
+      friendlyName: handlerName,
+      status: AktivitetStatus.UNDER_BEHANDLING,
+      type: 'AKTIVITET',
+      opprettet: '2024-01-01T10:00:00Z',
+      antallGangerKjort: 0,
+      sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+      utsattTil: null,
+      behandletFerdigMaskinelt: false,
+    })
+
+    const result = getRedirectPath({
+      pathname: '/behandling/123',
+      behandlingId: '123',
+      behandling: {
+        ...mockBehandling,
+        aktiviteter: [lagAktivitet(456, 'vurder-samboer'), lagAktivitet(789, 'registrere-trygdetid')],
+      },
+      justCompletedId: '456',
+    })
+
+    expect(result).toBe('/behandling/123/aktivitet/789')
+  })
 })
 
 describe('skalViseFeilende', () => {

@@ -8,4 +8,5 @@ export interface AktivitetOutletContext {
   behandling: BehandlingDTO
   aktivitet: AktivitetDTO
   avbrytAktivitet: () => void
+  readOnly: boolean
 }

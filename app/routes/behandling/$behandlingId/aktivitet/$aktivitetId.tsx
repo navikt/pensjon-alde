@@ -5,6 +5,7 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
 import type { AktivitetDTO } from '~/types/behandling'
+import { erAktivitetReadOnly } from '~/utils/aktivitet-read-only'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 
@@ -95,7 +96,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
 
   return (
     <Page.Block className="aktivitet">
-      <Outlet context={{ behandling, aktivitet, avbrytAktivitet }} />
+      <Outlet context={{ behandling, aktivitet, avbrytAktivitet, readOnly: erAktivitetReadOnly(aktivitet) }} />
       {!outlet && (
         <Page.Block gutters>
           <InfoCard data-color="info" as="section" aria-label="Aktivitet ikke implementert enda">
