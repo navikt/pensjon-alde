@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { sorterRader } from '~/utils/sorter-rader'
 import { tilBeholdningRader } from './beholdning-rader'
-import { sorterRader } from './sorter-rader'
 import type { Beholdning } from './types'
 
 function lagBeholdning(overrides: Partial<Beholdning>): Beholdning {

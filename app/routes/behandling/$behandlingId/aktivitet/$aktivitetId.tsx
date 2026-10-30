@@ -13,7 +13,7 @@ export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Aktivitet ${params.aktivitetId}` }, { name: 'description', content: 'Aktivitet detaljer' }]
 }
 
-export async function loader({ params, request }: Route.LoaderArgs) {
+export async function loader({ params, request, url }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
@@ -28,7 +28,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   // Check if we should redirect to an implementation
   const implementationUrl = buildAktivitetRedirectUrl(behandlingId, aktivitetId, behandling, aktivitet)
 
-  const url = new URL(request.url)
   const currentPath = url.pathname
 
   if (
