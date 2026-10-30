@@ -35,9 +35,18 @@ function nullstillBehandling(id: string) {
   lagredeVurderinger.delete(id)
 }
 
-function avsluttInnsendtBehandling(id: string, aldeBehandlingStatus: string) {
+// Faste fixtures endres ikke, siden parallelle tester deler dem. Kun behandlinger sendt inn i mocken avsluttes.
+function avsluttInnsendtBehandling(id: string, utfall: 'FULLFORT' | 'RETURNERT_TIL_SAKSBEHANDLER') {
   if (!lagredeVurderinger.has(id)) return
-  behandlingOverrides.set(id, { ...behandlingOverrides.get(id), aldeBehandlingStatus })
+  const behandling = hentBehandlingMedOverride(id)
+  behandlingOverrides.set(id, {
+    ...behandlingOverrides.get(id),
+    status: utfall === 'FULLFORT' ? 'FULLFORT' : 'UNDER_BEHANDLING',
+    aldeBehandlingStatus: utfall,
+    aktiviteter: (behandling?.aktiviteter ?? []).map((aktivitet: { handlerName?: string }) =>
+      aktivitet.handlerName === 'attestering' ? { ...aktivitet, status: 'FULLFORT' } : aktivitet,
+    ),
+  })
 }
 
 // Define handlers for API endpoints

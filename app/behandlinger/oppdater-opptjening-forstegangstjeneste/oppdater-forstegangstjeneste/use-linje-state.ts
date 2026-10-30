@@ -35,7 +35,8 @@ export function useLinjeState<T extends object>(lagInitielle: () => Linje<T>[], 
       }),
     )
 
-  const tilbakestillAlle = () => setLinjer(lagInitielle())
+  const forkastEndringer = () =>
+    setLinjer(prev => prev.flatMap(l => (l._original ? [{ ...l, ...l._original, _status: 'original' as const }] : [])))
 
-  return { linjer, leggTil, slett, gjenopprett, oppdater, tilbakestillAlle }
+  return { linjer, leggTil, slett, gjenopprett, oppdater, forkastEndringer }
 }

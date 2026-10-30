@@ -67,17 +67,24 @@ test.describe('oppdater opptjening – førstegangstjeneste', () => {
     await expect(rad).toContainText('17.12.1982')
   })
 
-  test('sletter hele førstegangstjenesten og lar den gjenopprettes', async ({ page }) => {
+  test('sletter hele førstegangstjenesten og lar den gjenopprettes med endringene', async ({ page }) => {
     await goto(page, SKJEMA)
+    await page.getByRole('button', { name: 'Endre periode fra 15.06.1982' }).click()
+    await dato(redigerbarPeriode(page, '15.06.1982'), 'Til og med').fill('20.12.1982')
+    await page.getByRole('button', { name: 'Ferdig periode fra 15.06.1982' }).click()
+    const endring = page.getByText('Til og med: 17.12.1982 → 20.12.1982')
+    await expect(endring).toBeVisible()
 
     await page.getByRole('button', { name: 'Slett førstegangstjeneste' }).click()
     await expect(page.getByRole('main').getByText('Slettet', { exact: true })).toHaveCount(4)
     await expect(page.getByText('Slettede linjer (4)')).toBeVisible()
+    await expect(periodeFra(page, '15.06.1982')).toContainText('17.12.1982')
+    await expect(endring).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Legg til periode' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: /^Slett periode/ })).toHaveCount(0)
 
     await page.getByRole('button', { name: 'Gjenopprett førstegangstjeneste' }).click()
-    await expect(page.getByText('Ingen endringer', { exact: true })).toBeVisible()
+    await expect(endring).toBeVisible()
   })
 
   test('viser ikke feil før brukeren forlater feltet eller prøver å lagre', async ({ page }) => {
@@ -97,7 +104,10 @@ test.describe('oppdater opptjening – førstegangstjeneste', () => {
 
   test('markerer feltene som er feil når brukeren prøver å lagre', async ({ page }) => {
     await goto(page, SKJEMA)
-    const lagret = page.waitForRequest(request => request.method() === 'POST', { timeout: 1000 }).catch(() => null)
+    const innsendinger: Request[] = []
+    page.on('request', request => {
+      if (request.method() === 'POST') innsendinger.push(request)
+    })
 
     await page.getByRole('button', { name: 'Legg til periode' }).click()
     const rad = nyPeriode(page)
@@ -110,7 +120,8 @@ test.describe('oppdater opptjening – førstegangstjeneste', () => {
     await expect(rad.getByRole('combobox', { name: 'Periodetype' })).not.toHaveAttribute('aria-invalid', 'true')
     await expect(page.getByText('Fra og med-dato kan ikke være etter til og med-dato.')).toBeVisible()
     await expect(page.getByText('Rett feilene i tabellen før du lagrer.')).toBeVisible()
-    expect(await lagret).toBeNull()
+    await expect(page).toHaveURL(new RegExp(`${SKJEMA}$`))
+    expect(innsendinger).toHaveLength(0)
   })
 
   test('krever minst én periode når førstegangstjenesten skal lagres', async ({ page }) => {
@@ -155,6 +166,7 @@ test.describe('oppdater opptjening – førstegangstjeneste', () => {
     await page.getByRole('radio', { name: 'Godkjenn', exact: true }).check()
     await page.getByRole('button', { name: 'Attester og iverksett' }).click()
     await expect(page).toHaveURL(/attestert-og-iverksatt/)
+    await expect(page.getByRole('heading', { name: 'Attestert og iverksatt' })).toBeVisible()
   })
 
   test('ber om sletting når hele førstegangstjenesten slettes', async ({ page }) => {
@@ -214,14 +226,5 @@ test.describe('oppdater opptjening – førstegangstjeneste attestering', () => 
       'Dimitteringsdatoen er rettet etter dokumentasjon fra Forsvaret, og permisjonen startet 3. juni.',
     )
     await expect(main.getByRole('button', { name: /^(Endre|Slett)/ })).toHaveCount(0)
-  })
-
-  test('godkjenning sender attestanten til kvittering', async ({ page }) => {
-    await goto(page, ATTESTERING)
-
-    await page.getByRole('radio', { name: 'Godkjenn', exact: true }).check()
-    await page.getByRole('button', { name: 'Attester og iverksett' }).click()
-
-    await expect(page).toHaveURL(/attestert-og-iverksatt/)
   })
 })

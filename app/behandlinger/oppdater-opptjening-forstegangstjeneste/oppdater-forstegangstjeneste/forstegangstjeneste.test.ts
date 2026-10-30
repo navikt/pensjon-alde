@@ -73,6 +73,25 @@ describe('førstegangstjeneste', () => {
     expect(summary.slettede).toHaveLength(4)
   })
 
+  it('shows the periods from POPP when the whole førstegangstjeneste is deleted, and keeps the drafts', () => {
+    const { tjeneste, perioder } = start()
+    const utkast: PeriodeLinje[] = [
+      { ...perioder[0], tomDato: '1982-05-30', _status: 'modified' },
+      { ...perioder[1], _status: 'deleted' },
+      perioder[2],
+      { ...nyPeriodeLinje('NORMAL', 'MIL'), fomDato: '1983-01-01', tomDato: '1983-01-31' },
+    ]
+    const slettet = { ...tjeneste, _status: 'deleted' as const }
+    const vist = synligePerioder(slettet, utkast)
+    expect(vist.map(periode => [periode.fomDato, periode.tomDato, periode._status])).toEqual([
+      ['1982-01-04', '1982-05-31', 'deleted'],
+      ['1982-06-01', '1982-06-14', 'deleted'],
+      ['1982-06-15', '1982-12-17', 'deleted'],
+    ])
+    expect(byggForstegangstjenesteSummary(slettet, utkast, [], []).slettede).toHaveLength(4)
+    expect(synligePerioder(tjeneste, utkast)).toBe(utkast)
+  })
+
   it('sends nothing when nothing has changed', () => {
     const { tjeneste, perioder } = start()
     expect(byggForstegangstjenestePayload(tjeneste, perioder)).toEqual({})

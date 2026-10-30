@@ -91,7 +91,7 @@ export function OppdaterForstegangstjeneste({
         }
         onTilbakestillTjeneste={() => tjenesteState.oppdater(TJENESTE_ID, tilbakestill)}
         onSlettTjeneste={() => {
-          periodeState.tilbakestillAlle()
+          if (tjeneste?._status === 'new') periodeState.forkastEndringer()
           tjenesteState.slett(TJENESTE_ID)
         }}
         onGjenopprettTjeneste={() => tjenesteState.gjenopprett(TJENESTE_ID)}

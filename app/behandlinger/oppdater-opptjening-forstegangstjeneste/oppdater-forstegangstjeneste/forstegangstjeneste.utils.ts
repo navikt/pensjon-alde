@@ -143,8 +143,12 @@ export function tilbakestill<T extends { _original: object | null }>(linje: T): 
 
 export const erTjenesteSlettet = (tjeneste: TjenesteLinje | undefined) => tjeneste?._status === 'deleted'
 
+// Når hele tjenesten slettes vises periodene fra POPP som slettet, mens utkastene beholdes til tjenesten gjenopprettes
 export function synligePerioder(tjeneste: TjenesteLinje | undefined, perioder: PeriodeLinje[]): PeriodeLinje[] {
-  return erTjenesteSlettet(tjeneste) ? perioder.map(periode => ({ ...periode, _status: 'deleted' })) : perioder
+  if (!erTjenesteSlettet(tjeneste)) return perioder
+  return perioder.flatMap(periode =>
+    periode._original ? [{ ...periode, ...periode._original, _status: 'deleted' as const }] : [],
+  )
 }
 
 export const aktivePerioder = (perioder: PeriodeLinje[]) => perioder.filter(periode => periode._status !== 'deleted')
