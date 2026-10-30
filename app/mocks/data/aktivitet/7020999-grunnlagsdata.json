@@ -1,0 +1,30 @@
+{
+  "dagpengertyper": [
+    { "code": "DP", "description": "Dagpenger" },
+    { "code": "DP_FF", "description": "Dagpenger fiskere og fangstmenn" }
+  ],
+  "dagpengerListe": [
+    {
+      "dagpengerId": 1,
+      "ar": 2023,
+      "dagpengerType": "DP",
+      "rapportType": null,
+      "kilde": "POPP",
+      "utbetalteDagpenger": 120000,
+      "uavkortetDagpengegrunnlag": 300000,
+      "ferietillegg": 12000,
+      "barnetillegg": 5000
+    },
+    {
+      "dagpengerId": 2,
+      "ar": 2024,
+      "dagpengerType": "DP",
+      "rapportType": null,
+      "kilde": "POPP",
+      "utbetalteDagpenger": 150000,
+      "uavkortetDagpengegrunnlag": 350000,
+      "ferietillegg": null,
+      "barnetillegg": 0
+    }
+  ]
+}
