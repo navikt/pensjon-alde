@@ -208,6 +208,23 @@ test.describe('oppdater opptjening – ny førstegangstjeneste', () => {
     })
     await expect(page).toHaveURL(/\/behandling\/1000197\/attestering$/)
   })
+
+  test('viser ikke gamle feil når en avbrutt registrering startes på nytt', async ({ page }) => {
+    await goto(page, SKJEMA_UTEN_TJENESTE)
+    await page.getByRole('button', { name: 'Registrer førstegangstjeneste' }).click()
+    const tjenestestart = dato(tjenesteTabell(page).getByRole('row').nth(1), 'Tjenestestart')
+    await tjenestestart.focus()
+    await tjenestestart.blur()
+    await expect(tjenestestart).toHaveAttribute('aria-invalid', 'true')
+
+    await page.getByRole('button', { name: 'Slett førstegangstjeneste' }).click()
+    await expect(page.getByText('Ingen førstegangstjeneste registrert.')).toBeVisible()
+    await page.getByRole('button', { name: 'Registrer førstegangstjeneste' }).click()
+    await expect(dato(tjenesteTabell(page).getByRole('row').nth(1), 'Tjenestestart')).not.toHaveAttribute(
+      'aria-invalid',
+      'true',
+    )
+  })
 })
 
 test.describe('oppdater opptjening – førstegangstjeneste attestering', () => {

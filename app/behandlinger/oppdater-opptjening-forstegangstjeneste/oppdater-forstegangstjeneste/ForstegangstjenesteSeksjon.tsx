@@ -17,7 +17,6 @@ import {
 import { HandlingKnapper } from './HandlingKnapper'
 import { StatusTag } from './StatusTag'
 
-const SLETTET_STIL: CSSProperties = { opacity: 0.45 }
 const FELT_STIL: CSSProperties = { width: '100%', minWidth: 0 }
 const DATO_BREDDE = '11rem'
 const ENDRING_BREDDE = '5.5rem'
@@ -234,11 +233,10 @@ export function ForstegangstjenesteSeksjon({
     const feltFeil = (felt: T): FeltFeil =>
       synligeFeil.includes(felt) ? { error: true, 'aria-describedby': feilId } : {}
     const kantStil: CSSProperties = meldinger.length > 0 ? { borderBottom: 'none' } : {}
-    const celleStil = linje._status === 'deleted' ? { ...kantStil, ...SLETTET_STIL } : kantStil
     const antallKolonner = felter.length + (visEndring ? 1 : 0) + (visHandlinger ? 1 : 0)
     return [
       <Table.Row key={linje._id}>
-        {celler(feltFeil, celleStil)}
+        {celler(feltFeil, kantStil)}
         {visEndring && (
           <Table.DataCell style={kantStil}>
             <StatusTag status={linje._status} />
@@ -295,6 +293,8 @@ export function ForstegangstjenesteSeksjon({
       }}
       onSlett={() => {
         setIRedigering(new Set())
+        // En avbrutt registrering forkastes helt, så en ny registrering starter uten feil
+        if (tjeneste._status === 'new') setBerort(new Set())
         onSlettTjeneste()
       }}
       onGjenopprett={onGjenopprettTjeneste}
