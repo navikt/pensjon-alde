@@ -1,5 +1,4 @@
 {
-  "saker": [{ "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" }],
   "forstegangstjeneste": {
     "forstegangstjenesteId": 31,
     "rapportType": "FORST",

@@ -7,7 +7,6 @@ import { OppdaterForstegangstjeneste } from './OppdaterForstegangstjeneste'
 
 const periode = { periodeType: 'NORMAL', tjenesteType: 'MIL', fomDato: '1982-01-04', tomDato: '1982-12-17' }
 const grunnlag: ForstegangstjenesteGrunnlag = {
-  saker: [{ sakId: 123, sakType: 'ALDER' }],
   forstegangstjeneste: {
     kilde: 'POPP',
     rapportType: 'FORST',
@@ -19,8 +18,6 @@ const grunnlag: ForstegangstjenesteGrunnlag = {
   tjenestetyper: [{ code: 'MIL', description: 'Militær tjeneste' }],
 }
 const vurdering: ForstegangstjenesteVurdering = {
-  fnr: '12345678901',
-  sakId: 123,
   forstegangstjenesteTilLagring: {
     tjenestestartDato: '1982-01-04',
     dimitteringDato: '1982-12-20',

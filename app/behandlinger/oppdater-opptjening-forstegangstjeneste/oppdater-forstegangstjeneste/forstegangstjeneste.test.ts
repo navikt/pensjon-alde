@@ -39,7 +39,6 @@ const start = () => ({
 describe('førstegangstjeneste', () => {
   it('replays a saved replacement as unchanged, modified, new and deleted periods', () => {
     const vurdering = {
-      fnr: '12345678901',
       forstegangstjenesteTilLagring: {
         tjenestestartDato: '1982-01-04',
         dimitteringDato: '1982-12-20',
@@ -64,7 +63,7 @@ describe('førstegangstjeneste', () => {
   })
 
   it('replays deletion of the whole førstegangstjeneste', () => {
-    const vurdering = { fnr: '12345678901', slettForstegangstjeneste: true }
+    const vurdering = { slettForstegangstjeneste: true }
     const [tjeneste] = tjenesteLinjerFraVurdering(grunnlag, vurdering)
     expect(tjeneste._status).toBe('deleted')
     const perioder = synligePerioder(tjeneste, perioderFraVurdering(grunnlag, vurdering))
@@ -76,7 +75,7 @@ describe('førstegangstjeneste', () => {
 
   it('sends nothing when nothing has changed', () => {
     const { tjeneste, perioder } = start()
-    expect(byggForstegangstjenestePayload(tjeneste, perioder, 'fnr')).toEqual({ fnr: 'fnr' })
+    expect(byggForstegangstjenestePayload(tjeneste, perioder)).toEqual({})
     expect(finnForstegangstjenesteFeil(tjeneste, perioder)).toEqual({ tjeneste: {}, perioder: {} })
   })
 
@@ -87,8 +86,7 @@ describe('førstegangstjeneste', () => {
       { ...perioder[1], _status: 'deleted' },
       { ...perioder[2], tomDato: '1982-12-20', _status: 'modified' },
     ]
-    expect(byggForstegangstjenestePayload(tjeneste, endret, 'fnr')).toEqual({
-      fnr: 'fnr',
+    expect(byggForstegangstjenestePayload(tjeneste, endret)).toEqual({
       forstegangstjenesteTilLagring: {
         tjenestestartDato: '1982-01-04',
         dimitteringDato: '1982-12-17',
@@ -99,8 +97,7 @@ describe('førstegangstjeneste', () => {
 
   it('asks for deletion only when an existing førstegangstjeneste is deleted', () => {
     const { tjeneste, perioder } = start()
-    expect(byggForstegangstjenestePayload({ ...tjeneste, _status: 'deleted' }, perioder, 'fnr')).toEqual({
-      fnr: 'fnr',
+    expect(byggForstegangstjenestePayload({ ...tjeneste, _status: 'deleted' }, perioder)).toEqual({
       slettForstegangstjeneste: true,
     })
   })

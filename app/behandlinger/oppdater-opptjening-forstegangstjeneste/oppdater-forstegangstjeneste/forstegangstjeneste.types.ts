@@ -2,12 +2,6 @@ export type LinjeStatus = 'original' | 'new' | 'modified' | 'deleted'
 
 export type ActionErrors = { _form?: string; _server?: string[] }
 
-export type SakValg = {
-  sakId: number
-  sakType?: string | null
-  sakStatus?: string | null
-}
-
 export type Opptjeningstype = { code: string; description: string }
 
 export type ForstegangstjenestePeriodeDTO = {
@@ -27,7 +21,6 @@ export type ForstegangstjenesteDTO = {
 }
 
 export type ForstegangstjenesteGrunnlag = {
-  saker?: SakValg[]
   forstegangstjeneste?: ForstegangstjenesteDTO | null
   tjenestetyper?: Opptjeningstype[]
   periodetyper?: Opptjeningstype[]
@@ -47,8 +40,6 @@ export type ForstegangstjenesteTilLagring = {
 }
 
 export type ForstegangstjenesteVurdering = {
-  sakId?: number
-  fnr: string
   forstegangstjenesteTilLagring?: ForstegangstjenesteTilLagring | null
   slettForstegangstjeneste?: boolean
 }

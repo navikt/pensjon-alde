@@ -202,12 +202,10 @@ export const harFeil = (feil: ForstegangstjenesteFeil) =>
 export function byggForstegangstjenestePayload(
   tjeneste: TjenesteLinje | undefined,
   perioder: PeriodeLinje[],
-  fnr: string,
 ): ForstegangstjenesteVurdering {
-  if (erTjenesteSlettet(tjeneste)) return tjeneste?._original ? { fnr, slettForstegangstjeneste: true } : { fnr }
-  if (!skalLagres(tjeneste, perioder)) return { fnr }
+  if (erTjenesteSlettet(tjeneste)) return tjeneste?._original ? { slettForstegangstjeneste: true } : {}
+  if (!skalLagres(tjeneste, perioder)) return {}
   return {
-    fnr,
     forstegangstjenesteTilLagring: {
       tjenestestartDato: tjeneste.tjenestestartDato as string,
       dimitteringDato: tjeneste.dimitteringDato as string,

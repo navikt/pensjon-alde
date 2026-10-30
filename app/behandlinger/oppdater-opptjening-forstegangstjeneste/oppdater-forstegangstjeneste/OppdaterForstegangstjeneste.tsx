@@ -62,15 +62,13 @@ export function OppdaterForstegangstjeneste({
   return (
     <OpptjeningSkjema
       tittel="Oppdater førstegangstjeneste"
-      grunnlag={grunnlag ?? {}}
       opptjeningstyper={[...periodetyper, ...tjenestetyper]}
       readOnly={readOnly}
       manglerTilgang={manglerTilgang}
       errors={errors}
       visNotat={visNotat}
       endringSummary={byggForstegangstjenesteSummary(tjeneste, perioder, periodetyper, tjenestetyper)}
-      payload={JSON.stringify(byggForstegangstjenestePayload(tjeneste, perioder, vurdering?.fnr ?? ''))}
-      sakId={vurdering?.sakId}
+      payload={JSON.stringify(byggForstegangstjenestePayload(tjeneste, perioder))}
       begrunnelse={begrunnelse}
       avbrytAktivitet={avbrytAktivitet}
       harKlientFeil={harFeil(feil)}

@@ -115,7 +115,6 @@ test.describe('oppdater opptjening – førstegangstjeneste', () => {
 
   test('krever minst én periode når førstegangstjenesten skal lagres', async ({ page }) => {
     await goto(page, SKJEMA)
-    await page.getByRole('main').getByRole('combobox', { name: 'Sak' }).selectOption('23077283')
     for (const fom of ['04.01.1982', '01.06.1982', '15.06.1982']) {
       await page.getByRole('button', { name: `Slett periode fra ${fom}` }).click()
     }
@@ -127,7 +126,6 @@ test.describe('oppdater opptjening – førstegangstjeneste', () => {
 
   test('lagrer hele førstegangstjenesten og sender den til attestering', async ({ page }) => {
     await goto(page, SKJEMA)
-    await page.getByRole('main').getByRole('combobox', { name: 'Sak' }).selectOption('23077283')
     await page.getByRole('button', { name: 'Endre førstegangstjeneste' }).click()
     await dato(tjenesteTabell(page).getByRole('row').nth(1), 'Dimittering').fill('20.12.1982')
     const rad = redigerbarPeriode(page, '15.06.1982')
@@ -139,9 +137,8 @@ test.describe('oppdater opptjening – førstegangstjeneste', () => {
     await page.getByRole('button', { name: 'Lagre og gå videre' }).click()
     const request = await innsending
 
-    expect(new URLSearchParams(request.postData() ?? '').get('sakId')).toBe('23077283')
+    expect(new URLSearchParams(request.postData() ?? '').has('sakId')).toBe(false)
     expect(payloadFra(request)).toEqual({
-      fnr: '',
       forstegangstjenesteTilLagring: {
         tjenestestartDato: '1982-01-04',
         dimitteringDato: '1982-12-20',
@@ -162,13 +159,12 @@ test.describe('oppdater opptjening – førstegangstjeneste', () => {
 
   test('ber om sletting når hele førstegangstjenesten slettes', async ({ page }) => {
     await goto(page, SKJEMA)
-    await page.getByRole('main').getByRole('combobox', { name: 'Sak' }).selectOption('23077283')
     await page.getByRole('button', { name: 'Slett førstegangstjeneste' }).click()
 
     const innsending = page.waitForRequest(request => request.method() === 'POST')
     await page.getByRole('button', { name: 'Lagre og gå videre' }).click()
 
-    expect(payloadFra(await innsending)).toEqual({ fnr: '', slettForstegangstjeneste: true })
+    expect(payloadFra(await innsending)).toEqual({ slettForstegangstjeneste: true })
     await expect(page).toHaveURL(/\/behandling\/1000199\/attestering$/)
     await expect(page.getByText('Hele førstegangstjenesten (04.01.1982–17.12.1982) slettes')).toBeVisible()
   })
@@ -178,7 +174,6 @@ test.describe('oppdater opptjening – ny førstegangstjeneste', () => {
   test('registrerer førstegangstjeneste for en person som ikke har det', async ({ page }) => {
     await goto(page, SKJEMA_UTEN_TJENESTE)
     await expect(page.getByText('Ingen førstegangstjeneste registrert.')).toBeVisible()
-    await page.getByRole('main').getByRole('combobox', { name: 'Sak' }).selectOption('23077283')
 
     await page.getByRole('button', { name: 'Registrer førstegangstjeneste' }).click()
     const tjeneste = tjenesteTabell(page).getByRole('row').nth(1)

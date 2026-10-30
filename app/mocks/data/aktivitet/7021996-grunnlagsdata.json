@@ -1,5 +1,4 @@
 {
-  "saker": [{ "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" }],
   "forstegangstjeneste": null,
   "tjenestetyper": [
     { "code": "MIL", "description": "Militær tjeneste" },
