@@ -27,6 +27,7 @@ export default function OppdaterDagpengerRoute({ loaderData, actionData }: Route
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
   return (
     <OppdaterDagpenger
+      key={aktivitet.aktivitetId}
       {...loaderData}
       manglerTilgang={loaderData.readOnly}
       vurdering={null}
