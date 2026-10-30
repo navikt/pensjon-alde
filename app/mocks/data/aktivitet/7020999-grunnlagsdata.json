@@ -1,5 +1,4 @@
 {
-  "saker": [{ "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" }],
   "dagpengertyper": [
     { "code": "DP", "description": "Dagpenger" },
     { "code": "DP_FF", "description": "Dagpenger fiskere og fangstmenn" }

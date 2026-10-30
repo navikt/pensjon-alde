@@ -7,7 +7,6 @@ import { OppdaterDagpenger } from './OppdaterDagpenger'
 
 const rad = { ar: 2024, dagpengerType: 'DP', utbetalteDagpenger: 10000, barnetillegg: 500 }
 const grunnlag: DagpengerGrunnlag = {
-  saker: [{ sakId: 123, sakType: 'ALDER' }],
   dagpengertyper: [
     { code: 'DP', description: 'Dagpenger' },
     { code: 'DP_FF', description: 'Dagpenger fiskere og fangstmenn' },
@@ -15,8 +14,6 @@ const grunnlag: DagpengerGrunnlag = {
   dagpengerListe: [rad, { ...rad, ar: 2023 }],
 }
 const vurdering: DagpengerVurdering = {
-  fnr: '12345678901',
-  sakId: 123,
   dagpengerTilLagring: [
     { ...rad, utbetalteDagpenger: 20000 },
     { ...rad, ar: 2025 },

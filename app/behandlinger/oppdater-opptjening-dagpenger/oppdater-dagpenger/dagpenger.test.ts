@@ -13,7 +13,6 @@ const original = { ar: 2024, dagpengerType: 'DP', utbetalteDagpenger: 10000, bar
 describe('dagpenger', () => {
   it('replays saved updates, additions and deletions for attestation', () => {
     const vurdering = {
-      fnr: '12345678901',
       dagpengerTilLagring: [
         { ...original, utbetalteDagpenger: 20000 },
         { ...original, ar: 2025 },
@@ -23,7 +22,7 @@ describe('dagpenger', () => {
     const linjer = dagpengerLinjerFraVurdering({ dagpengerListe: [original] }, vurdering)
     expect(linjer.map(linje => linje._status)).toEqual(['modified', 'new', 'deleted'])
     expect(linjer[0]._original).toEqual(original)
-    const payload = byggDagpengerPayload(linjer, vurdering.fnr)
+    const payload = byggDagpengerPayload(linjer)
     expect(payload.dagpengerTilLagring[0]).not.toHaveProperty('kilde')
     expect(payload.dagpengerTilLagring[0]).not.toHaveProperty('rapportType')
     expect(payload.dagpengerTilLagring[0]).not.toHaveProperty('_original')
@@ -36,7 +35,6 @@ describe('dagpenger', () => {
     const [linje] = dagpengerLinjerFraVurdering(
       { dagpengerListe: [medFerietillegg] },
       {
-        fnr: '12345678901',
         dagpengerTilLagring: [{ ar: 2024, dagpengerType: 'DP', utbetalteDagpenger: 10000, barnetillegg: 500 }],
         dagpengerTilSletting: [],
       },
@@ -49,8 +47,7 @@ describe('dagpenger', () => {
   it('moves a row to another type by saving the new key and deleting the old one', () => {
     const [linje] = dagpengerLinjerFraVurdering({ dagpengerListe: [original] }, null)
     const endret = { ...linje, dagpengerType: 'DP_FF', _status: 'modified' as const }
-    expect(byggDagpengerPayload([endret], 'fnr')).toEqual({
-      fnr: 'fnr',
+    expect(byggDagpengerPayload([endret])).toEqual({
       dagpengerTilLagring: [
         {
           ar: 2024,
@@ -76,7 +73,7 @@ describe('dagpenger', () => {
     const fiskere = endreDagpengerFelt(linje, 'dagpengerType', 'DP_FF')
     expect(fiskere.uavkortetDagpengegrunnlag).toBeNull()
     expect(fiskere.ferietillegg).toBeNull()
-    expect(byggDagpengerPayload([{ ...fiskere, _status: 'modified' }], 'fnr').dagpengerTilLagring[0]).toMatchObject({
+    expect(byggDagpengerPayload([{ ...fiskere, _status: 'modified' }]).dagpengerTilLagring[0]).toMatchObject({
       dagpengerType: 'DP_FF',
       uavkortetDagpengegrunnlag: null,
       ferietillegg: null,
@@ -91,8 +88,7 @@ describe('dagpenger', () => {
   })
 
   it('does not submit unchanged rows', () => {
-    expect(byggDagpengerPayload(dagpengerLinjerFraVurdering({ dagpengerListe: [original] }, null), 'fnr')).toEqual({
-      fnr: 'fnr',
+    expect(byggDagpengerPayload(dagpengerLinjerFraVurdering({ dagpengerListe: [original] }, null))).toEqual({
       dagpengerTilLagring: [],
       dagpengerTilSletting: [],
     })

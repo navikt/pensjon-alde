@@ -60,15 +60,13 @@ export function OppdaterDagpenger({
   return (
     <OpptjeningSkjema
       tittel="Oppdater dagpenger"
-      grunnlag={grunnlag ?? {}}
       opptjeningstyper={typer}
       readOnly={readOnly}
       manglerTilgang={manglerTilgang}
       errors={errors}
       visNotat={visNotat}
       endringSummary={summary}
-      payload={JSON.stringify(byggDagpengerPayload(linjer, vurdering?.fnr ?? ''))}
-      sakId={vurdering?.sakId}
+      payload={JSON.stringify(byggDagpengerPayload(linjer))}
       begrunnelse={begrunnelse}
       avbrytAktivitet={avbrytAktivitet}
       harKlientFeil={Object.keys(feil).length > 0}

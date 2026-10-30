@@ -1,20 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { hentDagpengerGrunnlag, lagreDagpengerVurdering } from './dagpenger-api.server'
 
-const { hentGrunnlagsdata, lagreVurdering, hentToppbarinfo } = vi.hoisted(() => ({
+const { hentGrunnlagsdata, lagreVurdering } = vi.hoisted(() => ({
   hentGrunnlagsdata: vi.fn(),
   lagreVurdering: vi.fn(),
-  hentToppbarinfo: vi.fn(),
 }))
 vi.mock('~/api/aktivitet-api', () => ({ createAktivitetApi: () => ({ hentGrunnlagsdata, lagreVurdering }) }))
-vi.mock('~/api/behandling-api', () => ({ createBehandlingApi: () => ({ hentToppbarinfo }) }))
 
 const rad = { ar: 2024, dagpengerType: 'DP', utbetalteDagpenger: 10000, barnetillegg: 0 }
-const payload = { fnr: 'untrusted', dagpengerTilLagring: [rad], dagpengerTilSletting: [] }
+const payload = { dagpengerTilLagring: [rad], dagpengerTilSletting: [] }
 
-function ref(verdi: unknown = payload, sakId = '123') {
+function ref(verdi: unknown = payload) {
   const form = new FormData()
-  form.set('sakId', sakId)
   form.set('payload', typeof verdi === 'string' ? verdi : JSON.stringify(verdi))
   form.set('begrunnelse', '  Retter feilregistrering  ')
   return {
@@ -26,7 +23,6 @@ function ref(verdi: unknown = payload, sakId = '123') {
 
 beforeEach(() => {
   vi.resetAllMocks()
-  hentToppbarinfo.mockResolvedValue({ fnr: '12345678901' })
   hentGrunnlagsdata.mockResolvedValue({ dagpengerListe: [rad] })
 })
 
@@ -39,14 +35,9 @@ describe('dagpenger API', () => {
     await expect(hentDagpengerGrunnlag(ref())).rejects.toThrow('Unavailable')
   })
 
-  it('saves using the trusted person identity and redirects to the treatment', async () => {
-    const result = await lagreDagpengerVurdering(ref())
-    expect(lagreVurdering).toHaveBeenCalledWith({
-      ...payload,
-      fnr: '12345678901',
-      sakId: 123,
-      begrunnelse: 'Retter feilregistrering',
-    })
+  it('saves only the assessment fields and redirects to the treatment', async () => {
+    const result = await lagreDagpengerVurdering(ref({ ...payload, fnr: '12345678901', sakId: 123 }))
+    expect(lagreVurdering).toHaveBeenCalledWith({ ...payload, begrunnelse: 'Retter feilregistrering' })
     expect(result).toBeInstanceOf(Response)
     expect((result as Response).headers.get('Location')).toBe('/behandling/1?justCompleted=2')
   })
@@ -68,18 +59,6 @@ describe('dagpenger API', () => {
   ])('rejects %s without calling the backend', async (_navn, verdi) => {
     const result = await lagreDagpengerVurdering(ref(verdi))
     expect(result).toMatchObject({ init: { status: 400 } })
-    expect(lagreVurdering).not.toHaveBeenCalled()
-    expect(hentToppbarinfo).not.toHaveBeenCalled()
-  })
-
-  it.each(['', 'abc', '1.5', '-1', '0'])('rejects invalid case ID %s', async sakId => {
-    expect(await lagreDagpengerVurdering(ref(payload, sakId))).toMatchObject({ init: { status: 400 } })
-    expect(lagreVurdering).not.toHaveBeenCalled()
-  })
-
-  it('refuses to save without a person identity', async () => {
-    hentToppbarinfo.mockResolvedValue({ fnr: null })
-    expect(await lagreDagpengerVurdering(ref())).toMatchObject({ init: { status: 400 } })
     expect(lagreVurdering).not.toHaveBeenCalled()
   })
 

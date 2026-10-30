@@ -165,9 +165,8 @@ export function finnDagpengerFeil(linjer: DagpengerLinje[]): Record<string, Dagp
   return feil
 }
 
-export function byggDagpengerPayload(linjer: DagpengerLinje[], fnr: string): DagpengerVurdering {
+export function byggDagpengerPayload(linjer: DagpengerLinje[]): DagpengerVurdering {
   return {
-    fnr,
     dagpengerTilLagring: linjer
       .filter(linje => linje._status === 'new' || linje._status === 'modified')
       .map(linje => ({

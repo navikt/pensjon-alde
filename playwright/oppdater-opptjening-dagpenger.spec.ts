@@ -124,7 +124,6 @@ test.describe('oppdater opptjening – dagpenger', () => {
 
   test('lagrer typebytte som ny linje og sletting av den gamle', async ({ page }) => {
     await goto(page, SKJEMA)
-    await page.getByRole('main').getByRole('combobox', { name: 'Sak' }).selectOption('23077283')
     const rad = radForAr(page, '2024')
     await rad.getByRole('button', { name: 'Endre Dagpenger 2024' }).click()
     await rad.getByRole('combobox', { name: 'Type' }).selectOption('DP_FF')
@@ -133,8 +132,8 @@ test.describe('oppdater opptjening – dagpenger', () => {
     await page.getByRole('button', { name: 'Lagre og gå videre' }).click()
     const request = await innsending
 
-    expect(new URLSearchParams(request.postData() ?? '').get('sakId')).toBe('23077283')
-    expect(payloadFra(request)).toMatchObject({
+    expect(new URLSearchParams(request.postData() ?? '').has('sakId')).toBe(false)
+    expect(payloadFra(request)).toEqual({
       dagpengerTilLagring: [
         {
           ar: 2024,
@@ -163,7 +162,6 @@ test.describe('oppdater opptjening – dagpenger attestering', () => {
 
     await expect(main.getByRole('heading', { name: 'Oppgaven er til attestering' })).toBeVisible()
     await expect(main.getByRole('heading', { name: 'Oppdater dagpenger' })).toBeVisible()
-    await expect(main.getByRole('combobox', { name: /Sak/ })).toHaveValue('23077283')
     await expect(tabell(page).getByRole('button')).toHaveCount(0)
 
     await expect(radForAr(page, '2022').getByText('Slettet', { exact: true })).toBeVisible()

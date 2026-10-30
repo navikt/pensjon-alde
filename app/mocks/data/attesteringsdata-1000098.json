@@ -8,7 +8,6 @@
       "vurdertAvBrukerNavn": "Siri Saksbehandler",
       "begrunnelse": "Dagpengene for 2024 gjelder fiske, og 2022 er registrert feil.",
       "grunnlag": {
-        "saker": [{ "sakId": 23077283, "sakType": "ALDER", "sakStatus": "LOPENDE" }],
         "dagpengertyper": [
           { "code": "DP", "description": "Dagpenger" },
           { "code": "DP_FF", "description": "Dagpenger fiskere og fangstmenn" }
@@ -46,8 +45,6 @@
         ]
       },
       "vurdering": {
-        "sakId": 23077283,
-        "fnr": "12345678901",
         "dagpengerTilLagring": [
           {
             "ar": 2023,

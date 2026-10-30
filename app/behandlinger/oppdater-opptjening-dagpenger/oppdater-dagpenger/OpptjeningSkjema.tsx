@@ -1,25 +1,23 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
-import { Button, Heading, HStack, InfoCard, InlineMessage, LocalAlert, Page, Select, VStack } from '@navikt/ds-react'
+import { Button, Heading, HStack, InfoCard, InlineMessage, LocalAlert, Page, VStack } from '@navikt/ds-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { Form } from 'react-router'
 import styles from '~/common.module.css'
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
-import type { ActionErrors, DagpengerGrunnlag, Dagpengertype, SakValg } from './dagpenger.types'
+import type { ActionErrors, Dagpengertype } from './dagpenger.types'
 import { EndringsOppsummering } from './EndringsOppsummering'
 import { type EndringSummary, harEndringer as harEndringerISummary, oversettKoderIMelding } from './opptjening.utils'
 
 interface OpptjeningSkjemaProps {
   tittel: string
-  grunnlag: DagpengerGrunnlag
   opptjeningstyper: Dagpengertype[]
   readOnly: boolean
   manglerTilgang?: boolean
   errors?: ActionErrors
   endringSummary: EndringSummary
   payload: string
-  sakId?: number
   begrunnelse?: string
   avbrytAktivitet?: () => void
   harKlientFeil?: boolean
@@ -30,14 +28,12 @@ interface OpptjeningSkjemaProps {
 
 export function OpptjeningSkjema({
   tittel,
-  grunnlag,
   opptjeningstyper,
   readOnly,
   manglerTilgang = false,
   errors,
   endringSummary,
   payload,
-  sakId,
   begrunnelse,
   avbrytAktivitet,
   harKlientFeil = false,
@@ -47,51 +43,15 @@ export function OpptjeningSkjema({
 }: OpptjeningSkjemaProps) {
   const isSubmitting = useIsSubmitting()
 
-  const [selectedSakId, setSelectedSakId] = useState(sakId != null ? String(sakId) : '')
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
-  const saker: SakValg[] =
-    sakId != null && !(grunnlag.saker ?? []).some(sak => sak.sakId === sakId)
-      ? [...(grunnlag.saker ?? []), { sakId }]
-      : (grunnlag.saker ?? [])
-
-  const manglerSak = !selectedSakId
-  const sakIdFeil =
-    hasAttemptedSubmit && manglerSak
-      ? saker.length > 0
-        ? 'Du må velge en sak før du kan lagre'
-        : 'Ingen saker er tilgjengelige for lagring'
-      : undefined
   const harEndringer = harEndringerISummary(endringSummary)
 
-  const visSakvalg = readOnly ? !manglerSak : saker.length > 0
   const visOppsummering = !readOnly || harEndringer
   const visBegrunnelse = visNotat && (!readOnly || !!begrunnelse)
 
   const innhold = (
     <VStack gap="space-24">
-      {visSakvalg && (
-        <Select
-          label="Sak"
-          name="sakId"
-          size="small"
-          value={selectedSakId}
-          onChange={e => setSelectedSakId(e.target.value)}
-          readOnly={readOnly}
-          error={sakIdFeil}
-          style={{ maxWidth: '20rem' }}
-        >
-          <option value="">Velg sak</option>
-          {saker.map(sak => (
-            <option key={sak.sakId} value={sak.sakId}>
-              {sak.sakId}
-              {sak.sakType ? ` – ${sak.sakType}` : ''}
-              {sak.sakStatus ? ` (${sak.sakStatus})` : ''}
-            </option>
-          ))}
-        </Select>
-      )}
-
       {children}
 
       {visOppsummering && (
@@ -137,8 +97,6 @@ export function OpptjeningSkjema({
               </LocalAlert.Content>
             </LocalAlert>
           )}
-
-          {sakIdFeil && !visSakvalg && <InlineMessage status="error">{sakIdFeil}</InlineMessage>}
 
           <HStack gap="space-8">
             <Button
@@ -195,7 +153,7 @@ export function OpptjeningSkjema({
             onSubmit={e => {
               setHasAttemptedSubmit(true)
               onInnsendingsforsok?.()
-              if (manglerSak || !harEndringer || harKlientFeil) e.preventDefault()
+              if (!harEndringer || harKlientFeil) e.preventDefault()
             }}
           >
             {innhold}
