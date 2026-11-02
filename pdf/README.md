@@ -102,12 +102,26 @@ Deretter kan du verifisere med curl (se «Verifisere med curl» under Docker).
 
 ## Docker
 
+Imaget bygger på Chainguards Wolfi-baserte Node-image (`nav.no/node:26-dev`) fra
+Navs pull-through-register i Artifact Registry. Chromium, Ghostscript og fonter
+installeres med `apk`.
+
+Innlogging mot registeret (én gang, krever `gcloud`):
+
+```sh
+gcloud auth login
+gcloud auth configure-docker europe-north1-docker.pkg.dev
+```
+
 Bygg **fra repo-roten** (konteksten må inneholde `app/` og `package.json`):
 
 ```sh
-docker build -f pdf/Dockerfile -t alde-pdf .
+docker build --pull -f pdf/Dockerfile -t alde-pdf .
 docker run --rm -p 8090:8090 alde-pdf
 ```
+
+`--pull` henter siste versjon av basebildet, slik at lokale bygg får samme
+sikkerhetsoppdateringer som CI.
 
 ### Verifisere med curl
 
@@ -174,8 +188,18 @@ Dokumentet får også arkivmetadata (fra `behandling` og `toppbarInfo`, UTF-16 s
 
 ## Notater / begrensninger
 
-- Basebildet `mcr.microsoft.com/playwright:v1.64.1-noble` må matche `playwright`-
-  versjonen i `package.json` (Chromium ligger ferdig i bildet).
+- Basebildet (`nav.no/node:26-dev`) og apk-pakkene er ikke låst til en versjon; hvert
+  bygg får siste patchede versjon fra Chainguard.
+- Playwright bruker systemets Chromium fra Wolfi (`PLAYWRIGHT_EXECUTABLE_PATH=/usr/bin/chromium`),
+  ikke nettleseren Playwright selv laster ned. Chromium-versjonen følger derfor Wolfi og
+  ikke `playwright`-versjonen i `package.json`. Hvis rendering feiler etter et nytt bygg,
+  sjekk om ny Chromium er inkompatibel med Playwright-versjonen.
+- Wolfi legger ICC-profilen i `/usr/share/ghostscript/iccprofiles/srgb.icc` (uten
+  versjonsmappe); `pdfa.ts` sjekker både denne og Debian-stiene.
+- Appfilene i imaget eies av root og er skrivebeskyttet for `node`-brukeren. Vite-cachen
+  ligger i `os.tmpdir()`.
+- pnpm installeres med `npm install -g` i versjonen fra `packageManager` i `package.json`
+  (ingen corepack).
 - `--ignore-scripts` under install hopper over repoets `prepare` (lefthook, krever git);
   plattform-binærene (esbuild/rollup/lightningcss) kommer fra optional deps.
 - Stubben setter `isMockEnv = true`. Riktig for en ren render-runtime, men en komponent

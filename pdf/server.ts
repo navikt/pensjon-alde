@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { context, propagation, SpanStatusCode, trace } from '@opentelemetry/api'
 import { collectDefaultMetrics, Histogram, Registry } from '@prometheus-io/client'
@@ -7,6 +9,7 @@ import express from 'express'
 import { createServer as createViteServer } from 'vite'
 import { collectAppCss } from './collect-css.ts'
 import type { PdfInput, renderAttestering as RenderAttestering } from './entry.server.tsx'
+import { localFontFaces, stripRemoteFontFaces } from './fonts.ts'
 import { toPdfA } from './pdfa.ts'
 import { closeBrowser, htmlToPdf } from './render-pdf.ts'
 import { stubServerModules } from './vite-stub-server.ts'
@@ -15,13 +18,14 @@ const require = createRequire(import.meta.url)
 const dsCss = readFileSync(require.resolve('@navikt/ds-css'), 'utf-8')
 const appDir = fileURLToPath(new URL('../app/', import.meta.url))
 const stubsDir = fileURLToPath(new URL('./stubs/', import.meta.url))
-const css = `${dsCss}
+const css = `${stripRemoteFontFaces(dsCss)}
+${localFontFaces()}
 ${collectAppCss(appDir)}`
 
 const vite = await createViteServer({
   configFile: false,
   root: process.cwd(),
-  cacheDir: fileURLToPath(new URL('.vite/', import.meta.url)),
+  cacheDir: join(tmpdir(), 'alde-pdf-vite'),
   envDir: fileURLToPath(new URL('.', import.meta.url)),
   resolve: {
     alias: [{ find: /^~\//, replacement: appDir }],
