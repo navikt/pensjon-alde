@@ -3,10 +3,7 @@
 #
 # IMPORTANT: build from the REPO ROOT so the context includes app/ + package.json:
 #   docker build -f pdf/Dockerfile -t alde-pdf .
-FROM mcr.microsoft.com/playwright:v1.64.1-noble
-
-# The Playwright image ships Node 24; override with the Node version from .nvmrc.
-COPY --from=node:26.13.0-trixie-slim /usr/local/bin/node /usr/local/bin/node
+FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f
 
 ENV TZ="Europe/Oslo"
 ENV PDF_PORT=8090
