@@ -17,8 +17,6 @@ spec:
       external:
         - host: "cdn.nav.no"
 
-  webproxy: true
-
   port: 8090
 
   prometheus:
