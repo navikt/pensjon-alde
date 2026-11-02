@@ -3,6 +3,7 @@ import {
   feilmeldingerNokkel,
   feltfeilFraFeilmeldinger,
   feltnavnFraNokkel,
+  finnFeltId,
   gjeldendeFeilmeldinger,
   lesFeltverdi,
 } from './use-aktivitet-feil'
@@ -27,20 +28,26 @@ describe('feltfeilFraFeilmeldinger', () => {
 
 describe('gjeldendeFeilmeldinger', () => {
   it('fjerner meldinger for felt brukeren har endret', () => {
-    expect(gjeldendeFeilmeldinger(feilmeldinger, new Set(['fom'])).map(f => f.melding)).toEqual([
+    expect(gjeldendeFeilmeldinger(feilmeldinger, { endrede: ['fom'], feltIder: {} }).map(f => f.melding)).toEqual([
       'Beløp mangler',
       'Hele vurderingen er ugyldig',
     ])
   })
 
   it('beholder meldinger uten felt', () => {
-    expect(gjeldendeFeilmeldinger(feilmeldinger, new Set(['fom', 'belop'])).map(f => f.melding)).toEqual([
-      'Hele vurderingen er ugyldig',
-    ])
+    expect(
+      gjeldendeFeilmeldinger(feilmeldinger, { endrede: ['fom', 'belop'], feltIder: {} }).map(f => f.melding),
+    ).toEqual(['Hele vurderingen er ugyldig'])
+  })
+
+  it('legger på id-en til feltet meldingen kan lenke til', () => {
+    expect(
+      gjeldendeFeilmeldinger(feilmeldinger, { endrede: [], feltIder: { fom: 'fom-input' } }).map(f => f.feltId),
+    ).toEqual(['fom-input', 'fom-input', undefined, undefined])
   })
 
   it('gir tom liste uten feilmeldinger', () => {
-    expect(gjeldendeFeilmeldinger(undefined, new Set())).toEqual([])
+    expect(gjeldendeFeilmeldinger(undefined, { endrede: [], feltIder: {} })).toEqual([])
   })
 })
 
@@ -73,6 +80,49 @@ describe('lesFeltverdi', () => {
     lesFeltverdi('begrunnelse', avbrytDialog)
 
     expect(lesFeltverdi('begrunnelse', aktivitet)).toBe(start)
+  })
+})
+
+describe('finnFeltId', () => {
+  const element = ({
+    id = '',
+    tabIndex = 0,
+    synlig = true,
+    ...rest
+  }: {
+    id?: string
+    name?: string
+    disabled?: boolean
+    tabIndex?: number
+    synlig?: boolean
+  }) => ({
+    ...rest,
+    id,
+    tabIndex,
+    getClientRects: () => (synlig ? [{}] : []),
+  })
+  const rot = (...elementer: object[]) => ({ querySelectorAll: () => elementer })
+
+  it('gir id-en til feltet med samme name, også når id-en er generert', () => {
+    expect(finnFeltId('begrunnelse', rot(element({ name: 'begrunnelse', id: 'textarea-r1' })))).toBe('textarea-r1')
+  })
+
+  it('gir id-en til elementet med samme id', () => {
+    expect(finnFeltId('fom', rot(element({ id: 'fom' })))).toBe('fom')
+  })
+
+  it('hopper over felt som ikke kan få fokus', () => {
+    const skjult = element({ name: 'samboerFnr', id: 'a', synlig: false })
+    const deaktivert = element({ name: 'samboerFnr', id: 'b', disabled: true })
+    const utenforTabRekkefolgen = element({ name: 'samboerFnr', id: 'c', tabIndex: -1 })
+    const utenId = element({ name: 'samboerFnr' })
+
+    expect(finnFeltId('samboerFnr', rot(skjult, deaktivert, utenforTabRekkefolgen, utenId))).toBeUndefined()
+    expect(finnFeltId('samboerFnr', rot(skjult, element({ name: 'samboerFnr', id: 'd' })))).toBe('d')
+  })
+
+  it('gir undefined når feltet ikke finnes', () => {
+    expect(finnFeltId('fom', rot(element({ name: 'tom', id: 'tom' })))).toBeUndefined()
   })
 })
 

@@ -1,14 +1,12 @@
 .DS_Store
 /node_modules/
+.pi/
 
 # We use PNPM lockfile, so we can ignore package-lock.json
 package-lock.json
 
 # Environment variables
 .env
-
-# Husky (generated locally by `pnpm prepare`)
-.husky/_/
 
 # React Router
 /.react-router/
@@ -20,11 +18,11 @@ package-lock.json
 .zed
 
 # Playwright
-node_modules/
 /playwright/test-results/
 /playwright/playwright-report/
 /playwright/blob-report/
 /playwright/.cache/
+/.playwright-mcp/
 
 # Screenshots
 /screenshots/
@@ -37,4 +35,3 @@ node_modules/
 
 # PDF preview output from dev:pdf / curl
 /pdf-preview.pdf
-.pi/
