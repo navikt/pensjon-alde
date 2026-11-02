@@ -1,0 +1,41 @@
+name: Merge main to sandbox
+
+on:
+  push:
+    branches:
+      - "main"
+
+concurrency:
+  group: sandbox-branch
+  cancel-in-progress: false
+
+jobs:
+  merge-main-to-sandbox:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: sandbox
+          fetch-depth: 0
+
+      - name: Merge main into sandbox
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          if ! git merge --no-edit origin/main; then
+            echo "::error::Merge av main inn i sandbox feilet (konflikt). Løs konflikten manuelt i sandbox, eller kjør 'Reset sandbox branch to main'."
+            exit 1
+          fi
+          git push origin sandbox
+
+  deploy:
+    needs: merge-main-to-sandbox
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/buildAndDeploySandbox.yml
+    secrets: inherit

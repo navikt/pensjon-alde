@@ -4,56 +4,56 @@ Start the mock server with `pnpm dev:mock`.
 
 ## Aktiviteter
 
-| Route | Behandling | Status |
-| ------- | ------------ | -------- |
-| [/behandling/1000001/aktivitet/6020943/alderspensjon-soknad/vurder-samboer](http://localhost:3001/behandling/1000001/aktivitet/6020943/alderspensjon-soknad/vurder-samboer) | 1000001 | Aktiv aktivitet |
-| [/behandling/1000002/aktivitet/7020942/alderspensjon-soknad/kontroller-inntektsopplysninger-for-eps](http://localhost:3001/behandling/1000002/aktivitet/7020942/alderspensjon-soknad/kontroller-inntektsopplysninger-for-eps) | 1000002 | Aktiv aktivitet |
-| [/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering](http://localhost:3001/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering) | 3000001 | Aktiv aktivitet |
-| [/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig](http://localhost:3001/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig) | 3000002 | Aktiv aktivitet |
-| [/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg](http://localhost:3001/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg) | 7000201 | Aktiv aktivitet |
-| [/behandling/1000099/aktivitet/7020999/oppdater-opptjening-dagpenger/oppdater-dagpenger](http://localhost:3001/behandling/1000099/aktivitet/7020999/oppdater-opptjening-dagpenger/oppdater-dagpenger) | 1000099 | Aktiv aktivitet |
+| Route                                                                                                                                                                                                                         | Behandling | Status          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | --------------- |
+| [/behandling/1000001/aktivitet/6020943/alderspensjon-soknad/vurder-samboer](http://localhost:3001/behandling/1000001/aktivitet/6020943/alderspensjon-soknad/vurder-samboer)                                                   | 1000001    | Aktiv aktivitet |
+| [/behandling/1000002/aktivitet/7020942/alderspensjon-soknad/kontroller-inntektsopplysninger-for-eps](http://localhost:3001/behandling/1000002/aktivitet/7020942/alderspensjon-soknad/kontroller-inntektsopplysninger-for-eps) | 1000002    | Aktiv aktivitet |
+| [/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering](http://localhost:3001/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering)                                       | 3000001    | Aktiv aktivitet |
+| [/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig](http://localhost:3001/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig)                                 | 3000002    | Aktiv aktivitet |
+| [/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg](http://localhost:3001/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg)                                     | 7000201    | Aktiv aktivitet |
+| [/behandling/1000099/aktivitet/7020999/oppdater-opptjening-dagpenger/oppdater-dagpenger](http://localhost:3001/behandling/1000099/aktivitet/7020999/oppdater-opptjening-dagpenger/oppdater-dagpenger)                         | 1000099    | Aktiv aktivitet |
 
 For `oppdater-opptjening-*` behandlinger lagrer mocken innsendt vurdering i minnet og sender behandlingen til attestering, der endringene vises. Godkjenning setter den til FULLFORT. Åpne aktiviteten på nytt for å tilbakestille, eller start mocken på nytt.
 
 ## Attestering
 
-| Route | Behandling | `aldeBehandlingStatus` |
-| ------- | ------------ | ------------------------ |
-| [/behandling/6359437](http://localhost:3001/behandling/6359437) | 6359437 | VENTER_ATTESTERING |
-| [/behandling/7000202/attestering](http://localhost:3001/behandling/7000202/attestering) | 7000202 | VENTER_ATTESTERING |
-| [/behandling/1000098/attestering](http://localhost:3001/behandling/1000098/attestering) (dagpenger: endret, typebytte til DP_FF, ny og slettet) | 1000098 | VENTER_ATTESTERING |
+| Route                                                                                                                                           | Behandling | `aldeBehandlingStatus` |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------- |
+| [/behandling/6359437](http://localhost:3001/behandling/6359437)                                                                                 | 6359437    | VENTER_ATTESTERING     |
+| [/behandling/7000202/attestering](http://localhost:3001/behandling/7000202/attestering)                                                         | 7000202    | VENTER_ATTESTERING     |
+| [/behandling/1000098/attestering](http://localhost:3001/behandling/1000098/attestering) (dagpenger: endret, typebytte til DP_FF, ny og slettet) | 1000098    | VENTER_ATTESTERING     |
 
 ## Statussider
 
-| Route | Behandling | `aldeBehandlingStatus` |
-| ------- | ------------ | ------------------------ |
-| [/behandling/2000001/attestering](http://localhost:3001/behandling/2000001/attestering) (bruker har saksbehandlet → venter) | 2000001 | VENTER_ATTESTERING |
-| [/behandling/2000001/attestering-returnert-til-saksbehandler](http://localhost:3001/behandling/2000001/attestering-returnert-til-saksbehandler) | 2000001 | VENTER_ATTESTERING |
-| [/behandling/7000204](http://localhost:3001/behandling/7000204) (omsorg returnert av attestant → returnert-siden) | 7000204 | RETURNERT_TIL_SAKSBEHANDLER |
-| [/behandling/2000002/avbrutt-automatisk](http://localhost:3001/behandling/2000002/avbrutt-automatisk) | 2000002 | AUTOMATISK_TIL_MANUELL |
-| [/behandling/2000003/avbrutt-manuelt](http://localhost:3001/behandling/2000003/avbrutt-manuelt) | 2000003 | AVBRUTT_AV_BRUKER |
-| [/behandling/2000004/attestert-og-iverksatt](http://localhost:3001/behandling/2000004/attestert-og-iverksatt) | 2000004 | FULLFORT |
-| [/behandling/2000004/oppsummering](http://localhost:3001/behandling/2000004/oppsummering) | 2000004 | FULLFORT |
+| Route                                                                                                                                           | Behandling | `aldeBehandlingStatus`      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | --------------------------- |
+| [/behandling/2000001/attestering](http://localhost:3001/behandling/2000001/attestering) (bruker har saksbehandlet → venter)                     | 2000001    | VENTER_ATTESTERING          |
+| [/behandling/2000001/attestering-returnert-til-saksbehandler](http://localhost:3001/behandling/2000001/attestering-returnert-til-saksbehandler) | 2000001    | VENTER_ATTESTERING          |
+| [/behandling/7000204](http://localhost:3001/behandling/7000204) (omsorg returnert av attestant → returnert-siden)                               | 7000204    | RETURNERT_TIL_SAKSBEHANDLER |
+| [/behandling/2000002/avbrutt-automatisk](http://localhost:3001/behandling/2000002/avbrutt-automatisk)                                           | 2000002    | AUTOMATISK_TIL_MANUELL      |
+| [/behandling/2000003/avbrutt-manuelt](http://localhost:3001/behandling/2000003/avbrutt-manuelt)                                                 | 2000003    | AVBRUTT_AV_BRUKER           |
+| [/behandling/2000004/attestert-og-iverksatt](http://localhost:3001/behandling/2000004/attestert-og-iverksatt)                                   | 2000004    | FULLFORT                    |
+| [/behandling/2000004/oppsummering](http://localhost:3001/behandling/2000004/oppsummering)                                                       | 2000004    | FULLFORT                    |
 
 ## Mock Data Files
 
-| Fil | Behandling | `aldeBehandlingStatus` |
-| ----- | ------------ | ------------------------ |
-| `behandling-1000001.json` | 1000001 | UNDER_BEHANDLING |
-| `behandling-1000002.json` | 1000002 | UNDER_BEHANDLING |
-| `behandling-2000001.json` | 2000001 | VENTER_ATTESTERING |
-| `behandling-2000002.json` | 2000002 | AUTOMATISK_TIL_MANUELL |
-| `behandling-2000003.json` | 2000003 | AVBRUTT_AV_BRUKER |
-| `behandling-2000004.json` | 2000004 | FULLFORT |
-| `behandling-3000001.json` | 3000001 | UNDER_BEHANDLING |
-| `behandling-3000002.json` | 3000002 | UNDER_BEHANDLING |
-| `behandling-5000001.json` | 5000001 | VENTER_MASKINELL |
-| `behandling-6359437.json` | 6359437 | VENTER_ATTESTERING |
-| `behandling-7000201.json` | 7000201 | VENTER_SAKSBEHANDLER (omsorg) |
-| `behandling-7000202.json` | 7000202 | VENTER_ATTESTERING (omsorg) |
-| `behandling-7000204.json` | 7000204 | RETURNERT_TIL_SAKSBEHANDLER (omsorg) |
-| `behandling-1000098.json` | 1000098 | VENTER_ATTESTERING (dagpenger) |
-| `behandling-1000099.json` | 1000099 | VENTER_SAKSBEHANDLER (dagpenger) |
+| Fil                       | Behandling | `aldeBehandlingStatus`               |
+| ------------------------- | ---------- | ------------------------------------ |
+| `behandling-1000001.json` | 1000001    | UNDER_BEHANDLING                     |
+| `behandling-1000002.json` | 1000002    | UNDER_BEHANDLING                     |
+| `behandling-2000001.json` | 2000001    | VENTER_ATTESTERING                   |
+| `behandling-2000002.json` | 2000002    | AUTOMATISK_TIL_MANUELL               |
+| `behandling-2000003.json` | 2000003    | AVBRUTT_AV_BRUKER                    |
+| `behandling-2000004.json` | 2000004    | FULLFORT                             |
+| `behandling-3000001.json` | 3000001    | UNDER_BEHANDLING                     |
+| `behandling-3000002.json` | 3000002    | UNDER_BEHANDLING                     |
+| `behandling-5000001.json` | 5000001    | VENTER_MASKINELL                     |
+| `behandling-6359437.json` | 6359437    | VENTER_ATTESTERING                   |
+| `behandling-7000201.json` | 7000201    | VENTER_SAKSBEHANDLER (omsorg)        |
+| `behandling-7000202.json` | 7000202    | VENTER_ATTESTERING (omsorg)          |
+| `behandling-7000204.json` | 7000204    | RETURNERT_TIL_SAKSBEHANDLER (omsorg) |
+| `behandling-1000098.json` | 1000098    | VENTER_ATTESTERING (dagpenger)       |
+| `behandling-1000099.json` | 1000099    | VENTER_SAKSBEHANDLER (dagpenger)     |
 
 ## Attesteringsdata
 
@@ -61,7 +61,7 @@ For `oppdater-opptjening-*` behandlinger lagrer mocken innsendt vurdering i minn
 I fila skrives `grunnlag` og `vurdering` som vanlige objekter — handleren `JSON.stringify`-er
 dem slik det ekte API-et gjør. Uten fil bygges responsen dynamisk fra aktivitetene i behandlingen.
 
-| Fil | Behandling | Innhold |
-| ----- | ------------ | --------- |
-| `attesteringsdata-7000202.json` | 7000202 | Omsorg med én slettet linje |
-| `attesteringsdata-1000098.json` | 1000098 | Dagpenger i PEN-format, uten null-felter |
+| Fil                             | Behandling | Innhold                                  |
+| ------------------------------- | ---------- | ---------------------------------------- |
+| `attesteringsdata-7000202.json` | 7000202    | Omsorg med én slettet linje              |
+| `attesteringsdata-1000098.json` | 1000098    | Dagpenger i PEN-format, uten null-felter |
