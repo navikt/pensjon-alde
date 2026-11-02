@@ -14,17 +14,19 @@ Start the mock server with `pnpm dev:mock`.
 | [/behandling/7000301/aktivitet/7010301/oppdater-opptjening-inntekt/oppdater-inntekt](http://localhost:3001/behandling/7000301/aktivitet/7010301/oppdater-opptjening-inntekt/oppdater-inntekt)                                 | 7000301    | Aktiv aktivitet |
 | [/behandling/1000199/aktivitet/7021999/oppdater-opptjening-forstegangstjeneste/oppdater-forstegangstjeneste](http://localhost:3001/behandling/1000199/aktivitet/7021999/oppdater-opptjening-forstegangstjeneste/oppdater-forstegangstjeneste)                                    | 1000199    | Aktiv aktivitet |
 | [/behandling/1000197/aktivitet/7021996/oppdater-opptjening-forstegangstjeneste/oppdater-forstegangstjeneste](http://localhost:3001/behandling/1000197/aktivitet/7021996/oppdater-opptjening-forstegangstjeneste/oppdater-forstegangstjeneste) (ingen førstegangstjeneste i POPP) | 1000197    | Aktiv aktivitet |
+| [/behandling/1000099/aktivitet/7020999/oppdater-opptjening-dagpenger/oppdater-dagpenger](http://localhost:3001/behandling/1000099/aktivitet/7020999/oppdater-opptjening-dagpenger/oppdater-dagpenger)                         | 1000099    | Aktiv aktivitet |
 
 For `oppdater-opptjening-*` behandlinger lagrer mocken innsendt vurdering i minnet og sender behandlingen til attestering, der endringene vises. Godkjenning setter den til FULLFORT. Åpne aktiviteten på nytt for å tilbakestille, eller start mocken på nytt.
 
 ## Attestering
 
-| Route                                                                                                                                                            | Behandling | `aldeBehandlingStatus` |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------- |
+| Route                                                                                                                                            | Behandling | `aldeBehandlingStatus` |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | ---------------------- |
 | [/behandling/6359437](http://localhost:3001/behandling/6359437)                                                                                                  | 6359437    | VENTER_ATTESTERING     |
 | [/behandling/7000202/attestering](http://localhost:3001/behandling/7000202/attestering)                                                                          | 7000202    | VENTER_ATTESTERING     |
 | [/behandling/7000302/attestering](http://localhost:3001/behandling/7000302/attestering) | 7000302    | VENTER_ATTESTERING     |
 | [/behandling/1000198/attestering](http://localhost:3001/behandling/1000198/attestering) (førstegangstjeneste: endret dimittering, endret, ny og slettet periode) | 1000198    | VENTER_ATTESTERING     |
+| [/behandling/1000098/attestering](http://localhost:3001/behandling/1000098/attestering) (dagpenger: endret, typebytte til DP_FF, ny og slettet) | 1000098    | VENTER_ATTESTERING     |
 
 ## Statussider
 
@@ -60,6 +62,8 @@ For `oppdater-opptjening-*` behandlinger lagrer mocken innsendt vurdering i minn
 | `behandling-1000197.json` | 1000197    | VENTER_SAKSBEHANDLER (førstegangstjeneste, ingen i POPP) |
 | `behandling-1000198.json` | 1000198    | VENTER_ATTESTERING (førstegangstjeneste)                 |
 | `behandling-1000199.json` | 1000199    | VENTER_SAKSBEHANDLER (førstegangstjeneste)               |
+| `behandling-1000098.json` | 1000098    | VENTER_ATTESTERING (dagpenger)       |
+| `behandling-1000099.json` | 1000099    | VENTER_SAKSBEHANDLER (dagpenger)     |
 
 ## Attesteringsdata
 
@@ -71,3 +75,4 @@ dem slik det ekte API-et gjør. Uten fil bygges responsen dynamisk fra aktivitet
 | ------------------------------- | ---------- | -------------------------------------------------- |
 | `attesteringsdata-7000202.json` | 7000202    | Omsorg med én slettet linje                        |
 | `attesteringsdata-1000198.json` | 1000198    | Førstegangstjeneste i PEN-format, uten null-felter |
+| `attesteringsdata-1000098.json` | 1000098    | Dagpenger i PEN-format, uten null-felter |
