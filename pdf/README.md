@@ -29,20 +29,20 @@ deler komponentkoden i `app/` (det er nettopp komponentene som skal rendres).
 
 ## Filer
 
-| Fil | Ansvar |
-|-----|--------|
-| `server.ts` | Express, `POST /pdf`, runtime Vite SSR |
-| `entry.server.tsx` | `renderAttestering(input, css)` — låst visning → HTML |
-| `render-pdf.ts` | Playwright singleton, `htmlToPdf(html, opts)` |
-| `pdfa.ts` | Ghostscript-konvertering til PDF/A-2b |
-| `PDFA_def.ps` | Ghostscript-prolog (sRGB OutputIntent) |
-| `collect-css.ts` | Samler `app/**/*.css` |
-| `vite-stub-server.ts` | Vite-plugin som stubber `env.server` + `unleash.server` |
-| `stubs/env.server.ts` | Ufarlig erstatning for `env.server` |
-| `stubs/unleash.server.ts` | Ufarlig erstatning for `unleash.server` |
-| `sample-payload.json` | Eksempel-input (2 aktiviteter) |
-| `sample-payload-broken.json` | Eksempel med ukjent `handlerName` (gir HTTP 422) |
-| `Dockerfile` | Container-image (bygg fra repo-rot) |
+| Fil                          | Ansvar                                                  |
+| ---------------------------- | ------------------------------------------------------- |
+| `server.ts`                  | Express, `POST /pdf`, runtime Vite SSR                  |
+| `entry.server.tsx`           | `renderAttestering(input, css)` — låst visning → HTML   |
+| `render-pdf.ts`              | Playwright singleton, `htmlToPdf(html, opts)`           |
+| `pdfa.ts`                    | Ghostscript-konvertering til PDF/A-2b                   |
+| `PDFA_def.ps`                | Ghostscript-prolog (sRGB OutputIntent)                  |
+| `collect-css.ts`             | Samler `app/**/*.css`                                   |
+| `vite-stub-server.ts`        | Vite-plugin som stubber `env.server` + `unleash.server` |
+| `stubs/env.server.ts`        | Ufarlig erstatning for `env.server`                     |
+| `stubs/unleash.server.ts`    | Ufarlig erstatning for `unleash.server`                 |
+| `sample-payload.json`        | Eksempel-input (2 aktiviteter)                          |
+| `sample-payload-broken.json` | Eksempel med ukjent `handlerName` (gir HTTP 422)        |
+| `Dockerfile`                 | Container-image (bygg fra repo-rot)                     |
 
 ## API
 
@@ -58,17 +58,27 @@ Content-Type: application/json
 
 ```jsonc
 {
-  "behandling": { /* BehandlingDTO — sendes til hver Component som props.behandling */ },
-  "toppbarInfo": { /* ToppbarInfo — fnr, navn, fødselsdato, sakId og sakType til PDF-headeren */ },
+  "behandling": {
+    /* BehandlingDTO — sendes til hver Component som props.behandling */
+  },
+  "toppbarInfo": {
+    /* ToppbarInfo — fnr, navn, fødselsdato, sakId og sakType til PDF-headeren */
+  },
   "aktiviteter": [
     {
-      "handlerName": "vurder-samboer",   // → getServerComponent(handlerName)
-      "aktivitet":   { /* AktivitetDTO */ },
-      "grunnlag":    { /* objekt, ferdig parset */ },
-      "vurdering":   { /* objekt */ },
+      "handlerName": "vurder-samboer", // → getServerComponent(handlerName)
+      "aktivitet": {
+        /* AktivitetDTO */
+      },
+      "grunnlag": {
+        /* objekt, ferdig parset */
+      },
+      "vurdering": {
+        /* objekt */
+      },
       "vurdertAvBrukerNavn": "Kari Nordmann",
-      "vurdertAvBrukerId":   "Z999999",
-      "vurdertTidspunkt":    "2025-01-14T10:22:00Z"
+      "vurdertAvBrukerId": "Z999999",
+      "vurdertTidspunkt": "2025-01-14T10:22:00Z"
     }
   ]
 }
