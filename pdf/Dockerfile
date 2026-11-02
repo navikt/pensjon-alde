@@ -3,7 +3,7 @@
 #
 # IMPORTANT: build from the REPO ROOT so the context includes app/ + package.json:
 #   docker build -f pdf/Dockerfile -t alde-pdf .
-FROM mcr.microsoft.com/playwright:v1.64.1-noble
+FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f
 
 ENV TZ="Europe/Oslo"
 ENV PDF_PORT=8090
@@ -18,12 +18,11 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends ghostscript \
   && rm -rf /var/lib/apt/lists/*
 
-RUN corepack enable
-
 # Install dependencies (incl. vite — the service resolves modules at runtime).
 # --ignore-scripts skips the repo's `prepare` (lefthook, needs git) and browser
 # re-download; platform binaries come from optional deps.
-COPY package.json pnpm-lock.yaml .pnpmfile.cjs ./
+COPY package.json pnpm-lock.yaml .pnpmfile.cjs .npmrc ./
+RUN npm install -g "$(node -p "require('./package.json').packageManager.split('+')[0]")"
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Source needed by the runtime Vite SSR + component discovery.
