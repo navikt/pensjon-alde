@@ -13,6 +13,9 @@ spec:
       rules:
         - application: "{{{ pen.application }}}"
           namespace: "{{{ pen.namespace }}}"
+    outbound:
+      external:
+        - host: "cdn.nav.no"
 
   port: 8090
 
