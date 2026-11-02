@@ -22,8 +22,8 @@ RUN apt-get update \
 # --ignore-scripts skips the repo's `prepare` (lefthook, needs git) and browser
 # re-download; platform binaries come from optional deps.
 COPY package.json pnpm-lock.yaml .pnpmfile.cjs .npmrc ./
-RUN npm install -g "$(node -p "require('./package.json').packageManager")" \
-  && pnpm install --frozen-lockfile --ignore-scripts
+RUN npm install -g "$(node -p "require('./package.json').packageManager.split('+')[0]")"
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Source needed by the runtime Vite SSR + component discovery.
 COPY tsconfig.json ./
