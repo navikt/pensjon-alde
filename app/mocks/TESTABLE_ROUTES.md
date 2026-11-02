@@ -11,6 +11,7 @@ Start the mock server with `pnpm dev:mock`.
 | [/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering](http://localhost:3001/behandling/3000001/aktivitet/8010003/alderspensjon-soknad/send-til-attestering) | 3000001 | Aktiv aktivitet |
 | [/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig](http://localhost:3001/behandling/3000002/aktivitet/8020002/alderspensjon-soknad/livsvarig-afp-offentlig) | 3000002 | Aktiv aktivitet |
 | [/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg](http://localhost:3001/behandling/7000201/aktivitet/7010201/oppdater-opptjening-omsorg/oppdater-omsorg) | 7000201 | Aktiv aktivitet |
+| [/behandling/7000301/aktivitet/7010301/oppdater-opptjening-inntekt/oppdater-inntekt](http://localhost:3001/behandling/7000301/aktivitet/7010301/oppdater-opptjening-inntekt/oppdater-inntekt) | 7000301 | Aktiv aktivitet |
 
 ## Attestering
 
@@ -18,6 +19,7 @@ Start the mock server with `pnpm dev:mock`.
 | ------- | ------------ | ------------------------ |
 | [/behandling/6359437](http://localhost:3001/behandling/6359437) | 6359437 | VENTER_ATTESTERING |
 | [/behandling/7000202/attestering](http://localhost:3001/behandling/7000202/attestering) | 7000202 | VENTER_ATTESTERING |
+| [/behandling/7000302/attestering](http://localhost:3001/behandling/7000302/attestering) | 7000302 | VENTER_ATTESTERING |
 
 ## Statussider
 
@@ -48,6 +50,8 @@ Start the mock server with `pnpm dev:mock`.
 | `behandling-7000201.json` | 7000201 | VENTER_SAKSBEHANDLER (omsorg) |
 | `behandling-7000202.json` | 7000202 | VENTER_ATTESTERING (omsorg) |
 | `behandling-7000204.json` | 7000204 | RETURNERT_TIL_SAKSBEHANDLER (omsorg) |
+| `behandling-7000301.json` | 7000301 | VENTER_SAKSBEHANDLER (inntekt) |
+| `behandling-7000302.json` | 7000302 | VENTER_ATTESTERING (inntekt) |
 
 ## Attesteringsdata
 
