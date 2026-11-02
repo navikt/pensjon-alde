@@ -9,6 +9,7 @@ import express from 'express'
 import { createServer as createViteServer } from 'vite'
 import { collectAppCss } from './collect-css.ts'
 import type { PdfInput, renderAttestering as RenderAttestering } from './entry.server.tsx'
+import { localFontFaces, stripRemoteFontFaces } from './fonts.ts'
 import { toPdfA } from './pdfa.ts'
 import { closeBrowser, htmlToPdf } from './render-pdf.ts'
 import { stubServerModules } from './vite-stub-server.ts'
@@ -17,7 +18,8 @@ const require = createRequire(import.meta.url)
 const dsCss = readFileSync(require.resolve('@navikt/ds-css'), 'utf-8')
 const appDir = fileURLToPath(new URL('../app/', import.meta.url))
 const stubsDir = fileURLToPath(new URL('./stubs/', import.meta.url))
-const css = `${dsCss}
+const css = `${stripRemoteFontFaces(dsCss)}
+${localFontFaces()}
 ${collectAppCss(appDir)}`
 
 const vite = await createViteServer({

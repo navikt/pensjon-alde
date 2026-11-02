@@ -1,13 +1,6 @@
-import { type Browser, chromium, type LaunchOptions } from 'playwright'
+import { type Browser, chromium } from 'playwright'
 
 let browserPromise: Promise<Browser> | null = null
-
-function proxyFromEnv(env: NodeJS.ProcessEnv = process.env): LaunchOptions['proxy'] {
-  const server = env.HTTPS_PROXY || env.https_proxy || env.HTTP_PROXY || env.http_proxy
-  if (!server) return undefined
-  const bypass = env.NO_PROXY || env.no_proxy
-  return bypass ? { server, bypass } : { server }
-}
 
 function getBrowser(): Promise<Browser> {
   if (!browserPromise) {
@@ -15,7 +8,6 @@ function getBrowser(): Promise<Browser> {
     const launching = chromium
       .launch({
         executablePath,
-        proxy: proxyFromEnv(),
         args: ['--no-sandbox', '--disable-dev-shm-usage'],
       })
       .then(browser => {
