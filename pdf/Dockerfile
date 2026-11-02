@@ -18,12 +18,13 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends ghostscript \
   && rm -rf /var/lib/apt/lists/*
 
-RUN corepack enable
-
 # Install dependencies (incl. vite — the service resolves modules at runtime).
 # --ignore-scripts skips the repo's `prepare` (lefthook, needs git) and browser
 # re-download; platform binaries come from optional deps.
 COPY package.json pnpm-lock.yaml .pnpmfile.cjs ./
+# The base image's Node (25+) no longer bundles corepack; install the pnpm version
+# pinned in package.json's packageManager instead.
+RUN npm install -g "$(node -p "require('./package.json').packageManager.split('+')[0]")"
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Source needed by the runtime Vite SSR + component discovery.
