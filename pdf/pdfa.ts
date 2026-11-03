@@ -46,7 +46,11 @@ function locateIccProfile(): string {
       if (existsSync(candidate)) return candidate
     }
   }
-  for (const candidate of ['/usr/share/color/icc/sRGB.icc', '/usr/share/color/icc/colord/sRGB.icc']) {
+  for (const candidate of [
+    '/usr/share/ghostscript/iccprofiles/srgb.icc',
+    '/usr/share/color/icc/sRGB.icc',
+    '/usr/share/color/icc/colord/sRGB.icc',
+  ]) {
     if (existsSync(candidate)) return candidate
   }
   throw new Error('Fant ingen sRGB ICC-profil. Sett PDFA_ICC_PROFILE til en .icc-fil.')
