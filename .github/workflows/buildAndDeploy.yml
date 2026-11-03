@@ -45,8 +45,6 @@ jobs:
     strategy:
       matrix:
         include:
-          -  vars_file: vars-q2.yaml
-             cluster: dev-gcp
           -  vars_file: prod.yaml
              cluster: prod-gcp
 
@@ -91,8 +89,6 @@ jobs:
     strategy:
       matrix:
         include:
-          -  vars_file: vars-q2.yaml
-             cluster: dev-fss
           -  vars_file: prod.yaml
              cluster: prod-fss
 

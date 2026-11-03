@@ -3,6 +3,7 @@ import { settingsContext } from '~/context/settings-context'
 import { userContext } from '~/context/user-context'
 import type { BehandlingDTO } from '~/types/behandling'
 import { AldeBehandlingStatus, BehandlingStatus } from '~/types/behandling'
+import { loader } from './$behandlingId'
 
 const hentBehandling = vi.fn()
 
@@ -39,14 +40,12 @@ function callLoader(behandling: BehandlingDTO, justCompleted: string | null) {
   const search = justCompleted ? `?justCompleted=${justCompleted}` : ''
   const request = new Request(`https://alde.intern.nav.no/behandling/123${search}`)
   const url = new URL(request.url)
-  return import('./$behandlingId').then(({ loader }) =>
-    loader({
-      params: { behandlingId: '123' },
-      request,
-      url,
-      context: createContext(),
-    } as never),
-  )
+  return loader({
+    params: { behandlingId: '123' },
+    request,
+    url,
+    context: createContext(),
+  } as never)
 }
 
 describe('$behandlingId loader', () => {

@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import type { OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering } from '~/components/Opptjening'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { OppdaterOmsorg } from './OppdaterOmsorg'
+import type { OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering } from './Opptjening/opptjening.types'
 
 const grunnlag: OppdaterOpptjeningGrunnlag = {
   saker: [{ sakId: 23077283, sakType: 'ALDER', sakStatus: 'LOPENDE' }],

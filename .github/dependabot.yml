@@ -80,6 +80,6 @@ updates:
           - 'playwright'
           - '@playwright/*'
     ignore:
-      # Major versjon av @types/node skal følge Node.js versjonen definert i prosjektet (v24).
+      # Major versjon av @types/node skal følge Node.js versjonen definert i prosjektet (v26).
       - dependency-name: '@types/node'
-        versions: ['>= 25']
+        versions: ['>= 27']

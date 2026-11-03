@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, http } from 'msw/http'
 import { setupServer } from 'msw/node'
 
 // Function to load mock data from JSON files
@@ -295,7 +295,7 @@ export function startMocking() {
     process.env.ENABLE_MOCKING === 'true'
   ) {
     server.listen({
-      onUnhandledRequest: 'bypass', // Allow real network requests for non-mocked endpoints
+      onUnhandledFrame: 'bypass', // Allow real network requests for non-mocked endpoints
     })
     console.log('🔧 MSW server started - API mocking enabled')
     console.log('🎯 Registered handlers:')

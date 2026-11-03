@@ -3,8 +3,8 @@ import type {
   OppdaterOpptjeningGrunnlag,
   OppdaterOpptjeningVurdering,
   OpptjeningstyperResponse,
-} from '~/components/Opptjening/felles/opptjening.types'
-import { harEndringer, tilLinjeState } from '~/components/Opptjening/felles/opptjening.utils'
+} from '../Opptjening/opptjening.types'
+import { harEndringer, tilLinjeState } from '../Opptjening/opptjening.utils'
 import type { OmsorgGrunnlagDTO } from './omsorg.types'
 import {
   byggOmsorgEndringSummary,
