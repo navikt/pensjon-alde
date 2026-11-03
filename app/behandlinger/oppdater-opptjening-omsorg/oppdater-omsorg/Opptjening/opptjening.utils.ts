@@ -1,4 +1,4 @@
-import type { OpptjeningstyperResponse } from './opptjening.types'
+import type { OpptjeningstyperResponse, OpptjeningTypeKode } from './opptjening.types'
 
 export type LinjeStatus = 'original' | 'new' | 'modified' | 'deleted'
 
@@ -30,8 +30,12 @@ export function beregnStatus<T extends object>(
   return endret ? 'modified' : 'original'
 }
 
-export function oversettKoderIMelding(melding: string, opptjeningstyper: OpptjeningstyperResponse): string {
-  const alle = [...opptjeningstyper.omsorg.typer].sort((a, b) => b.code.length - a.code.length)
+export function oversettKoderIMelding(
+  melding: string,
+  opptjeningstyper: OpptjeningstyperResponse | OpptjeningTypeKode[],
+): string {
+  const typer = Array.isArray(opptjeningstyper) ? opptjeningstyper : opptjeningstyper.omsorg.typer
+  const alle = [...typer].sort((a, b) => b.code.length - a.code.length)
 
   return alle.reduce((tekst, type) => {
     const escaped = type.code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

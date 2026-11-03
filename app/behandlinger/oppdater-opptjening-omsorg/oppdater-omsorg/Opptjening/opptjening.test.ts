@@ -108,6 +108,11 @@ describe('oversettKoderIMelding', () => {
     const resultat = oversettKoderIMelding('Generell feilmelding uten koder', opptjeningstyper)
     expect(resultat).toBe('Generell feilmelding uten koder')
   })
+
+  it('accepts a flat list of type codes', () => {
+    const resultat = oversettKoderIMelding('Ugyldig FastlandPgi', [{ code: 'FastlandPgi', description: 'Fastland' }])
+    expect(resultat).toBe('Ugyldig Fastland (FastlandPgi)')
+  })
 })
 
 describe('tilLinjeState', () => {
