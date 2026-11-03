@@ -1,0 +1,5 @@
+.feilmeldinger {
+  margin-inline-start: calc(-1 * var(--aktivitet-gutter));
+  padding: var(--ax-space-32) var(--aktivitet-gutter);
+  border-bottom: 1px solid var(--ax-border-neutral-subtleA);
+}
