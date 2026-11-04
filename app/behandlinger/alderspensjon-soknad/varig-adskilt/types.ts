@@ -31,38 +31,32 @@ export const SAKSTYPE_TEKST: Record<Sakstype, string> = {
   UFOREP: 'Uføretrygd',
 }
 
-export type BorMedType =
-  | 'GLAD_EKT'
-  | 'GLAD_PART'
-  | 'N_GIFT'
-  | 'N_GIFT_P'
-  | 'J_EKTEF'
-  | 'J_PARTNER'
-  | 'SAMBOER1_5'
-  | 'SAMBOER3_2'
-
-export const BOR_MED_TEKST: Record<BorMedType, string> = {
-  GLAD_EKT: 'Gift, lever varig adskilt',
-  GLAD_PART: 'Partner, lever varig adskilt',
-  N_GIFT: 'Gift, lever sammen',
-  N_GIFT_P: 'Partner, lever sammen',
-  J_EKTEF: 'Gift, lever sammen',
-  J_PARTNER: 'Partner, lever sammen',
-  SAMBOER1_5: 'Samboer §1-5',
-  SAMBOER3_2: 'Samboer §3-2',
+export const VURDERT_SIVILSTAND_TEKST: Record<VurdertSivilstand, string> = {
+  LEVER_ADSKILT: 'Vurdert som enslig',
+  LEVER_SAMMEN: 'Vurdert som gift',
 }
 
-export const erVarigAdskilt = (borMed: BorMedType) => borMed === 'GLAD_EKT' || borMed === 'GLAD_PART'
+export type AnnenEpsRolle = 'EKTEF' | 'PARTNER' | 'SAMBO'
+
+export const ANNEN_EPS_TEKST: Record<AnnenEpsRolle, string> = {
+  EKTEF: 'Gift med annen person',
+  PARTNER: 'Partner med annen person',
+  SAMBO: 'Samboer med annen person',
+}
 
 export type SivilstandIEktefellePartnersSak =
   | { utfall: 'INGEN_LOPENDE_YTELSE' }
-  | { utfall: 'SOKER_IKKE_REGISTRERT_SOM_EPS'; sakstype: Sakstype }
+  | {
+      utfall: 'EKTEFELLE_PARTNER_REGISTRERT_MED_ANNEN_EPS_ENN_SØKER'
+      sakstype: Sakstype
+      grunnlagsrolle: AnnenEpsRolle
+    }
+  | { utfall: 'INGEN_EPS_REGISTRERT'; sakstype: Sakstype }
   | {
       utfall: 'VURDERT'
       sakstype: Sakstype
-      grunnlagsrolle: 'EKTEF' | 'PARTNER' | 'SAMBO'
-      borMed: BorMedType
-      sivilstand: SivilstandType
+      grunnlagsrolle: 'EKTEF' | 'PARTNER'
+      vurdering: VurdertSivilstand
       fom: string
     }
 

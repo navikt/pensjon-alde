@@ -17,6 +17,7 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import { format, isValid, parse } from 'date-fns'
+import type { ReactNode } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
@@ -36,14 +37,14 @@ import AddressWrapper from '../vurder-samboer/AddressWrapper/AddressWrapper'
 import type { Bostedsadresse } from '../vurder-samboer/samboer-types'
 import type { Route } from './+types'
 import {
-  BOR_MED_TEKST,
-  erVarigAdskilt,
+  ANNEN_EPS_TEKST,
   SAKSTYPE_TEKST,
   SIVILSTAND_TEKST,
   type SivilstandIEktefellePartnersSak,
   type SivilstandType,
   type VarigAdskiltGrunnlag,
   type VarigAdskiltVurdering,
+  VURDERT_SIVILSTAND_TEKST,
 } from './types'
 import {
   DATO_FORMAT,
@@ -278,7 +279,9 @@ function VarigAdskiltComponent({
               fnr={ektefellePartner.fnr}
               navn={ektefellePartner.navn}
               sivilstand={ektefellePartner.sivilstand}
-            />
+            >
+              <VurderingIEktefellePartnersSak sivilstandISak={ektefellePartner.sivilstandISak} />
+            </PersonInformasjon>
           ) : (
             <VStack gap="space-4">
               <Heading size="xsmall" level="2">
@@ -289,14 +292,6 @@ function VarigAdskiltComponent({
           )}
         </HGrid>
       </AktivitetVurderingLayout.Section>
-      {ektefellePartner && (
-        <AktivitetVurderingLayout.Section>
-          <SivilstandIEktefellePartnersSakInfo
-            tittel={`Vurdering i ${ektefelleEieform.toLowerCase()} sak`}
-            sivilstandISak={ektefellePartner.sivilstandISak}
-          />
-        </AktivitetVurderingLayout.Section>
-      )}
       <AktivitetVurderingLayout.Section>
         <HGrid gap="space-32" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">
           <Bostedsadresser tittel="Søkers bostedsadresser" bostedsadresser={sokersBostedsadresser} />
@@ -315,9 +310,10 @@ type PersonInformasjonProps = {
   fnr: string | null
   navn: { fornavn: string; mellomnavn: string | null; etternavn: string } | null
   sivilstand: SivilstandType | null
+  children?: ReactNode
 }
 
-function PersonInformasjon({ tittel, fnr, navn, sivilstand }: PersonInformasjonProps) {
+function PersonInformasjon({ tittel, fnr, navn, sivilstand, children }: PersonInformasjonProps) {
   return (
     <VStack gap="space-4">
       <Heading size="xsmall" level="2">
@@ -335,63 +331,49 @@ function PersonInformasjon({ tittel, fnr, navn, sivilstand }: PersonInformasjonP
         Sivilstand:{' '}
         <BodyShort weight="semibold">{sivilstand ? (SIVILSTAND_TEKST[sivilstand] ?? sivilstand) : 'Ukjent'}</BodyShort>
       </HStack>
+      {children}
     </VStack>
   )
 }
 
-type SivilstandIEktefellePartnersSakInfoProps = {
-  tittel: string
-  sivilstandISak: SivilstandIEktefellePartnersSak
-}
-
-function SivilstandIEktefellePartnersSakInfo({ tittel, sivilstandISak }: SivilstandIEktefellePartnersSakInfoProps) {
-  return (
-    <VStack gap="space-8" maxWidth="1024px">
-      <Heading size="xsmall" level="2">
-        {tittel}
-      </Heading>
-      <SivilstandIEktefellePartnersSakInnhold sivilstandISak={sivilstandISak} />
-    </VStack>
-  )
-}
-
-function SivilstandIEktefellePartnersSakInnhold({
-  sivilstandISak,
-}: {
-  sivilstandISak: SivilstandIEktefellePartnersSak
-}) {
+function VurderingIEktefellePartnersSak({ sivilstandISak }: { sivilstandISak: SivilstandIEktefellePartnersSak }) {
   switch (sivilstandISak.utfall) {
     case 'INGEN_LOPENDE_YTELSE':
-      return <InlineMessage status="info">Har ingen løpende alderspensjon eller uføretrygd.</InlineMessage>
-    case 'SOKER_IKKE_REGISTRERT_SOM_EPS':
+      return <Linje label="Løpende vedtak">Ingen</Linje>
+    case 'EKTEFELLE_PARTNER_REGISTRERT_MED_ANNEN_EPS_ENN_SØKER':
       return (
-        <Alert variant="warning" size="small">
-          Søker er ikke registrert som ektefelle, partner eller samboer i saken om{' '}
-          {SAKSTYPE_TEKST[sivilstandISak.sakstype].toLowerCase()}.
-        </Alert>
+        <>
+          <Linje label="Løpende vedtak">{SAKSTYPE_TEKST[sivilstandISak.sakstype]}</Linje>
+          <Linje label="Vurdert sivilstand">{ANNEN_EPS_TEKST[sivilstandISak.grunnlagsrolle]}</Linje>
+        </>
+      )
+    case 'INGEN_EPS_REGISTRERT':
+      return (
+        <>
+          <Linje label="Løpende vedtak">{SAKSTYPE_TEKST[sivilstandISak.sakstype]}</Linje>
+          <Linje label="Vurdert sivilstand">Ingen ektefelle/partner/samboer registrert</Linje>
+        </>
       )
     case 'VURDERT': {
-      const { sakstype, borMed, fom } = sivilstandISak
+      const { sakstype, vurdering, fom } = sivilstandISak
       return (
-        <VStack gap="space-4">
-          <HStack gap="space-4">
-            Ytelse: <BodyShort weight="semibold">{SAKSTYPE_TEKST[sakstype]}</BodyShort>
-          </HStack>
-          <HStack gap="space-4">
-            Vurdert sivilstand: <BodyShort weight="semibold">{BOR_MED_TEKST[borMed] ?? borMed}</BodyShort>
-          </HStack>
-          <HStack gap="space-4">
-            Gjelder fra og med: <BodyShort weight="semibold">{formatDateToNorwegian(fom)}</BodyShort>
-          </HStack>
-          {!erVarigAdskilt(borMed) && (
-            <Alert variant="warning" size="small">
-              De er ikke vurdert som varig adskilt i den andre saken. Vurderingene må være like i begge sakene.
-            </Alert>
-          )}
-        </VStack>
+        <>
+          <Linje label="Løpende vedtak">{SAKSTYPE_TEKST[sakstype]}</Linje>
+          <Linje label="Vurdert sivilstand">
+            {VURDERT_SIVILSTAND_TEKST[vurdering]} (fra {formatDateToNorwegian(fom)})
+          </Linje>
+        </>
       )
     }
   }
+}
+
+function Linje({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <HStack gap="space-4">
+      {label}: <BodyShort weight="semibold">{children}</BodyShort>
+    </HStack>
+  )
 }
 
 type BostedsadresserProps = {
