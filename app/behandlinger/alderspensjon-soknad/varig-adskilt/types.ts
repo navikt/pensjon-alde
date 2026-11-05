@@ -18,8 +18,8 @@ export const SIVILSTAND_TEKST: Record<SivilstandType, string> = {
 
 export type EktefellePartnerInformasjon = {
   fnr: string
-  navn: NavnTilPerson | null
-  bostedsadresser: Bostedsadresse[] | null
+  navn: NavnTilPerson
+  bostedsadresser: Bostedsadresse[]
   sivilstand: SivilstandType | null
   sivilstandISak: SivilstandIEktefellePartnersSak
 }
@@ -34,6 +34,11 @@ export const SAKSTYPE_TEKST: Record<Sakstype, string> = {
 export const VURDERT_SIVILSTAND_TEKST: Record<VurdertSivilstand, string> = {
   LEVER_ADSKILT: 'Vurdert som enslig',
   LEVER_SAMMEN: 'Vurdert som gift',
+}
+
+export const VURDERT_SIVILSTAND_KORT_TEKST: Record<VurdertSivilstand, string> = {
+  LEVER_ADSKILT: 'Enslig',
+  LEVER_SAMMEN: 'Gift',
 }
 
 export type AnnenEpsRolle = 'EKTEF' | 'PARTNER' | 'SAMBO'
@@ -62,15 +67,13 @@ export type SivilstandIEktefellePartnersSak =
 
 export type VarigAdskiltGrunnlag = {
   sokersBostedsadresser: Bostedsadresse[]
-  sokerSivilstand: SivilstandType | null
-  ektefellePartner: EktefellePartnerInformasjon | null
+  sokerSivilstand: SivilstandType
+  ektefellePartner: EktefellePartnerInformasjon
 }
 
 export type VurdertSivilstand = 'LEVER_ADSKILT' | 'LEVER_SAMMEN'
 
 export type VarigAdskiltVurdering = VurderingBase & {
-  ektefellePartnerFnr?: string | null
   fom: string | null
-  tom: string | null
-  vurdertSivilstand?: VurdertSivilstand | null
+  vurdertSivilstand: VurdertSivilstand
 }

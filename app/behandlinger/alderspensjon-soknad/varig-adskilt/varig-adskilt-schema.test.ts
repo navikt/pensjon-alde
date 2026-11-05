@@ -3,34 +3,18 @@ import { describe, expect, it } from 'vitest'
 import { erPartner, varigAdskiltVurderingSchema } from './varig-adskilt-schema'
 
 const gyldig = {
-  ektefellePartnerFnr: '12345678901',
   vurdertSivilstand: 'LEVER_ADSKILT',
   fom: '01.06.2024',
 }
 
 describe('varigAdskiltVurderingSchema', () => {
-  it('konverterer datoer til ISO og setter tom til null når den mangler', () => {
+  it('konverterer fom til ISO', () => {
     const resultat = varigAdskiltVurderingSchema.parse(gyldig)
 
     expect(resultat).toEqual({
-      ektefellePartnerFnr: '12345678901',
       vurdertSivilstand: 'LEVER_ADSKILT',
       fom: '2024-06-01',
-      tom: null,
     })
-  })
-
-  it('godtar tom etter fom', () => {
-    const resultat = varigAdskiltVurderingSchema.parse({ ...gyldig, tom: '31.12.2024' })
-
-    expect(resultat.tom).toBe('2024-12-31')
-  })
-
-  it('avviser tom før fom', () => {
-    const resultat = varigAdskiltVurderingSchema.safeParse({ ...gyldig, tom: '01.01.2024' })
-
-    expect(resultat.success).toBe(false)
-    expect(resultat.error?.issues[0]?.path).toEqual(['tom'])
   })
 
   it('avviser ugyldig fom', () => {

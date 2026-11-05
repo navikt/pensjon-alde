@@ -6,6 +6,7 @@ import {
   Alert,
   BodyShort,
   Button,
+  CopyButton,
   DatePicker,
   Heading,
   HGrid,
@@ -20,14 +21,13 @@ import { format, isValid, parse } from 'date-fns'
 import type { ReactNode } from 'react'
 import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
-import { createBehandlingApi } from '~/api/behandling-api'
-import type { ToppbarInfo } from '~/api/behandling-api/types'
 import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
 import { userContext } from '~/context/user-context'
 import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
+import { useBehandlingHeaderData } from '~/layout/BehandlingHeaderLayout/use-behandling-header-data'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatDateToNorwegian } from '~/utils/date/formatDateToNorwegian'
@@ -44,6 +44,7 @@ import {
   type SivilstandType,
   type VarigAdskiltGrunnlag,
   type VarigAdskiltVurdering,
+  VURDERT_SIVILSTAND_KORT_TEKST,
   VURDERT_SIVILSTAND_TEKST,
 } from './types'
 import {
@@ -69,12 +70,10 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     behandlingId,
     aktivitetId,
   })
-  const behandlingApi = createBehandlingApi({ request, behandlingId })
 
-  const [grunnlag, vurdering, toppbarinfo] = await Promise.all([
+  const [grunnlag, vurdering] = await Promise.all([
     api.hentGrunnlagsdata<VarigAdskiltGrunnlag>(),
     api.hentVurdering<VarigAdskiltVurdering>(),
-    behandlingApi.hentToppbarinfo(),
   ])
 
   const { enhet } = context.get(userContext)
@@ -83,7 +82,6 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   return {
     grunnlag,
     vurdering,
-    soker: toppbarinfo,
     visNotat,
   }
 }
@@ -119,7 +117,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function VarigAdskiltRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, soker, visNotat } = loaderData
+  const { grunnlag, vurdering, visNotat } = loaderData
 
   const { aktivitet, behandling, avbrytAktivitet, readOnly } = useOutletContext<AktivitetOutletContext>()
 
@@ -128,7 +126,6 @@ export default function VarigAdskiltRoute({ loaderData, actionData }: Route.Comp
       readOnly={readOnly}
       grunnlag={grunnlag}
       vurdering={vurdering}
-      soker={soker}
       aktivitet={aktivitet}
       behandling={behandling}
       avbrytAktivitet={avbrytAktivitet}
@@ -139,7 +136,6 @@ export default function VarigAdskiltRoute({ loaderData, actionData }: Route.Comp
 }
 
 type VarigAdskiltComponentProps = AktivitetComponentProps<VarigAdskiltGrunnlag, VarigAdskiltVurdering> & {
-  soker: ToppbarInfo
   lastResult?: SubmissionResult | null
 }
 
@@ -154,7 +150,6 @@ function VarigAdskiltComponent({
   grunnlag,
   aktivitet,
   vurdering,
-  soker,
   readOnly,
   avbrytAktivitet,
   lastResult,
@@ -162,10 +157,11 @@ function VarigAdskiltComponent({
   visNotat,
 }: VarigAdskiltComponentProps) {
   const isSubmitting = useIsSubmitting()
+  const { toppbarinfo: soker } = useBehandlingHeaderData()
 
   const { sokersBostedsadresser, sokerSivilstand, ektefellePartner } = grunnlag
 
-  const ektefelleTittel = erPartner(ektefellePartner?.sivilstand ?? sokerSivilstand) ? 'Partner' : 'Ektefelle'
+  const ektefelleTittel = erPartner(ektefellePartner.sivilstand ?? sokerSivilstand) ? 'Partner' : 'Ektefelle'
   const ektefelleEieform = ektefelleTittel === 'Partner' ? 'Partners' : 'Ektefelles'
 
   const [form, fields] = useForm<VarigAdskiltVurderingInput, VarigAdskiltVurderingOutput>({
@@ -174,10 +170,8 @@ function VarigAdskiltComponent({
     shouldValidate: 'onSubmit',
     shouldRevalidate: 'onBlur',
     defaultValue: {
-      ektefellePartnerFnr: ektefellePartner?.fnr ?? vurdering?.ektefellePartnerFnr ?? '',
       vurdertSivilstand: vurdering?.vurdertSivilstand ?? undefined,
       fom: tilSkjemaDato(vurdering?.fom),
-      tom: tilSkjemaDato(vurdering?.tom),
       begrunnelse: begrunnelse ?? vurdering?.begrunnelse ?? '',
     },
     onValidate({ formData }) {
@@ -186,19 +180,13 @@ function VarigAdskiltComponent({
   })
 
   const fomDatepicker = useDatepicker({ defaultSelected: fraSkjemaDato(fields.fom.initialValue) })
-  const tomDatepicker = useDatepicker({ defaultSelected: fraSkjemaDato(fields.tom.initialValue) })
 
-  const skjulteFeil = [...(form.errors ?? []), ...(fields.ektefellePartnerFnr.errors ?? [])]
+  const skjulteFeil = form.errors ?? []
 
   const sidebar = (
     <div>
       <Form method="post" className="decision-form" autoComplete="off" {...getFormProps(form)}>
         <VStack gap="space-24">
-          <input
-            type="hidden"
-            name={fields.ektefellePartnerFnr.name}
-            defaultValue={fields.ektefellePartnerFnr.initialValue}
-          />
           <RadioGroup
             legend="Vurder om søker lever varig adskilt"
             name={fields.vurdertSivilstand.name}
@@ -207,8 +195,8 @@ function VarigAdskiltComponent({
             size="small"
             error={fields.vurdertSivilstand.errors?.[0]}
           >
-            <Radio value="LEVER_ADSKILT">Lever varig adskilt</Radio>
-            <Radio value="LEVER_SAMMEN">Lever sammen</Radio>
+            <Radio value="LEVER_ADSKILT">{VURDERT_SIVILSTAND_TEKST.LEVER_ADSKILT}</Radio>
+            <Radio value="LEVER_SAMMEN">{VURDERT_SIVILSTAND_TEKST.LEVER_SAMMEN}</Radio>
           </RadioGroup>
 
           <DatePicker dropdownCaption {...fomDatepicker.datepickerProps}>
@@ -219,17 +207,6 @@ function VarigAdskiltComponent({
               label="Fra og med"
               name={fields.fom.name}
               error={fields.fom.errors?.[0]}
-            />
-          </DatePicker>
-
-          <DatePicker dropdownCaption {...tomDatepicker.datepickerProps}>
-            <DatePicker.Input
-              {...tomDatepicker.inputProps}
-              size="small"
-              readOnly={readOnly}
-              label="Til og med (valgfri)"
-              name={fields.tom.name}
-              error={fields.tom.errors?.[0]}
             />
           </DatePicker>
 
@@ -273,23 +250,14 @@ function VarigAdskiltComponent({
             sivilstand={sokerSivilstand}
           />
 
-          {ektefellePartner ? (
-            <PersonInformasjon
-              tittel={ektefelleTittel}
-              fnr={ektefellePartner.fnr}
-              navn={ektefellePartner.navn}
-              sivilstand={ektefellePartner.sivilstand}
-            >
-              <VurderingIEktefellePartnersSak sivilstandISak={ektefellePartner.sivilstandISak} />
-            </PersonInformasjon>
-          ) : (
-            <VStack gap="space-4">
-              <Heading size="xsmall" level="2">
-                <PersonIcon aria-hidden /> {ektefelleTittel}
-              </Heading>
-              <InlineMessage status="info">Fant ingen ektefelle eller partner.</InlineMessage>
-            </VStack>
-          )}
+          <PersonInformasjon
+            tittel={ektefelleTittel}
+            fnr={ektefellePartner.fnr}
+            navn={ektefellePartner.navn}
+            sivilstand={ektefellePartner.sivilstand}
+          >
+            <VurderingIEktefellePartnersSak sivilstandISak={ektefellePartner.sivilstandISak} />
+          </PersonInformasjon>
         </HGrid>
       </AktivitetVurderingLayout.Section>
       <AktivitetVurderingLayout.Section>
@@ -297,7 +265,7 @@ function VarigAdskiltComponent({
           <Bostedsadresser tittel="Søkers bostedsadresser" bostedsadresser={sokersBostedsadresser} />
           <Bostedsadresser
             tittel={`${ektefelleEieform} bostedsadresser`}
-            bostedsadresser={ektefellePartner?.bostedsadresser ?? []}
+            bostedsadresser={ektefellePartner.bostedsadresser}
           />
         </HGrid>
       </AktivitetVurderingLayout.Section>
@@ -356,12 +324,17 @@ function VurderingIEktefellePartnersSak({ sivilstandISak }: { sivilstandISak: Si
       )
     case 'VURDERT': {
       const { sakstype, vurdering, fom } = sivilstandISak
+      const fomTekst = formatDateToNorwegian(fom)
       return (
         <>
           <Linje label="Løpende vedtak">{SAKSTYPE_TEKST[sakstype]}</Linje>
-          <Linje label="Vurdert sivilstand">
-            {VURDERT_SIVILSTAND_TEKST[vurdering]} (fra {formatDateToNorwegian(fom)})
-          </Linje>
+          <HStack gap="space-4" align="center">
+            Vurdert sivilstand:{' '}
+            <BodyShort weight="semibold">
+              {VURDERT_SIVILSTAND_KORT_TEKST[vurdering]} fra {fomTekst}
+            </BodyShort>
+            <CopyButton data-print-hidden size="small" data-color="accent" copyText={fomTekst} />
+          </HStack>
         </>
       )
     }
