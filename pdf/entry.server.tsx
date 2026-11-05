@@ -121,7 +121,21 @@ export function renderAttestering(input: PdfInput, css: string): string {
     throw new MissingComponentError([...new Set(missing)])
   }
 
-  const router = createMemoryRouter([{ path: '*', element: <LockedAttesteringView {...input} /> }])
+  const behandlingHeaderData = {
+    toppbarinfo: input.toppbarInfo,
+    psakOppgaveoversiktUrl: '',
+    psakPensjonsoversiktUrl: '',
+  }
+  const router = createMemoryRouter(
+    [
+      {
+        id: 'BehandlingHeaderLayout',
+        path: '*',
+        element: <LockedAttesteringView {...input} />,
+      },
+    ],
+    { hydrationData: { loaderData: { BehandlingHeaderLayout: behandlingHeaderData } } },
+  )
   const body = renderToStaticMarkup(<RouterProvider router={router} />)
   return `<!doctype html>
 <html lang="nb">
