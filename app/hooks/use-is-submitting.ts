@@ -1,6 +1,8 @@
-import { useNavigation } from 'react-router'
+import { useNavigation, useSearchParams } from 'react-router'
+import { PROSESSERER_PARAM } from '~/utils/prosessering'
 
 export function useIsSubmitting(): boolean {
   const navigation = useNavigation()
-  return navigation.state !== 'idle' && navigation.formData != null
+  const [searchParams] = useSearchParams()
+  return (navigation.state !== 'idle' && navigation.formData != null) || searchParams.has(PROSESSERER_PARAM)
 }
