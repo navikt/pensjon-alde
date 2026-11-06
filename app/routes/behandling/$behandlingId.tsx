@@ -2,6 +2,7 @@ import { BugIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
 import { BodyLong, BodyShort, Box, Button, HStack, Modal, Process, Show, Textarea, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { Form, Outlet, redirect, useFetcher, useNavigate, useParams, useRevalidator } from 'react-router'
+import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
@@ -13,6 +14,8 @@ import {
   type BehandlingDTO,
   BehandlingStatus,
 } from '~/types/behandling'
+import type { VurderingRespons } from '~/types/vurdering'
+import { erFerdigMedAktivitet, PROSESSERER_PARAM } from '~/utils/prosessering'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
@@ -112,6 +115,24 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
 
   const behandlingFeiler = skalViseFeilende(behandling)
 
+  // Etter lagret vurdering står vi på aktiviteten til pen har prosessert den: videre når
+  // aktiviteten er ferdig, tilbake til aktiviteten (uten lastetilstand) når vurderingen ble avvist.
+  let venterPaProsessering = false
+  if (aktivitetId && url.searchParams.has(PROSESSERER_PARAM)) {
+    if (erFerdigMedAktivitet(behandling, aktivitetId)) {
+      return redirect(`/behandling/${behandlingId}`)
+    }
+
+    const vurdering = await createAktivitetApi({ request, behandlingId, aktivitetId })
+      .hentVurdering<VurderingRespons<unknown>>()
+      .catch(() => null)
+    if (vurdering?.validering?.feil.length) {
+      return redirect(url.pathname)
+    }
+
+    venterPaProsessering = true
+  }
+
   const redirectPath = getRedirectPath({
     pathname: url.pathname,
     behandlingId,
@@ -126,7 +147,9 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     aktivitetId: aktivitetId,
     behandling,
     behandlingId,
-    behandlingJobber: !behandlingFeiler && (Boolean(behandlingJobber) || Boolean(justCompletedId)),
+    behandlingJobber:
+      !behandlingFeiler && !venterPaProsessering && (Boolean(behandlingJobber) || Boolean(justCompletedId)),
+    venterPaProsessering,
     behandlingFeiler,
     isAttestering,
     showStepper: showStepper && !isOppsummering,
@@ -160,7 +183,15 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, behandlingFeiler, showStepper, isAttestering } = loaderData
+  const {
+    aktivitetId,
+    behandling,
+    behandlingJobber,
+    venterPaProsessering,
+    behandlingFeiler,
+    showStepper,
+    isAttestering,
+  } = loaderData
   const retryFetcher = useFetcher()
   const [venterPaRetry, setVenterPaRetry] = useState(false)
   const isLoading = behandlingJobber || venterPaRetry
@@ -253,7 +284,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       : allSteps.length - 1
 
   useEffect(() => {
-    if (!isLoading) return
+    if (!isLoading && !venterPaProsessering) return
 
     const startedAt = Date.now()
     const intervalId = setInterval(() => {
@@ -269,7 +300,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     }, POLL_INTERVAL_MS)
 
     return () => clearInterval(intervalId)
-  }, [isLoading])
+  }, [isLoading, venterPaProsessering])
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {
