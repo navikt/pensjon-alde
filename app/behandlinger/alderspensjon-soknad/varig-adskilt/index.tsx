@@ -29,6 +29,7 @@ import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
+import { type VurderingRespons, valideringsfeilForFelt } from '~/types/vurdering'
 import { formatDateToNorwegian } from '~/utils/date/formatDateToNorwegian'
 import { isFeatureEnabled } from '~/utils/unleash.server'
 import AddressBlock from '../vurder-samboer/AddressBlock/AddressBlock'
@@ -71,10 +72,18 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     aktivitetId,
   })
 
-  const [grunnlag, vurdering] = await Promise.all([
+  const [grunnlag, vurderingRespons] = await Promise.all([
     api.hentGrunnlagsdata<VarigAdskiltGrunnlag>(),
-    api.hentVurdering<VarigAdskiltVurdering>(),
+    api.hentVurdering<VurderingRespons<VarigAdskiltVurdering>>(),
   ])
+
+  const vurdering: VarigAdskiltVurdering | null = vurderingRespons?.vurdering
+    ? {
+        ...vurderingRespons.vurdering,
+        begrunnelse: vurderingRespons.begrunnelse,
+        validering: vurderingRespons.validering,
+      }
+    : null
 
   const { enhet } = context.get(userContext)
   const visNotat = isFeatureEnabled(Features.NOTAT, { enhet: enhet })
@@ -83,6 +92,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     readOnly: false,
     grunnlag,
     vurdering,
+    vurdertTidspunkt: vurderingRespons?.vurdertTidspunkt ?? null,
     visNotat,
   }
 }
@@ -117,12 +127,14 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function VarigAdskiltRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, readOnly, visNotat } = loaderData
+  const { grunnlag, vurdering, vurdertTidspunkt, readOnly, visNotat } = loaderData
 
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
 
   return (
     <VarigAdskiltComponent
+      // Ny lagret vurdering gir nytt skjema, så standardverdiene (og dirty) følger den lagrede vurderingen
+      key={vurdertTidspunkt ?? 'ny'}
       readOnly={readOnly}
       grunnlag={grunnlag}
       vurdering={vurdering}
@@ -158,7 +170,7 @@ function VarigAdskiltComponent({
 }: VarigAdskiltComponentProps) {
   const isSubmitting = useIsSubmitting()
 
-  const { soker, sokersBostedsadresser, sokerSivilstand, ektefellePartner } = grunnlag
+  const { soker, sokersBostedsadresser, sokerSivilstand, ektefellePartner, kravOnsketVirkningsdato } = grunnlag
 
   const ektefelleTittel = erPartner(ektefellePartner.sivilstand ?? sokerSivilstand) ? 'Partner' : 'Ektefelle'
   const ektefelleEieform = ektefelleTittel === 'Partner' ? 'Partners' : 'Ektefelles'
@@ -205,7 +217,10 @@ function VarigAdskiltComponent({
               readOnly={readOnly}
               label="Fra og med"
               name={fields.fom.name}
-              error={fields.fom.errors?.[0]}
+              error={
+                fields.fom.errors?.[0] ??
+                (fields.fom.dirty ? undefined : valideringsfeilForFelt(vurdering?.validering, 'fom'))
+              }
             />
           </DatePicker>
 
@@ -239,6 +254,14 @@ function VarigAdskiltComponent({
         <Alert variant="info" size="small">
           Bruker oppgir i søknad at de lever varig adskilt
         </Alert>
+      </AktivitetVurderingLayout.Section>
+      <AktivitetVurderingLayout.Section>
+        <VStack>
+          <Heading size="xsmall" level="2">
+            Søkt om alderspensjon fra
+          </Heading>
+          {formatDateToNorwegian(kravOnsketVirkningsdato)}
+        </VStack>
       </AktivitetVurderingLayout.Section>
       <AktivitetVurderingLayout.Section>
         <HGrid gap="space-32" columns={{ xs: 1, sm: 2 }} maxWidth="1024px">

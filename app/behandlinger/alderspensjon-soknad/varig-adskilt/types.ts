@@ -88,6 +88,7 @@ export type VarigAdskiltGrunnlag = {
   sokersBostedsadresser: Bostedsadresse[]
   sokerSivilstand: SivilstandType
   ektefellePartner: EktefellePartnerInformasjon
+  kravOnsketVirkningsdato: string
 }
 
 export type VurdertSivilstand = 'LEVER_ADSKILT' | 'LEVER_SAMMEN'
