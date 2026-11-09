@@ -39,7 +39,7 @@ jobs:
       contents: "read"
       id-token: "write"
     if: github.ref == 'refs/heads/main'
-    needs: [build]
+    needs: [build, build-pdf]
     runs-on: 'ubuntu-latest'
 
     strategy:
@@ -83,7 +83,7 @@ jobs:
       contents: "read"
       id-token: "write"
     if: github.ref == 'refs/heads/main'
-    needs: [build-pdf]
+    needs: [build, build-pdf]
     runs-on: 'ubuntu-latest'
 
     strategy:
