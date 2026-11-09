@@ -13,6 +13,7 @@ import {
   type BehandlingDTO,
   BehandlingStatus,
 } from '~/types/behandling'
+import { FORRIGE_KJORING_PARAM, venterPaNyKjoring } from '~/utils/fortsett-behandling'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
@@ -27,12 +28,12 @@ export function getRedirectPath({
   pathname,
   behandlingId,
   behandling,
-  justCompletedId,
+  venterPaKjoring = false,
 }: {
   pathname: string
   behandlingId: string
   behandling: BehandlingDTO
-  justCompletedId: string | null
+  venterPaKjoring?: boolean
 }): string | null {
   const exactBehandlingRoute = pathname === `/behandling/${behandlingId}`
 
@@ -78,11 +79,9 @@ export function getRedirectPath({
     if (aktivitetSomSkalVises?.handlerName === 'attestering') {
       return `/behandling/${behandlingId}/attestering`
     }
-    const shouldRefetchAfterCompletion =
-      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
     if (
       aktivitetSomSkalVises &&
-      !shouldRefetchAfterCompletion &&
+      !venterPaKjoring &&
       behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER
     ) {
       return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
@@ -98,7 +97,6 @@ export function meta({ params }: Route.MetaArgs) {
 export async function loader({ params, request, url, context }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
   const { showStepper } = context.get(settingsContext)
-  const justCompletedId = url.searchParams.get('justCompleted')
 
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
@@ -111,12 +109,13 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
   const behandlingFeiler = skalViseFeilende(behandling)
+  const venter = venterPaNyKjoring(behandling, url.searchParams.get(FORRIGE_KJORING_PARAM))
 
   const redirectPath = getRedirectPath({
     pathname: url.pathname,
     behandlingId,
     behandling,
-    justCompletedId,
+    venterPaKjoring: venter,
   })
   if (redirectPath) {
     return redirect(redirectPath)
@@ -126,7 +125,7 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     aktivitetId: aktivitetId,
     behandling,
     behandlingId,
-    behandlingJobber: !behandlingFeiler && (Boolean(behandlingJobber) || Boolean(justCompletedId)),
+    behandlingJobber: !behandlingFeiler && (Boolean(behandlingJobber) || venter),
     behandlingFeiler,
     isAttestering,
     showStepper: showStepper && !isOppsummering,

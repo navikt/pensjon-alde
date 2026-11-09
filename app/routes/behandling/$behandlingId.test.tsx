@@ -25,7 +25,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123/aktivitet/456',
       behandlingId: '123',
       behandling: mockBehandling,
-      justCompletedId: null,
     })
 
     expect(result).toBeNull()
@@ -36,7 +35,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123/oppsummering',
       behandlingId: '123',
       behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.FULLFORT },
-      justCompletedId: null,
     })
 
     expect(result).toBeNull()
@@ -47,7 +45,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123',
       behandlingId: '123',
       behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.FULLFORT },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/oppsummering')
@@ -58,7 +55,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123',
       behandlingId: '123',
       behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.RETURNERT_TIL_SAKSBEHANDLER },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/attestering-returnert-til-saksbehandler')
@@ -69,7 +65,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123',
       behandlingId: '123',
       behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.AUTOMATISK_TIL_MANUELL },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/avbrutt-automatisk')
@@ -80,7 +75,6 @@ describe('getRedirectPath', () => {
       pathname: '/behandling/123',
       behandlingId: '123',
       behandling: { ...mockBehandling, aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/attestering')
@@ -107,7 +101,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/aktivitet/456')
@@ -134,13 +127,12 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/attestering')
   })
 
-  it('does NOT redirect when justCompletedId matches aktivitet', () => {
+  it('does NOT redirect to aktivitet while waiting for a new kjøring after submit', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123',
       behandlingId: '123',
@@ -161,7 +153,7 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: '456',
+      venterPaKjoring: true,
     })
 
     expect(result).toBeNull()
@@ -188,7 +180,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/aktivitet/456')
@@ -215,7 +206,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/aktivitet/456')
@@ -242,7 +232,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: null,
     })
 
     expect(result).toBeNull()
@@ -282,7 +271,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: null,
     })
 
     expect(result).toBe('/behandling/123/attestering')
@@ -309,7 +297,6 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: null,
     })
 
     expect(result).toBeNull()
@@ -336,7 +323,7 @@ describe('getRedirectPath', () => {
           },
         ] as unknown as BehandlingDTO['aktiviteter'],
       },
-      justCompletedId: '456',
+      venterPaKjoring: true,
     })
 
     expect(result).toBeNull()
@@ -364,7 +351,7 @@ describe('getRedirectPath', () => {
           },
         ],
       },
-      justCompletedId: '999',
+      venterPaKjoring: true,
     })
 
     expect(result).toBeNull()
