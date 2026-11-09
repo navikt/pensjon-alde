@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@conform-to/react": "^1.21.2",
-    "@conform-to/zod": "^1.21.2",
+    "@conform-to/zod": "^1.21.3",
     "@grafana/faro-web-sdk": "^2.13.0",
     "@grafana/faro-web-tracing": "^2.13.0",
     "@navikt/aksel-icons": "^8.22.1",
