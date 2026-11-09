@@ -54,7 +54,6 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { enhet } = context.get(userContext)
   const visNotat = isFeatureEnabled(Features.NOTAT, { enhet: enhet })
   return {
-    readOnly: false,
     samboerInformasjon: grunnlag,
     vurdering,
     visNotat,
@@ -92,9 +91,9 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function VurderSamboerRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { samboerInformasjon, vurdering, readOnly, visNotat } = loaderData
+  const { samboerInformasjon, vurdering, visNotat } = loaderData
 
-  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
+  const { aktivitet, behandling, avbrytAktivitet, readOnly } = useOutletContext<AktivitetOutletContext>()
 
   return (
     <VurdereSamboerComponent

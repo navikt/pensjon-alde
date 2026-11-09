@@ -113,7 +113,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const vurdering = await api.hentVurdering<LivsvarigAfpOffentligVurdering>()
 
   return {
-    readOnly: false,
     grunnlag,
     vurdering,
     visMedMulighetForVurdering,
@@ -289,10 +288,10 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { grunnlag, vurdering, readOnly, psakOppgaveoversiktUrl, visMedMulighetForVurdering } = loaderData
+  const { grunnlag, vurdering, psakOppgaveoversiktUrl, visMedMulighetForVurdering } = loaderData
   const { psakPensjonsoversiktUrl } = useBehandlingHeaderData()
   const { errors } = actionData || {}
-  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
+  const { aktivitet, behandling, avbrytAktivitet, readOnly } = useOutletContext<AktivitetOutletContext>()
 
   if (visMedMulighetForVurdering) {
     return (

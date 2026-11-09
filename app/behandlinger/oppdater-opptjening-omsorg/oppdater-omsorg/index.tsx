@@ -27,11 +27,16 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 export default function OppdaterOmsorgRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { grunnlag, readOnly, visNotat } = loaderData
-  const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
+  const {
+    aktivitet,
+    behandling,
+    avbrytAktivitet,
+    readOnly: aktivitetReadOnly,
+  } = useOutletContext<AktivitetOutletContext>()
 
   return (
     <OppdaterOmsorg
-      readOnly={readOnly}
+      readOnly={readOnly || aktivitetReadOnly}
       manglerTilgang={readOnly}
       grunnlag={grunnlag}
       vurdering={null}

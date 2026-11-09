@@ -24,3 +24,8 @@
     border-right-style: solid;
   }
 }
+
+.stepLenke {
+  font-size: var(--ax-font-size-heading-xsmall);
+  font-weight: var(--ax-font-weight-bold);
+}

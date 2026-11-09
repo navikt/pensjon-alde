@@ -10,6 +10,7 @@ import { Authenticator } from 'remix-auth'
 import { OAuth2Strategy } from 'remix-auth-oauth2'
 import { exchange } from '~/auth/obo.server'
 import { env, isLocalEnv } from '~/utils/env.server'
+import { normalizeRequestUrl } from '~/utils/normalize-request-url'
 
 type User = {
   accessToken: string
@@ -88,7 +89,8 @@ if (isLocalEnv) {
  */
 export async function requireAccessToken(request: Request) {
   function redirectUrl(request: Request) {
-    const searchParams = new URLSearchParams([['returnTo', new URL(request.url).pathname]])
+    // request.url kan være en single fetch-request (`.data`) ved klientnavigasjon
+    const searchParams = new URLSearchParams([['returnTo', normalizeRequestUrl(request.url).pathname]])
     return `/auth/microsoft?${searchParams}`
   }
 
