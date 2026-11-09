@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
+import { fortsettBehandling } from '~/utils/fortsett-behandling'
 import type { OppdaterOpptjeningGrunnlag, OpptjeningstyperResponse } from './opptjening.types'
 import {
   beregnStatus,
@@ -33,10 +34,17 @@ const opptjeningstyper: OpptjeningstyperResponse = {
 }
 
 function fakeApi(overrides: Partial<Record<'hentGrunnlagsdata' | 'lagreVurdering', unknown>> = {}) {
-  return {
+  const api = {
     hentGrunnlagsdata: vi.fn().mockResolvedValue({}),
     lagreVurdering: vi.fn().mockResolvedValue(undefined),
     ...overrides,
+  } as { hentGrunnlagsdata: Mock<() => Promise<unknown>>; lagreVurdering: Mock<(payload: object) => Promise<unknown>> }
+  return {
+    ...api,
+    lagreVurderingOgFortsett: async (payload: object) => {
+      await api.lagreVurdering(payload)
+      return fortsettBehandling({ behandlingId: '1', forrigeKjoring: 'abc' })
+    },
   }
 }
 
@@ -385,7 +393,7 @@ describe('lagreOpptjeningVurdering', () => {
 
     expect(result).toBeInstanceOf(Response)
     expect((result as Response).status).toBe(302)
-    expect((result as Response).headers.get('Location')).toBe('/behandling/1?justCompleted=2')
+    expect((result as Response).headers.get('Location')).toBe('/behandling/1?forrigeKjoring=abc')
   })
 
   it('returnerer violations fra backend som _server-feil ved 400', async () => {

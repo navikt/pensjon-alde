@@ -14,7 +14,7 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import React from 'react'
-import { data, Form, redirect, useOutletContext } from 'react-router'
+import { data, Form, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import { Features } from '~/features'
@@ -137,8 +137,7 @@ export async function action({ params, request }: Route.ActionArgs) {
       utfall: 'ingen',
     }
     try {
-      await api.lagreVurdering(vurdering)
-      return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+      return await api.lagreVurderingOgFortsett(vurdering)
     } catch {
       return data(
         {
@@ -268,8 +267,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   try {
-    await api.lagreVurdering(vurdering)
-    return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+    return await api.lagreVurderingOgFortsett(vurdering)
   } catch {
     return data(
       {

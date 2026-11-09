@@ -6,13 +6,13 @@ import { createBehandlingApi } from '~/api/behandling-api'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
+import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
 import {
-  type AktivitetDTO,
-  AktivitetStatus,
-  AldeBehandlingStatus,
-  type BehandlingDTO,
-  BehandlingStatus,
-} from '~/types/behandling'
+  finnAktivitetSomSkalVises,
+  kanGaTilbakeTilSaksbehandler,
+  venterSaksbehandlerPaAktivitet,
+} from '~/utils/aktivitet-navigering'
+import { FORRIGE_KJORING_PARAM, venterPaNyKjoring } from '~/utils/fortsett-behandling'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
@@ -27,12 +27,12 @@ export function getRedirectPath({
   pathname,
   behandlingId,
   behandling,
-  justCompletedId,
+  venterPaKjoring = false,
 }: {
   pathname: string
   behandlingId: string
   behandling: BehandlingDTO
-  justCompletedId: string | null
+  venterPaKjoring?: boolean
 }): string | null {
   const exactBehandlingRoute = pathname === `/behandling/${behandlingId}`
 
@@ -61,28 +61,13 @@ export function getRedirectPath({
   }
 
   if (behandling.aktiviteter.length > 0) {
-    const erAktivOgVenter = (aktivitet: AktivitetDTO) =>
-      !aktivitet.behandletFerdigMaskinelt &&
-      (aktivitet.status === AktivitetStatus.UNDER_BEHANDLING ||
-        aktivitet.status === AktivitetStatus.FEILET ||
-        aktivitet.status === AktivitetStatus.OPPRETTET)
-
-    let aktivitetSomSkalVises = behandling.aktiviteter.find(
-      aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName && aktivitet.friendlyName,
-    )
-    if (!aktivitetSomSkalVises) {
-      aktivitetSomSkalVises = behandling.aktiviteter.find(
-        aktivitet => erAktivOgVenter(aktivitet) && aktivitet.handlerName,
-      )
-    }
+    const aktivitetSomSkalVises = finnAktivitetSomSkalVises(behandling.aktiviteter)
     if (aktivitetSomSkalVises?.handlerName === 'attestering') {
       return `/behandling/${behandlingId}/attestering`
     }
-    const shouldRefetchAfterCompletion =
-      aktivitetSomSkalVises && justCompletedId && aktivitetSomSkalVises.aktivitetId?.toString() === justCompletedId
     if (
       aktivitetSomSkalVises &&
-      !shouldRefetchAfterCompletion &&
+      !venterPaKjoring &&
       behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER
     ) {
       return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
@@ -98,7 +83,6 @@ export function meta({ params }: Route.MetaArgs) {
 export async function loader({ params, request, url, context }: Route.LoaderArgs) {
   const { aktivitetId, behandlingId } = params
   const { showStepper } = context.get(settingsContext)
-  const justCompletedId = url.searchParams.get('justCompleted')
 
   const api = createBehandlingApi({ request, behandlingId })
   const behandling = await api.hentBehandling()
@@ -111,12 +95,29 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     (!behandling.utsattTil || new Date(behandling.utsattTil) < new Date())
 
   const behandlingFeiler = skalViseFeilende(behandling)
+  const forrigeKjoring = url.searchParams.get(FORRIGE_KJORING_PARAM)
+  const venter = venterPaNyKjoring(behandling, forrigeKjoring)
+
+  if (aktivitetId && forrigeKjoring !== null) {
+    const nesteSide = getRedirectPath({ pathname: `/behandling/${behandlingId}`, behandlingId, behandling })
+    if (!kanGaTilbakeTilSaksbehandler(behandling, aktivitetId)) {
+      return redirect(nesteSide ?? `/behandling/${behandlingId}`)
+    }
+    if (!venter && venterSaksbehandlerPaAktivitet(behandling, aktivitetId)) {
+      return redirect(url.pathname)
+    }
+    if (!venter && !behandlingJobber) {
+      return redirect(nesteSide ?? `/behandling/${behandlingId}`)
+    }
+  }
+
+  const venterPaValidering = Boolean(aktivitetId) && forrigeKjoring !== null
 
   const redirectPath = getRedirectPath({
     pathname: url.pathname,
     behandlingId,
     behandling,
-    justCompletedId,
+    venterPaKjoring: venter,
   })
   if (redirectPath) {
     return redirect(redirectPath)
@@ -126,7 +127,8 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
     aktivitetId: aktivitetId,
     behandling,
     behandlingId,
-    behandlingJobber: !behandlingFeiler && (Boolean(behandlingJobber) || Boolean(justCompletedId)),
+    behandlingJobber: !behandlingFeiler && !venterPaValidering && (Boolean(behandlingJobber) || venter),
+    venterPaValidering,
     behandlingFeiler,
     isAttestering,
     showStepper: showStepper && !isOppsummering,
@@ -160,7 +162,15 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Behandling({ loaderData }: Route.ComponentProps) {
-  const { aktivitetId, behandling, behandlingJobber, behandlingFeiler, showStepper, isAttestering } = loaderData
+  const {
+    aktivitetId,
+    behandling,
+    behandlingJobber,
+    venterPaValidering,
+    behandlingFeiler,
+    showStepper,
+    isAttestering,
+  } = loaderData
   const retryFetcher = useFetcher()
   const [venterPaRetry, setVenterPaRetry] = useState(false)
   const isLoading = behandlingJobber || venterPaRetry
@@ -252,8 +262,10 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       ? allSteps.findIndex(a => a.aktivitetId?.toString() === currentAktivitetId)
       : allSteps.length - 1
 
+  const skalVente = isLoading || venterPaValidering
+
   useEffect(() => {
-    if (!isLoading) return
+    if (!skalVente) return
 
     const startedAt = Date.now()
     const intervalId = setInterval(() => {
@@ -269,7 +281,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     }, POLL_INTERVAL_MS)
 
     return () => clearInterval(intervalId)
-  }, [isLoading])
+  }, [skalVente])
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {

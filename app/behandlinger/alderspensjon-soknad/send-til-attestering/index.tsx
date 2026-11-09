@@ -1,4 +1,4 @@
-import { redirect, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { SendTilAttestering } from '~/components/shared/SendTilAttestering'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
@@ -26,8 +26,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     aktivitetId,
   })
 
-  await api.lagreVurdering({ sendTilAttestering: true })
-  return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+  return api.lagreVurderingOgFortsett({ sendTilAttestering: true })
 }
 
 export default function SendTilAttesteringRoute() {
