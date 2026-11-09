@@ -169,8 +169,8 @@ importers:
   .:
     dependencies:
       '@conform-to/react':
-        specifier: ^1.21.2
-        version: 1.21.2(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^1.21.3
+        version: 1.21.3(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@conform-to/zod':
         specifier: ^1.21.3
         version: 1.21.3(zod@4.6.7)
@@ -489,14 +489,11 @@ packages:
       react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@conform-to/dom@1.21.2':
-    resolution: {integrity: sha512-43LIYhFUPOMtV01LOH9Pes/8vROW7Qgh249ytv0EBfPCR963g0HR6xK6hUD1r2EjM8Zgs17oMZgoRyRT8krH/Q==}
-
   '@conform-to/dom@1.21.3':
     resolution: {integrity: sha512-gaFYBWPCLwIJASd+VQWtcLfJnhn3Fo0/U8NS0LAMvUHuWU6UZ354MqYNUgvkaMtEfPfqSai6p4txdDp9JelDww==}
 
-  '@conform-to/react@1.21.2':
-    resolution: {integrity: sha512-z3I4x3sVL5hl773M8uDXAU98qMLAv3rDf27qPHdrlvru/M/SnsBOUrpFUgkhJpShaj48oMiF3Ms8lBjugwy6uA==}
+  '@conform-to/react@1.21.3':
+    resolution: {integrity: sha512-HvpdcfIGAzvRzff2dBdJT2utn6jzLKHYzTQ+0jQAdQ2emQkzNw4U1g/50xkaRX/cFuCrh1MokL/8TX7JW7AtAQ==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -3914,13 +3911,11 @@ snapshots:
       react-lifecycles-compat: 3.0.4
       warning: 3.0.0
 
-  '@conform-to/dom@1.21.2': {}
-
   '@conform-to/dom@1.21.3': {}
 
-  '@conform-to/react@1.21.2(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
+  '@conform-to/react@1.21.3(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
-      '@conform-to/dom': 1.21.2
+      '@conform-to/dom': 1.21.3
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
 
