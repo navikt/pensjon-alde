@@ -29,20 +29,24 @@ deler komponentkoden i `app/` (det er nettopp komponentene som skal rendres).
 
 ## Filer
 
-| Fil                          | Ansvar                                                  |
-| ---------------------------- | ------------------------------------------------------- |
-| `server.ts`                  | Express, `POST /pdf`, runtime Vite SSR                  |
-| `entry.server.tsx`           | `renderAttestering(input, css)` — låst visning → HTML   |
-| `render-pdf.ts`              | Playwright singleton, `htmlToPdf(html, opts)`           |
-| `pdfa.ts`                    | Ghostscript-konvertering til PDF/A-2b                   |
-| `PDFA_def.ps`                | Ghostscript-prolog (sRGB OutputIntent)                  |
-| `collect-css.ts`             | Samler `app/**/*.css`                                   |
-| `vite-stub-server.ts`        | Vite-plugin som stubber `env.server` + `unleash.server` |
-| `stubs/env.server.ts`        | Ufarlig erstatning for `env.server`                     |
-| `stubs/unleash.server.ts`    | Ufarlig erstatning for `unleash.server`                 |
-| `sample-payload.json`        | Eksempel-input (2 aktiviteter)                          |
-| `sample-payload-broken.json` | Eksempel med ukjent `handlerName` (gir HTTP 422)        |
-| `Dockerfile`                 | Container-image (bygg fra repo-rot)                     |
+| Fil                               | Ansvar                                                  |
+| --------------------------------- | ------------------------------------------------------- |
+| `server.ts`                       | Express, `POST /pdf`, runtime Vite SSR                  |
+| `entry.server.tsx`                | `renderAttestering(input, css)` — låst visning → HTML   |
+| `render-pdf.ts`                   | Playwright singleton, `htmlToPdf(html, opts)`           |
+| `pdfa.ts`                         | Ghostscript-konvertering til PDF/A-2b                   |
+| `PDFA_def.ps`                     | Ghostscript-prolog (sRGB OutputIntent)                  |
+| `collect-css.ts`                  | Samler `app/**/*.css`                                   |
+| `vite-stub-server.ts`             | Vite-plugin som stubber `env.server` + `unleash.server` |
+| `stubs/env.server.ts`             | Ufarlig erstatning for `env.server`                     |
+| `stubs/unleash.server.ts`         | Ufarlig erstatning for `unleash.server`                 |
+| `sample-payload.json`             | Eksempel-input (2 aktiviteter)                          |
+| `sample-payload-broken.json`      | Eksempel med ukjent `handlerName` (gir HTTP 422)        |
+| `Dockerfile`                      | Container-image (bygg fra repo-rot)                     |
+| `fonts.ts`                        | Lokale kopier av Aksel-fontene (`fonts/`)               |
+| `fonts.test.ts`                   | Enhetstest: fontene i `ds-css` finnes lokalt            |
+| `pdf-service.integration.test.ts` | Integrasjonstest mot Docker-imaget                      |
+| `integration/`                    | Oppsett for integrasjonstesten (Docker, verktøy-image)  |
 
 ## API
 
@@ -102,12 +106,57 @@ Deretter kan du verifisere med curl (se «Verifisere med curl» under Docker).
 
 ## Docker
 
+Imaget bygger på Chainguards Wolfi-baserte Node-image (`nav.no/node:26-dev`) fra Navs
+pull-through-register i Artifact Registry. Chromium, Ghostscript og Liberation-fonter (fallback)
+installeres med `apk`. `-dev`-varianten brukes fordi den har `apk` og shell, som Chromium-pakken
+trenger.
+
+### Autentisering mot Chainguard-registeret
+
+Basebildene hentes fra Navs pull-through-register
+`europe-north1-docker.pkg.dev/cgr-nav/pull-through/`. Docker må være logget inn med
+Nav-kontoen din via `gcloud` før du kan bygge imaget (eller kjøre integrasjonstesten).
+
+1. Installer Google Cloud CLI (én gang):
+
+   ```sh
+   brew install --cask google-cloud-sdk
+   ```
+
+2. Logg inn med `@nav.no`-kontoen:
+
+   ```sh
+   gcloud auth login
+   ```
+
+3. Koble Docker til registeret (én gang). Dette legger inn `gcloud` som credential helper
+   for `europe-north1-docker.pkg.dev` i `~/.docker/config.json`:
+
+   ```sh
+   gcloud auth configure-docker europe-north1-docker.pkg.dev
+   ```
+
+4. Sjekk at det virker:
+
+   ```sh
+   docker pull europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/node:26
+   ```
+
+Får du `401 Unauthorized`, `403 Forbidden` eller `denied` senere, har innloggingen som regel
+utløpt. Kjør `gcloud auth login` på nytt. I CI håndteres innloggingen av
+`nais/docker-build-push`.
+
+### Bygge og kjøre
+
 Bygg **fra repo-roten** (konteksten må inneholde `app/` og `package.json`):
 
 ```sh
-docker build -f pdf/Dockerfile -t alde-pdf .
+docker build --pull -f pdf/Dockerfile -t alde-pdf .
 docker run --rm -p 8090:8090 alde-pdf
 ```
+
+`--pull` henter siste versjon av basebildet, slik at lokale bygg får samme
+sikkerhetsoppdateringer som CI.
 
 ### Verifisere med curl
 
@@ -152,6 +201,74 @@ curl -s -w '\nHTTP %{http_code}\n' \
 curl -s -o /dev/null -w 'live: HTTP %{http_code}\n' http://localhost:8090/internal/live
 ```
 
+## Tester
+
+### Enhetstester
+
+`pdf/**/*.test.ts` kjøres sammen med resten av appens tester:
+
+```sh
+pnpm test:ci
+```
+
+### Integrasjonstest
+
+`pdf-service.integration.test.ts` bygger Docker-imaget, starter det på en ledig port og tester
+tjenesten over HTTP. Den kjøres ikke av `pnpm test:ci`.
+
+Forutsetninger:
+
+- Docker kjører (OrbStack, Colima, Docker Desktop e.l.). Testen starter ikke Docker selv, men
+  feiler med `Docker kjører ikke` hvis den ikke svarer.
+- Innlogget mot Chainguard-registeret (se
+  [Autentisering mot Chainguard-registeret](#autentisering-mot-chainguard-registeret)).
+
+```sh
+pnpm test:pdf-integration
+```
+
+Testen sjekker:
+
+- helsesjekker (`/internal/live`, `/internal/ready`, `/ping`) og `/metrics`
+- `format=pdfa`, `format=pdf`, default-format og varianter (`pdf-a`, `PDFA`)
+- at PDF/A-en er gyldig PDF/A-2b (veraPDF)
+- at Aksel-fonten Source Sans 3 er brukt og ingen fallback-fonter (`pdffonts`)
+- feilsvar: ukjent format (`400`), ukjent `handlerName` (`422`), ugyldig JSON (`400`)
+- parallelle forespørsler
+- at tjenesten rendrer PDF/A i en container uten nettverk (`--network none`)
+
+veraPDF og `pdffonts` kjøres i Docker (`verapdf/cli` og et lite verktøy-image fra
+`integration/tools.Dockerfile`), så ingenting trenger å installeres på maskinen. PDF-ene kopieres
+inn i verktøy-containerne med `docker cp`, så testen er ikke avhengig av hvilke mapper Docker-miljøet
+deler med maskinen (Colima deler for eksempel som standard bare hjemmemappen). `verapdf/cli` finnes bare for
+`linux/amd64` og kjøres emulert på Apple Silicon.
+
+PDF-ene lagres i `$TMPDIR/alde-pdf-integration/` og stien skrives ut til slutt. macOS rydder
+mappen automatisk.
+
+Miljøvariabler:
+
+| Variabel               | Effekt                                                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PDF_BASE_URL`         | Test mot en tjeneste som allerede kjører, f.eks. `http://localhost:8090`. Bygger og starter ingen container, og hopper over testen uten nettverk. |
+| `PDF_SKIP_BUILD=1`     | Gjenbruk eksisterende image i stedet for å bygge                                                                                                  |
+| `PDF_PULL=1`           | Bygg med `--pull` (siste basebilder)                                                                                                              |
+| `PDF_IMAGE`            | Navn på tjeneste-imaget (default `alde-pdf:integration-test`)                                                                                     |
+| `PDF_TOOLS_IMAGE`      | Navn på verktøy-imaget med `pdffonts`                                                                                                             |
+| `PDF_VERAPDF_IMAGE`    | veraPDF-image (default `verapdf/cli:latest`)                                                                                                      |
+| `PDF_VERAPDF_PLATFORM` | Plattform for veraPDF-imaget (default `linux/amd64`)                                                                                              |
+| `PDF_OUT_DIR`          | Hvor PDF-ene lagres. Relative stier gjøres absolutte fra mappen testen kjøres fra.                                                                |
+
+Eksempel mot en container du allerede har startet:
+
+```sh
+docker run --rm -p 8090:8090 alde-pdf
+PDF_BASE_URL=http://localhost:8090 pnpm test:pdf-integration
+```
+
+Hvis oppsettet feiler, skriver Vitest også `No test files found`. Den egentlige årsaken står i
+feilmeldingen som starter med `PDF-integrasjonstesten kunne ikke starte:`.
+
 ## PDF/A
 
 Chromium lager vanlig PDF, ikke PDF/A. Med `?format=pdfa` (default) konverteres
@@ -174,8 +291,30 @@ Dokumentet får også arkivmetadata (fra `behandling` og `toppbarInfo`, UTF-16 s
 
 ## Notater / begrensninger
 
-- Basebildet `mcr.microsoft.com/playwright:v1.64.1-noble` må matche `playwright`-
-  versjonen i `package.json` (Chromium ligger ferdig i bildet).
+- Basebildet (`nav.no/node:26-dev`) og apk-pakkene er ikke låst til en versjon; hvert
+  bygg får siste patchede versjon fra Chainguard.
+- Playwright bruker systemets Chromium fra Wolfi (`PLAYWRIGHT_EXECUTABLE_PATH=/usr/bin/chromium`),
+  ikke nettleseren Playwright selv laster ned. Chromium-versjonen følger derfor Wolfi og
+  ikke `playwright`-versjonen i `package.json`. Hvis rendering feiler etter et nytt bygg,
+  sjekk om ny Chromium er inkompatibel med Playwright-versjonen.
+- Wolfi legger ICC-profilen i `/usr/share/ghostscript/iccprofiles/srgb.icc` (uten
+  versjonsmappe); `pdfa.ts` sjekker både denne og Debian-stiene.
+- Tjenesten skal aldri gjøre utgående kall: den mottar data, rendrer og returnerer PDF.
+- Appfilene i imaget eies av root og er skrivebeskyttet for `node`-brukeren. Vite-cachen
+  ligger i `os.tmpdir()`.
+- Aksel-fonten (Source Sans 3) ligger i `pdf/fonts/` som kopier av filene på
+  `cdn.nav.no/aksel/fonts/`. `render-pdf.ts` fanger opp Chromiums forespørsler mot CDN-en med
+  `page.route` og svarer med de lokale filene (`fonts.ts`), så `@navikt/ds-css` brukes uendret og
+  tjenesten trenger ingen utgående nettverkstilgang. Mangler en fil, feiler rendringen.
+  `fonts.test.ts` feiler hvis `@navikt/ds-css` refererer fonter som ikke finnes lokalt. Hent dem da med:
+
+  ```sh
+  for u in $(grep -o 'https://cdn\.nav\.no/aksel/fonts/[^")]*' node_modules/@navikt/ds-css/dist/index.css | sort -u); do
+    curl -sSf -o "pdf/fonts/$(basename "$u")" "$u"
+  done
+  ```
+- pnpm installeres med `npm install -g` i versjonen fra `packageManager` i `package.json`
+  (ingen corepack).
 - `--ignore-scripts` under install hopper over repoets `prepare` (lefthook, krever git);
   plattform-binærene (esbuild/rollup/lightningcss) kommer fra optional deps.
 - Stubben setter `isMockEnv = true`. Riktig for en ren render-runtime, men en komponent
