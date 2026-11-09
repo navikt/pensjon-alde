@@ -40,6 +40,7 @@ export default [
   route('/auth/callback', './auth/callback.tsx'),
   route('/auth/microsoft', './auth/microsoft.tsx'),
   route('/settings', 'routes/settings.tsx'),
+  route('/api/behandling/:behandlingId/events', 'routes/api/behandling-events.ts'),
 
   layout('layout/BehandlingHeaderLayout/index.tsx', { id: 'BehandlingHeaderLayout' }, [
     route('/behandling/:behandlingId', 'routes/behandling/$behandlingId.tsx', [
