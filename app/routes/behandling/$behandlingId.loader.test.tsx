@@ -165,6 +165,48 @@ describe('$behandlingId loader – venter på ny kjøring etter innsending', () 
   })
 })
 
+describe('$behandlingId loader – på en aktivitet mens maskinen jobber', () => {
+  function callAktivitetLoader(behandling: BehandlingDTO) {
+    hentBehandling.mockResolvedValue(behandling)
+    const request = new Request('https://alde.intern.nav.no/behandling/123/aktivitet/456/alderspensjon-soknad/x')
+    return loader({
+      params: { behandlingId: '123', aktivitetId: '456' },
+      request,
+      url: new URL(request.url),
+      context: createContext(),
+    } as never)
+  }
+
+  beforeEach(() => {
+    hentBehandling.mockReset()
+  })
+
+  it('går til behandlingen, som venter og deretter finner riktig side', async () => {
+    const result = await callAktivitetLoader({
+      ...mockBehandling,
+      aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
+    })
+
+    expect((result as Response).headers.get('Location')).toBe('/behandling/123')
+  })
+
+  it('blir stående på aktiviteten når saksbehandler skal jobbe med den', async () => {
+    const result = await callAktivitetLoader(mockBehandling)
+
+    expect(result).not.toBeInstanceOf(Response)
+  })
+
+  it('blir stående og viser feilen når behandlingen feiler', async () => {
+    const result = await callAktivitetLoader({
+      ...mockBehandling,
+      status: BehandlingStatus.FEILENDE,
+      aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
+    })
+
+    expect(result).not.toBeInstanceOf(Response)
+  })
+})
+
 describe('$behandlingId loader – venter på validering på aktiviteten', () => {
   const aktivitetUrl = 'https://alde.intern.nav.no/behandling/123/aktivitet/456/alderspensjon-soknad/varig-adskilt'
 

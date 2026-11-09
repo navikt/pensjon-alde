@@ -40,3 +40,9 @@ export function kanGaTilbakeTilSaksbehandler(behandling: BehandlingDTO, aktivite
   const aktivitet = behandling.aktiviteter.find(a => a.aktivitetId.toString() === aktivitetId)
   return aktivitet !== undefined && APNE_AKTIVITETSTATUSER.includes(aktivitet.status)
 }
+
+export function aktivitetPath(behandlingId: string | number, aktivitet: AktivitetDTO) {
+  return aktivitet.handlerName === 'attestering'
+    ? `/behandling/${behandlingId}/attestering`
+    : `/behandling/${behandlingId}/aktivitet/${aktivitet.aktivitetId}`
+}
