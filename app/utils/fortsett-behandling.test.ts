@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { BehandlingDTO } from '~/types/behandling'
-import { erProsessertEtter, fortsettBehandling, fortsettBehandlingUrl, venterPaNyKjoring } from './fortsett-behandling'
+import {
+  erProsessertEtter,
+  fortsettBehandling,
+  fortsettBehandlingUrl,
+  medForrigeKjoring,
+  venterPaNyKjoring,
+  venterPaValideringPaAktivitet,
+} from './fortsett-behandling'
 
 const behandling = (uuid: string | null) => ({ sisteKjoring: uuid === null ? null : { uuid } }) as BehandlingDTO
 
@@ -44,5 +51,28 @@ describe('venterPaNyKjoring', () => {
 
   it('venter når kjøringen er den samme som før innsending', () => {
     expect(venterPaNyKjoring(behandling('abc'), 'abc')).toBe(true)
+  })
+})
+
+describe('medForrigeKjoring', () => {
+  it('legger siste kjøring før innsending på en vilkårlig sti', () => {
+    expect(medForrigeKjoring('/behandling/123/aktivitet/456/a/b', 'abc')).toBe(
+      '/behandling/123/aktivitet/456/a/b?forrigeKjoring=abc',
+    )
+  })
+})
+
+describe('venterPaValideringPaAktivitet', () => {
+  it('venter på aktiviteten når søkeparameteren er satt', () => {
+    expect(venterPaValideringPaAktivitet('456', new URLSearchParams('forrigeKjoring=abc'))).toBe(true)
+    expect(venterPaValideringPaAktivitet('456', new URLSearchParams('forrigeKjoring='))).toBe(true)
+  })
+
+  it('venter ikke uten søkeparameter', () => {
+    expect(venterPaValideringPaAktivitet('456', new URLSearchParams())).toBe(false)
+  })
+
+  it('venter ikke på aktiviteten utenfor en aktivitetsrute', () => {
+    expect(venterPaValideringPaAktivitet(undefined, new URLSearchParams('forrigeKjoring=abc'))).toBe(false)
   })
 })

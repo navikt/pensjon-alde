@@ -164,3 +164,157 @@ describe('$behandlingId loader – venter på ny kjøring etter innsending', () 
     expect(result.behandlingJobber).toBe(true)
   })
 })
+
+describe('$behandlingId loader – venter på validering på aktiviteten', () => {
+  const aktivitetUrl = 'https://alde.intern.nav.no/behandling/123/aktivitet/456/alderspensjon-soknad/varig-adskilt'
+
+  const aktivitet = (aktivitetId: number, status: AktivitetStatus): AktivitetDTO => ({
+    aktivitetId,
+    type: 'FleksibelApSak_VarigAdskilt',
+    opprettet: '2024-01-01T10:00:00Z',
+    handlerName: 'varig-adskilt',
+    friendlyName: 'Varig adskilt',
+    antallGangerKjort: 1,
+    sisteAktiveringsdato: '2024-01-01T10:00:00Z',
+    status,
+    utsattTil: null,
+    behandletFerdigMaskinelt: false,
+  })
+
+  const medKjoring = (uuid: string, overrides: Partial<BehandlingDTO> = {}): BehandlingDTO => ({
+    ...mockBehandling,
+    aktiviteter: [aktivitet(456, AktivitetStatus.UNDER_BEHANDLING)],
+    sisteKjoring: {
+      behandlingId: 123,
+      aktivitetId: 456,
+      startet: '2024-01-01T10:00:00Z',
+      avsluttet: '2024-01-01T10:00:01Z',
+      uuid,
+      traceId: null,
+      behandlingKjoringId: null,
+      correlationId: 'c',
+      feilmelding: null,
+      stackTrace: null,
+    },
+    ...overrides,
+  })
+
+  function callAktivitetLoader(behandling: BehandlingDTO) {
+    hentBehandling.mockResolvedValue(behandling)
+    const request = new Request(`${aktivitetUrl}?forrigeKjoring=gammel`)
+    return loader({
+      params: { behandlingId: '123', aktivitetId: '456' },
+      request,
+      url: new URL(request.url),
+      context: createContext(),
+    } as never)
+  }
+
+  beforeEach(() => {
+    hentBehandling.mockReset()
+  })
+
+  it('blir stående på aktiviteten uten lasteskjerm før det har kommet en ny kjøring', async () => {
+    const result = (await callAktivitetLoader(medKjoring('gammel'))) as {
+      venterPaValidering: boolean
+      behandlingJobber: boolean
+    }
+
+    expect(result).not.toBeInstanceOf(Response)
+    expect(result.venterPaValidering).toBe(true)
+    expect(result.behandlingJobber).toBe(false)
+  })
+
+  it('blir stående på aktiviteten når maskinen jobber uten ny kjøring', async () => {
+    const result = (await callAktivitetLoader(
+      medKjoring('gammel', { aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL }),
+    )) as { venterPaValidering: boolean; behandlingJobber: boolean }
+
+    expect(result).not.toBeInstanceOf(Response)
+    expect(result.venterPaValidering).toBe(true)
+    expect(result.behandlingJobber).toBe(false)
+  })
+
+  it('viser valideringsfeilene på aktiviteten når ny kjøring har avvist vurderingen', async () => {
+    const result = await callAktivitetLoader(medKjoring('ny'))
+
+    expect((result as Response).headers.get('Location')).toBe(
+      '/behandling/123/aktivitet/456/alderspensjon-soknad/varig-adskilt',
+    )
+  })
+
+  it('går til behandlingen når maskinen jobber videre etter godkjent vurdering', async () => {
+    const result = await callAktivitetLoader(
+      medKjoring('ny', {
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
+        aktiviteter: [aktivitet(456, AktivitetStatus.FULLFORT)],
+      }),
+    )
+
+    expect((result as Response).headers.get('Location')).toBe('/behandling/123')
+  })
+
+  it('går rett til neste aktivitet når den venter på saksbehandler', async () => {
+    const result = await callAktivitetLoader(
+      medKjoring('ny', {
+        aktiviteter: [aktivitet(456, AktivitetStatus.FULLFORT), aktivitet(789, AktivitetStatus.UNDER_BEHANDLING)],
+      }),
+    )
+
+    expect((result as Response).headers.get('Location')).toBe('/behandling/123/aktivitet/789')
+  })
+
+  it('går rett til attestering når behandlingen venter på attestering', async () => {
+    const result = await callAktivitetLoader(
+      medKjoring('ny', {
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING,
+        aktiviteter: [aktivitet(456, AktivitetStatus.FULLFORT)],
+      }),
+    )
+
+    expect((result as Response).headers.get('Location')).toBe('/behandling/123/attestering')
+  })
+
+  it('går videre så snart aktiviteten er fullført', async () => {
+    const result = await callAktivitetLoader(
+      medKjoring('gammel', {
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
+        aktiviteter: [aktivitet(456, AktivitetStatus.FULLFORT)],
+      }),
+    )
+
+    expect((result as Response).headers.get('Location')).toBe('/behandling/123')
+  })
+
+  it('blir stående når maskinen har kjørt noe annet først og aktiviteten fortsatt kan bli avvist', async () => {
+    const result = (await callAktivitetLoader(
+      medKjoring('ny', { aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL }),
+    )) as { venterPaValidering: boolean; behandlingJobber: boolean }
+
+    expect(result).not.toBeInstanceOf(Response)
+    expect(result.venterPaValidering).toBe(true)
+    expect(result.behandlingJobber).toBe(false)
+  })
+
+  it('går til behandlingen når den er utsatt etter ny kjøring', async () => {
+    const result = await callAktivitetLoader(
+      medKjoring('ny', {
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
+        utsattTil: '2999-01-01T00:00:00',
+      }),
+    )
+
+    expect((result as Response).headers.get('Location')).toBe('/behandling/123')
+  })
+
+  it('går til behandlingen når den feiler etter ny kjøring', async () => {
+    const result = await callAktivitetLoader(
+      medKjoring('ny', {
+        status: BehandlingStatus.FEILENDE,
+        aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
+      }),
+    )
+
+    expect((result as Response).headers.get('Location')).toBe('/behandling/123')
+  })
+})

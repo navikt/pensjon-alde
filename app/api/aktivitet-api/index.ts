@@ -1,6 +1,7 @@
+import { redirect } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import { env } from '~/utils/env.server'
-import { fortsettBehandling } from '~/utils/fortsett-behandling'
+import { medForrigeKjoring } from '~/utils/fortsett-behandling'
 import { fetcher } from '../api-client'
 import { aktivitetApi } from './aktivitet-api.server'
 
@@ -21,7 +22,8 @@ export function createAktivitetApi({ request, behandlingId, aktivitetId }: Aktiv
   const lagreVurderingOgFortsett = async <T extends object>(payload: T) => {
     const { sisteKjoring } = await createBehandlingApi({ request, behandlingId }).hentBehandling()
     await api.lagreVurdering(payload)
-    return fortsettBehandling({ behandlingId, forrigeKjoring: sisteKjoring?.uuid ?? null })
+    const aktivitetPathname = new URL(request.url).pathname.replace(/\.data$/, '')
+    return redirect(medForrigeKjoring(aktivitetPathname, sisteKjoring?.uuid ?? null))
   }
 
   return { ...api, lagreVurderingOgFortsett }
