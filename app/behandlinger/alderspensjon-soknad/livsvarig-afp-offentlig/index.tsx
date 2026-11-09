@@ -18,6 +18,7 @@ import { data, Form, redirect, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import { Features } from '~/features'
+import { useAktivitetFeil } from '~/hooks/use-aktivitet-feil'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import { useBehandlingHeaderData } from '~/layout/BehandlingHeaderLayout/use-behandling-header-data'
 import type { AktivitetComponentProps, FormErrors } from '~/types/aktivitet-component'
@@ -291,8 +292,9 @@ export async function action({ params, request }: Route.ActionArgs) {
 export default function LivsvarigAfpOffentligRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { grunnlag, vurdering, readOnly, psakOppgaveoversiktUrl, visMedMulighetForVurdering } = loaderData
   const { psakPensjonsoversiktUrl } = useBehandlingHeaderData()
-  const { errors } = actionData || {}
+  const { errors: actionErrors } = actionData || {}
   const { aktivitet, behandling, avbrytAktivitet } = useOutletContext<AktivitetOutletContext>()
+  const errors = useAktivitetFeil(actionErrors)
 
   if (visMedMulighetForVurdering) {
     return (
@@ -439,7 +441,9 @@ function AfpLivsvarigVurdering(
                   size="small"
                   error={errors?.utfall}
                 >
-                  <Radio value="innvilget">Innvilget</Radio>
+                  <Radio id="utfall" value="innvilget">
+                    Innvilget
+                  </Radio>
                   <Radio value="ingen">Avslått</Radio>
                 </RadioGroup>
 
@@ -448,6 +452,7 @@ function AfpLivsvarigVurdering(
                     {soknadTpLeverandorer.length > 1 && (
                       <Select
                         label="Velg søknad"
+                        id="tpLeverandor"
                         name="tpLeverandor"
                         defaultValue={vurdering?.utfall === 'innvilget' ? vurdering.tpNummer.toString() : ''}
                         size="small"
@@ -468,6 +473,7 @@ function AfpLivsvarigVurdering(
 
                     <TextField
                       label="Beløp per måned (kr)"
+                      id="belop"
                       name="belop"
                       type="number"
                       size="small"
@@ -482,6 +488,7 @@ function AfpLivsvarigVurdering(
                     {sortedGrunnbelop.length > 1 ? (
                       <Select
                         label="Sist regulert"
+                        id="sistRegulert"
                         name="sistRegulert"
                         defaultValue={defaultSistRegulert}
                         size="small"
@@ -509,6 +516,7 @@ function AfpLivsvarigVurdering(
                     ) : (
                       <TextField
                         label="Sist regulert"
+                        id="sistRegulert"
                         name="sistRegulert"
                         type="number"
                         size="small"
@@ -522,6 +530,7 @@ function AfpLivsvarigVurdering(
                         {...inputProps}
                         size="small"
                         label="Virkningsdato (f.o.m.)"
+                        id="virkFom"
                         name="virkFom"
                         error={errors?.virkFom}
                       />
