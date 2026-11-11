@@ -35,6 +35,8 @@ import { DATO_FORMAT, type SamboerVurderingInput, samboerVurderingSchema } from 
 import type { SamboerVurderingRespons, VurderSamboerGrunnlag } from './samboer-types'
 import { normaliserSamboerVurdering, tilSamboerVurderingPayload } from './samboer-vurdering'
 
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
+
 export function meta() {
   return [{ title: `Samboervurdering` }, { name: 'description', content: 'Samboervurdering' }]
 }

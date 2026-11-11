@@ -56,6 +56,8 @@ import {
   varigAdskiltVurderingSchema,
 } from './varig-adskilt-schema'
 
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
+
 export function meta() {
   return [
     { title: 'Varig adskilt' },

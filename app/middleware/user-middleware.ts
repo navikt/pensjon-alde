@@ -1,7 +1,10 @@
+import NodeCache from 'node-cache'
 import type { MiddlewareFunction } from 'react-router'
 import { requireAccessToken } from '~/auth/auth.server'
 import { type UserContext, userContext } from '~/context/user-context'
 import { env, isMockEnv } from '~/utils/env.server'
+
+const meCache = new NodeCache({ stdTTL: 300, checkperiod: 60 })
 
 export const userMiddleware: MiddlewareFunction = async ({ request, context }) => {
   const url = new URL(request.url)
@@ -21,6 +24,12 @@ export const userMiddleware: MiddlewareFunction = async ({ request, context }) =
   }
 
   const token = await requireAccessToken(request)
+  const cachedMe = meCache.get<UserContext>(token)
+  if (cachedMe) {
+    context.set(userContext, cachedMe)
+    return
+  }
+
   const penUrl = `${env.penUrl}/api/saksbehandling/alde`
 
   // Fetch me data using token from context
@@ -36,5 +45,6 @@ export const userMiddleware: MiddlewareFunction = async ({ request, context }) =
   }
 
   const me: UserContext = await meResponse.json()
+  meCache.set(token, me)
   context.set(userContext, me)
 }

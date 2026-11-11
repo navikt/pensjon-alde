@@ -1,12 +1,15 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
 import { BodyShort, InfoCard, Page } from '@navikt/ds-react'
-import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
+import { Suspense } from 'react'
+import { Await, Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
 import type { AktivitetDTO } from '~/types/behandling'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
+
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
 
 export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Aktivitet ${params.aktivitetId}` }, { name: 'description', content: 'Aktivitet detaljer' }]
@@ -42,40 +45,21 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const showDebug = process.env.NAIS_CLUSTER_NAME !== 'prod-gcp'
 
-  // Fetch debug data if debug parameter is present
-  let debugData = { grunnlag: null, vurdering: null }
-
-  if (showDebug) {
-    try {
-      const aktivitetApi = createAktivitetApi({
-        request,
-        behandlingId,
-        aktivitetId,
-      })
-
-      const [grunnlag, vurdering] = await Promise.all([
-        aktivitetApi
-          // biome-ignore lint/suspicious/noExplicitAny: Bare for debug, og vet ikke hvordan grunnlag ser ut for aktivitet
-          .hentGrunnlagsdata<any>()
-          .catch(() => null),
-        aktivitetApi
-          // biome-ignore lint/suspicious/noExplicitAny: Bare for debug, og vet ikke hvordan vurdering ser ut for aktivitet
-          .hentVurdering<any>()
-          .catch(() => null),
-      ])
-
-      debugData = { grunnlag, vurdering }
-    } catch (error) {
-      console.error('Debug data fetch error:', error)
-    }
-  }
+  // Debugdata venter vi ikke på: promiset strømmes til klienten og vises når det er klart
+  const debug = showDebug ? hentDebugdata(createAktivitetApi({ request, behandlingId, aktivitetId })) : null
 
   return {
     behandling,
     aktivitet,
-    debug: debugData,
-    showDebug,
+    debug,
   }
+}
+
+function hentDebugdata(api: ReturnType<typeof createAktivitetApi>) {
+  return Promise.all([
+    api.hentGrunnlagsdata<unknown>().catch(() => null),
+    api.hentVurdering<unknown>().catch(() => null),
+  ]).then(([grunnlag, vurdering]) => ({ grunnlag, vurdering }))
 }
 
 export async function action({ params, request }: Route.ActionArgs) {
@@ -89,7 +73,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandling, aktivitet, debug, showDebug } = loaderData
+  const { behandling, aktivitet, debug } = loaderData
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
 
@@ -116,7 +100,11 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
           </InfoCard>
         </Page.Block>
       )}
-      {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
+      {debug && (
+        <Suspense fallback={null}>
+          <Await resolve={debug}>{data => <AktivitetDebug input={data.grunnlag} vurdering={data.vurdering} />}</Await>
+        </Suspense>
+      )}
     </Page.Block>
   )
 }
