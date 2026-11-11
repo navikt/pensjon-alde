@@ -277,12 +277,15 @@ describe('$behandlingId loader – venter på validering på aktiviteten', () =>
     expect(result.behandlingJobber).toBe(false)
   })
 
-  it('viser valideringsfeilene på aktiviteten når ny kjøring har avvist vurderingen', async () => {
-    const result = await callAktivitetLoader(medKjoring('ny'))
+  it('viser valideringsfeilene på aktiviteten uten redirect når ny kjøring har avvist vurderingen', async () => {
+    const result = (await callAktivitetLoader(medKjoring('ny'))) as {
+      venterPaValidering: boolean
+      behandlingJobber: boolean
+    }
 
-    expect((result as Response).headers.get('Location')).toBe(
-      '/behandling/123/aktivitet/456/alderspensjon-soknad/varig-adskilt',
-    )
+    expect(result).not.toBeInstanceOf(Response)
+    expect(result.venterPaValidering).toBe(false)
+    expect(result.behandlingJobber).toBe(false)
   })
 
   it('går til behandlingen når maskinen jobber videre etter godkjent vurdering', async () => {

@@ -6,7 +6,9 @@ import {
   Outlet,
   redirect,
   useFetcher,
+  useLocation,
   useNavigate,
+  useNavigation,
   useParams,
   useRevalidator,
   useSearchParams,
@@ -31,9 +33,11 @@ import {
   kanGaTilbakeTilSaksbehandler,
   venterSaksbehandlerPaAktivitet,
 } from '~/utils/aktivitet-navigering'
-import { FORRIGE_KJORING_PARAM, venterPaNyKjoring } from '~/utils/fortsett-behandling'
+import { FORRIGE_KJORING_PARAM, utenForrigeKjoring, venterPaNyKjoring } from '~/utils/fortsett-behandling'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
+
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
 
 const POLL_INTERVAL_MS = 1500
 const POLL_MAX_MS = 120_000
@@ -115,20 +119,22 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
   const forrigeKjoring = url.searchParams.get(FORRIGE_KJORING_PARAM)
   const venter = venterPaNyKjoring(behandling, forrigeKjoring)
 
+  let valideringFerdig = false
   if (aktivitetId && forrigeKjoring !== null) {
     const nesteSide = getRedirectPath({ pathname: `/behandling/${behandlingId}`, behandlingId, behandling })
     if (!kanGaTilbakeTilSaksbehandler(behandling, aktivitetId)) {
       return redirect(nesteSide ?? `/behandling/${behandlingId}`)
     }
     if (!venter && venterSaksbehandlerPaAktivitet(behandling, aktivitetId)) {
-      return redirect(url.pathname)
-    }
-    if (!venter && !behandlingJobber) {
+      // Vurderingen ble avvist: bli stående og vis valideringsfeilene. Klienten fjerner forrigeKjoring fra URL-en
+      // uten å kjøre loaderne på nytt (se kunForrigeKjoringFjernet).
+      valideringFerdig = true
+    } else if (!venter && !behandlingJobber) {
       return redirect(nesteSide ?? `/behandling/${behandlingId}`)
     }
   }
 
-  const venterPaValidering = Boolean(aktivitetId) && forrigeKjoring !== null
+  const venterPaValidering = Boolean(aktivitetId) && forrigeKjoring !== null && !valideringFerdig
 
   const redirectPath = getRedirectPath({
     pathname: url.pathname,
@@ -207,6 +213,18 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
   const [searchParams] = useSearchParams()
   const forrigeKjoring = searchParams.get(FORRIGE_KJORING_PARAM)
+  const location = useLocation()
+
+  // Valideringen er ferdig og vi blir stående på aktiviteten: fjern forrigeKjoring fra URL-en.
+  // shouldRevalidate (kunForrigeKjoringFjernet) sørger for at dette ikke laster dataene på nytt.
+  const valideringFerdig = forrigeKjoring !== null && currentAktivitetId !== undefined && !venterPaValidering
+  useEffect(() => {
+    if (!valideringFerdig) return
+    navigate(
+      { pathname: location.pathname, search: utenForrigeKjoring(location.search), hash: location.hash },
+      { replace: true, preventScrollReset: true },
+    )
+  }, [valideringFerdig, navigate, location.pathname, location.search, location.hash])
   const isLoadingRef = useRef(isLoading)
   isLoadingRef.current = isLoading
   const venterPaSvar = useIsSubmitting()
@@ -214,6 +232,21 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   venterPaSvarRef.current = venterPaSvar
   const currentAktivitetIdRef = useRef(currentAktivitetId)
   currentAktivitetIdRef.current = currentAktivitetId
+
+  // En revalidering avbryter lasting som allerede pågår og starter den på nytt. Kommer det hendelser mens vi
+  // laster, venter vi til lastingen er ferdig, og revaliderer bare hvis vi ikke allerede har fått svaret.
+  const navigation = useNavigation()
+  const opptatt = navigation.state !== 'idle' || revalidator.state !== 'idle'
+  const opptattRef = useRef(opptatt)
+  opptattRef.current = opptatt
+  const utsattRevalideringRef = useRef(false)
+
+  useEffect(() => {
+    if (opptatt || !utsattRevalideringRef.current) return
+    utsattRevalideringRef.current = false
+    if (valideringFerdig) return
+    revalidatorRef.current.revalidate()
+  }, [opptatt, valideringFerdig])
 
   const { live: sseLive, lastEvent } = useBehandlingEvents(behandling.behandlingId, {
     onEvent: event => {
@@ -230,9 +263,20 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         navigate(handling.path, { replace: true })
         return false
       }
+      if (handling.type === 'revalider' && opptattRef.current) {
+        utsattRevalideringRef.current = true
+        return false
+      }
       return handling.type === 'revalider'
     },
-    onOpen: () => venterPaEndring(behandling, isLoadingRef.current, venterPaSvarRef.current),
+    onOpen: () => {
+      const skalRevalidere = venterPaEndring(behandling, isLoadingRef.current, venterPaSvarRef.current)
+      if (skalRevalidere && opptattRef.current) {
+        utsattRevalideringRef.current = true
+        return false
+      }
+      return skalRevalidere
+    },
   })
   const sseLiveRef = useRef(sseLive)
   sseLiveRef.current = sseLive

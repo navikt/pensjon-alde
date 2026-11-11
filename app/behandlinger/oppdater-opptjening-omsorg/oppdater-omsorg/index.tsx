@@ -7,6 +7,8 @@ import type { Route } from './+types'
 import { OppdaterOmsorg } from './OppdaterOmsorg'
 import { hentOpptjeningLoaderData, lagreOpptjeningVurdering } from './Opptjening/opptjening-api.server'
 
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
+
 export function meta() {
   return [{ title: 'Oppdater omsorg' }]
 }
