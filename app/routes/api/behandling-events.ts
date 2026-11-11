@@ -34,6 +34,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
         onClose: () => close(),
       })
       const ping = setInterval(() => send('event: ping\ndata: {}\n\n'), 20_000)
+      send('event: ping\ndata: {}\n\n')
 
       console.log('[behandling-events] Client connected', { behandlingId, connections: connections() })
 

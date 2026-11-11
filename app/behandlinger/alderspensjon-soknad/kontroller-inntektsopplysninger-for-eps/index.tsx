@@ -36,6 +36,8 @@ import type {
   KontrollerInntektsopplysningerForEpsVurdering,
 } from './types'
 
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
+
 export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 

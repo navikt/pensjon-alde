@@ -34,6 +34,8 @@ import { userMiddleware } from './middleware/user-middleware'
 import styles from './root.module.css'
 import { getFaro, initInstrumentation, type TelemetryConfig } from './utils/faro.client'
 
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
+
 // Initialize mocking and auth in mock environment
 if (typeof window === 'undefined' && process.env.NODE_ENV === 'mock') {
   import('./mocks').then(({ initializeMocking }) => {
