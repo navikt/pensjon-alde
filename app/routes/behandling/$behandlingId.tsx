@@ -215,16 +215,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const forrigeKjoring = searchParams.get(FORRIGE_KJORING_PARAM)
   const location = useLocation()
 
-  // Valideringen er ferdig og vi blir stående på aktiviteten: fjern forrigeKjoring fra URL-en.
-  // shouldRevalidate (kunForrigeKjoringFjernet) sørger for at dette ikke laster dataene på nytt.
-  const valideringFerdig = forrigeKjoring !== null && currentAktivitetId !== undefined && !venterPaValidering
-  useEffect(() => {
-    if (!valideringFerdig) return
-    navigate(
-      { pathname: location.pathname, search: utenForrigeKjoring(location.search), hash: location.hash },
-      { replace: true, preventScrollReset: true },
-    )
-  }, [valideringFerdig, navigate, location.pathname, location.search, location.hash])
   const isLoadingRef = useRef(isLoading)
   isLoadingRef.current = isLoading
   const venterPaSvar = useIsSubmitting()
@@ -241,10 +231,22 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   opptattRef.current = opptatt
   const utsattRevalideringRef = useRef(false)
 
+  // Valideringen er ferdig og vi blir stående på aktiviteten: fjern forrigeKjoring fra URL-en.
+  // shouldRevalidate (kunForrigeKjoringFjernet) sørger for at dette ikke laster dataene på nytt, og
+  // hendelser som kom mens vi ventet trenger ingen revalidering, siden vi allerede har svaret.
+  const valideringFerdig = forrigeKjoring !== null && currentAktivitetId !== undefined && !venterPaValidering
   useEffect(() => {
-    if (opptatt || !utsattRevalideringRef.current) return
+    if (!valideringFerdig) return
     utsattRevalideringRef.current = false
-    if (valideringFerdig) return
+    navigate(
+      { pathname: location.pathname, search: utenForrigeKjoring(location.search), hash: location.hash },
+      { replace: true, preventScrollReset: true },
+    )
+  }, [valideringFerdig, navigate, location.pathname, location.search, location.hash])
+
+  useEffect(() => {
+    if (opptatt || valideringFerdig || !utsattRevalideringRef.current) return
+    utsattRevalideringRef.current = false
     revalidatorRef.current.revalidate()
   }, [opptatt, valideringFerdig])
 
