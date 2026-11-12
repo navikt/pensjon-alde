@@ -1,11 +1,10 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
 import { BodyShort, InfoCard, Page } from '@navikt/ds-react'
-import { Suspense } from 'react'
-import { Await, Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
-import { createAktivitetApi } from '~/api/aktivitet-api'
+import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
 import type { AktivitetDTO } from '~/types/behandling'
+import { isAktivitetDebugEnabled } from '~/utils/env.server'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 
@@ -43,23 +42,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     return redirect(implementationUrl)
   }
 
-  const showDebug = process.env.NAIS_CLUSTER_NAME !== 'prod-gcp'
-
-  // Debugdata venter vi ikke på: promiset strømmes til klienten og vises når det er klart
-  const debug = showDebug ? hentDebugdata(createAktivitetApi({ request, behandlingId, aktivitetId })) : null
-
   return {
     behandling,
     aktivitet,
-    debug,
+    showDebug: isAktivitetDebugEnabled,
   }
-}
-
-function hentDebugdata(api: ReturnType<typeof createAktivitetApi>) {
-  return Promise.all([
-    api.hentGrunnlagsdata<unknown>().catch(() => null),
-    api.hentVurdering<unknown>().catch(() => null),
-  ]).then(([grunnlag, vurdering]) => ({ grunnlag, vurdering }))
 }
 
 export async function action({ params, request }: Route.ActionArgs) {
@@ -73,7 +60,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandling, aktivitet, debug } = loaderData
+  const { behandling, aktivitet, showDebug } = loaderData
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
 
@@ -100,11 +87,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
           </InfoCard>
         </Page.Block>
       )}
-      {debug && (
-        <Suspense fallback={null}>
-          <Await resolve={debug}>{data => <AktivitetDebug input={data.grunnlag} vurdering={data.vurdering} />}</Await>
-        </Suspense>
-      )}
+      {showDebug && <AktivitetDebug behandlingId={behandling.behandlingId} aktivitetId={aktivitet.aktivitetId} />}
     </Page.Block>
   )
 }
