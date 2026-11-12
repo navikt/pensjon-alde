@@ -47,7 +47,17 @@ fetch_nais_secret "$team" "dev-gcp" "psak-pid-encryption-key" write_env "$secret
     "PSAK_PID_ENCRYPTION_KEY"
 complete_step
 
+start_step "Kafka"
+kafka_secret_name=$(secret_name_from_env "$app" "$team" "dev-gcp" "KAFKA_BROKERS") || exit 1
+fetch_nais_secret "$team" "dev-gcp" "$kafka_secret_name" write_env "$secrets_file" \
+    "KAFKA_BROKERS" \
+    "KAFKA_CERTIFICATE" \
+    "KAFKA_PRIVATE_KEY" \
+    "KAFKA_CA"
+complete_step
+
 {
+  echo BEHANDLING_KAFKA_TOPIC="'pensjon-q2.alde-behandling'"
   echo IS_LOCAL_ENV="'true'"
   echo PEN_SCOPE="'api://dev-fss.pensjon-q2.pensjon-pen-q2/.default'"
   echo PEN_URL="'http://localhost:8089'"

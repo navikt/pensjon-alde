@@ -2,15 +2,25 @@ import { ArrowDownIcon, ArrowUpIcon, ClockDashedIcon, InboxDownIcon } from '@nav
 import { Box, Tabs } from '@navikt/ds-react'
 import clsx from 'clsx'
 import { useEffect, useState } from 'react'
+import { useFetcher } from 'react-router'
+import type { loader } from '~/routes/api/aktivitet-debug'
 import style from './aktivitet-debug.module.css'
 
 interface IAktivitetDebugProps {
-  input: unknown
-  vurdering: unknown
+  behandlingId: string | number
+  aktivitetId: string | number
 }
 
-export const AktivitetDebug: React.FC<IAktivitetDebugProps> = ({ input, vurdering }) => {
+export const AktivitetDebug: React.FC<IAktivitetDebugProps> = ({ behandlingId, aktivitetId }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const fetcher = useFetcher<typeof loader>()
+  const input = fetcher.data?.grunnlag
+  const vurdering = fetcher.data?.vurdering
+
+  const toggle = () => {
+    if (!isOpen) fetcher.load(`/api/behandling/${behandlingId}/aktivitet/${aktivitetId}/debug`)
+    setIsOpen(!isOpen)
+  }
 
   // Close debug panel on escape key
   useEffect(() => {
@@ -25,6 +35,9 @@ export const AktivitetDebug: React.FC<IAktivitetDebugProps> = ({ input, vurderin
   }, [isOpen])
 
   const formatData = (data: unknown) => {
+    if (fetcher.state !== 'idle') {
+      return 'Laster...'
+    }
     if (data === null || data === undefined) {
       return 'Ingen data'
     }
@@ -42,7 +55,7 @@ export const AktivitetDebug: React.FC<IAktivitetDebugProps> = ({ input, vurderin
         <button
           type="button"
           className={style.button}
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={toggle}
           aria-label={isOpen ? 'Close debug panel' : 'Open debug panel'}
           aria-expanded={isOpen}
         >

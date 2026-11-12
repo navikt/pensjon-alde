@@ -1,20 +1,43 @@
 import { BugIcon, PersonCircleIcon, RobotSmileIcon } from '@navikt/aksel-icons'
 import { BodyLong, BodyShort, Box, Button, HStack, Modal, Process, Show, Textarea, VStack } from '@navikt/ds-react'
 import React, { useEffect, useRef, useState } from 'react'
-import { Form, Outlet, redirect, useFetcher, useNavigate, useParams, useRevalidator } from 'react-router'
+import {
+  Form,
+  Outlet,
+  redirect,
+  useFetcher,
+  useLocation,
+  useNavigate,
+  useNavigation,
+  useParams,
+  useRevalidator,
+  useSearchParams,
+} from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
+import {
+  aktiviteterForVisning,
+  finnAktivitetUnderBehandling,
+  skalPolle,
+  velgEventHandling,
+  venterPaEndring,
+} from '~/behandling-events/event-handling'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
+import { BehandlingEventsContext, useBehandlingEvents } from '~/hooks/use-behandling-events'
+import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
 import {
+  aktivitetPath,
   finnAktivitetSomSkalVises,
   kanGaTilbakeTilSaksbehandler,
   venterSaksbehandlerPaAktivitet,
 } from '~/utils/aktivitet-navigering'
-import { FORRIGE_KJORING_PARAM, venterPaNyKjoring } from '~/utils/fortsett-behandling'
+import { FORRIGE_KJORING_PARAM, utenForrigeKjoring, venterPaNyKjoring } from '~/utils/fortsett-behandling'
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
+
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
 
 const POLL_INTERVAL_MS = 1500
 const POLL_MAX_MS = 120_000
@@ -60,18 +83,16 @@ export function getRedirectPath({
     return `/behandling/${behandlingId}/attestering`
   }
 
-  if (behandling.aktiviteter.length > 0) {
-    const aktivitetSomSkalVises = finnAktivitetSomSkalVises(behandling.aktiviteter)
-    if (aktivitetSomSkalVises?.handlerName === 'attestering') {
-      return `/behandling/${behandlingId}/attestering`
-    }
-    if (
-      aktivitetSomSkalVises &&
-      !venterPaKjoring &&
-      behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER
-    ) {
-      return `/behandling/${behandlingId}/aktivitet/${aktivitetSomSkalVises.aktivitetId}`
-    }
+  const aktivitetSomSkalVises = finnAktivitetSomSkalVises(behandling.aktiviteter)
+  if (aktivitetSomSkalVises?.handlerName === 'attestering') {
+    return aktivitetPath(behandlingId, aktivitetSomSkalVises)
+  }
+  if (
+    aktivitetSomSkalVises &&
+    !venterPaKjoring &&
+    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER
+  ) {
+    return aktivitetPath(behandlingId, aktivitetSomSkalVises)
   }
   return null
 }
@@ -98,20 +119,22 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
   const forrigeKjoring = url.searchParams.get(FORRIGE_KJORING_PARAM)
   const venter = venterPaNyKjoring(behandling, forrigeKjoring)
 
+  let valideringFerdig = false
   if (aktivitetId && forrigeKjoring !== null) {
     const nesteSide = getRedirectPath({ pathname: `/behandling/${behandlingId}`, behandlingId, behandling })
     if (!kanGaTilbakeTilSaksbehandler(behandling, aktivitetId)) {
       return redirect(nesteSide ?? `/behandling/${behandlingId}`)
     }
     if (!venter && venterSaksbehandlerPaAktivitet(behandling, aktivitetId)) {
-      return redirect(url.pathname)
-    }
-    if (!venter && !behandlingJobber) {
+      // Vurderingen ble avvist: bli stående og vis valideringsfeilene. Klienten fjerner forrigeKjoring fra URL-en
+      // uten å kjøre loaderne på nytt (se kunForrigeKjoringFjernet).
+      valideringFerdig = true
+    } else if (!venter && !behandlingJobber) {
       return redirect(nesteSide ?? `/behandling/${behandlingId}`)
     }
   }
 
-  const venterPaValidering = Boolean(aktivitetId) && forrigeKjoring !== null
+  const venterPaValidering = Boolean(aktivitetId) && forrigeKjoring !== null && !valideringFerdig
 
   const redirectPath = getRedirectPath({
     pathname: url.pathname,
@@ -121,6 +144,10 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
   })
   if (redirectPath) {
     return redirect(redirectPath)
+  }
+
+  if (aktivitetId && behandlingJobber && !behandlingFeiler && !venterPaValidering) {
+    return redirect(`/behandling/${behandlingId}${url.search}`)
   }
 
   return {
@@ -184,6 +211,81 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const revalidatorRef = useRef(revalidator)
   revalidatorRef.current = revalidator
 
+  const [searchParams] = useSearchParams()
+  const forrigeKjoring = searchParams.get(FORRIGE_KJORING_PARAM)
+  const location = useLocation()
+
+  const isLoadingRef = useRef(isLoading)
+  isLoadingRef.current = isLoading
+  const venterPaSvar = useIsSubmitting()
+  const venterPaSvarRef = useRef(venterPaSvar)
+  venterPaSvarRef.current = venterPaSvar
+  const currentAktivitetIdRef = useRef(currentAktivitetId)
+  currentAktivitetIdRef.current = currentAktivitetId
+
+  // En revalidering avbryter lasting som allerede pågår og starter den på nytt. Kommer det hendelser mens vi
+  // laster, venter vi til lastingen er ferdig, og revaliderer bare hvis vi ikke allerede har fått svaret.
+  const navigation = useNavigation()
+  const opptatt = navigation.state !== 'idle' || revalidator.state !== 'idle'
+  const opptattRef = useRef(opptatt)
+  opptattRef.current = opptatt
+  const utsattRevalideringRef = useRef(false)
+
+  // Valideringen er ferdig og vi blir stående på aktiviteten: fjern forrigeKjoring fra URL-en.
+  // shouldRevalidate (kunForrigeKjoringFjernet) sørger for at dette ikke laster dataene på nytt, og
+  // hendelser som kom mens vi ventet trenger ingen revalidering, siden vi allerede har svaret.
+  const valideringFerdig = forrigeKjoring !== null && currentAktivitetId !== undefined && !venterPaValidering
+  useEffect(() => {
+    if (!valideringFerdig) return
+    utsattRevalideringRef.current = false
+    navigate(
+      { pathname: location.pathname, search: utenForrigeKjoring(location.search), hash: location.hash },
+      { replace: true, preventScrollReset: true },
+    )
+  }, [valideringFerdig, navigate, location.pathname, location.search, location.hash])
+
+  useEffect(() => {
+    if (opptatt || valideringFerdig || !utsattRevalideringRef.current) return
+    utsattRevalideringRef.current = false
+    revalidatorRef.current.revalidate()
+  }, [opptatt, valideringFerdig])
+
+  const { live: sseLive, lastEvent } = useBehandlingEvents(behandling.behandlingId, {
+    onEvent: event => {
+      const handling = velgEventHandling({
+        event,
+        behandling,
+        aktivitetId: currentAktivitetIdRef.current,
+        forrigeKjoring,
+        isLoading: isLoadingRef.current,
+        venterPaSvar: venterPaSvarRef.current,
+      })
+
+      if (handling.type === 'naviger') {
+        navigate(handling.path, { replace: true })
+        return false
+      }
+      if (handling.type === 'revalider' && opptattRef.current) {
+        utsattRevalideringRef.current = true
+        return false
+      }
+      return handling.type === 'revalider'
+    },
+    onOpen: () => {
+      const skalRevalidere = venterPaEndring(behandling, isLoadingRef.current, venterPaSvarRef.current)
+      if (skalRevalidere && opptattRef.current) {
+        utsattRevalideringRef.current = true
+        return false
+      }
+      return skalRevalidere
+    },
+  })
+  const sseLiveRef = useRef(sseLive)
+  sseLiveRef.current = sseLive
+
+  const sisteAktiviteter = aktiviteterForVisning({ behandling, lastEvent, isLoading, forrigeKjoring })
+  const aktivitetUnderBehandling = finnAktivitetUnderBehandling(sisteAktiviteter)
+
   function retry() {
     ventetPaKjoringRef.current = kjoringUuid
     setVenterPaRetry(true)
@@ -204,11 +306,11 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   // Prepare the visible aktiviteter (sorted and filtered)
   const visibleAktiviteter = React.useMemo(
     () =>
-      behandling.aktiviteter
+      sisteAktiviteter
         .slice()
         .sort((a, b) => a.opprettet.localeCompare(b.opprettet))
         .filter(aktivitet => aktivitet.friendlyName),
-    [behandling.aktiviteter],
+    [sisteAktiviteter],
   )
 
   // Create steps with redirect URLs
@@ -268,6 +370,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     if (!skalVente) return
 
     const startedAt = Date.now()
+    let sistRevalidert = startedAt
     const intervalId = setInterval(() => {
       if (Date.now() - startedAt > POLL_MAX_MS) {
         clearInterval(intervalId)
@@ -275,7 +378,9 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         return
       }
 
-      if (revalidatorRef.current.state === 'idle') {
+      const now = Date.now()
+      if (revalidatorRef.current.state === 'idle' && skalPolle({ live: sseLiveRef.current, sistRevalidert, now })) {
+        sistRevalidert = now
         revalidatorRef.current.revalidate()
       }
     }, POLL_INTERVAL_MS)
@@ -348,11 +453,13 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
         <main className={behandlingStyles.mainContent}>
           {isLoading ? (
-            <AldeLoader />
+            <AldeLoader aktivitetNavn={aktivitetUnderBehandling} />
           ) : behandlingFeiler ? (
             <FeilendeBehandling behandling={behandling} retry={retry} avbrytAktivitet={avbrytAktivitet} />
           ) : (
-            <Outlet context={{ behandling, avbrytAktivitet }} />
+            <BehandlingEventsContext value={sseLive}>
+              <Outlet context={{ behandling, avbrytAktivitet }} />
+            </BehandlingEventsContext>
           )}
         </main>
       </HStack>

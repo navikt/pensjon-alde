@@ -1,12 +1,14 @@
 import { InformationSquareIcon } from '@navikt/aksel-icons'
 import { BodyShort, InfoCard, Page } from '@navikt/ds-react'
 import { Outlet, redirect, useOutlet, useOutletContext } from 'react-router'
-import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetDebug from '~/components/AktivitetDebug'
 import type { AktivitetDTO } from '~/types/behandling'
+import { isAktivitetDebugEnabled } from '~/utils/env.server'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
+
+export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
 
 export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Aktivitet ${params.aktivitetId}` }, { name: 'description', content: 'Aktivitet detaljer' }]
@@ -40,41 +42,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     return redirect(implementationUrl)
   }
 
-  const showDebug = process.env.NAIS_CLUSTER_NAME !== 'prod-gcp'
-
-  // Fetch debug data if debug parameter is present
-  let debugData = { grunnlag: null, vurdering: null }
-
-  if (showDebug) {
-    try {
-      const aktivitetApi = createAktivitetApi({
-        request,
-        behandlingId,
-        aktivitetId,
-      })
-
-      const [grunnlag, vurdering] = await Promise.all([
-        aktivitetApi
-          // biome-ignore lint/suspicious/noExplicitAny: Bare for debug, og vet ikke hvordan grunnlag ser ut for aktivitet
-          .hentGrunnlagsdata<any>()
-          .catch(() => null),
-        aktivitetApi
-          // biome-ignore lint/suspicious/noExplicitAny: Bare for debug, og vet ikke hvordan vurdering ser ut for aktivitet
-          .hentVurdering<any>()
-          .catch(() => null),
-      ])
-
-      debugData = { grunnlag, vurdering }
-    } catch (error) {
-      console.error('Debug data fetch error:', error)
-    }
-  }
-
   return {
     behandling,
     aktivitet,
-    debug: debugData,
-    showDebug,
+    showDebug: isAktivitetDebugEnabled,
   }
 }
 
@@ -89,7 +60,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 }
 
 export default function Aktivitet({ loaderData }: Route.ComponentProps) {
-  const { behandling, aktivitet, debug, showDebug } = loaderData
+  const { behandling, aktivitet, showDebug } = loaderData
   const outlet = useOutlet()
   const { avbrytAktivitet } = useOutletContext<{ avbrytAktivitet: () => void }>()
 
@@ -116,7 +87,7 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
           </InfoCard>
         </Page.Block>
       )}
-      {showDebug && <AktivitetDebug input={debug.grunnlag} vurdering={debug.vurdering} />}
+      {showDebug && <AktivitetDebug behandlingId={behandling.behandlingId} aktivitetId={aktivitet.aktivitetId} />}
     </Page.Block>
   )
 }

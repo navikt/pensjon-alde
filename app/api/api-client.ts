@@ -107,6 +107,7 @@ export const fetcher =
     }
 
     const mergedOptions: RequestInit = {
+      signal: request.signal,
       ...options,
       headers,
     }
