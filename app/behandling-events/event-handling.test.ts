@@ -43,10 +43,10 @@ const event = (overrides: Partial<BehandlingDTO>): BehandlingDTO => ({
   ...overrides,
 })
 
-const kjoring = (uuid: string): BehandlingDTO['sisteKjoring'] => ({
+const kjoring = (uuid: string, startet = '2026-10-02T12:00:00'): BehandlingDTO['sisteKjoring'] => ({
   behandlingId: 123,
   aktivitetId: null,
-  startet: '2026-10-02T12:00:00',
+  startet,
   avsluttet: '2026-10-02T12:00:01',
   uuid,
   traceId: null,
@@ -363,6 +363,18 @@ describe('harEndring', () => {
 
   it('er true for ny kjøring selv uten statusendring', () => {
     expect(harEndring(event({ sisteKjoring: kjoring('b') }), behandling)).toBe(true)
+  })
+
+  it('er false for en eldre kjøring enn den som er lastet', () => {
+    expect(
+      harEndring(
+        event({
+          sisteKjoring: kjoring('eldre', '2026-10-02T11:59:59'),
+          aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
+        }),
+        behandling,
+      ),
+    ).toBe(false)
   })
 
   it('er true ved statusendring', () => {

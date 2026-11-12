@@ -48,7 +48,16 @@ export function vurderEvent(event: BehandlingDTO, forrigeKjoring: string | null)
   return { type: 'revalider' }
 }
 
+// PEN kan kjøre behandlingen flere ganger rett etter hverandre. Meldinger om en eldre kjøring enn den vi
+// har lastet, er ikke nyere enn dataene vi har.
+function erEldreKjoring(event: BehandlingDTO, behandling: BehandlingDTO): boolean {
+  const fraEvent = event.sisteKjoring?.startet
+  const lastet = behandling.sisteKjoring?.startet
+  return fraEvent !== undefined && lastet !== undefined && Date.parse(fraEvent) < Date.parse(lastet)
+}
+
 export function harEndring(event: BehandlingDTO, behandling: BehandlingDTO): boolean {
+  if (erEldreKjoring(event, behandling)) return false
   return (
     event.status !== behandling.status ||
     event.aldeBehandlingStatus !== behandling.aldeBehandlingStatus ||
