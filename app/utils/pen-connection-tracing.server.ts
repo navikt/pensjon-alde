@@ -51,6 +51,19 @@ interface ConnectionState {
 
 let stopTracing: (() => void) | undefined
 
+const SOCKET_ERROR_CODES = new Set([
+  'UND_ERR_INFO',
+  'UND_ERR_SOCKET',
+  'UND_ERR_ABORTED',
+  'UND_ERR_DESTROYED',
+  'UND_ERR_CLOSED',
+  'ECONNRESET',
+  'ECONNABORTED',
+  'ETIMEDOUT',
+  'EPIPE',
+  'ERR_STREAM_PREMATURE_CLOSE',
+])
+
 export function startPenConnectionTracing(penUrl: string): () => void {
   if (stopTracing) return stopTracing
 
@@ -131,10 +144,25 @@ export function startPenConnectionTracing(penUrl: string): () => void {
         safely(() => {
           connections.delete(socket)
           socket.removeListener('end', connection.onEnd)
+          const error = socket.errored as (Error & { code?: unknown }) | null
+          const code = typeof error?.code === 'string' && SOCKET_ERROR_CODES.has(error.code) ? error.code : undefined
+          const idleTimeout =
+            code === 'UND_ERR_INFO' && error?.message === 'socket idle timeout' && connection.requests.size === 0
+          const closeReason = idleTimeout
+            ? 'idle_timeout'
+            : code === 'UND_ERR_INFO'
+              ? 'informational_close'
+              : hadError
+                ? 'socket_error'
+                : connection.peerEndObserved
+                  ? 'peer_end'
+                  : 'unknown'
           const attributes = {
             ...connectionAttributes(connection),
             'pen.connection.had_error': hadError,
             'pen.connection.peer_end_observed': connection.peerEndObserved,
+            'pen.connection.close_reason': closeReason,
+            ...(code && { 'pen.connection.error_code': code }),
           }
           for (const request of connection.requests) event(request, 'pen.connection.closed', attributes)
           const spanContext = connection.lastSpanContext

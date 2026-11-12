@@ -1,8 +1,8 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { subscribe, unsubscribe } from 'node:diagnostics_channel'
+import { channel, subscribe, unsubscribe } from 'node:diagnostics_channel'
 import { once } from 'node:events'
 import { createServer, type RequestListener } from 'node:http'
-import type { AddressInfo, Socket } from 'node:net'
+import { type AddressInfo, Socket } from 'node:net'
 import { setTimeout as delay } from 'node:timers/promises'
 import { type Attributes, type Context, context, ROOT_CONTEXT, type Span, TraceFlags, trace } from '@opentelemetry/api'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -228,6 +228,59 @@ describe('Pen-forbindelsesdiagnostikk med OpenTelemetry-kontekst', () => {
     expect(headers).toHaveLength(3)
     expect(headers.every(event => event.attributes['pen.response.connection_close'] === true)).toBe(true)
     expect(vi.mocked(console.info).mock.calls).toHaveLength(3)
+  })
+
+  it('identifiserer Undicis faktiske idle-lukking uten å endre klientoppsettet', async () => {
+    await withServer(
+      (_request, response) => {
+        response.removeHeader('keep-alive')
+        response.end('synthetic')
+      },
+      async url => {
+        stop = startPenConnectionTracing(url)
+        await (await fetch(url)).text()
+        await vi.waitFor(() => expect(console.info).toHaveBeenCalledTimes(1), { timeout: 6000 })
+        const log = JSON.parse(String(vi.mocked(console.info).mock.calls[0][0]))
+        expect(log).toMatchObject({
+          'pen.connection.close_reason': 'idle_timeout',
+          'pen.connection.error_code': 'UND_ERR_INFO',
+          'pen.connection.had_error': true,
+          'pen.connection.requests_in_flight': 0,
+        })
+      },
+    )
+  }, 10000)
+
+  it.each([
+    ['ECONNRESET', 'synthetic-private-marker', 'socket_error', 'ECONNRESET'],
+    ['ETIMEDOUT', 'synthetic-private-marker', 'socket_error', 'ETIMEDOUT'],
+    ['UND_ERR_INFO', 'synthetic-private-marker', 'informational_close', 'UND_ERR_INFO'],
+    ['synthetic-private-marker', 'socket idle timeout', 'socket_error', undefined],
+  ])('klassifiserer socket-feil %s uten å logge fritekst', async (code, message, reason, expectedCode) => {
+    await withServer(
+      (_request, response) => response.end('synthetic'),
+      async url => {
+        stop = startPenConnectionTracing(url)
+        const port = new URL(url).port
+        const socket = new Socket()
+        socket.on('error', () => {})
+        socket.connect(Number(port), '127.0.0.1')
+        await once(socket, 'connect')
+        channel('undici:client:connected').publish({
+          socket,
+          connectParams: { hostname: '127.0.0.1', protocol: 'http:', port },
+        })
+        const closed = new Promise<void>(resolve => socket.once('close', () => resolve()))
+        socket.destroy(Object.assign(new Error(message), { code }))
+        await closed
+      },
+    )
+
+    const log = JSON.parse(String(vi.mocked(console.info).mock.calls[0][0]))
+    expect(log['pen.connection.close_reason']).toBe(reason)
+    expect(log['pen.connection.error_code']).toBe(expectedCode)
+    expect(log['pen.connection.had_error']).toBe(true)
+    expect(JSON.stringify(vi.mocked(console.info).mock.calls)).not.toContain('synthetic-private-marker')
   })
 
   it('ignorerer andre origins og slutter å observere når den stoppes', async () => {
