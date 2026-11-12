@@ -132,5 +132,6 @@ export const fetcher =
 
     // Tomme svar (void POST, eller grunnlagsdata uten data der pen svarer 200 uten
     // content-type og uten kropp) gir undefined – ikke selve Response-objektet.
+    await response.text()
     return undefined as T
   }
