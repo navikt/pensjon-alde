@@ -53,4 +53,5 @@ export const env = loadEnv({
 
 export const isLocalEnv = process.env.IS_LOCAL_ENV === 'true'
 export const isMockEnv = process.env.NODE_ENV === 'mock' && !process.env.NAIS_CLUSTER_NAME
+export const isAktivitetDebugEnabled = process.env.NAIS_CLUSTER_NAME !== 'prod-gcp'
 export const isVerdandeLinksEnabled = process.env.VERDANDE_LINKS_ENABLED === 'true'
