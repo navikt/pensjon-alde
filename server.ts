@@ -1,11 +1,16 @@
 import compression from 'compression'
 import express from 'express'
+import { startPenConnectionTracing } from './app/utils/pen-connection-tracing.server.ts'
 import { startUnleash } from './app/utils/unleash.server.ts'
 import {createRequestHandler} from '@react-router/express'
 import type { ServerBuild } from 'react-router'
 import type { ViteDevServer } from 'vite'
 
 const isDev = process.env.NODE_ENV === 'development'
+
+if (process.env.PEN_CONNECTION_TRACING_ENABLED === 'true' && process.env.PEN_URL) {
+  startPenConnectionTracing(process.env.PEN_URL)
+}
 
 const app = express()
 
