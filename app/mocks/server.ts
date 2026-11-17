@@ -20,6 +20,35 @@ function loadMockData(filename: string) {
 
 const behandlingOverrides = new Map<string, Record<string, unknown>>()
 
+type LagretVurdering = { aktivitetId: number; data: unknown; begrunnelse: string | null; tidspunkt: string }
+const lagredeVurderinger = new Map<string, LagretVurdering[]>()
+
+function hentBehandlingMedOverride(id: string) {
+  const mockData = loadMockData(`behandling-${id}.json`)
+  if (!mockData) return null
+  const override = behandlingOverrides.get(id)
+  return override ? { ...mockData, ...override } : mockData
+}
+
+function nullstillBehandling(id: string) {
+  behandlingOverrides.delete(id)
+  lagredeVurderinger.delete(id)
+}
+
+// Faste fixtures endres ikke, siden parallelle tester deler dem. Kun behandlinger sendt inn i mocken avsluttes.
+function avsluttInnsendtBehandling(id: string, utfall: 'FULLFORT' | 'RETURNERT_TIL_SAKSBEHANDLER') {
+  if (!lagredeVurderinger.has(id)) return
+  const behandling = hentBehandlingMedOverride(id)
+  behandlingOverrides.set(id, {
+    ...behandlingOverrides.get(id),
+    status: utfall === 'FULLFORT' ? 'FULLFORT' : 'UNDER_BEHANDLING',
+    aldeBehandlingStatus: utfall,
+    aktiviteter: (behandling?.aktiviteter ?? []).map((aktivitet: { handlerName?: string }) =>
+      aktivitet.handlerName === 'attestering' ? { ...aktivitet, status: 'FULLFORT' } : aktivitet,
+    ),
+  })
+}
+
 // Define handlers for API endpoints
 const handlers = [
   // GET /api/saksbehandling/alde/me - mock user
@@ -38,12 +67,11 @@ const handlers = [
     const { id } = params
     console.log(`🎯 MSW intercepted request to: ${request.url}`)
 
-    const mockData = loadMockData(`behandling-${id}.json`)
+    const mockData = hentBehandlingMedOverride(String(id))
 
     if (mockData) {
       console.log(`📄 Returning specific mock data for ID: ${id}`)
-      const override = behandlingOverrides.get(String(id))
-      return HttpResponse.json(override ? { ...mockData, ...override } : mockData)
+      return HttpResponse.json(mockData)
     }
 
     // Fallback to default mock data if specific file doesn't exist
@@ -107,8 +135,18 @@ const handlers = [
     }
 
     // Load behandling and find relevant aktiviteter by handlerName
-    const behandling = loadMockData(`behandling-${id}.json`)
+    const behandling = hentBehandlingMedOverride(String(id))
     const aktiviteter = behandling?.aktiviteter ?? []
+
+    const innsendteAktiviteter = (lagredeVurderinger.get(String(id)) ?? []).map(lagret => ({
+      aktivitetId: lagret.aktivitetId,
+      vurdertTidspunkt: lagret.tidspunkt,
+      vurdertAvBrukerId: 'Z990000',
+      vurdertAvBrukerNavn: 'Test Testesen',
+      begrunnelse: lagret.begrunnelse,
+      grunnlag: JSON.stringify(loadMockData(`aktivitet/${lagret.aktivitetId}-grunnlagsdata.json`)),
+      vurdering: JSON.stringify(lagret.data),
+    }))
 
     const epsAktivitet = aktiviteter.find(
       (a: { handlerName?: string }) => a.handlerName === 'kontroller-inntektsopplysninger-for-eps',
@@ -119,6 +157,7 @@ const handlers = [
     const attesteringData = {
       brukerKanAttestere: !(behandling?.saksbehandletAv ?? []).includes('Z990000'),
       aktiviter: [
+        ...innsendteAktiviteter,
         ...(epsAktivitet
           ? [
               {
@@ -195,6 +234,12 @@ const handlers = [
       const { aktivitetId } = params
       console.log(`🎯 MSW intercepted grunnlagsdata request to: ${request.url}`)
 
+      const behandlingId = String(params.behandlingId)
+      if (lagredeVurderinger.get(behandlingId)?.some(lagret => String(lagret.aktivitetId) === aktivitetId)) {
+        nullstillBehandling(behandlingId)
+        console.log(`♻️  Behandling ${behandlingId} er tilbakestilt`)
+      }
+
       const mockData = loadMockData(`aktivitet/${aktivitetId}-grunnlagsdata.json`)
       if (mockData) {
         console.log(`📄 Returning grunnlagsdata for aktivitet ${aktivitetId}`)
@@ -235,10 +280,56 @@ const handlers = [
   ),
 
   // POST /api/saksbehandling/alde/behandling/:id/aktivitet/:aid/vurdering
-  http.post('*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/vurdering', ({ params }) => {
-    console.log(`🎯 MSW intercepted POST vurdering for aktivitet ${params.aktivitetId}`)
-    return HttpResponse.json({ ok: true })
-  }),
+  http.post(
+    '*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/vurdering',
+    async ({ params, request }) => {
+      const id = String(params.behandlingId)
+      const aktivitetId = Number(params.aktivitetId)
+      console.log(`🎯 MSW intercepted POST vurdering for aktivitet ${aktivitetId}`)
+
+      const behandling = hentBehandlingMedOverride(id)
+      if (!behandling?.handlerName?.startsWith('oppdater-opptjening-')) {
+        return HttpResponse.json({ ok: true })
+      }
+
+      const { data, begrunnelse } = (await request.json()) as { data: unknown; begrunnelse: string | null }
+      const tidspunkt = new Date().toISOString()
+      lagredeVurderinger.set(id, [
+        ...(lagredeVurderinger.get(id) ?? []).filter(lagret => lagret.aktivitetId !== aktivitetId),
+        { aktivitetId, data, begrunnelse, tidspunkt },
+      ])
+
+      const aktiviteter = behandling.aktiviteter.map((aktivitet: { aktivitetId: number }) =>
+        aktivitet.aktivitetId === aktivitetId ? { ...aktivitet, status: 'FULLFORT' } : aktivitet,
+      )
+      const harAttestering = aktiviteter.some(
+        (aktivitet: { handlerName?: string }) => aktivitet.handlerName === 'attestering',
+      )
+      behandlingOverrides.set(id, {
+        status: 'TIL_ATTESTERING',
+        aldeBehandlingStatus: 'VENTER_ATTESTERING',
+        aktiviteter: harAttestering
+          ? aktiviteter
+          : [
+              ...aktiviteter,
+              {
+                aktivitetId: aktivitetId + 1_000_000,
+                type: 'A300AttesteringAktivitet',
+                handlerName: 'attestering',
+                friendlyName: 'Attestering',
+                opprettet: tidspunkt,
+                antallGangerKjort: 0,
+                sisteAktiveringsdato: null,
+                status: 'UNDER_BEHANDLING',
+                utsattTil: null,
+              },
+            ],
+      })
+      console.log(`📨 Behandling ${id} er sendt til attestering`)
+
+      return HttpResponse.json({ ok: true })
+    },
+  ),
 
   // POST /api/saksbehandling/alde/behandling/:id/fortsett
   http.post('*/api/saksbehandling/alde/behandling/:behandlingId/fortsett', ({ params }) => {
@@ -274,12 +365,14 @@ const handlers = [
   // POST /api/saksbehandling/alde/behandling/:id/attester
   http.post('*/api/saksbehandling/alde/behandling/:behandlingId/attester', ({ params }) => {
     console.log(`🎯 MSW intercepted POST attester for behandling ${params.behandlingId}`)
+    avsluttInnsendtBehandling(String(params.behandlingId), 'FULLFORT')
     return HttpResponse.json({ ok: true })
   }),
 
   // POST /api/saksbehandling/alde/behandling/:id/returner
   http.post('*/api/saksbehandling/alde/behandling/:behandlingId/returner', ({ params }) => {
     console.log(`🎯 MSW intercepted POST returner for behandling ${params.behandlingId}`)
+    avsluttInnsendtBehandling(String(params.behandlingId), 'RETURNERT_TIL_SAKSBEHANDLER')
     return HttpResponse.json({ ok: true })
   }),
 ]
