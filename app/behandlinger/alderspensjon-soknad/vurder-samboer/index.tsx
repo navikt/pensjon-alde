@@ -16,7 +16,7 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import { format, isValid, parse } from 'date-fns'
-import { data, Form, redirect, useOutletContext } from 'react-router'
+import { data, Form, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
@@ -77,8 +77,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   try {
-    await api.lagreVurdering(tilSamboerVurderingPayload(submission.value))
-    return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+    return await api.lagreVurderingOgFortsett(tilSamboerVurderingPayload(submission.value))
   } catch {
     return data(
       {
