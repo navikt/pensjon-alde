@@ -1,4 +1,4 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
+import { configDefaults, defineConfig, mergeConfig } from 'vitest/config'
 import viteConfig from './vite.config.ts'
 
 export default mergeConfig(
@@ -6,7 +6,8 @@ export default mergeConfig(
   defineConfig({
     test: {
       setupFiles: ['./app/test/setup-env.ts'],
-      include: ['app/**/*.test.{ts,tsx}'],
+      include: ['app/**/*.test.{ts,tsx}', 'pdf/**/*.test.ts'],
+      exclude: [...configDefaults.exclude, 'pdf/**/*.integration.test.ts'],
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html'],
