@@ -4,8 +4,6 @@ import { SendTilAttestering } from '~/components/shared/SendTilAttestering'
 import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import type { Route } from './+types'
 
-export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
-
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { behandlingId, aktivitetId } = params
 

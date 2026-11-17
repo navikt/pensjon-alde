@@ -32,8 +32,6 @@ import type { Route } from './+types'
 import { AfpLivsvarigVenter } from './AfpLivsvarigVenter'
 import { SoknadDisplay } from './SoknadDisplay'
 
-export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
-
 export function meta() {
   return [{ title: 'Livsvarig AFP Offentlig' }, { name: 'description', content: 'Livsvarig AFP Offentlig' }]
 }

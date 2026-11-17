@@ -21,6 +21,7 @@ export function useBehandlingEventsLive() {
 
 type Options = {
   onEvent?: (event: BehandlingDTO) => boolean | undefined
+  /** Kalles når strømmen åpner, også etter en fallback til polling. Returner true for å revalidere. */
   onOpen?: () => boolean | undefined
 }
 
@@ -42,7 +43,6 @@ export function useBehandlingEvents(
   useEffect(() => {
     let source: EventSource | undefined
     let lastSeen = 0
-    let hasFallenBack = false
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined
     let reconnectDelay = RECONNECT_DELAY_MS
     let disposed = false
@@ -61,8 +61,8 @@ export function useBehandlingEvents(
     const fallBackToPolling = () => {
       source?.close()
       source = undefined
-      hasFallenBack = true
       setLive(false)
+      setLastEvent(undefined)
       clearTimeout(reconnectTimer)
       reconnectTimer = setTimeout(open, reconnectDelay)
       reconnectDelay = nesteReconnectDelay(reconnectDelay)
@@ -77,7 +77,7 @@ export function useBehandlingEvents(
       source.onopen = () => {
         markAlive()
         reconnectDelay = RECONNECT_DELAY_MS
-        if (hasFallenBack || onOpenRef.current?.()) revalidate()
+        if (onOpenRef.current?.()) revalidate()
       }
       source.addEventListener('ping', markAlive)
       source.onmessage = message => {

@@ -8,8 +8,6 @@ import type { AktivitetOutletContext } from '~/types/aktivitetOutletContext'
 import { formatDateToNorwegian } from '~/utils/date'
 import type { Route } from './+types'
 
-export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
-
 export function meta() {
   return [{ title: 'Generer notat' }, { name: 'description', content: 'Generer notat' }]
 }

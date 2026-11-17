@@ -37,7 +37,7 @@ import { FORRIGE_KJORING_PARAM, utenForrigeKjoring, venterPaNyKjoring } from '~/
 import type { Route } from './+types/$behandlingId'
 import behandlingStyles from './$behandlingId.module.css'
 
-export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
+export { skalRevalidereBehandling as shouldRevalidate } from '~/utils/fortsett-behandling'
 
 const POLL_INTERVAL_MS = 1500
 const POLL_MAX_MS = 120_000
@@ -126,8 +126,7 @@ export async function loader({ params, request, url, context }: Route.LoaderArgs
       return redirect(nesteSide ?? `/behandling/${behandlingId}`)
     }
     if (!venter && venterSaksbehandlerPaAktivitet(behandling, aktivitetId)) {
-      // Vurderingen ble avvist: bli stående og vis valideringsfeilene. Klienten fjerner forrigeKjoring fra URL-en
-      // uten å kjøre loaderne på nytt (se kunForrigeKjoringFjernet).
+      // Vurderingen ble avvist: bli stående og vis valideringsfeilene. Klienten fjerner forrigeKjoring fra URL-en.
       valideringFerdig = true
     } else if (!venter && !behandlingJobber) {
       return redirect(nesteSide ?? `/behandling/${behandlingId}`)
@@ -231,9 +230,6 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   opptattRef.current = opptatt
   const utsattRevalideringRef = useRef(false)
 
-  // Valideringen er ferdig og vi blir stående på aktiviteten: fjern forrigeKjoring fra URL-en.
-  // shouldRevalidate (kunForrigeKjoringFjernet) sørger for at dette ikke laster dataene på nytt, og
-  // hendelser som kom mens vi ventet trenger ingen revalidering, siden vi allerede har svaret.
   const valideringFerdig = forrigeKjoring !== null && currentAktivitetId !== undefined && !venterPaValidering
   useEffect(() => {
     if (!valideringFerdig) return

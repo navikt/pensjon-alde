@@ -37,22 +37,10 @@ export function utenForrigeKjoring(search: string) {
   return rest ? `?${rest}` : ''
 }
 
-/**
- * Når valideringen er ferdig fjerner klienten forrigeKjoring fra URL-en. Dataene er allerede lastet,
- * så den navigasjonen skal ikke kjøre loaderne på nytt. Eksporteres som shouldRevalidate fra rutene
- * som lastes på aktivitetssiden.
- */
-export function kunForrigeKjoringFjernet({
+export function skalRevalidereBehandling({
   currentUrl,
   nextUrl,
-  formMethod,
   defaultShouldRevalidate,
 }: ShouldRevalidateFunctionArgs): boolean {
-  const fjernet =
-    formMethod === undefined &&
-    currentUrl.pathname === nextUrl.pathname &&
-    currentUrl.searchParams.has(FORRIGE_KJORING_PARAM) &&
-    !nextUrl.searchParams.has(FORRIGE_KJORING_PARAM) &&
-    utenForrigeKjoring(currentUrl.search) === utenForrigeKjoring(nextUrl.search)
-  return fjernet ? false : defaultShouldRevalidate
+  return currentUrl.pathname !== nextUrl.pathname || defaultShouldRevalidate
 }

@@ -4,8 +4,8 @@ import {
   erProsessertEtter,
   fortsettBehandling,
   fortsettBehandlingUrl,
-  kunForrigeKjoringFjernet,
   medForrigeKjoring,
+  skalRevalidereBehandling,
   utenForrigeKjoring,
   venterPaNyKjoring,
 } from './fortsett-behandling'
@@ -70,25 +70,21 @@ describe('utenForrigeKjoring', () => {
   })
 })
 
-describe('kunForrigeKjoringFjernet', () => {
-  const args = (current: string, next: string, formMethod?: string) =>
+describe('skalRevalidereBehandling', () => {
+  const args = (current: string, next: string, defaultShouldRevalidate = false) =>
     ({
       currentUrl: new URL(`http://localhost${current}`),
       nextUrl: new URL(`http://localhost${next}`),
-      formMethod,
-      defaultShouldRevalidate: true,
-    }) as Parameters<typeof kunForrigeKjoringFjernet>[0]
+      formMethod: undefined,
+      defaultShouldRevalidate,
+    }) as Parameters<typeof skalRevalidereBehandling>[0]
 
-  it('laster ikke på nytt når bare forrigeKjoring fjernes', () => {
-    expect(kunForrigeKjoringFjernet(args('/a?forrigeKjoring=abc', '/a'))).toBe(false)
-    expect(kunForrigeKjoringFjernet(args('/a?x=1&forrigeKjoring=abc', '/a?x=1'))).toBe(false)
+  it('laster behandlingen på nytt når vi går fra lasteskjermen til en aktivitet', () => {
+    expect(skalRevalidereBehandling(args('/behandling/123', '/behandling/123/aktivitet/456'))).toBe(true)
   })
 
-  it('bruker standard ellers', () => {
-    expect(kunForrigeKjoringFjernet(args('/a', '/a'))).toBe(true)
-    expect(kunForrigeKjoringFjernet(args('/a?forrigeKjoring=abc', '/b'))).toBe(true)
-    expect(kunForrigeKjoringFjernet(args('/a?forrigeKjoring=abc', '/a?x=1'))).toBe(true)
-    expect(kunForrigeKjoringFjernet(args('/a', '/a?forrigeKjoring=abc'))).toBe(true)
-    expect(kunForrigeKjoringFjernet(args('/a?forrigeKjoring=abc', '/a', 'POST'))).toBe(true)
+  it('bruker standard når stien er den samme', () => {
+    expect(skalRevalidereBehandling(args('/behandling/123', '/behandling/123', true))).toBe(true)
+    expect(skalRevalidereBehandling(args('/behandling/123', '/behandling/123', false))).toBe(false)
   })
 })

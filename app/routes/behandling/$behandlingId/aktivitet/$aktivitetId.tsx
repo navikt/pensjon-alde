@@ -8,8 +8,6 @@ import { isAktivitetDebugEnabled } from '~/utils/env.server'
 import { buildAktivitetRedirectUrl } from '~/utils/handler-discovery'
 import type { Route } from './+types/$aktivitetId'
 
-export { kunForrigeKjoringFjernet as shouldRevalidate } from '~/utils/fortsett-behandling'
-
 export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Aktivitet ${params.aktivitetId}` }, { name: 'description', content: 'Aktivitet detaljer' }]
 }
