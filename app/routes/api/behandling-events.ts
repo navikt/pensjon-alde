@@ -2,6 +2,8 @@ import { createBehandlingApi } from '~/api/behandling-api'
 import { connect, connections, subscribe } from '~/behandling-events/behandling-events.server'
 import type { Route } from './+types/behandling-events'
 
+const MAKS_LEVETID_MS = 15 * 60_000
+
 export async function loader({ params, request }: Route.LoaderArgs) {
   const behandlingId = Number(params.behandlingId)
 
@@ -34,6 +36,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
         onClose: () => close(),
       })
       const ping = setInterval(() => send('event: ping\ndata: {}\n\n'), 20_000)
+      const levetid = setTimeout(() => close(), MAKS_LEVETID_MS)
       send('event: ping\ndata: {}\n\n')
 
       console.log('[behandling-events] Client connected', { behandlingId, connections: connections() })
@@ -42,6 +45,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
         if (closed) return
         closed = true
         clearInterval(ping)
+        clearTimeout(levetid)
         unsubscribe()
         console.log('[behandling-events] Client disconnected', { behandlingId, connections: connections() })
       }

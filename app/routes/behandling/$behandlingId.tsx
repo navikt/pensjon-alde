@@ -362,6 +362,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
   const skalVente = isLoading || venterPaValidering
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: sseLive skal starte pollevinduet på nytt
   useEffect(() => {
     if (!skalVente) return
 
@@ -382,7 +383,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     }, POLL_INTERVAL_MS)
 
     return () => clearInterval(intervalId)
-  }, [skalVente])
+  }, [skalVente, sseLive])
 
   useEffect(() => {
     if (stepperContainerRef.current && activeStepIndex >= 0) {
