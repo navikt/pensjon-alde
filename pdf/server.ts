@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { context, propagation, SpanStatusCode, trace } from '@opentelemetry/api'
 import { collectDefaultMetrics, Histogram, Registry } from '@prometheus-io/client'
@@ -21,7 +23,7 @@ ${collectAppCss(appDir)}`
 const vite = await createViteServer({
   configFile: false,
   root: process.cwd(),
-  cacheDir: fileURLToPath(new URL('.vite/', import.meta.url)),
+  cacheDir: join(tmpdir(), 'alde-pdf-vite'),
   envDir: fileURLToPath(new URL('.', import.meta.url)),
   resolve: {
     alias: [{ find: /^~\//, replacement: appDir }],

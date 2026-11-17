@@ -1,4 +1,5 @@
-import { type Browser, chromium } from 'playwright'
+import { type Browser, chromium, type Page } from 'playwright'
+import { AKSEL_FONT_URL_PATTERN, resolveAkselFont } from './fonts.ts'
 
 let browserPromise: Promise<Browser> | null = null
 
@@ -25,6 +26,20 @@ function getBrowser(): Promise<Browser> {
   return browserPromise
 }
 
+async function serveAkselFontsLocally(page: Page): Promise<string[]> {
+  const missing: string[] = []
+  await page.route(AKSEL_FONT_URL_PATTERN, route => {
+    const url = route.request().url()
+    const path = resolveAkselFont(url)
+    if (!path) {
+      missing.push(url)
+      return route.abort()
+    }
+    return route.fulfill({ path, contentType: 'font/woff2' })
+  })
+  return missing
+}
+
 export interface PdfRenderOptions {
   continuous?: boolean
   width?: number
@@ -38,10 +53,14 @@ export async function htmlToPdf(html: string, options: PdfRenderOptions = {}): P
   page.setDefaultTimeout(timeout)
   page.setDefaultNavigationTimeout(timeout)
   try {
+    const missingFonts = await serveAkselFontsLocally(page)
     await page.setViewportSize({ width, height: 1200 })
     await page.emulateMedia({ media: 'print' })
     await page.setContent(html, { waitUntil: 'networkidle', timeout })
     await page.evaluate(() => document.fonts.ready)
+    if (missingFonts.length > 0) {
+      throw new Error(`Mangler lokale Aksel-fonter i pdf/fonts/: ${missingFonts.join(', ')}`)
+    }
 
     if (continuous) {
       const height = await page.evaluate(() => document.documentElement.scrollHeight)
