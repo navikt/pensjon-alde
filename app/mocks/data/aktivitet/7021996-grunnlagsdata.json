@@ -1,0 +1,11 @@
+{
+  "forstegangstjeneste": null,
+  "tjenestetyper": [
+    { "code": "MIL", "description": "Militær tjeneste" },
+    { "code": "SIVIL", "description": "Sivil tjeneste" }
+  ],
+  "periodetyper": [
+    { "code": "NORMAL", "description": "Ordinær tjeneste" },
+    { "code": "PERM", "description": "Permisjon" }
+  ]
+}
