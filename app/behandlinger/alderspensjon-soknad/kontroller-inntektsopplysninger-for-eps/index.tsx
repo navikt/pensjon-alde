@@ -14,7 +14,7 @@ import {
   VStack,
 } from '@navikt/ds-react'
 import { useMemo, useState } from 'react'
-import { Form, redirect, useOutletContext } from 'react-router'
+import { Form, useOutletContext } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { createBehandlingApi } from '~/api/behandling-api'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
@@ -84,8 +84,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     begrunnelse: string,
   })
 
-  await api.lagreVurdering(vurdering)
-  return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+  return api.lagreVurderingOgFortsett(vurdering)
 }
 
 const KontrollerInntektsopplysningerForEPSRoute = ({ loaderData }: Route.ComponentProps) => {
