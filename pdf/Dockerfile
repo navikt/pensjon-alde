@@ -1,40 +1,34 @@
-# PDF rendering service — own runtime, needs Chromium + system libs (not distroless)
-# and installs deps inside the image (host node_modules has macOS-native binaries).
-#
-# IMPORTANT: build from the REPO ROOT so the context includes app/ + package.json:
-#   docker build -f pdf/Dockerfile -t alde-pdf .
-FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f
+ARG NODE_IMAGE=europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/node
+ARG NODE_TAG=26
 
-ENV TZ="Europe/Oslo"
-ENV PDF_PORT=8090
-# Chromium is preinstalled in the base image here:
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-WORKDIR /app
-
-# Ghostscript for PDF/A-2b conversion of the rendered PDF.
+FROM ${NODE_IMAGE}:${NODE_TAG}-dev AS deps
 USER root
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends ghostscript \
-  && rm -rf /var/lib/apt/lists/*
-
-# Install dependencies (incl. vite — the service resolves modules at runtime).
-# --ignore-scripts skips the repo's `prepare` (lefthook, needs git) and browser
-# re-download; platform binaries come from optional deps.
-COPY package.json pnpm-lock.yaml .pnpmfile.cjs .npmrc ./
+WORKDIR /app
+COPY package.json pnpm-lock.yaml .pnpmfile.cjs .npmrc pnpm-workspace.yaml ./
 RUN npm install -g "$(node -p "require('./package.json').packageManager.split('+')[0]")"
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# Source needed by the runtime Vite SSR + component discovery.
-COPY tsconfig.json ./
+FROM ${NODE_IMAGE}:${NODE_TAG}-dev
+USER root
+RUN apk add --no-cache \
+    chromium \
+    ghostscript \
+    font-liberation \
+    tzdata
+
+ENV TZ="Europe/Oslo"
+ENV PDF_PORT=8090
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV PLAYWRIGHT_EXECUTABLE_PATH=/usr/bin/chromium
+
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json tsconfig.json ./
 COPY app/ ./app/
 COPY pdf/ ./pdf/
 
-RUN chown -R pwuser:pwuser /app
-USER pwuser
-
+USER node
 EXPOSE 8090
 
-# Node in the base image strips TS types with this flag; server.ts only statically
-# imports .ts (the .tsx entry is loaded at runtime by Vite, never by node directly).
-CMD ["node", "--experimental-strip-types", "pdf/server.ts"]
+ENTRYPOINT ["node"]
+CMD ["pdf/server.ts"]
