@@ -56,6 +56,7 @@ Content-Type: application/json
 ```
 
 **Query-param `format`** (default `pdfa`):
+
 - `format=pdfa` — PDF/A-2b (arkivsamsvar, Ghostscript-konvertering).
 - `format=pdf` — vanlig PDF (rå Chromium-output, ingen konvertering).
 - Ugyldig verdi → `400`.
