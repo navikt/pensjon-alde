@@ -1,4 +1,4 @@
-import { data, redirect } from 'react-router'
+import { data } from 'react-router'
 import { createAktivitetApi } from '~/api/aktivitet-api'
 import { isApiError } from '~/api/error.types'
 import type { ActionErrors, OppdaterOpptjeningGrunnlag, OppdaterOpptjeningVurdering } from './opptjening.types'
@@ -80,8 +80,7 @@ export async function lagreOpptjeningVurdering({ request, behandlingId, aktivite
   }
 
   try {
-    await api.lagreVurdering({ ...vurdering, ...(begrunnelse ? { begrunnelse } : {}) })
-    return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
+    return await api.lagreVurderingOgFortsett({ ...vurdering, ...(begrunnelse ? { begrunnelse } : {}) })
   } catch (error) {
     if (isApiError(error)) {
       if (error.data.status === 400) {
