@@ -85,7 +85,13 @@ export default function Aktivitet({ loaderData }: Route.ComponentProps) {
           </InfoCard>
         </Page.Block>
       )}
-      {showDebug && <AktivitetDebug behandlingId={behandling.behandlingId} aktivitetId={aktivitet.aktivitetId} />}
+      {showDebug && (
+        <AktivitetDebug
+          key={aktivitet.aktivitetId}
+          behandlingId={behandling.behandlingId}
+          aktivitetId={aktivitet.aktivitetId}
+        />
+      )}
     </Page.Block>
   )
 }
