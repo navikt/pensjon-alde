@@ -56,6 +56,7 @@ Content-Type: application/json
 ```
 
 **Query-param `format`** (default `pdfa`):
+
 - `format=pdfa` — PDF/A-2b (arkivsamsvar, Ghostscript-konvertering).
 - `format=pdf` — vanlig PDF (rå Chromium-output, ingen konvertering).
 - Ugyldig verdi → `400`.
@@ -214,7 +215,9 @@ pnpm test:ci
 ### Integrasjonstest
 
 `pdf-service.integration.test.ts` bygger Docker-imaget, starter det på en ledig port og tester
-tjenesten over HTTP. Den kjøres ikke av `pnpm test:ci`.
+tjenesten over HTTP. Den kjøres ikke av `pnpm test:ci`. I CI kjøres den manuelt med «Run workflow»
+på workflowen `PDF-integrasjonstest` (`.github/workflows/pdfIntegration.yml`), for eksempel ved
+oppgradering av Playwright.
 
 Forutsetninger:
 

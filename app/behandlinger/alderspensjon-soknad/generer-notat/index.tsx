@@ -68,10 +68,9 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   if (intent === 'hopp-over') {
     try {
-      await api.lagreVurdering({
+      return await api.lagreVurderingOgFortsett({
         akseptert: false,
       })
-      return redirect(`/behandling/${behandlingId}?justCompleted=${aktivitetId}`)
     } catch {
       return data(
         {
