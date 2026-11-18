@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import NodeCache from 'node-cache'
 import type { MiddlewareFunction } from 'react-router'
 import { requireAccessToken } from '~/auth/auth.server'
@@ -24,7 +25,8 @@ export const userMiddleware: MiddlewareFunction = async ({ request, context }) =
   }
 
   const token = await requireAccessToken(request)
-  const cachedMe = meCache.get<UserContext>(token)
+  const cacheKey = createHash('sha256').update(token).digest('hex')
+  const cachedMe = meCache.get<UserContext>(cacheKey)
   if (cachedMe) {
     context.set(userContext, cachedMe)
     return
@@ -45,6 +47,6 @@ export const userMiddleware: MiddlewareFunction = async ({ request, context }) =
   }
 
   const me: UserContext = await meResponse.json()
-  meCache.set(token, me)
+  meCache.set(cacheKey, me)
   context.set(userContext, me)
 }
