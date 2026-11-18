@@ -19,18 +19,21 @@ export function useBehandlingEventsLive() {
 
 type Options = {
   onEvent: (event: BehandlingDTO) => void
-  /** Kalles når strømmen åpner igjen etter et brudd, siden vi kan ha gått glipp av hendelser. */
-  onReconnect: () => void
+  /**
+   * Kalles hver gang strømmen åpner. Hendelser mellom loaderen og tilkoblingen, eller mens strømmen var nede,
+   * får vi ikke, og pollingen stopper når strømmen er oppe.
+   */
+  onOpen: () => void
 }
 
 export function useBehandlingEvents(
   behandlingId: number | string,
-  { onEvent, onReconnect }: Options,
+  { onEvent, onOpen }: Options,
 ): { live: boolean; lastEvent: BehandlingDTO | undefined } {
   const onEventRef = useRef(onEvent)
   onEventRef.current = onEvent
-  const onReconnectRef = useRef(onReconnect)
-  onReconnectRef.current = onReconnect
+  const onOpenRef = useRef(onOpen)
+  onOpenRef.current = onOpen
 
   const [live, setLive] = useState(false)
   const [lastEvent, setLastEvent] = useState<BehandlingDTO>()
@@ -41,7 +44,6 @@ export function useBehandlingEvents(
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined
     let reconnectDelay = RECONNECT_DELAY_MS
     let disposed = false
-    let harMistetForbindelsen = false
 
     setLastEvent(undefined)
 
@@ -51,7 +53,6 @@ export function useBehandlingEvents(
     }
 
     const fallBackToPolling = () => {
-      harMistetForbindelsen = true
       source?.close()
       source = undefined
       setLive(false)
@@ -70,7 +71,7 @@ export function useBehandlingEvents(
       source.onopen = () => {
         markAlive()
         reconnectDelay = RECONNECT_DELAY_MS
-        if (harMistetForbindelsen) onReconnectRef.current()
+        onOpenRef.current()
       }
       source.addEventListener('ping', markAlive)
       source.onmessage = message => {

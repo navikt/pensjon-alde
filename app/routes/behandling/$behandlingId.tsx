@@ -239,7 +239,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
       }
       revalider()
     },
-    onReconnect: revalider,
+    onOpen: revalider,
   })
 
   const sisteAktiviteter = aktiviteterForVisning({ behandling, lastEvent, isLoading, forrigeKjoring })
