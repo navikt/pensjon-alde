@@ -36,13 +36,13 @@ import AddressBlock from '../vurder-samboer/AddressBlock/AddressBlock'
 import AddressWrapper from '../vurder-samboer/AddressWrapper/AddressWrapper'
 import type { Bostedsadresse } from '../vurder-samboer/samboer-types'
 import type { Route } from './+types'
+import { SivilstandInformasjon } from './SivilstandInformasjon'
 import {
   ANNEN_EPS_TEKST,
   SAKSTYPE_TEKST,
   SAMBOERSKAP_VURDERING_TEKST,
-  SIVILSTAND_TEKST,
+  type Sivilstand,
   type SivilstandIEktefellePartnersSak,
-  type SivilstandType,
   type VarigAdskiltGrunnlag,
   type VarigAdskiltVurdering,
   VURDERT_SIVILSTAND_KORT_TEKST,
@@ -172,7 +172,9 @@ function VarigAdskiltComponent({
 
   const { soker, sokersBostedsadresser, sokerSivilstand, ektefellePartner, kravOnsketVirkningsdato } = grunnlag
 
-  const ektefelleTittel = erPartner(ektefellePartner.sivilstand ?? sokerSivilstand) ? 'Partner' : 'Ektefelle'
+  const ektefelleTittel = erPartner((ektefellePartner.sivilstand ?? sokerSivilstand).sokerSivilstand)
+    ? 'Partner'
+    : 'Ektefelle'
   const ektefelleEieform = ektefelleTittel === 'Partner' ? 'Partners' : 'Ektefelles'
 
   const [form, fields] = useForm<VarigAdskiltVurderingInput, VarigAdskiltVurderingOutput>({
@@ -294,7 +296,7 @@ type PersonInformasjonProps = {
   tittel: string
   fnr: string | null
   navn: { fornavn: string; mellomnavn: string | null; etternavn: string } | null
-  sivilstand: SivilstandType | null
+  sivilstand: Sivilstand | null
   children?: ReactNode
 }
 
@@ -312,10 +314,7 @@ function PersonInformasjon({ tittel, fnr, navn, sivilstand, children }: PersonIn
           {navn.etternavn.toUpperCase()}, {navn.fornavn} {navn.mellomnavn ?? ''}
         </BodyShort>
       )}
-      <HStack gap="space-4">
-        Sivilstand:{' '}
-        <BodyShort weight="semibold">{sivilstand ? (SIVILSTAND_TEKST[sivilstand] ?? sivilstand) : 'Ukjent'}</BodyShort>
-      </HStack>
+      <SivilstandInformasjon sivilstand={sivilstand} />
       {children}
     </VStack>
   )

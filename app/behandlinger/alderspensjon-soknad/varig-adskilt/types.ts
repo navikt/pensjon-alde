@@ -16,11 +16,17 @@ export const SIVILSTAND_TEKST: Record<SivilstandType, string> = {
   UGIF: 'Ugift',
 }
 
+export type Sivilstand = {
+  sokerSivilstand: SivilstandType
+  gyldigFraOgMed: string | null
+  bekreftelsesdato: string | null
+}
+
 export type EktefellePartnerInformasjon = {
   fnr: string
   navn: NavnTilPerson
   bostedsadresser: Bostedsadresse[]
-  sivilstand: SivilstandType | null
+  sivilstand: Sivilstand | null
   sivilstandISak: SivilstandIEktefellePartnersSak
 }
 
@@ -110,7 +116,7 @@ export type SokerInformasjon = {
 export type VarigAdskiltGrunnlag = {
   soker: SokerInformasjon
   sokersBostedsadresser: Bostedsadresse[]
-  sokerSivilstand: SivilstandType
+  sokerSivilstand: Sivilstand
   ektefellePartner: EktefellePartnerInformasjon
   kravOnsketVirkningsdato: string
 }
