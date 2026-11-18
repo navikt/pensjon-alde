@@ -24,10 +24,34 @@ export type EktefellePartnerInformasjon = {
   sivilstandISak: SivilstandIEktefellePartnersSak
 }
 
-export type Sakstype = 'ALDER' | 'UFOREP'
+export type Sakstype =
+  | 'AFP'
+  | 'AFP_PRIVAT'
+  | 'ALDER'
+  | 'BARNEP'
+  | 'FAM_PL'
+  | 'GAM_YRK'
+  | 'GENRL'
+  | 'GJENLEV'
+  | 'GRBL'
+  | 'KRIGSP'
+  | 'OMSORG'
+  | 'UFOREP'
 
+// Fra SakTypeCode i PEN. Har ektefellen/partneren verken alderspensjon eller uføretrygd, brukes sakstypen til
+// et annet gjeldende vedtak.
 export const SAKSTYPE_TEKST: Record<Sakstype, string> = {
+  AFP: 'AFP',
+  AFP_PRIVAT: 'AFP Privat',
   ALDER: 'Alderspensjon',
+  BARNEP: 'Barnepensjon',
+  FAM_PL: 'Familiepleierytelse',
+  GAM_YRK: 'Gammel yrkesskade',
+  GENRL: 'Generell',
+  GJENLEV: 'Gjenlevendeytelse',
+  GRBL: 'Grunnblanketter',
+  KRIGSP: 'Krigspensjon',
+  OMSORG: 'Omsorgsopptjening',
   UFOREP: 'Uføretrygd',
 }
 
