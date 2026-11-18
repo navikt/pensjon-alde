@@ -161,3 +161,7 @@ export function subscribe(behandlingId: number, subscription: Subscription): () 
     }
   }
 }
+
+if (process.env.KAFKA_BROKERS && process.env.BEHANDLING_KAFKA_TOPIC) {
+  connect().catch(error => console.error('[behandling-events] Could not connect to Kafka at startup', error))
+}
