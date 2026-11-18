@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { Consumer, MessagesStreamModes, stringDeserializers } from '@platformatic/kafka'
+import { Gauge, register } from '@prometheus-io/client'
 import type { BehandlingDTO } from '~/types/behandling'
 import { parseBehandlingEvent } from './parse-behandling-event'
 
@@ -27,13 +28,26 @@ const state = globalThis.__behandlingEvents
 
 const log = (message: string, ...args: unknown[]) => console.log(`[behandling-events] ${message}`, ...args)
 
-export function connections() {
-  const perBehandling = Object.fromEntries(
-    [...state.subscriptions].map(([behandlingId, subscriptions]) => [behandlingId, subscriptions.size]),
-  )
-  const total = Object.values(perBehandling).reduce((sum, count) => sum + count, 0)
-  return { status: state.status, total, perBehandling }
+function registerGauge(name: string, help: string, value: () => number) {
+  if (register.getSingleMetric(name)) return
+  new Gauge({
+    name,
+    help,
+    collect() {
+      this.set(value())
+    },
+  })
 }
+
+registerGauge(
+  'alde_behandling_events_kafka_connected',
+  'Om Kafka-consumeren for behandlingshendelser er tilkoblet (1) eller ikke (0)',
+  () => (state.status === 'connected' ? 1 : 0),
+)
+
+registerGauge('alde_behandling_events_sse_clients', 'Antall åpne SSE-tilkoblinger for behandlingshendelser', () =>
+  [...state.subscriptions.values()].reduce((sum, subscriptions) => sum + subscriptions.size, 0),
+)
 
 function dispatch(event: BehandlingDTO) {
   for (const subscription of state.subscriptions.get(event.behandlingId) ?? []) {
@@ -48,7 +62,6 @@ function dispatch(event: BehandlingDTO) {
 function closeAllSubscriptions() {
   const subscriptions = [...state.subscriptions.values()].flatMap(set => [...set])
   state.subscriptions.clear()
-  log('Closing all subscriptions', { count: subscriptions.length })
   for (const subscription of subscriptions) {
     try {
       subscription.onClose()
@@ -107,27 +120,8 @@ async function startConsumer() {
   void (async () => {
     try {
       for await (const message of stream) {
-        const position = { partition: message.partition, offset: String(message.offset), key: message.key }
-
-        if (!message.value) {
-          log('Skipping message without value', position)
-          continue
-        }
-
         const event = parseBehandlingEvent(message.value)
-        if (!event) {
-          log('Skipping unparseable message', position)
-          continue
-        }
-
-        log('Received message', {
-          ...position,
-          behandlingId: event.behandlingId,
-          status: event.status,
-          aldeBehandlingStatus: event.aldeBehandlingStatus,
-          subscribers: state.subscriptions.get(event.behandlingId)?.size ?? 0,
-        })
-        dispatch(event)
+        if (event) dispatch(event)
       }
       log('Kafka stream ended')
     } catch (error) {

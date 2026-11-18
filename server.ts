@@ -1,5 +1,6 @@
 import compression from 'compression'
 import express from 'express'
+import { register } from '@prometheus-io/client'
 import { startUnleash } from './app/utils/unleash.server.ts'
 import {createRequestHandler} from '@react-router/express'
 import type { ServerBuild } from 'react-router'
@@ -34,6 +35,11 @@ if (isDev) {
 }
 
 app.get(['/internal/live', '/internal/ready'], (_, res) => res.sendStatus(200))
+
+app.get('/metrics', async (_, res) => {
+  res.set('Content-Type', register.contentType)
+  res.send(await register.metrics())
+})
 
 const remixHandler = createRequestHandler({
   build: isDev

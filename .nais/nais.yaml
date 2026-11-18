@@ -80,6 +80,10 @@ spec:
 
   port: 8080
 
+  prometheus:
+    enabled: true
+    path: "/metrics"
+
   observability:
     autoInstrumentation:
       enabled: true
