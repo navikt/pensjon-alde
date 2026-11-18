@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { useRevalidator } from 'react-router'
 import { parseBehandlingEvent } from '~/behandling-events/parse-behandling-event'
 import type { BehandlingDTO } from '~/types/behandling'
 
@@ -7,7 +6,6 @@ const PING_TIMEOUT_MS = 45_000
 const WATCHDOG_INTERVAL_MS = 5_000
 const RECONNECT_DELAY_MS = 15_000
 const MAX_RECONNECT_DELAY_MS = 5 * 60_000
-export const LIVE_POLL_INTERVAL_MS = 10_000
 
 export function nesteReconnectDelay(forrige: number) {
   return Math.min(forrige * 2, MAX_RECONNECT_DELAY_MS)
@@ -20,22 +18,19 @@ export function useBehandlingEventsLive() {
 }
 
 type Options = {
-  onEvent?: (event: BehandlingDTO) => boolean | undefined
-  /** Kalles når strømmen åpner, også etter en fallback til polling. Returner true for å revalidere. */
-  onOpen?: () => boolean | undefined
+  onEvent: (event: BehandlingDTO) => void
+  /** Kalles når strømmen åpner igjen etter et brudd, siden vi kan ha gått glipp av hendelser. */
+  onReconnect: () => void
 }
 
 export function useBehandlingEvents(
   behandlingId: number | string,
-  { onEvent, onOpen }: Options = {},
+  { onEvent, onReconnect }: Options,
 ): { live: boolean; lastEvent: BehandlingDTO | undefined } {
-  const revalidator = useRevalidator()
-  const revalidatorRef = useRef(revalidator)
-  revalidatorRef.current = revalidator
   const onEventRef = useRef(onEvent)
   onEventRef.current = onEvent
-  const onOpenRef = useRef(onOpen)
-  onOpenRef.current = onOpen
+  const onReconnectRef = useRef(onReconnect)
+  onReconnectRef.current = onReconnect
 
   const [live, setLive] = useState(false)
   const [lastEvent, setLastEvent] = useState<BehandlingDTO>()
@@ -46,12 +41,9 @@ export function useBehandlingEvents(
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined
     let reconnectDelay = RECONNECT_DELAY_MS
     let disposed = false
+    let harMistetForbindelsen = false
 
     setLastEvent(undefined)
-
-    const revalidate = () => {
-      void revalidatorRef.current.revalidate()
-    }
 
     const markAlive = () => {
       lastSeen = Date.now()
@@ -59,6 +51,7 @@ export function useBehandlingEvents(
     }
 
     const fallBackToPolling = () => {
+      harMistetForbindelsen = true
       source?.close()
       source = undefined
       setLive(false)
@@ -77,16 +70,15 @@ export function useBehandlingEvents(
       source.onopen = () => {
         markAlive()
         reconnectDelay = RECONNECT_DELAY_MS
-        if (onOpenRef.current?.()) revalidate()
+        if (harMistetForbindelsen) onReconnectRef.current()
       }
       source.addEventListener('ping', markAlive)
       source.onmessage = message => {
         markAlive()
         const event = parseBehandlingEvent(message.data)
         if (!event) return
-
         setLastEvent(event)
-        if (onEventRef.current?.(event)) revalidate()
+        onEventRef.current(event)
       }
       source.onerror = fallBackToPolling
     }

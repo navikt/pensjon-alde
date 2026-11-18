@@ -41,8 +41,8 @@ export function kanGaTilbakeTilSaksbehandler(behandling: BehandlingDTO, aktivite
   return aktivitet !== undefined && APNE_AKTIVITETSTATUSER.includes(aktivitet.status)
 }
 
-export function aktivitetPath(behandlingId: string | number, aktivitet: AktivitetDTO) {
-  return aktivitet.handlerName === 'attestering'
-    ? `/behandling/${behandlingId}/attestering`
-    : `/behandling/${behandlingId}/aktivitet/${aktivitet.aktivitetId}`
+export function aktivitetSomVenterPaSaksbehandler(behandling: BehandlingDTO): AktivitetDTO | undefined {
+  if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER) return undefined
+  const aktivitet = finnAktivitetSomSkalVises(behandling.aktiviteter)
+  return aktivitet?.handlerName === 'attestering' ? undefined : aktivitet
 }

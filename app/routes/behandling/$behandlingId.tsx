@@ -8,7 +8,6 @@ import {
   useFetcher,
   useLocation,
   useNavigate,
-  useNavigation,
   useParams,
   useRevalidator,
   useSearchParams,
@@ -17,19 +16,17 @@ import { createBehandlingApi } from '~/api/behandling-api'
 import {
   aktiviteterForVisning,
   finnAktivitetUnderBehandling,
-  skalPolle,
-  velgEventHandling,
-  venterPaEndring,
+  nesteSideFraEvent,
 } from '~/behandling-events/event-handling'
 import FeilendeBehandling from '~/components/FeilendeBehandling'
 import AldeLoader from '~/components/Loader'
 import { settingsContext } from '~/context/settings-context'
 import { BehandlingEventsContext, useBehandlingEvents } from '~/hooks/use-behandling-events'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
+import { useSamletRevalidering } from '~/hooks/use-samlet-revalidering'
 import { AktivitetStatus, AldeBehandlingStatus, type BehandlingDTO, BehandlingStatus } from '~/types/behandling'
 import {
-  aktivitetPath,
-  finnAktivitetSomSkalVises,
+  aktivitetSomVenterPaSaksbehandler,
   kanGaTilbakeTilSaksbehandler,
   venterSaksbehandlerPaAktivitet,
 } from '~/utils/aktivitet-navigering'
@@ -83,16 +80,9 @@ export function getRedirectPath({
     return `/behandling/${behandlingId}/attestering`
   }
 
-  const aktivitetSomSkalVises = finnAktivitetSomSkalVises(behandling.aktiviteter)
-  if (aktivitetSomSkalVises?.handlerName === 'attestering') {
-    return aktivitetPath(behandlingId, aktivitetSomSkalVises)
-  }
-  if (
-    aktivitetSomSkalVises &&
-    !venterPaKjoring &&
-    behandling.aldeBehandlingStatus === AldeBehandlingStatus.VENTER_SAKSBEHANDLER
-  ) {
-    return aktivitetPath(behandlingId, aktivitetSomSkalVises)
+  const aktivitet = aktivitetSomVenterPaSaksbehandler(behandling)
+  if (aktivitet && !venterPaKjoring) {
+    return `/behandling/${behandlingId}/aktivitet/${aktivitet.aktivitetId}`
   }
   return null
 }
@@ -214,70 +204,43 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
   const forrigeKjoring = searchParams.get(FORRIGE_KJORING_PARAM)
   const location = useLocation()
 
-  const isLoadingRef = useRef(isLoading)
-  isLoadingRef.current = isLoading
   const venterPaSvar = useIsSubmitting()
-  const venterPaSvarRef = useRef(venterPaSvar)
-  venterPaSvarRef.current = venterPaSvar
-  const currentAktivitetIdRef = useRef(currentAktivitetId)
-  currentAktivitetIdRef.current = currentAktivitetId
-
-  // En revalidering avbryter lasting som allerede pågår og starter den på nytt. Kommer det hendelser mens vi
-  // laster, venter vi til lastingen er ferdig, og revaliderer bare hvis vi ikke allerede har fått svaret.
-  const navigation = useNavigation()
-  const opptatt = navigation.state !== 'idle' || revalidator.state !== 'idle'
-  const opptattRef = useRef(opptatt)
-  opptattRef.current = opptatt
-  const utsattRevalideringRef = useRef(false)
 
   const valideringFerdig = forrigeKjoring !== null && currentAktivitetId !== undefined && !venterPaValidering
+  const { revalider, forkastUtsatt } = useSamletRevalidering(valideringFerdig)
+
   useEffect(() => {
     if (!valideringFerdig) return
-    utsattRevalideringRef.current = false
+    forkastUtsatt()
     navigate(
       { pathname: location.pathname, search: utenForrigeKjoring(location.search), hash: location.hash },
       { replace: true, preventScrollReset: true },
     )
-  }, [valideringFerdig, navigate, location.pathname, location.search, location.hash])
+  }, [valideringFerdig, forkastUtsatt, navigate, location.pathname, location.search, location.hash])
 
-  useEffect(() => {
-    if (opptatt || valideringFerdig || !utsattRevalideringRef.current) return
-    utsattRevalideringRef.current = false
-    revalidatorRef.current.revalidate()
-  }, [opptatt, valideringFerdig])
+  const navigeringRef = useRef<{ til: string; fra: string }>(undefined)
 
   const { live: sseLive, lastEvent } = useBehandlingEvents(behandling.behandlingId, {
     onEvent: event => {
-      const handling = velgEventHandling({
+      const nesteSide = nesteSideFraEvent({
         event,
         behandling,
-        aktivitetId: currentAktivitetIdRef.current,
+        aktivitetId: currentAktivitetId,
         forrigeKjoring,
-        isLoading: isLoadingRef.current,
-        venterPaSvar: venterPaSvarRef.current,
+        isLoading,
+        venterPaSvar,
       })
-
-      if (handling.type === 'naviger') {
-        navigate(handling.path, { replace: true })
-        return false
+      if (nesteSide && nesteSide !== location.pathname) {
+        if (navigeringRef.current?.til === nesteSide && navigeringRef.current.fra === location.key) return
+        navigeringRef.current = { til: nesteSide, fra: location.key }
+        forkastUtsatt()
+        navigate(nesteSide, { replace: true })
+        return
       }
-      if (handling.type === 'revalider' && opptattRef.current) {
-        utsattRevalideringRef.current = true
-        return false
-      }
-      return handling.type === 'revalider'
+      revalider()
     },
-    onOpen: () => {
-      const skalRevalidere = venterPaEndring(behandling, isLoadingRef.current, venterPaSvarRef.current)
-      if (skalRevalidere && opptattRef.current) {
-        utsattRevalideringRef.current = true
-        return false
-      }
-      return skalRevalidere
-    },
+    onReconnect: revalider,
   })
-  const sseLiveRef = useRef(sseLive)
-  sseLiveRef.current = sseLive
 
   const sisteAktiviteter = aktiviteterForVisning({ behandling, lastEvent, isLoading, forrigeKjoring })
   const aktivitetUnderBehandling = finnAktivitetUnderBehandling(sisteAktiviteter)
@@ -362,12 +325,10 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
 
   const skalVente = isLoading || venterPaValidering
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: sseLive skal starte pollevinduet på nytt
   useEffect(() => {
     if (!skalVente) return
 
     const startedAt = Date.now()
-    let sistRevalidert = startedAt
     const intervalId = setInterval(() => {
       if (Date.now() - startedAt > POLL_MAX_MS) {
         clearInterval(intervalId)
@@ -375,9 +336,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         return
       }
 
-      const now = Date.now()
-      if (revalidatorRef.current.state === 'idle' && skalPolle({ live: sseLiveRef.current, sistRevalidert, now })) {
-        sistRevalidert = now
+      if (!sseLive && revalidatorRef.current.state === 'idle') {
         revalidatorRef.current.revalidate()
       }
     }, POLL_INTERVAL_MS)
