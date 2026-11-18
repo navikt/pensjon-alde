@@ -66,6 +66,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
+      'X-Accel-Buffering': 'no',
     },
   })
 }
