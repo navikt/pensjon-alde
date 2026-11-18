@@ -237,7 +237,13 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
         navigate(nesteSide, { replace: true })
         return
       }
-      revalider()
+      // PEN sender en hendelse per aktivitet mens maskinen jobber. Lasteskjermen viser dem fra hendelsen selv.
+      if (
+        event.status === BehandlingStatus.FEILENDE ||
+        event.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_MASKINELL
+      ) {
+        revalider()
+      }
     },
     onOpen: revalider,
   })

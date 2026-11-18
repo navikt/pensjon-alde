@@ -121,13 +121,13 @@ describe('nesteSideFraEvent', () => {
       ).toBeNull()
     })
 
-    it('revaliderer mens maskinen jobber', () => {
+    it('blir stående mens maskinen jobber', () => {
       expect(
         lasteskjerm(event({ aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL, aktiviteter: [neste] })),
       ).toBeNull()
     })
 
-    it('revaliderer når behandlingen feiler', () => {
+    it('blir stående når behandlingen feiler', () => {
       expect(lasteskjerm(event({ status: BehandlingStatus.FEILENDE, aktiviteter: [neste] }))).toBeNull()
     })
 
@@ -146,7 +146,7 @@ describe('nesteSideFraEvent', () => {
     const validering = (ev: BehandlingDTO) =>
       nesteSideFraEvent({ ...base, venterPaSvar: true, forrigeKjoring: 'gammel', event: ev })
 
-    it('revaliderer når maskinen jobber uten ny kjøring', () => {
+    it('blir stående når maskinen jobber uten ny kjøring', () => {
       expect(
         validering(
           event({
@@ -158,7 +158,7 @@ describe('nesteSideFraEvent', () => {
       ).toBeNull()
     })
 
-    it('revaliderer når ny kjøring har avvist vurderingen', () => {
+    it('blir stående når ny kjøring har avvist vurderingen', () => {
       expect(validering(event({ aktiviteter: [aktiv], sisteKjoring: kjoring('ny') }))).toBeNull()
     })
 
@@ -193,7 +193,7 @@ describe('nesteSideFraEvent', () => {
       ).toBe('/behandling/123')
     })
 
-    it('revaliderer vanlige innsendinger uten søkeparameter', () => {
+    it('blir stående ved vanlige innsendinger uten søkeparameter', () => {
       expect(
         nesteSideFraEvent({ ...base, venterPaSvar: true, event: event({ aktiviteter: [ferdig, neste] }) }),
       ).toBeNull()
@@ -237,7 +237,7 @@ describe('nesteSideFraEvent', () => {
       ).toBeNull()
     })
 
-    it('revaliderer ventesider uten aktivitet', () => {
+    it('blir stående på ventesider uten aktivitet', () => {
       expect(
         nesteSideFraEvent({
           ...base,
