@@ -2,6 +2,8 @@ import { isApiError } from '~/api/error.types'
 import type { VurderingBase } from '~/types/vurdering'
 import type { Fetcher } from '../api-client'
 
+export type LagreVurderingRespons = { kjoringUuidForVurdering: string | null }
+
 export function aktivitetApi(fetch: Fetcher) {
   const hentAktivitet = <T>() => fetch<T>('', { method: 'GET' })
 
@@ -27,7 +29,7 @@ export function aktivitetApi(fetch: Fetcher) {
 
   const lagreVurdering = <T extends object>(payload: T) => {
     const { begrunnelse = null, ...data } = payload as VurderingBase & Record<string, unknown>
-    return fetch(`/vurdering`, {
+    return fetch<LagreVurderingRespons>(`/vurdering`, {
       method: 'POST',
       body: JSON.stringify({ data, begrunnelse: begrunnelse || null }),
     })

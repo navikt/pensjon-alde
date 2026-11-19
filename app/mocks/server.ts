@@ -239,7 +239,7 @@ const handlers = [
   // POST /api/saksbehandling/alde/behandling/:id/aktivitet/:aid/vurdering
   http.post('*/api/saksbehandling/alde/behandling/:behandlingId/aktivitet/:aktivitetId/vurdering', ({ params }) => {
     console.log(`🎯 MSW intercepted POST vurdering for aktivitet ${params.aktivitetId}`)
-    return HttpResponse.json({ ok: true })
+    return HttpResponse.json({ kjoringUuidForVurdering: null })
   }),
 
   // POST /api/saksbehandling/alde/behandling/:id/fortsett
