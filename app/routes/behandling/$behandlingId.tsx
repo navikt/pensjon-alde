@@ -214,7 +214,7 @@ export default function Behandling({ loaderData }: Route.ComponentProps) {
     forkastUtsatt()
     navigate(
       { pathname: location.pathname, search: utenForrigeKjoring(location.search), hash: location.hash },
-      { replace: true, preventScrollReset: true },
+      { replace: true, preventScrollReset: true, defaultShouldRevalidate: false },
     )
   }, [valideringFerdig, forkastUtsatt, navigate, location.pathname, location.search, location.hash])
 
