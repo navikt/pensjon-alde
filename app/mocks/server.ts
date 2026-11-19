@@ -81,6 +81,8 @@ const handlers = [
       etternavn: behandling.etternavn ?? '',
       mellomnavn: behandling.mellomnavn ?? null,
       fodselsdato: behandling.fodselsdato,
+      beskyttelse: behandling.beskyttelse ?? [],
+      epsBeskyttelse: behandling.epsBeskyttelse ?? [],
     })
   }),
 
