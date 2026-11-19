@@ -1,4 +1,4 @@
-import { BodyShort, VStack } from '@navikt/ds-react'
+import { BodyShort, Label, List, VStack } from '@navikt/ds-react'
 import { type EndringSummary, harEndringer } from './opptjening.utils'
 
 interface EndringsOppsummeringProps {
@@ -9,45 +9,45 @@ export const EndringsOppsummering = ({ summary }: EndringsOppsummeringProps) => 
   <VStack gap="space-12">
     {harEndringer(summary) || <BodyShort>Ingen endringer</BodyShort>}
     {summary.nye.length > 0 && (
-      <div>
-        <strong>Nye linjer ({summary.nye.length})</strong>
-        <ul>
+      <VStack gap="space-4">
+        <Label as="p">Nye linjer ({summary.nye.length})</Label>
+        <List size="small">
           {summary.nye.map(item => (
-            <li key={item.id}>{item.label}</li>
+            <List.Item key={item.id}>{item.label}</List.Item>
           ))}
-        </ul>
-      </div>
+        </List>
+      </VStack>
     )}
 
     {summary.endrede.length > 0 && (
-      <div>
-        <strong>Endrede linjer ({summary.endrede.length})</strong>
-        <ul>
+      <VStack gap="space-4">
+        <Label as="p">Endrede linjer ({summary.endrede.length})</Label>
+        <List size="small">
           {summary.endrede.map(item => (
-            <li key={item.id}>
+            <List.Item key={item.id}>
               {item.label}
               {item.endringer && item.endringer.length > 0 && (
-                <ul>
+                <List size="small">
                   {item.endringer.map(e => (
-                    <li key={e}>{e}</li>
+                    <List.Item key={e}>{e}</List.Item>
                   ))}
-                </ul>
+                </List>
               )}
-            </li>
+            </List.Item>
           ))}
-        </ul>
-      </div>
+        </List>
+      </VStack>
     )}
 
     {summary.slettede.length > 0 && (
-      <div>
-        <strong>Slettede linjer ({summary.slettede.length})</strong>
-        <ul>
+      <VStack gap="space-4">
+        <Label as="p">Slettede linjer ({summary.slettede.length})</Label>
+        <List size="small">
           {summary.slettede.map(item => (
-            <li key={item.id}>{item.label}</li>
+            <List.Item key={item.id}>{item.label}</List.Item>
           ))}
-        </ul>
-      </div>
+        </List>
+      </VStack>
     )}
   </VStack>
 )
