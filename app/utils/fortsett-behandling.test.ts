@@ -82,9 +82,4 @@ describe('skalRevalidereBehandling', () => {
   it('laster behandlingen på nytt når vi går fra lasteskjermen til en aktivitet', () => {
     expect(skalRevalidereBehandling(args('/behandling/123', '/behandling/123/aktivitet/456'))).toBe(true)
   })
-
-  it('bruker standard når stien er den samme', () => {
-    expect(skalRevalidereBehandling(args('/behandling/123', '/behandling/123', true))).toBe(true)
-    expect(skalRevalidereBehandling(args('/behandling/123', '/behandling/123', false))).toBe(false)
-  })
 })

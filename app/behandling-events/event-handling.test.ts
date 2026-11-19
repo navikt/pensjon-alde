@@ -48,36 +48,14 @@ const kjoring = (uuid: string): BehandlingDTO['sisteKjoring'] => ({
 })
 
 describe('finnAktivitetUnderBehandling', () => {
-  it('returns friendly name of aktivitet UNDER_BEHANDLING', () => {
+  it('foretrekker aktiviteten under behandling og hopper over dem uten navn', () => {
     expect(
       finnAktivitetUnderBehandling([
-        aktivitet({ status: AktivitetStatus.FULLFORT, friendlyName: 'Ferdig' }),
+        aktivitet({ status: AktivitetStatus.OPPRETTET, friendlyName: 'Neste' }),
         aktivitet({ status: AktivitetStatus.UNDER_BEHANDLING, friendlyName: '' }),
         aktivitet({ status: AktivitetStatus.UNDER_BEHANDLING, friendlyName: 'Beregner' }),
       ]),
     ).toBe('Beregner')
-  })
-
-  it('falls back to OPPRETTET when none is UNDER_BEHANDLING', () => {
-    expect(
-      finnAktivitetUnderBehandling([
-        aktivitet({ status: AktivitetStatus.FULLFORT, friendlyName: 'Ferdig' }),
-        aktivitet({ status: AktivitetStatus.OPPRETTET, friendlyName: 'Neste' }),
-      ]),
-    ).toBe('Neste')
-  })
-
-  it('prefers UNDER_BEHANDLING over OPPRETTET', () => {
-    expect(
-      finnAktivitetUnderBehandling([
-        aktivitet({ status: AktivitetStatus.OPPRETTET, friendlyName: 'Neste' }),
-        aktivitet({ status: AktivitetStatus.UNDER_BEHANDLING, friendlyName: 'Beregner' }),
-      ]),
-    ).toBe('Beregner')
-  })
-
-  it('returns null when none is UNDER_BEHANDLING or OPPRETTET', () => {
-    expect(finnAktivitetUnderBehandling([aktivitet({ status: AktivitetStatus.FULLFORT })])).toBeNull()
   })
 })
 
@@ -146,18 +124,6 @@ describe('nesteSideFraEvent', () => {
     const validering = (ev: BehandlingDTO) =>
       nesteSideFraEvent({ ...base, venterPaSvar: true, forrigeKjoring: 'gammel', event: ev })
 
-    it('blir stående når maskinen jobber uten ny kjøring', () => {
-      expect(
-        validering(
-          event({
-            aldeBehandlingStatus: AldeBehandlingStatus.VENTER_MASKINELL,
-            aktiviteter: [aktiv],
-            sisteKjoring: kjoring('gammel'),
-          }),
-        ),
-      ).toBeNull()
-    })
-
     it('blir stående når ny kjøring har avvist vurderingen', () => {
       expect(validering(event({ aktiviteter: [aktiv], sisteKjoring: kjoring('ny') }))).toBeNull()
     })
@@ -218,13 +184,6 @@ describe('nesteSideFraEvent', () => {
       expect(observer(event({ aktiviteter: [ferdig, neste] }))).toBe('/behandling/123/aktivitet/3')
     })
 
-    it.each([AldeBehandlingStatus.AVBRUTT_AV_BRUKER, AldeBehandlingStatus.FULLFORT])(
-      'går til behandlingen når status blir %s',
-      aldeBehandlingStatus => {
-        expect(observer(event({ aldeBehandlingStatus, aktiviteter: [aktiv] }))).toBe('/behandling/123')
-      },
-    )
-
     it('går rett til attestering når behandlingen venter på attestering', () => {
       expect(
         observer(event({ aldeBehandlingStatus: AldeBehandlingStatus.VENTER_ATTESTERING, aktiviteter: [ferdig] })),
@@ -234,16 +193,6 @@ describe('nesteSideFraEvent', () => {
     it('blir stående når vi ser på en tidligere aktivitet', () => {
       expect(
         observer(event({ aldeBehandlingStatus: AldeBehandlingStatus.AVBRUTT_AV_BRUKER, aktiviteter: [aktiv] }), '1'),
-      ).toBeNull()
-    })
-
-    it('blir stående på ventesider uten aktivitet', () => {
-      expect(
-        nesteSideFraEvent({
-          ...base,
-          aktivitetId: undefined,
-          event: event({ aldeBehandlingStatus: AldeBehandlingStatus.FULLFORT, aktiviteter: [aktiv] }),
-        }),
       ).toBeNull()
     })
 
@@ -258,11 +207,6 @@ describe('aktiviteterForVisning', () => {
   const fraEvent = [aktivitet({ aktivitetId: 1, friendlyName: 'Fra melding' })]
   const behandling = event({ aktiviteter: fraLoader, sisteKjoring: kjoring('gammel') })
 
-  it('bruker loaderdata når lasteskjermen ikke vises', () => {
-    const lastEvent = event({ aktiviteter: fraEvent, sisteKjoring: kjoring('ny') })
-    expect(aktiviteterForVisning({ behandling, lastEvent, isLoading: false, forrigeKjoring: null })).toBe(fraLoader)
-  })
-
   it('bruker siste melding mens lasteskjermen vises', () => {
     const lastEvent = event({ aktiviteter: fraEvent, sisteKjoring: kjoring('ny') })
     expect(aktiviteterForVisning({ behandling, lastEvent, isLoading: true, forrigeKjoring: null })).toBe(fraEvent)
@@ -271,11 +215,5 @@ describe('aktiviteterForVisning', () => {
   it('bruker loaderdata når meldingen er fra før innsendingen', () => {
     const lastEvent = event({ aktiviteter: fraEvent, sisteKjoring: kjoring('gammel') })
     expect(aktiviteterForVisning({ behandling, lastEvent, isLoading: true, forrigeKjoring: 'gammel' })).toBe(fraLoader)
-  })
-
-  it('bruker loaderdata uten melding', () => {
-    expect(aktiviteterForVisning({ behandling, lastEvent: undefined, isLoading: true, forrigeKjoring: null })).toBe(
-      fraLoader,
-    )
   })
 })

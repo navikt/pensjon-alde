@@ -7,10 +7,6 @@ const WATCHDOG_INTERVAL_MS = 5_000
 const RECONNECT_DELAY_MS = 15_000
 const MAX_RECONNECT_DELAY_MS = 5 * 60_000
 
-export function nesteReconnectDelay(forrige: number) {
-  return Math.min(forrige * 2, MAX_RECONNECT_DELAY_MS)
-}
-
 export const BehandlingEventsContext = createContext(false)
 
 export function useBehandlingEventsLive() {
@@ -59,7 +55,7 @@ export function useBehandlingEvents(
       setLastEvent(undefined)
       clearTimeout(reconnectTimer)
       reconnectTimer = setTimeout(open, reconnectDelay)
-      reconnectDelay = nesteReconnectDelay(reconnectDelay)
+      reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY_MS)
     }
 
     const open = () => {
