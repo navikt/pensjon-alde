@@ -37,7 +37,7 @@ export function BeskyttelseTags({ toppbarInfo }: { toppbarInfo: ToppbarInfo }) {
   return (
     <HStack gap="space-8" align="center">
       {markeringer.map(m => (
-        <Tag key={m.key} size="small" variant="moderate" data-color={m.farge}>
+        <Tag key={m.key} size="small" data-color={m.farge}>
           {m.tekst}
         </Tag>
       ))}
