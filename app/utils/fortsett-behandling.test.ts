@@ -5,8 +5,9 @@ import {
   fortsettBehandling,
   fortsettBehandlingUrl,
   medForrigeKjoring,
+  skalRevalidereBehandling,
+  utenForrigeKjoring,
   venterPaNyKjoring,
-  venterPaValideringPaAktivitet,
 } from './fortsett-behandling'
 
 const behandling = (uuid: string | null) => ({ sisteKjoring: uuid === null ? null : { uuid } }) as BehandlingDTO
@@ -62,17 +63,23 @@ describe('medForrigeKjoring', () => {
   })
 })
 
-describe('venterPaValideringPaAktivitet', () => {
-  it('venter på aktiviteten når søkeparameteren er satt', () => {
-    expect(venterPaValideringPaAktivitet('456', new URLSearchParams('forrigeKjoring=abc'))).toBe(true)
-    expect(venterPaValideringPaAktivitet('456', new URLSearchParams('forrigeKjoring='))).toBe(true)
+describe('utenForrigeKjoring', () => {
+  it('fjerner forrigeKjoring og beholder andre parametere', () => {
+    expect(utenForrigeKjoring('?forrigeKjoring=abc')).toBe('')
+    expect(utenForrigeKjoring('?a=1&forrigeKjoring=abc&b=2')).toBe('?a=1&b=2')
   })
+})
 
-  it('venter ikke uten søkeparameter', () => {
-    expect(venterPaValideringPaAktivitet('456', new URLSearchParams())).toBe(false)
-  })
+describe('skalRevalidereBehandling', () => {
+  const args = (current: string, next: string, defaultShouldRevalidate = false) =>
+    ({
+      currentUrl: new URL(`http://localhost${current}`),
+      nextUrl: new URL(`http://localhost${next}`),
+      formMethod: undefined,
+      defaultShouldRevalidate,
+    }) as Parameters<typeof skalRevalidereBehandling>[0]
 
-  it('venter ikke på aktiviteten utenfor en aktivitetsrute', () => {
-    expect(venterPaValideringPaAktivitet(undefined, new URLSearchParams('forrigeKjoring=abc'))).toBe(false)
+  it('laster behandlingen på nytt når vi går fra lasteskjermen til en aktivitet', () => {
+    expect(skalRevalidereBehandling(args('/behandling/123', '/behandling/123/aktivitet/456'))).toBe(true)
   })
 })

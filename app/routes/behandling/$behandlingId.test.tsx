@@ -106,7 +106,7 @@ describe('getRedirectPath', () => {
     expect(result).toBe('/behandling/123/aktivitet/456')
   })
 
-  it('redirects to attestering when aktivitet handlerName is attestering', () => {
+  it('does not redirect to attestering before behandling is VENTER_ATTESTERING', () => {
     const result = getRedirectPath({
       pathname: '/behandling/123',
       behandlingId: '123',
@@ -129,7 +129,7 @@ describe('getRedirectPath', () => {
       },
     })
 
-    expect(result).toBe('/behandling/123/attestering')
+    expect(result).toBeNull()
   })
 
   it('does NOT redirect to aktivitet while waiting for a new kjøring after submit', () => {

@@ -34,6 +34,9 @@ function create_secret_file {
 
 # Skriver NØKKEL=verdi (Java properties-format) til fil.
 function write_property {
+    if [[ "$3" == *$'\n'* || "$3" == *$'\r'* ]]; then
+        die "Verdien til \"$2\" inneholder linjeskift og kan ikke skrives til $1"
+    fi
     printf '%s=%s\n' "$2" "$3" >> "$1"
 }
 
@@ -42,10 +45,18 @@ function write_property {
 # dotenv gjør ingen escaping inne i fnutter: enkeltfnuttede verdier tas helt
 # ordrett, og dobbeltfnuttede verdier får kun \n og \r oversatt. Vi velger derfor
 # fnutt etter innholdet, og feiler hvis verdien ikke kan representeres.
+# Verdier med linjeskift (f.eks. PEM-sertifikater) skrives dobbeltfnuttet med \n.
 function write_env {
     local file=$1 key=$2 value=$3
 
-    if [[ "$value" != *"'"* ]]; then
+    if [[ "$value" == *$'\r'* ]]; then
+        die "Verdien til \"$key\" inneholder CR (\\r) og kan ikke skrives trygt til .env"
+    elif [[ "$value" == *$'\n'* ]]; then
+        if [[ "$value" == *'"'* || "$value" == *'\'* ]]; then
+            die "Verdien til \"$key\" inneholder linjeskift og dobbeltfnutt (eller backslash) og kan ikke skrives trygt til .env"
+        fi
+        printf '%s="%s"\n' "$key" "${value//$'\n'/\\n}" >> "$file"
+    elif [[ "$value" != *"'"* ]]; then
         printf "%s='%s'\n" "$key" "$value" >> "$file"
     elif [[ "$value" != *'"'* && "$value" != *'\'* ]]; then
         printf '%s="%s"\n' "$key" "$value" >> "$file"
@@ -200,15 +211,11 @@ function fetch_nais_secret {
             <<< "$secret_response"; printf 'X')
         value=${value%X}
 
-        # Fjern linjeskift på slutten av verdien, slik at de ikke bryter opp
-        # linjene i .properties/.env-filene.
+        # Fjern linjeskift på slutten av verdien. Linjeskift inne i verdien
+        # håndteres (eller avvises) av writer-funksjonen.
         while [[ "$value" == *$'\n' || "$value" == *$'\r' ]]; do
             value=${value%?}
         done
-
-        if [[ "$value" == *$'\n'* || "$value" == *$'\r'* ]]; then
-            die "Verdien til \"$key\" i secret \"$secret_name\" inneholder linjeskift og kan ikke skrives til $file"
-        fi
 
         "$writer" "$file" "$out" "$value"
     done

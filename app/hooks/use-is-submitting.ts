@@ -1,12 +1,7 @@
-import { useNavigation, useParams, useSearchParams } from 'react-router'
-import { venterPaValideringPaAktivitet } from '~/utils/fortsett-behandling'
+import { useNavigation, useRouteLoaderData } from 'react-router'
 
 export function useIsSubmitting(): boolean {
   const navigation = useNavigation()
-  const { aktivitetId } = useParams()
-  const [searchParams] = useSearchParams()
-  return (
-    (navigation.state !== 'idle' && navigation.formData != null) ||
-    venterPaValideringPaAktivitet(aktivitetId, searchParams)
-  )
+  const behandling = useRouteLoaderData<{ venterPaValidering?: boolean }>('routes/behandling/$behandlingId')
+  return (navigation.state !== 'idle' && navigation.formData != null) || Boolean(behandling?.venterPaValidering)
 }

@@ -40,3 +40,9 @@ export function kanGaTilbakeTilSaksbehandler(behandling: BehandlingDTO, aktivite
   const aktivitet = behandling.aktiviteter.find(a => a.aktivitetId.toString() === aktivitetId)
   return aktivitet !== undefined && APNE_AKTIVITETSTATUSER.includes(aktivitet.status)
 }
+
+export function aktivitetSomVenterPaSaksbehandler(behandling: BehandlingDTO): AktivitetDTO | undefined {
+  if (behandling.aldeBehandlingStatus !== AldeBehandlingStatus.VENTER_SAKSBEHANDLER) return undefined
+  const aktivitet = finnAktivitetSomSkalVises(behandling.aktiviteter)
+  return aktivitet?.handlerName === 'attestering' ? undefined : aktivitet
+}

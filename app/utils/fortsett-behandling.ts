@@ -1,4 +1,4 @@
-import { redirect } from 'react-router'
+import { redirect, type ShouldRevalidateFunctionArgs } from 'react-router'
 import type { BehandlingDTO } from '~/types/behandling'
 
 export const FORRIGE_KJORING_PARAM = 'forrigeKjoring'
@@ -30,6 +30,17 @@ export function venterPaNyKjoring(behandling: BehandlingDTO, forrigeKjoring: str
   return forrigeKjoring !== null && !erProsessertEtter(behandling, forrigeKjoring)
 }
 
-export function venterPaValideringPaAktivitet(aktivitetId: string | undefined, searchParams: URLSearchParams) {
-  return aktivitetId !== undefined && searchParams.has(FORRIGE_KJORING_PARAM)
+export function utenForrigeKjoring(search: string) {
+  const params = new URLSearchParams(search)
+  params.delete(FORRIGE_KJORING_PARAM)
+  const rest = params.toString()
+  return rest ? `?${rest}` : ''
+}
+
+export function skalRevalidereBehandling({
+  currentUrl,
+  nextUrl,
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs): boolean {
+  return currentUrl.pathname !== nextUrl.pathname || defaultShouldRevalidate
 }
