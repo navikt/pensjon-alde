@@ -1,28 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const kall: string[] = []
-const hentBehandling = vi.fn()
 const fetch = vi.fn()
 
 vi.mock('~/utils/env.server', () => ({ env: { penUrl: 'http://pen' } }))
-vi.mock('~/api/behandling-api', () => ({ createBehandlingApi: () => ({ hentBehandling }) }))
 vi.mock('../api-client', () => ({ fetcher: () => fetch }))
 
 const { createAktivitetApi } = await import('./index')
 
 describe('lagreVurderingOgFortsett', () => {
   beforeEach(() => {
-    kall.length = 0
-    hentBehandling.mockReset().mockImplementation(async () => {
-      kall.push('hentBehandling')
-      return { sisteKjoring: { uuid: 'før-lagring' } }
-    })
-    fetch.mockReset().mockImplementation(async (path: string) => {
-      kall.push(`fetch ${path}`)
-    })
+    fetch.mockReset().mockResolvedValue({ kjoringUuidForVurdering: 'før-lagring' })
   })
 
-  it('henter siste kjøring før lagring og blir på aktiviteten med den', async () => {
+  it('blir på aktiviteten med siste kjøring før lagringen fra PEN', async () => {
     const api = createAktivitetApi({
       request: new Request('http://localhost/behandling/1/aktivitet/2/alderspensjon-soknad/vurder-samboer?index'),
       behandlingId: '1',
@@ -31,7 +21,8 @@ describe('lagreVurderingOgFortsett', () => {
 
     const response = await api.lagreVurderingOgFortsett({ vurdering: 'ok' })
 
-    expect(kall).toEqual(['hentBehandling', 'fetch /vurdering'])
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetch).toHaveBeenCalledWith('/vurdering', expect.objectContaining({ method: 'POST' }))
     expect(response.headers.get('Location')).toBe(
       '/behandling/1/aktivitet/2/alderspensjon-soknad/vurder-samboer?forrigeKjoring=f%C3%B8r-lagring',
     )
