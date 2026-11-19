@@ -15,10 +15,11 @@ function lagre(payload: unknown) {
   return lagreOpptjeningVurdering({ request, behandlingId: '1', aktivitetId: '2' })
 }
 
-const api = { lagreVurdering: vi.fn().mockResolvedValue(undefined) }
+const redirectResponse = new Response(null, { status: 302, headers: { Location: '/aktivitet?forrigeKjoring=abc' } })
+const api = { lagreVurderingOgFortsett: vi.fn() }
 
 beforeEach(() => {
-  api.lagreVurdering.mockClear()
+  api.lagreVurderingOgFortsett.mockReset().mockResolvedValue(redirectResponse)
   vi.mocked(createAktivitetApi).mockReturnValue(api as never)
 })
 
@@ -30,8 +31,8 @@ describe('lagreOpptjeningVurdering for inntekt', () => {
 
     const result = await lagre(payload)
 
-    expect(api.lagreVurdering).toHaveBeenCalledWith({ ...payload, begrunnelse: 'Feil lønn' })
-    expect(result).toBeInstanceOf(Response)
+    expect(api.lagreVurderingOgFortsett).toHaveBeenCalledWith({ ...payload, begrunnelse: 'Feil lønn' })
+    expect(result).toBe(redirectResponse)
   })
 
   it.each([
@@ -41,6 +42,6 @@ describe('lagreOpptjeningVurdering for inntekt', () => {
     const result = await lagre(payload)
 
     expect(result).toMatchObject({ data: { errors: { _form: 'Ingen endringer er registrert' } } })
-    expect(api.lagreVurdering).not.toHaveBeenCalled()
+    expect(api.lagreVurderingOgFortsett).not.toHaveBeenCalled()
   })
 })
