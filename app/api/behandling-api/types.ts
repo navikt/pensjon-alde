@@ -22,4 +22,8 @@ export interface ToppbarInfo {
   etternavn: string
   mellomnavn: string | null
   fodselsdato: string // LocalDate as ISO string
+  beskyttelse?: PersonBeskyttelse[]
+  epsBeskyttelse?: PersonBeskyttelse[]
 }
+
+export type PersonBeskyttelse = 'STRENGT_FORTROLIG' | 'FORTROLIG' | 'EGEN_ANSATT'

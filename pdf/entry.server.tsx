@@ -3,6 +3,7 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import type { ToppbarInfo } from '~/api/behandling-api/types'
+import { BeskyttelseTags } from '~/components/Beskyttelse'
 import type { AktivitetDTO, BehandlingDTO } from '~/types/behandling'
 import { getServerComponent } from '~/utils/component-discovery'
 import { formatDateToNorwegian } from '~/utils/date'
@@ -51,6 +52,7 @@ function PdfHeader({ toppbarInfo: t }: { toppbarInfo: ToppbarInfo }) {
           <HeaderField label="Sak" value={t.sakId != null ? String(t.sakId) : null} />
           <HeaderField label="Saken gjelder" value={t.sakType} />
         </HStack>
+        <BeskyttelseTags toppbarInfo={t} />
       </VStack>
     </Box>
   )

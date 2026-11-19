@@ -2,6 +2,7 @@ import { PersonIcon } from '@navikt/aksel-icons'
 import { Box, CopyButton, HStack, Page, Spacer } from '@navikt/ds-react'
 import { Outlet, type ShouldRevalidateFunctionArgs, useOutletContext, useRouteLoaderData } from 'react-router'
 import { createBehandlingApi } from '~/api/behandling-api'
+import { BeskyttelseTags } from '~/components/Beskyttelse'
 import { Fnr } from '~/components/Fnr'
 import { Header } from '~/layout/Header/Header'
 import type { RootOutletContext, loader as rootLoader } from '~/root'
@@ -67,6 +68,7 @@ export default function BehandlingHeaderLayout({ loaderData }: Route.ComponentPr
               {toppbarinfo.etternavn}, {toppbarinfo.fornavn} {toppbarinfo.mellomnavn}
               <span>/</span>
               Født: {formatDateToNorwegian(toppbarinfo.fodselsdato)} ({formatDateToAge(toppbarinfo.fodselsdato)})
+              <BeskyttelseTags toppbarInfo={toppbarinfo} />
               <Spacer />
               {toppbarinfo.sakType}
               {toppbarinfo.sakId != null && (
