@@ -31,12 +31,12 @@ export function beregnStatus<T extends object>(
 }
 
 export function oversettKoderIMelding(melding: string, opptjeningstyper: OpptjeningstyperResponse): string {
-  const alle = [...opptjeningstyper.omsorg.typer].sort((a, b) => b.code.length - a.code.length)
+  const alle = [...opptjeningstyper.omsorg.typer].sort((a, b) => b.type.length - a.type.length)
 
-  return alle.reduce((tekst, type) => {
-    const escaped = type.code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return alle.reduce((tekst, t) => {
+    const escaped = t.type.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`\\b${escaped}\\b`, 'g')
-    return tekst.replace(regex, `${type.description} (${type.code})`)
+    return tekst.replace(regex, `${t.beskrivelse} (${t.type})`)
   }, melding)
 }
 
