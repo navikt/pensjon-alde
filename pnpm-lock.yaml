@@ -196,8 +196,8 @@ importers:
         specifier: ^1.9.1
         version: 1.9.1
       '@platformatic/kafka':
-        specifier: ^2.12.0
-        version: 2.12.0(supports-color@7.2.0)
+        specifier: ^2.15.0
+        version: 2.15.0(supports-color@7.2.0)
       '@prometheus-io/client':
         specifier: ^0.16.1
         version: 0.16.1
@@ -1290,16 +1290,16 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@platformatic/dynamic-buffer@0.3.1':
-    resolution: {integrity: sha512-xQD5JSkQc4D15suOk7FezGDmh6Vb5e4phDoFZ/ASpa3Ft+3fOVwFOENmHtC1561zm/xHnKwI91NbMF8inpbk0Q==}
+  '@platformatic/dynamic-buffer@0.4.1':
+    resolution: {integrity: sha512-zVPMgZphxXbllZgJTgFPoJoEDXKhDVM7H7+a0Tw52xpkNOm6FVVOn1iuUWSw73Loo3wWNNRlrpHN7YvKiP/Qfw==}
     engines: {node: '>= 22.19.0'}
 
-  '@platformatic/kafka@2.12.0':
-    resolution: {integrity: sha512-h3ucWWP7s4uBMUcj07wyaGQfscBNlFZ/UKqff3yexPG2Es6tuEVv+6dO5G9DBIDW80wuj0xPGqTREjZPw2M9UQ==}
+  '@platformatic/kafka@2.15.0':
+    resolution: {integrity: sha512-ROhJgOSxJxL9sTOAxDB0cn+VVxQ2LcN3scYR2Eh6Mnhp459a3xeXNHzycARDzvNWKgzHmEhwTga0oAM2v9NYIA==}
     engines: {node: '>= 22.22.0 || >= 24.6.0'}
 
-  '@platformatic/wasm-utils@0.2.1':
-    resolution: {integrity: sha512-5rNl4h5n+hZG4LjiItQ7bVfHBqTypjldP46NXrOYW64cZr87ahngK1s9nEtCpByWg7WWjRLSxyCytgJK5gNdwQ==}
+  '@platformatic/wasm-utils@0.3.0':
+    resolution: {integrity: sha512-tK7M2HMtVQrHBuQ/TSaDIk3YCEV6+EUQcConDrIH1kbQ7ZQiCWGrp7Jn+vd0FxoAsq2O8ZXGhANxwNpkPR8Maw==}
     engines: {node: '>= 22.19.0'}
 
   '@playwright/test@1.65.0':
@@ -4598,12 +4598,12 @@ snapshots:
   '@oxc-resolver/binding-win32-x64-msvc@11.21.2':
     optional: true
 
-  '@platformatic/dynamic-buffer@0.3.1': {}
+  '@platformatic/dynamic-buffer@0.4.1': {}
 
-  '@platformatic/kafka@2.12.0(supports-color@7.2.0)':
+  '@platformatic/kafka@2.15.0(supports-color@7.2.0)':
     dependencies:
-      '@platformatic/dynamic-buffer': 0.3.1
-      '@platformatic/wasm-utils': 0.2.1
+      '@platformatic/dynamic-buffer': 0.4.1
+      '@platformatic/wasm-utils': 0.3.0
       ajv: 8.20.0
       ajv-draft-04: 1.0.0(ajv@8.20.0)
       avsc: 5.7.9
@@ -4617,9 +4617,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@platformatic/wasm-utils@0.2.1':
+  '@platformatic/wasm-utils@0.3.0':
     dependencies:
-      '@platformatic/dynamic-buffer': 0.3.1
+      '@platformatic/dynamic-buffer': 0.4.1
 
   '@playwright/test@1.65.0':
     dependencies:
