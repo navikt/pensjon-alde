@@ -24,6 +24,7 @@ import { createAktivitetApi } from '~/api/aktivitet-api'
 import { Fnr } from '~/components/Fnr'
 import AktivitetVurderingLayout from '~/components/shared/AktivitetVurderingLayout'
 import BegrunnelseField from '~/components/shared/BegrunnelseField'
+import TekstTilVedtaksbrevField from '~/components/shared/TekstTilVedtaksbrevField'
 import { userContext } from '~/context/user-context'
 import { Features } from '~/features'
 import { useIsSubmitting } from '~/hooks/use-is-submitting'
@@ -81,6 +82,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     ? {
         ...vurderingRespons.vurdering,
         begrunnelse: vurderingRespons.begrunnelse,
+        tekstTilVedtaksbrev: vurderingRespons.tekstTilVedtaksbrev,
         validering: vurderingRespons.validering,
       }
     : null
@@ -185,6 +187,7 @@ function VarigAdskiltComponent({
     defaultValue: {
       vurdertSivilstand: vurdering?.vurdertSivilstand ?? undefined,
       fom: tilSkjemaDato(vurdering?.fom),
+      tekstTilVedtaksbrev: vurdering?.tekstTilVedtaksbrev ?? '',
       begrunnelse: begrunnelse ?? vurdering?.begrunnelse ?? '',
     },
     onValidate({ formData }) {
@@ -225,6 +228,15 @@ function VarigAdskiltComponent({
               }
             />
           </DatePicker>
+
+          {fields.vurdertSivilstand.value === 'LEVER_SAMMEN' && (
+            <TekstTilVedtaksbrevField
+              name={fields.tekstTilVedtaksbrev.name}
+              readOnly={readOnly}
+              defaultValue={fields.tekstTilVedtaksbrev.initialValue}
+              error={fields.tekstTilVedtaksbrev.errors?.[0]}
+            />
+          )}
 
           {visNotat && <BegrunnelseField readOnly={readOnly} defaultValue={fields.begrunnelse.initialValue} />}
 
@@ -387,10 +399,7 @@ type BostedsadresserProps = {
 
 function Bostedsadresser({ tittel, bostedsadresser }: BostedsadresserProps) {
   return (
-    <AddressWrapper
-      title={tittel}
-      description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
-    >
+    <AddressWrapper title={tittel} description="Fra Folkeregisteret.">
       {bostedsadresser.length > 0 ? (
         <AddressBlock bostedadresser={bostedsadresser} />
       ) : (

@@ -1,5 +1,6 @@
 export interface VurderingBase {
   begrunnelse?: string | null
+  tekstTilVedtaksbrev?: string | null
   validering?: Validering | null
 }
 
@@ -9,6 +10,7 @@ export interface VurderingRespons<T> {
   vurdertAvBrukerId?: string | null
   vurdertAvBrukerNavn?: string | null
   begrunnelse?: string | null
+  tekstTilVedtaksbrev?: string | null
   validering?: Validering | null
 }
 

@@ -42,6 +42,30 @@ describe('lagreVurderingOgFortsett', () => {
     )
   })
 
+  it('sender begrunnelse og tekstTilVedtaksbrev på toppnivå, utenfor data', async () => {
+    const api = createAktivitetApi({ request: new Request('http://localhost'), behandlingId: '1', aktivitetId: '2' })
+
+    await api.lagreVurderingOgFortsett({ vurdering: 'ok', begrunnelse: 'notat', tekstTilVedtaksbrev: 'brevtekst' })
+
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+      data: { vurdering: 'ok' },
+      begrunnelse: 'notat',
+      tekstTilVedtaksbrev: 'brevtekst',
+    })
+  })
+
+  it('sender tom tekstTilVedtaksbrev som null', async () => {
+    const api = createAktivitetApi({ request: new Request('http://localhost'), behandlingId: '1', aktivitetId: '2' })
+
+    await api.lagreVurderingOgFortsett({ vurdering: 'ok', tekstTilVedtaksbrev: '' })
+
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+      data: { vurdering: 'ok' },
+      begrunnelse: null,
+      tekstTilVedtaksbrev: null,
+    })
+  })
+
   it('redirecter ikke når lagring feiler', async () => {
     fetch.mockRejectedValue(new Error('feil'))
     const api = createAktivitetApi({ request: new Request('http://localhost'), behandlingId: '1', aktivitetId: '2' })

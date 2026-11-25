@@ -23,6 +23,7 @@ export const varigAdskiltVurderingSchema = z.object({
     }
     return dato
   }),
+  tekstTilVedtaksbrev: z.string().trim().optional(),
   begrunnelse: z.string().trim().optional(),
 })
 

@@ -28,10 +28,18 @@ export function aktivitetApi(fetch: Fetcher) {
   }
 
   const lagreVurdering = <T extends object>(payload: T) => {
-    const { begrunnelse = null, ...data } = payload as VurderingBase & Record<string, unknown>
+    const {
+      begrunnelse = null,
+      tekstTilVedtaksbrev = null,
+      ...data
+    } = payload as VurderingBase & Record<string, unknown>
     return fetch<LagreVurderingRespons>(`/vurdering`, {
       method: 'POST',
-      body: JSON.stringify({ data, begrunnelse: begrunnelse || null }),
+      body: JSON.stringify({
+        data,
+        begrunnelse: begrunnelse || null,
+        tekstTilVedtaksbrev: tekstTilVedtaksbrev || null,
+      }),
     })
   }
 
