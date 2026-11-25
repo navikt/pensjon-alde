@@ -17,6 +17,7 @@ describe('ForhandsvisVedtaksbrev', () => {
   it('viser alle brevtitler og metadata uten lagring eller fortsett-knapp', () => {
     const html = renderToStaticMarkup(
       <ForhandsvisVedtaksbrev
+        readOnly
         aktivitet={aktivitet}
         grunnlag={{ brev: [brev, { ...brev, displayTitle: 'Informasjon om utbetaling' }] }}
       />,
@@ -31,7 +32,7 @@ describe('ForhandsvisVedtaksbrev', () => {
   })
 
   it('viser en melding når det ikke finnes brev', () => {
-    const html = renderToStaticMarkup(<ForhandsvisVedtaksbrev aktivitet={aktivitet} grunnlag={{ brev: [] }} />)
+    const html = renderToStaticMarkup(<ForhandsvisVedtaksbrev readOnly aktivitet={aktivitet} grunnlag={{ brev: [] }} />)
 
     expect(html).toContain('Ingen vedtaksbrev tilgjengelig for forhåndsvisning.')
     expect(html).not.toContain('<iframe')

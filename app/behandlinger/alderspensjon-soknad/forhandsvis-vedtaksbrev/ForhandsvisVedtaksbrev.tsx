@@ -1,5 +1,7 @@
-import { Alert, BodyShort, Box, Heading, HStack, Link, Loader, VStack } from '@navikt/ds-react'
+import { Alert, BodyShort, Box, Button, Heading, HStack, Link, Loader, VStack } from '@navikt/ds-react'
 import { useEffect, useState } from 'react'
+import { Form } from 'react-router'
+import { useIsSubmitting } from '~/hooks/use-is-submitting'
 import type { AktivitetComponentProps } from '~/types/aktivitet-component'
 import { lagPdfBlob } from './pdf'
 
@@ -15,9 +17,14 @@ export type ForhandsvisVedtaksbrevGrunnlag = {
   brev: Vedtaksbrev[]
 }
 
-type Props = Pick<AktivitetComponentProps<ForhandsvisVedtaksbrevGrunnlag, never>, 'grunnlag' | 'aktivitet'>
+export type ForhandsvisVedtaksbrevVurdering = Record<string, never>
 
-export function ForhandsvisVedtaksbrev({ grunnlag, aktivitet }: Props) {
+type Props = Pick<
+  AktivitetComponentProps<ForhandsvisVedtaksbrevGrunnlag, ForhandsvisVedtaksbrevVurdering>,
+  'grunnlag' | 'aktivitet' | 'readOnly' | 'avbrytAktivitet' | 'errors'
+>
+
+export function ForhandsvisVedtaksbrev({ grunnlag, aktivitet, readOnly, avbrytAktivitet, errors }: Props) {
   const forekomster = new Map<string, number>()
 
   return (
@@ -36,8 +43,35 @@ export function ForhandsvisVedtaksbrev({ grunnlag, aktivitet }: Props) {
             return <BrevForhandsvisning key={`${brev.displayTitle}-${forekomst}`} brev={brev} />
           })
         )}
+        {!readOnly && <FortsettBehandling avbrytAktivitet={avbrytAktivitet} feilmelding={errors?._form} />}
       </VStack>
     </Box>
+  )
+}
+
+function FortsettBehandling({ avbrytAktivitet, feilmelding }: { avbrytAktivitet?: () => void; feilmelding?: string }) {
+  const isSubmitting = useIsSubmitting()
+
+  return (
+    <Form method="post">
+      <VStack gap="space-12" align="start">
+        {feilmelding && (
+          <Alert variant="error" size="small">
+            {feilmelding}
+          </Alert>
+        )}
+        <HStack gap="space-12">
+          <Button type="submit" variant="primary" size="small" loading={isSubmitting}>
+            Fortsett behandling
+          </Button>
+          {avbrytAktivitet && (
+            <Button type="button" variant="tertiary" size="small" onClick={avbrytAktivitet} disabled={isSubmitting}>
+              Avbryt del-auto behandling
+            </Button>
+          )}
+        </HStack>
+      </VStack>
+    </Form>
   )
 }
 
