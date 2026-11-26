@@ -387,10 +387,7 @@ type BostedsadresserProps = {
 
 function Bostedsadresser({ tittel, bostedsadresser }: BostedsadresserProps) {
   return (
-    <AddressWrapper
-      title={tittel}
-      description="Viser 18 måneder og 1 dag før virkningstidspunktet, fra Folkeregisteret. "
-    >
+    <AddressWrapper title={tittel} description="Fra Folkeregisteret.">
       {bostedsadresser.length > 0 ? (
         <AddressBlock bostedadresser={bostedsadresser} />
       ) : (
