@@ -18,7 +18,7 @@ import {
 
 const opptjeningstyper: OpptjeningstyperResponse = {
   // Oppdiktet kode – testene trenger bare en vilkårlig kode med beskrivelse
-  omsorg: { typer: [{ code: 'OMS_BARN', description: 'Omsorg for barn' }], subTyper: [] },
+  omsorg: { typer: [{ type: 'OMS_BARN', beskrivelse: 'Omsorg for barn' }], subTyper: [] },
 }
 
 describe('grupperOmsorgLinjer', () => {

@@ -44,7 +44,7 @@ export function OmsorgSeksjon({ linjer, opptjeningstyper, readOnly, onSlett, onG
                     return (
                       <Table.Row key={linje._id}>
                         <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>
-                          {opptjeningstyper.omsorg.typer.find(t => t.code === linje.omsorgType)?.description ??
+                          {opptjeningstyper.omsorg.typer.find(t => t.type === linje.omsorgType)?.beskrivelse ??
                             linje.omsorgType}
                         </Table.DataCell>
                         <Table.DataCell style={erSlettet ? { opacity: 0.45 } : undefined}>{linje.ar}</Table.DataCell>

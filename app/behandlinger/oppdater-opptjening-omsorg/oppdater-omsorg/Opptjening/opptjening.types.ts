@@ -9,8 +9,8 @@ export type {
 } from '~/behandlinger/oppdater-opptjening-omsorg/oppdater-omsorg/Omsorg/omsorg.types'
 
 export type OpptjeningTypeKode = {
-  code: string
-  description: string
+  type: string
+  beskrivelse: string
 }
 
 export type OpptjeningstyperKategori = {
@@ -34,7 +34,7 @@ export type OppdaterOpptjeningGrunnlag = {
     fnr: string | null
     omsorgListe?: OmsorgGrunnlagDTO[]
   }
-  opptjeningstyper?: { code?: string | null; description?: string | null }[] | null
+  opptjeningstyper?: { type?: string | null; beskrivelse?: string | null }[] | null
 }
 
 export type OppdaterOpptjeningVurdering = {
