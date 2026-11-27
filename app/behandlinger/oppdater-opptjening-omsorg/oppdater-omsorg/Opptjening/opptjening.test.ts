@@ -22,12 +22,12 @@ const opptjeningstyper: OpptjeningstyperResponse = {
   omsorg: {
     typer: [
       // Oppdiktet kode – testene trenger bare en vilkårlig kode med beskrivelse
-      { code: 'OMS_BARN', description: 'Omsorg for barn' },
-      { code: 'OBU6', description: 'Omsorg for barn under 6 år - eget vedtak' },
-      { code: 'OBU7', description: 'Omsorg for barn under 7 år - eget vedtak' },
+      { type: 'OMS_BARN', beskrivelse: 'Omsorg for barn' },
+      { type: 'OBU6', beskrivelse: 'Omsorg for barn under 6 år - eget vedtak' },
+      { type: 'OBU7', beskrivelse: 'Omsorg for barn under 7 år - eget vedtak' },
       // Oppdiktet: ingen POPP-kode er prefiks av en annen, så lengste-treff-testen trenger et konstruert par
-      { code: 'OBO', description: 'Omsorg for syke/eldre' },
-      { code: 'OBO_PLEIE', description: 'Omsorg for pleietrengende' },
+      { type: 'OBO', beskrivelse: 'Omsorg for syke/eldre' },
+      { type: 'OBO_PLEIE', beskrivelse: 'Omsorg for pleietrengende' },
     ],
     subTyper: [],
   },
@@ -232,7 +232,7 @@ describe('hentOpptjeningLoaderData', () => {
     const grunnlag: OppdaterOpptjeningGrunnlag = {
       saker: [],
       opptjeningsGrunnlagDto: { fnr: '123', omsorgListe: [] },
-      opptjeningstyper: [{ code: 'OBU6', description: 'Omsorg for barn under 6 år - eget vedtak' }],
+      opptjeningstyper: [{ type: 'OBU6', beskrivelse: 'Omsorg for barn under 6 år - eget vedtak' }],
     }
     const api = fakeApi({
       hentGrunnlagsdata: vi.fn().mockResolvedValue(grunnlag),
@@ -247,7 +247,7 @@ describe('hentOpptjeningLoaderData', () => {
 
     expect(result.grunnlag).toBe(grunnlag)
     expect(result.opptjeningstyper).toEqual({
-      omsorg: { typer: [{ code: 'OBU6', description: 'Omsorg for barn under 6 år - eget vedtak' }], subTyper: [] },
+      omsorg: { typer: [{ type: 'OBU6', beskrivelse: 'Omsorg for barn under 6 år - eget vedtak' }], subTyper: [] },
     })
     expect(result.readOnly).toBe(false)
   })

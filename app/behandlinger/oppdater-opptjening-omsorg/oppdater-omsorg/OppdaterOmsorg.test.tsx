@@ -60,7 +60,7 @@ describe('OppdaterOmsorg (attestering og oppsummering)', () => {
   it('bruker beskrivelsen av omsorgstypen fra grunnlaget', () => {
     const html = renderReadOnly({
       ...grunnlag,
-      opptjeningstyper: [{ code: 'OBU6', description: 'Omsorg for barn under 6 år - eget vedtak' }],
+      opptjeningstyper: [{ type: 'OBU6', beskrivelse: 'Omsorg for barn under 6 år - eget vedtak' }],
     })
 
     expect(html).toContain('Omsorg for barn under 6 år - eget vedtak (2010) – omsorg for 01011012345')
