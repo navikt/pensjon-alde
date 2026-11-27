@@ -193,6 +193,7 @@ function VarigAdskiltComponent({
   })
 
   const fomDatepicker = useDatepicker({ defaultSelected: fraSkjemaDato(fields.fom.initialValue) })
+  const leverSammen = fields.vurdertSivilstand.value === 'LEVER_SAMMEN'
 
   const skjulteFeil = form.errors ?? []
 
@@ -212,19 +213,23 @@ function VarigAdskiltComponent({
             <Radio value="LEVER_SAMMEN">{VURDERT_SIVILSTAND_TEKST.LEVER_SAMMEN}</Radio>
           </RadioGroup>
 
-          <DatePicker dropdownCaption {...fomDatepicker.datepickerProps}>
-            <DatePicker.Input
-              {...fomDatepicker.inputProps}
-              size="small"
-              readOnly={readOnly}
-              label="Fra og med"
-              name={fields.fom.name}
-              error={
-                fields.fom.errors?.[0] ??
-                (fields.fom.dirty ? undefined : valideringsfeilForFelt(vurdering?.validering, 'fom'))
-              }
-            />
-          </DatePicker>
+          {leverSammen ? (
+            <BodyShort size="small">Saken tas til manuell behandling.</BodyShort>
+          ) : (
+            <DatePicker dropdownCaption {...fomDatepicker.datepickerProps}>
+              <DatePicker.Input
+                {...fomDatepicker.inputProps}
+                size="small"
+                readOnly={readOnly}
+                label="Fra og med"
+                name={fields.fom.name}
+                error={
+                  fields.fom.errors?.[0] ??
+                  (fields.fom.dirty ? undefined : valideringsfeilForFelt(vurdering?.validering, 'fom'))
+                }
+              />
+            </DatePicker>
+          )}
 
           {visNotat && <BegrunnelseField readOnly={readOnly} defaultValue={fields.begrunnelse.initialValue} />}
 

@@ -23,6 +23,19 @@ describe('varigAdskiltVurderingSchema', () => {
     expect(resultat.success).toBe(false)
   })
 
+  it('krever fom når søker lever adskilt', () => {
+    const resultat = varigAdskiltVurderingSchema.safeParse({ vurdertSivilstand: 'LEVER_ADSKILT' })
+
+    expect(resultat.success).toBe(false)
+    expect(resultat.error?.issues[0]?.path).toEqual(['fom'])
+  })
+
+  it('krever ikke fom når søker lever sammen', () => {
+    const resultat = varigAdskiltVurderingSchema.parse({ vurdertSivilstand: 'LEVER_SAMMEN' })
+
+    expect(resultat).toEqual({ vurdertSivilstand: 'LEVER_SAMMEN', fom: null })
+  })
+
   it('krever valgt sivilstand', () => {
     const { vurdertSivilstand: _, ...utenSivilstand } = gyldig
     const resultat = varigAdskiltVurderingSchema.safeParse(utenSivilstand)
